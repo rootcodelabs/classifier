@@ -1,0 +1,43 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Decription placeholder for 'ACEEPT'"
+  method: post
+  accepts: json
+  returns: json
+  namespace: classifier
+
+jira_webhook_data:
+  assign:
+    signature: ${incoming.headers.X-Hub-Signature}
+    payload: ${incoming.body}
+    issue_info: ${incoming.body.issue}
+  next: get_jira_signature
+
+get_jira_signature:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/js/encryption/urlValidator"
+    body:
+      signature: ${signature}
+      payload: ${payload}
+  result: res
+
+validateUrlSignature:
+  switch:
+    - condition: "${res.response.status==200 && res.response.body.isValid}"
+      next: get_jira_issue_info
+  next: return_error_found
+
+return_error_found:
+  return:  ${res.response.code}
+  status: ${res.response.message}
+  next: end
+
+get_jira_issue_info:
+  assign:
+    issue_info: ${issue_info}
+
+#payload format data mapper
+#sent to private ruuter endpoint
+
