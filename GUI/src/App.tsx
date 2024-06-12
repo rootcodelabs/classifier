@@ -3,6 +3,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
+import UserManagement from "./pages/UserManagement";
 
 const App = () => {
   return (
@@ -10,6 +11,8 @@ const App = () => {
       <Route element={<Layout />}>
         <Route index element={<Navigate to="/home" />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/user-management" element={<UserManagement />} />
+
       </Route>
     </Routes>
   );
