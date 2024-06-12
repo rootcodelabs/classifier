@@ -1,0 +1,43 @@
+services:
+  ruuter-public:
+    container_name: ruuter-public
+    image: ruuter
+    environment:
+      - application.cors.allowedOrigins=http://localhost:3001
+      - application.httpCodesAllowList=200,201,202,400,401,403,500
+      - application.internalRequests.allowedIPs=127.0.0.1
+      - application.logging.displayRequestContent=true
+      - application.logging.displayResponseContent=true
+      - server.port=8086
+    volumes:
+      - ./DSL/Ruuter.public/DSL:/DSL
+      - ./constants.ini:/app/constants.ini
+    ports:
+      - 8086:8086
+    networks:
+      - bykstack
+    cpus: "0.5"
+    mem_limit: "512M"
+
+  data-mapper:
+    container_name: data-mapper
+    image: data-mapper
+    environment:
+      - PORT=3000
+      - CONTENT_FOLDER=/data
+    volumes:
+      - ./DSL:/data
+      - ./DSL/DMapper/hbs:/workspace/app/views/classifier
+      - ./DSL/DMapper/js:/workspace/app/js/classifier
+      - ./DSL/DMapper/lib:/workspace/app/lib
+    ports:
+      - 3000:3000
+    networks:
+      - bykstack
+
+networks:
+  bykstack:
+    name: bykstack
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1400

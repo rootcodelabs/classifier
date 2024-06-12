@@ -9,35 +9,42 @@ declaration:
 
 jira_webhook_data:
   assign:
-    signature: ${incoming.headers.X-Hub-Signature}
+    headers: ${incoming.headers}
     payload: ${incoming.body}
     issue_info: ${incoming.body.issue}
-  next: get_jira_signature
+  next: get_jira_issue_info
 
-get_jira_signature:
+verify_jira_signature:
   call: http.post
   args:
-    url: "[#CLASSIFIER_DMAPPER]/js/encryption/urlValidator"
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/verify_signature"
+    headers:
+      type: json
     body:
-      signature: ${signature}
       payload: ${payload}
-  result: res
-
-validateUrlSignature:
-  switch:
-    - condition: "${res.response.status==200 && res.response.body.isValid}"
-      next: get_jira_issue_info
-  next: return_error_found
-
-return_error_found:
-  return:  ${res.response.code}
-  status: ${res.response.message}
-  next: end
+      headers: ${headers}
+  result: valid_data
 
 get_jira_issue_info:
-  assign:
-    issue_info: ${issue_info}
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"
+    headers:
+      type: json
+    body:
+      data: ${issue_info}
+  result: extract_info
+  next: send_issue_data
 
-#payload format data mapper
-#sent to private ruuter endpoint
+send_issue_data:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"# need correct url
+    headers:
+      type: json
+    body:
+      data: ${extract_info}
+  result: response
+  next: end
+
 
