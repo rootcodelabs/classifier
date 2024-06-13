@@ -170,9 +170,9 @@ const DataTable: FC<DataTableProps> = (
                           </button>
                         )}
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {/* {filterable && header.column.getCanFilter() && (
+                        {filterable && header.column.getCanFilter() && (
                           <Filter column={header.column} table={table} />
-                        )} */}
+                        )}
                       </Track>
                   )}
                 </th>

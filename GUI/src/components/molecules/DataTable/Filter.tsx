@@ -3,8 +3,8 @@ import { Column, Table } from '@tanstack/react-table';
 import { useTranslation } from 'react-i18next';
 import { MdOutlineSearch } from 'react-icons/md';
 
-import { Icon } from 'components';
-import useDocumentEscapeListener from 'hooks/useDocumentEscapeListener';
+import { Icon } from '../../../components';
+import useDocumentEscapeListener from '../../../hooks/useDocumentEscapeListener';
 import DebouncedInput from './DebouncedInput';
 
 type FilterProps = {
