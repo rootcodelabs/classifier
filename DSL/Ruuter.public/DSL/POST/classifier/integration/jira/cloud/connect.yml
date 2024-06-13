@@ -1,0 +1,22 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Decription placeholder for 'CONNECT'"
+  method: post
+  accepts: json
+  returns: json
+  namespace: classifier
+
+get_access_token:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/verify_signature"
+    headers:
+      type: json
+    body:
+      payload: ${payload}
+      headers: ${headers}
+  result: valid_data
+  next: assign_verification
+
+

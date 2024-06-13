@@ -7,12 +7,12 @@ declaration:
   returns: json
   namespace: classifier
 
-jira_webhook_data:
+get_webhook_data:
   assign:
     headers: ${incoming.headers}
     payload: ${incoming.body}
     issue_info: ${incoming.body.issue}
-  next: get_jira_issue_info
+  next: verify_jira_signature
 
 verify_jira_signature:
   call: http.post
@@ -24,6 +24,18 @@ verify_jira_signature:
       payload: ${payload}
       headers: ${headers}
   result: valid_data
+  next: assign_verification
+
+assign_verification:
+  assign:
+    is_valid: ${valid_data.response.body.valid}
+  next: validate_url_signature
+
+validate_url_signature:
+  switch:
+    - condition: ${is_valid === "true"}
+      next: get_jira_issue_info
+  next: return_error_found
 
 get_jira_issue_info:
   call: http.post
@@ -37,14 +49,26 @@ get_jira_issue_info:
   next: send_issue_data
 
 send_issue_data:
-  call: http.post
+  call: reflect.mock
   args:
     url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"# need correct url
     headers:
       type: json
     body:
-      data: ${extract_info}
+      info: ${extract_info}
+    response:
+      val: "send to mock url"
   result: response
+  next: output_val
+
+output_val:
+  return: ${response}
+
+return_error_found:
+  return: ${res.response.message}
+  status: 400
   next: end
+
+
 
 
