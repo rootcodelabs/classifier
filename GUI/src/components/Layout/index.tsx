@@ -1,21 +1,25 @@
 import { FC } from 'react';
 import { Outlet } from 'react-router-dom';
+import useStore from 'store';
+import { MainNavigation } from '@buerokratt-ria/menu';
+import { Header } from '@buerokratt-ria/header';
 import './Layout.scss';
-import Sidebar from '../molecules/SideBar';
-import Header from '../molecules/Header';
+import { useToast } from '../../hooks/useToast';
 
 const Layout: FC = () => {
   return (
-    <div className="flex h-screen overflow-hidden">
-    <Sidebar />
-    <div className="flex flex-col flex-grow">
-      <Header />
-      <main className="flex-grow p-4 bg-gray-100 mt-16">
-        <Outlet/>
-      </main>
+    <div className="layout">
+      <MainNavigation
+        serviceId={import.meta.env.REACT_APP_SERVICE_ID.split(',')}
+        items={[]}
+      />
+      <div className="layout__wrapper">
+        <Header toastContext={useToast()} user={useStore.getState().userInfo} />
+        <main className="layout__main">
+          <Outlet />
+        </main>
+      </div>
     </div>
-  </div>
-
   );
 };
 
