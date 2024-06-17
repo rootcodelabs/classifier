@@ -1,11 +1,22 @@
 declaration:
   call: declare
   version: 0.1
-  description: "Decription placeholder for 'ACEEPT'"
+  description: "Description placeholder for 'ACEEPT'"
   method: post
   accepts: json
   returns: json
   namespace: classifier
+  allowlist:
+    body:
+      - field: headers
+        type: object
+        description: "Body field 'headers'"
+      - field: payload
+        type: object
+        description: "Body field 'payload'"
+      - field: issue_info
+        type: string
+        description: "Body field 'issue_info'"
 
 get_webhook_data:
   assign:

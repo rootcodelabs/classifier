@@ -1,4 +1,4 @@
-import { createHmac,timingSafeEqual } from "crypto"
+import { createHmac,timingSafeEqual } from "crypto";
 
 export function verifySignature(payload, headers) {
     const signature = headers['x-hub-signature'];
@@ -10,4 +10,11 @@ export function verifySignature(payload, headers) {
     const computedSignaturePrefixed = "sha256=" + computedSignature;
     const isValid = timingSafeEqual(Buffer.from(computedSignaturePrefixed, 'utf8'), Buffer.from(signature, 'utf8'));
     return isValid;
+}
+
+export function getAuthHeader(username, token) {
+  const auth = `${username}:${token}`;
+  const encodedAuth = Buffer.from(auth).toString("base64");
+  console.log("encodedAuth: " + encodedAuth);
+  return `Basic ${encodedAuth}`;
 }
