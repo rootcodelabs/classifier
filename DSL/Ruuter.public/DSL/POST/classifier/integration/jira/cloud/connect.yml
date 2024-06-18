@@ -36,32 +36,26 @@ validate_integration:
   next: disconnect_jira
 
 connect_jira:
-  call: http.get
+  call: http.put
   args:
-    url: "[#JIRA_CLOUD_DOMAIN]/rest/webhooks/1.0/webhook"
+    url: "[#JIRA_CLOUD_DOMAIN]/rest/webhooks/1.0/webhook/1"
     headers:
-      Accept: "application/json"
-      Content-Type: "application/json"
-      Authorization: ${auth_header.val}
+      Authorization: ${auth_header.response.body.val}
+    body:
+      enabled: true
   result: valid_data
   next: output_val
 
 disconnect_jira:
-  call: http.post
+  call: http.put
   args:
-    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/verify_signature"
+    url: "[#JIRA_CLOUD_DOMAIN]/rest/webhooks/1.0/webhook/1"
     headers:
-      type: json
+      Authorization: ${auth_header.response.body.val}
     body:
-      payload: ${payload}
-      headers: ${headers}
+      enabled: false
   result: valid_data
   next: output_val
 
 output_val:
   return: ${valid_data}
-
-
-
-
-
