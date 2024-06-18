@@ -15,6 +15,5 @@ export function verifySignature(payload, headers) {
 export function getAuthHeader(username, token) {
   const auth = `${username}:${token}`;
   const encodedAuth = Buffer.from(auth).toString("base64");
-  console.log("encodedAuth: " + encodedAuth);
   return `Basic ${encodedAuth}`;
 }
