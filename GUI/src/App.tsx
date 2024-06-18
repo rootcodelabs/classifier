@@ -8,6 +8,7 @@ import { UserInfo } from 'types/userInfo';
 
 import './locale/et_EE';
 import UserManagement from 'pages/UserManagement';
+import Integrations from 'pages/Integrations';
 
 const App: FC = () => {
   useQuery<{
@@ -25,6 +26,8 @@ const App: FC = () => {
       <Route element={<Layout />}>
         <Route index element={<Navigate to="/user-management" />} />
         <Route path="/user-management" element={<UserManagement />} />
+        <Route path="/integrations" element={<Integrations />} />
+
       </Route>
     </Routes>
   );

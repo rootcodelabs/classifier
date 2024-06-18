@@ -4,7 +4,7 @@ import {
   DataTable,
   Dialog,
   FormInput,
-  FormSelect,
+  FormMultiselect,
   Icon,
 } from '../../components';
 import users from '../../config/users.json';
@@ -172,17 +172,36 @@ const UserManagement: FC = () => {
                       label="First and last name"
                       placeholder="Enter name"
                       name="fullName"
-                      value={editableRow?.fullName}
+                      value={editableRow?.firstName}
                     />
                   </div>
                   <div className="form-group">
-                    <FormSelect name="role" label="Role" options={roles} value={editableRow?.csaTitle} />
+                    <FormMultiselect
+                      name="role"
+                      label="Role"
+                      options={roles}
+                      value={editableRow?.csaTitle}
+                      selectedOptions={editableRow?.authorities?.map(
+                        (role) => ({
+                          value: role,
+                          label: role
+                            .replace('ROLE_', '')
+                            .split('_')
+                            .map(
+                              (word) =>
+                                word.charAt(0) + word.slice(1).toLowerCase()
+                            )
+                            .join(' '),
+                        })
+                      )}
+                    />
                   </div>
                   <div className="form-group">
                     <FormInput
                       label="Personal ID"
                       placeholder="Enter personal ID"
                       name="personalID"
+                      value={editableRow?.idCode}
                     />
                   </div>
                   <div className="form-group">
@@ -190,6 +209,7 @@ const UserManagement: FC = () => {
                       label="Title"
                       placeholder="Enter title"
                       name="title"
+                      value={editableRow?.csaTitle}
                     />
                   </div>
                   <div className="form-group">
@@ -198,6 +218,7 @@ const UserManagement: FC = () => {
                       placeholder="Enter email"
                       name="email"
                       type="email"
+                      value={editableRow?.csaEmail}
                     />
                   </div>
                 </form>
