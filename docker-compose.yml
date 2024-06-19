@@ -1,6 +1,6 @@
 services:
   ruuter-public:
-    container_name: ruuter-public
+    container_name: ruuter-private
     image: ruuter
     environment:
       - application.cors.allowedOrigins=http://localhost:3001
@@ -9,12 +9,12 @@ services:
       - application.logging.displayRequestContent=true
       - application.incomingRequests.allowedMethodTypes=POST,GET,PUT
       - application.logging.displayResponseContent=true
-      - server.port=8086
+      - server.port=8088
     volumes:
-      - ./DSL/Ruuter.public/DSL:/DSL
+      - ./DSL/Ruuter.private/DSL:/DSL
       - ./constants.ini:/app/constants.ini
     ports:
-      - 8086:8086
+      - 8088:8088
     networks:
       - bykstack
     cpus: "0.5"
