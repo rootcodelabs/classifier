@@ -60,24 +60,29 @@ get_jira_issue_info:
   next: send_issue_data
 
 send_issue_data:
-  call: reflect.mock
+  call: http.post
   args:
     url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"# need correct url
     headers:
       type: json
     body:
       info: ${extract_info}
-    response:
-      val: "send to mock url"
-  result: response
-  next: output_val
+  result: res
 
-output_val:
-  return: ${response}
+check_response:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: return_ok
+  next: return_bad_request
 
-return_error_found:
-  return: ${res.response.message}
+return_ok:
+  status: 200
+  return: "Jira data send successfully"
+  next: end
+
+return_bad_request:
   status: 400
+  return: "Bad Request"
   next: end
 
 
