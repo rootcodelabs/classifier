@@ -1,5 +1,5 @@
 services:
-  ruuter-public:
+  ruuter-private:
     container_name: ruuter-private
     image: ruuter
     environment:
