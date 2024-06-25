@@ -9,7 +9,7 @@ declaration:
 
 set_refresh_token:
   assign:
-    refresh_token:  "xxxxxx"
+    refresh_token:  "[#OUTLOOK_REFRESH_KEY]"
   next: get_access_token
 
 get_access_token:
@@ -20,11 +20,11 @@ get_access_token:
     headers:
       type: json
     body:
-      client_id: "33f0e28a-b6ff-4b8c-ad7c-14f32d05e51f"
+      client_id: "[#OUTLOOK_CLIENT_ID]"
       scope: "User.Read Mail.Read Mail.ReadWrite"
       refresh_token: ${refresh_token}
       grant_type: "refresh_token"
-      client_secret: "xxxxxxxxxxxx"
+      client_secret: "[#OUTLOOK_SECRET_KEY]"
   result: res
   next: return_result
 
