@@ -1,0 +1,32 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Description placeholder for 'TOKEN'"
+  method: get
+  accepts: json
+  returns: json
+  namespace: classifier
+
+set_refresh_token:
+  assign:
+    refresh_token:  "xxxxxx"
+  next: get_access_token
+
+get_access_token:
+  call: http.post
+  args:
+    url: "https://login.microsoftonline.com/[#TENANT]/oauth2/v2.0/token"
+    contentType: formdata
+    headers:
+      type: json
+    body:
+      client_id: "33f0e28a-b6ff-4b8c-ad7c-14f32d05e51f"
+      scope: "User.Read Mail.Read Mail.ReadWrite"
+      refresh_token: ${refresh_token}
+      grant_type: "refresh_token"
+      client_secret: "xxxxxxxxxxxx"
+  result: res
+  next: return_result
+
+return_result:
+  return: ${res.response.body}
