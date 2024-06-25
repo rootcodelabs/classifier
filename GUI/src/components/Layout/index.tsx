@@ -10,8 +10,6 @@ const Layout: FC = () => {
   return (
     <div className="layout">
       <MainNavigation
-        serviceId={import.meta.env.REACT_APP_SERVICE_ID.split(',')}
-        items={[]}
       />
       <div className="layout__wrapper">
         <Header toastContext={useToast()} user={useStore.getState().userInfo} />
