@@ -1,0 +1,39 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Description placeholder for 'ACCEPT'"
+  method: post
+  accepts: json
+  returns: json
+  namespace: classifier
+
+extract_request_data:
+  assign:
+    payload: ${incoming.body}
+  next: check_validation_token
+
+check_validation_token:
+  switch:
+    - condition: ${payload !== null && payload.validationToken !==null}
+      next: assign_validation_token
+  next: return_error_found
+
+assign_validation_token:
+  assign:
+    validation_token: ${payload.validationToken}
+  next: set_response_data
+
+set_response_data:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_outlook_validation_token"
+    headers:
+      type: json
+    body:
+      validationToken: ${validation_token}
+  result: response
+  next: return_validation_response
+
+return_validation_response:
+  return: ${response}
+  status: 200
