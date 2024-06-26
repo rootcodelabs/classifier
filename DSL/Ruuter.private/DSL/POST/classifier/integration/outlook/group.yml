@@ -89,7 +89,7 @@ check_status:
 
 return_ok:
   status: 200
-  return: "JOutlook email Updated"
+  return: "Outlook email Updated"
   next: end
 
 return_bad_request:
