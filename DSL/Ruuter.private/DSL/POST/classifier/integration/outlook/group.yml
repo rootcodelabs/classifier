@@ -1,0 +1,103 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Description placeholder for 'Group'"
+  method: post
+  accepts: json
+  returns: json
+  namespace: classifier
+  allowlist:
+    body:
+      - field: mailId
+        type: string
+        description: "Body field 'issueId'"
+      - field: labels
+        type: array
+        description: "Body field 'labels'"
+
+extract_request_data:
+  assign:
+    mail_id: ${incoming.body.mailId}
+    label_list: ${incoming.body.labels}
+  next: check_for_request_data
+
+check_for_request_data:
+  switch:
+    - condition: ${mail_id !== null || label_list @== null}
+      next: get_token_info
+  next: return_incorrect_request
+
+get_token_info:
+  call: http.get
+  args:
+    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/token"
+  result: res
+  next: assign_access_token
+
+assign_access_token:
+  assign:
+    access_token: ${res.response.body.response.access_token}
+  next: get_mail_issue_info
+
+get_mail_issue_info:
+  call: http.get
+  args:
+    url: "https://graph.microsoft.com/v1.0/me/messages//${mail_id}"
+    headers:
+      Authorization: ${'Bearer ' + access_token}
+  result: mail_info
+  next: assign_existing_labels
+
+assign_existing_labels:
+  assign:
+    existing_label_list: ${mail_info.response.body.fields.categories}
+  next: merge_labels
+
+merge_labels:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_label_field_array"
+    headers:
+      type: json
+    body:
+      labels: ${label_list}
+      existing_labels: ${existing_label_list}
+  result: res
+  next: set_data
+
+set_data:
+  assign:
+    all_labels: ${res.response.body}
+  next: update_mail
+
+update_mail:
+  call: http.put
+  args:
+    url: "https://graph.microsoft.com/v1.0/me/messages//${mail_id}"
+    headers:
+      Authorization: ${'Bearer ' + access_token}
+    body:
+      fields: ${all_labels} #catergories need to change mapper cll
+  result: res_mail
+  next: check_status
+
+check_status:
+  switch:
+    - condition: ${200 <= res_mail.response.statusCodeValue && res_mail.response.statusCodeValue < 300}
+      next: return_ok
+  next: return_bad_request
+
+return_ok:
+  status: 200
+  return: "JOutlook email Updated"
+  next: end
+
+return_bad_request:
+  status: 400
+  return: "Bad Request"
+  next: end
+
+return_incorrect_request:
+  status: 400
+  return: 'missing labels'
+  next: end
