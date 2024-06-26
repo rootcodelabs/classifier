@@ -43,7 +43,7 @@ subscribe_outlook:
       Authorization: ${'Bearer ' + access_token}
     body:
       changeType: "created"
-      notificationUrl: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/accept"
+      notificationUrl: "https://f249-2402-4000-2081-3ac5-90b3-3a49-b826-3da.ngrok-free.app/classifier/integration/outlook/accept"
       resource: "me/mailFolders('inbox')/messages"
       expirationDateTime: "2024-06-28T21:10:45.9356913Z"
       clientState: "state"
@@ -92,6 +92,9 @@ set_subscription_data:
       subscriptionId: ${res_subscribe.response.id}
   result: set_status_res
   next: check_db_status
+
+output_val:
+  return: ${res_subscribe}
 
 remove_subscription_data:
   call: http.post

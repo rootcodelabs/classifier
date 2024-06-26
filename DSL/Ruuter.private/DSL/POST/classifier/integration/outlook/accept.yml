@@ -2,20 +2,35 @@ declaration:
   call: declare
   version: 0.1
   description: "Description placeholder for 'ACCEPT'"
-  method: post
+  method: get
   accepts: json
   returns: json
   namespace: classifier
+  allowlist:
+    params:
+      - field: validationToken
+        type: boolean
+        description: "parameter 'validationToken'"
+    body:
+      - field: payload
+        type: json
+        description: "body field is 'payload'"
 
 extract_request_data:
   assign:
+    validation_token: ${incoming.params.validationToken}
     payload: ${incoming.body}
-  next: check_validation_token
+  next: check_process_flow
 
-check_validation_token:
+new_val:
+  return: ${validation_token}
+
+check_process_flow:
   switch:
-    - condition: ${payload !== null && payload.validationToken !==null}
+    - condition: ${validation_token !==null}
       next: assign_validation_token
+    - condition: ${payload !==null}
+      next: assign_outlook_mail_info
   next: return_error_found
 
 assign_validation_token:
@@ -37,3 +52,49 @@ set_response_data:
 return_validation_response:
   return: ${response}
   status: 200
+
+assign_outlook_mail_info:
+  assign:
+    mail_info: ${payload}
+  next: extract_data_from_payload
+
+extract_data_from_payload:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_outlook_mail_info"
+    headers:
+      type: json
+    body:
+      data: ${mail_info}
+  result: extract_info
+  next: send_issue_data
+
+#check the mail id is an existing id and check categories from mail and db are same
+#if different or new send to AI model
+
+send_issue_data:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"# need correct url
+    headers:
+      type: json
+    body:
+      info: ${extract_info}
+  result: res
+  next: check_response
+
+check_response:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: return_ok
+  next: return_bad_request
+
+return_ok:
+  status: 200
+  return: "Outlook data send successfully"
+  next: end
+
+return_bad_request:
+  status: 400
+  return: "Bad Request"
+  next: end
