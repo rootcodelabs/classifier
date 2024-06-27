@@ -15,7 +15,28 @@ declaration:
 extract_request_data:
   assign:
     is_connect: ${incoming.body.isConnect}
-  next: get_token_info
+  next: get_platform_integration_status
+
+get_platform_integration_status:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-platform-integration-status"
+    body:
+      platform: 'OUTLOOK'
+  result: res
+  next: assign_db_platform_integration_data
+
+assign_db_platform_integration_data:
+  assign:
+    db_platform_status: ${res.response.body.is_connect}
+    subscription_id: ${res.response.body.subscription_id}
+  next: validate_request
+
+validate_request:
+  switch:
+    - condition: ${db_platform_status !== is_connect}
+      next: get_token_info
+  next: return_already_request
 
 get_token_info:
   call: http.get
@@ -31,9 +52,11 @@ assign_access_token:
 
 check_integration_type:
   switch:
-    - condition: ${is_connect === true}
+    - condition: ${is_connect === true && subscription_id == null}
       next: subscribe_outlook
-  next: get_subscription_id
+    - condition: ${is_connect === false && subscription_id !== null}
+      next: unsubscribe_outlook
+  next: return_bad_request
 
 subscribe_outlook:
   call: http.post
@@ -43,25 +66,28 @@ subscribe_outlook:
       Authorization: ${'Bearer ' + access_token}
     body:
       changeType: "created"
-      notificationUrl: "https://f249-2402-4000-2081-3ac5-90b3-3a49-b826-3da.ngrok-free.app/classifier/integration/outlook/accept"
+      notificationUrl: "ngrok/classifier/integration/outlook/accept"
       resource: "me/mailFolders('inbox')/messages"
       expirationDateTime: "2024-06-28T21:10:45.9356913Z"
       clientState: "state"
   result: res_subscribe
   next: check_subscribe_response
 
-get_subscription_id:
+check_subscribe_response:
+  switch:
+    - condition: ${200 <= res_subscribe.response.statusCodeValue && res_subscribe.response.statusCodeValue < 300}
+      next: set_subscription_data
+  next: return_bad_request
+
+set_subscription_data:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RESQL]/get-outlook-subscription-data"
-  result: res_data
-  next: check_subscription_id
-
-check_subscription_id:
-  switch:
-    - condition: ${res_data.response.subscriptionId !== null}
-      next: unsubscribe_outlook
-  next: return_not_found
+    url: "[#CLASSIFIER_RESQL]/connect-platform"
+    body:
+      id: ${res_subscribe.response.id}
+      platform: 'OUTLOOK'
+  result: set_status_res
+  next: check_db_status
 
 unsubscribe_outlook:
   call: http.delete
@@ -72,36 +98,18 @@ unsubscribe_outlook:
   result: res_unsubscribe
   next: check_unsubscribe_response
 
-check_subscribe_response:
-  switch:
-    - condition: ${200 <= res_subscribe.response.statusCodeValue && res_subscribe.response.statusCodeValue < 300}
-      next: set_subscription_data
-  next: return_bad_request
-
 check_unsubscribe_response:
   switch:
     - condition: ${200 <= res_unsubscribe.response.statusCodeValue && res_unsubscribe.response.statusCodeValue < 300}
       next: remove_subscription_data
   next: return_bad_request
 
-set_subscription_data:
-  call: http.post
-  args:
-    url: "[#CLASSIFIER_RESQL]/set-outlook-subscription-data"
-    body:
-      subscriptionId: ${res_subscribe.response.id}
-  result: set_status_res
-  next: check_db_status
-
-output_val:
-  return: ${res_subscribe}
-
 remove_subscription_data:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RESQL]/delete-outlook-subscription-data"
+    url: "[#CLASSIFIER_RESQL]/disconnect-platform"
     body:
-      subscriptionId: ${subscription-id}
+      platform: 'OUTLOOK'
   result: set_status_res
   next: check_db_status
 
@@ -119,6 +127,11 @@ return_ok:
 return_not_found:
   status: 404
   return: "Subscription not found"
+  next: end
+
+return_already_request:
+  status: 400
+  return: "Already Requested-Bad Request"
   next: end
 
 return_bad_request:

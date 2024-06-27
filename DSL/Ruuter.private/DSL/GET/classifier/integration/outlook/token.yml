@@ -7,10 +7,24 @@ declaration:
   returns: json
   namespace: classifier
 
+get_refresh_token:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-token"
+    body:
+      platform: 'OUTLOOK'
+  result: res
+
 set_refresh_token:
   assign:
-    refresh_token:  "[#OUTLOOK_REFRESH_KEY]"
-  next: get_access_token
+    refresh_token: ${res.response.body.token}
+  next: check_refresh_token
+
+check_refresh_token:
+  switch:
+    - condition: ${refresh_token !== null}
+      next: get_access_token
+  next: return_not_found
 
 get_access_token:
   call: http.post
@@ -30,3 +44,8 @@ get_access_token:
 
 return_result:
   return: ${res.response.body}
+
+return_not_found:
+  status: 404
+  return: "refresh token not found"
+  next: end

@@ -87,6 +87,8 @@ check_status:
       next: return_ok
   next: return_bad_request
 
+#update table on success of mail update
+
 return_ok:
   status: 200
   return: "Outlook email Updated"
