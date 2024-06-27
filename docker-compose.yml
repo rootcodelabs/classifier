@@ -1,11 +1,9 @@
-version: "3.9"
-
 services:
   ruuter-public:
     container_name: ruuter-public
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080
+      - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:8080
       - application.httpCodesAllowList=200,201,202,400,401,403,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -25,10 +23,11 @@ services:
     container_name: ruuter-private
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=http://localhost:8082,http://localhost:3001,http://localhost:3003
-      - application.httpCodesAllowList=200,201,202,400,401,403,500
+      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:3002,http://localhost:3004
+      - application.httpCodesAllowList=200,201,202,204,400,401,403,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
+      - application.incomingRequests.allowedMethodTypes=POST,GET,PUT
       - application.logging.displayResponseContent=true
       - server.port=8088
     volumes:

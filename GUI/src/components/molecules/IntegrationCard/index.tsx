@@ -30,34 +30,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
         isfullwidth={true}
         footer={
           <>
-            <div className="footer_container">
-              <div className="status-indicators">
-                <span className="status">
-                  <span className="dot green"></span> connected - Outlook
-                </span>
-                <span className="status">
-                  <span className="dot grey"></span> Disconnected - Pinal
-                </span>
-              </div>
-              <div className="actions">
-                <Button
-                  appearance="primary"
-                  size="s"
-                  onClick={() => {
-                    setIsModalOpen(true);
-                    setModalType('JIRA_INTEGRATION');
-                  }}
-                >
-                  Connect
-                </Button>
-                <Button appearance="error" size="s" onClick={() => {
-                    setIsModalOpen(true);
-                    setModalType('DISCONNECT');
-                  }}>
-                  Disconnect
-                </Button>
-              </div>
-            </div>
+            
           </>
         }
       >
@@ -67,11 +40,26 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
             <div className="title">
               <h2>{channel}</h2>
               <p>{channelDescription}</p>
-              <p>{user}</p>
+              
             </div>
             <div className="toggle-switch">
-              <Switch label="" checked={isActive} />
+              <div style={{float:"right",marginBottom:"5px"}}>
+              <Switch label="" checked={isActive}/>
+              </div>
+              <div style={{display:"block"}}>
+              <div className="footer_container">
+              <div className="status-indicators">
+                <span className="status">
+                  <span className="dot green"></span> connected - Outlook
+                </span>
+                <span className="status">
+                  <span className="dot grey"></span> Disconnected - Pinal
+                </span>
+              </div>
+              </div>
             </div>
+            </div>
+            
           </div>
         </>
       </Card>

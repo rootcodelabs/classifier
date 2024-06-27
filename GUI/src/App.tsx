@@ -9,6 +9,7 @@ import { UserInfo } from 'types/userInfo';
 import './locale/et_EE';
 import UserManagement from 'pages/UserManagement';
 import Integrations from 'pages/Integrations';
+import DatasetGroups from 'pages/DatasetGroups';
 
 const App: FC = () => {
 
@@ -52,6 +53,8 @@ const App: FC = () => {
         <Route index element={<Navigate to="/user-management" />} />
         <Route path="/user-management" element={<UserManagement />} />
         <Route path="/integrations" element={<Integrations />} />
+        <Route path="/dataset-groups" element={<DatasetGroups />} />
+
 
       </Route>
     </Routes>

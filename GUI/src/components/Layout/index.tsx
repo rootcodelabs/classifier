@@ -12,7 +12,7 @@ const Layout: FC = () => {
       <MainNavigation
       />
       <div className="layout__wrapper">
-        <Header toastContext={useToast()} user={useStore.getState().userInfo} />
+        {/* <Header toastContext={useToast()} user={useStore.getState().userInfo} /> */}
         <main className="layout__main">
           <Outlet />
         </main>

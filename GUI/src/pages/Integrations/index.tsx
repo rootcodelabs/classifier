@@ -3,19 +3,19 @@ import './Integrations.scss';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Switch } from 'components';
 import IntegrationCard from 'components/molecules/IntegrationCard';
-import Jira from 'assets/jira';
 import Outlook from 'assets/Outlook';
 import Pinal from 'assets/Pinal';
+import Jira from 'assets/Jira';
 
 const Integrations: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <>
-      <div className="container">
+    <><div className='container'>
+      <div className="title_container">
         <div className="title">Integration</div>
       </div>
-      <div className="integration_container">
+      <div>
         <IntegrationCard
           logo={<Jira/>}
           channel={"Jira"}
@@ -40,7 +40,7 @@ const Integrations: FC = () => {
           isActive={true}
           status={"Connected"}
         />
-      </div>
+      </div></div>
     </>
   );
 };

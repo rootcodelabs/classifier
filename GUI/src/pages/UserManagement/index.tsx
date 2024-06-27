@@ -104,6 +104,7 @@ const UserManagement: FC = () => {
   return (
     <>
       <div className="container">
+        <div className='title_container'>
         <div className="title">User Management</div>
         <Button
           appearance="primary"
@@ -113,7 +114,7 @@ const UserManagement: FC = () => {
           Add a user
         </Button>
       </div>
-      <div className="container">
+      <div >
         <DataTable data={users} columns={usersColumns} />
 
         {deletableRow !== null && (
@@ -226,6 +227,7 @@ const UserManagement: FC = () => {
             </>
           </Dialog>
         )}
+      </div>
       </div>
     </>
   );

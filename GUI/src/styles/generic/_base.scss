@@ -24,6 +24,29 @@ body {
   
 }
 
+.container {
+  padding: 0px 48px;
+}
+
+.title_container{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 30px 0px;
+}
+
+.bordered-card{
+  background-color: white;
+  border-radius: 10px;
+  border: solid 1px get-color(black-coral-1);
+}
+
+.title {
+  font-size: 1.5rem;
+  color: #000;
+  font-weight: 300;
+}
+
 a,
 input,
 select,

@@ -11,6 +11,7 @@ import { ControllerRenderProps } from 'react-hook-form';
 type FormSelectProps = Partial<ControllerRenderProps> & SelectHTMLAttributes<HTMLSelectElement> & {
   label: ReactNode;
   name: string;
+  placeholder?:string;
   hideLabel?: boolean;
   direction?: 'down' | 'up';
   options: {
