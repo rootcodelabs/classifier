@@ -34,6 +34,7 @@ verify_jira_signature:
     body:
       payload: ${payload}
       headers: ${headers}
+      secret: "[#JIRA_WEBHOOK_SECRET]"
   result: valid_data
   next: assign_verification
 

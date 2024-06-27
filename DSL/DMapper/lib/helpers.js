@@ -1,8 +1,8 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
-export function verifySignature(payload, headers) {
+export function verifySignature(payload, headers, secret) {
   const signature = headers["x-hub-signature"];
-  const SHARED_SECRET = "wNc6HjKGu3RZXYNXqMTh";
+  const SHARED_SECRET = secret;
   const hmac = createHmac("sha256", Buffer.from(SHARED_SECRET, "utf8"));
   const payloadString = JSON.stringify(payload);
   hmac.update(Buffer.from(payloadString, "utf8"));
