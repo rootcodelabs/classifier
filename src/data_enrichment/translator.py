@@ -15,7 +15,7 @@ class Translator:
             self.tokenizers[key] = MarianTokenizer.from_pretrained(model_name)
             self.models_instances[key] = MarianMTModel.from_pretrained(model_name)
             reverse_key = f"{key.split('-')[1]}-{key.split('-')[0]}"
-            if reverse_model_name != 'Helsinki-NLP/opus-mt-en-pl':
+            if reverse_model_name != config["unsupported-en-pl_model"]:
                 self.tokenizers[reverse_key] = MarianTokenizer.from_pretrained(reverse_model_name)
                 self.models_instances[reverse_key] = MarianMTModel.from_pretrained(reverse_model_name)
 

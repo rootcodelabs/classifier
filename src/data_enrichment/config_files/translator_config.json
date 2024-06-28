@@ -6,6 +6,7 @@
       "fi-en": ["Helsinki-NLP/opus-mt-fi-en", "Helsinki-NLP/opus-mt-en-fi"],
       "en-fr": ["Helsinki-NLP/opus-mt-en-fr", "Helsinki-NLP/opus-mt-fr-en"],
       "fr-pl": ["Helsinki-NLP/opus-mt-fr-pl", "Helsinki-NLP/opus-mt-pl-fr"]
-    }
+    },
+    "unsupported-en-pl_model":"Helsinki-NLP/opus-mt-en-pl"
   }
   
