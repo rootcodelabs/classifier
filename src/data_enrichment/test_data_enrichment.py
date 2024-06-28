@@ -19,7 +19,7 @@ class TestDataEnrichment(TestCase):
 
     def test_enrich_data_with_unsupported_language(self):
         original_sentence = "Hello, I hope this email finds you well. I am writing to inquire about the status of my application."
-        language = 'fr'
+        language = 'sl'
 
         enriched_data = self.enricher.enrich_data(original_sentence, language)
         self.assertIsNone(enriched_data)
