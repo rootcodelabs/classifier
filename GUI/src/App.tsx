@@ -9,7 +9,7 @@ import { UserInfo } from 'types/userInfo';
 import './locale/et_EE';
 import UserManagement from 'pages/UserManagement';
 import Integrations from 'pages/Integrations';
-import DatasetGroups from 'pages/DatasetGroups';
+import DatasetGroups from 'pages/DataSetGroups';
 
 const App: FC = () => {
 
