@@ -7,7 +7,7 @@ class DataEnrichment:
         self.paraphraser = Paraphraser()
 
     def enrich_data(self, text, lang):
-        supported_languages = ['en', 'et', 'ru', 'pl', 'fi']
+        supported_languages = ['en', 'et', 'ru', 'pl', 'fi', 'fr']
 
         if lang not in supported_languages:
             print(f"Unsupported language: {lang}")
