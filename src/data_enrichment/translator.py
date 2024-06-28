@@ -1,15 +1,12 @@
+import json
 from transformers import MarianMTModel, MarianTokenizer
 
 class Translator:
-    def __init__(self):
-        self.models = {
-            'et-en': ('Helsinki-NLP/opus-mt-et-en', 'Helsinki-NLP/opus-mt-en-et'),
-            'ru-en': ('Helsinki-NLP/opus-mt-ru-en', 'Helsinki-NLP/opus-mt-en-ru'),
-            'pl-en': ('Helsinki-NLP/opus-mt-pl-en', 'Helsinki-NLP/opus-mt-en-pl'),
-            'fi-en': ('Helsinki-NLP/opus-mt-fi-en', 'Helsinki-NLP/opus-mt-en-fi'),
-            'en-fr': ('Helsinki-NLP/opus-mt-en-fr', 'Helsinki-NLP/opus-mt-fr-en'),
-            'fr-pl': ('Helsinki-NLP/opus-mt-fr-pl', 'Helsinki-NLP/opus-mt-pl-fr'),
-        }
+    def __init__(self, config_path="config_files/translator_config.json"):
+        with open(config_path, 'r') as file:
+            config = json.load(file)
+        
+        self.models = config["models"]
         self.tokenizers = {}
         self.models_instances = {}
 
@@ -44,4 +41,3 @@ class Translator:
         translated_text = tokenizer.decode(translated_tokens[0], skip_special_tokens=True)
 
         return translated_text
-
