@@ -1,7 +1,7 @@
 declaration:
   call: declare
   version: 0.1
-  description: "Description placeholder for 'ACEEPT'"
+  description: "Description placeholder for 'ACCEPT'"
   method: post
   accepts: json
   returns: json
@@ -34,6 +34,7 @@ verify_jira_signature:
     body:
       payload: ${payload}
       headers: ${headers}
+      secret: "[#JIRA_WEBHOOK_SECRET]"
   result: valid_data
   next: assign_verification
 
