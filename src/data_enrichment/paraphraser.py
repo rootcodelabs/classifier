@@ -1,8 +1,9 @@
 import json
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from typing import List
 
 class Paraphraser:
-    def __init__(self, config_path="config_files/paraphraser_config.json"):
+    def __init__(self, config_path: str = "config_files/paraphraser_config.json"):
         with open(config_path, 'r') as file:
             config = json.load(file)
         
@@ -19,7 +20,7 @@ class Paraphraser:
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name)
 
-    def generate_paraphrases(self, question):
+    def generate_paraphrases(self, question: str) -> List[str]:
         input_ids = self.tokenizer(
             f'paraphrase: {question}',
             return_tensors="pt", padding="longest",
