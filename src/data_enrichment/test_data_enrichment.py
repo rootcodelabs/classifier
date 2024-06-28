@@ -22,7 +22,7 @@ class TestDataEnrichment(TestCase):
         language = 'sl'
 
         enriched_data = self.enricher.enrich_data(original_sentence, language)
-        self.assertIsNone(enriched_data)
+        self.assertEqual(enriched_data, [])
 
     def test_enrich_data_with_estonian_sentence(self):
         original_sentence = "Tere, ma loodan, et see e-kiri leiab teid hästi. Ma kirjutan päringu staatuse minu taotluse. Ma esitasin kõik nõutavad dokumendid möödunud kuu, kuid ma pole saanud ühtegi värskendust sellest ajast. Kas saaksite palun mulle hetkeseisu kohta teavet anda?"
