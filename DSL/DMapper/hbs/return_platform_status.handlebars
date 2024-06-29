@@ -1,0 +1,8 @@
+{{#*inline "platformStatus"}}
+{
+  "jira_connection_status": {{platformStatus "JIRA" data}},
+  "outlook_connection_status": {{platformStatus "OUTLOOK" data}},
+  "pinal_connection_status": {{platformStatus "PINAL" data}}
+}
+{{/inline}}
+{{> platformStatus}}
