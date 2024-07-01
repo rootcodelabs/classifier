@@ -17,7 +17,7 @@ get_refresh_token:
 
 set_refresh_token:
   assign:
-    refresh_token: ${res.response.body.token}
+    refresh_token: "[#OUTLOOK_REFRESH_KEY]" #${res.response.body.token}
   next: check_refresh_token
 
 check_refresh_token:
@@ -44,6 +44,7 @@ get_access_token:
 
 return_result:
   return: ${res.response.body}
+  next: end
 
 return_not_found:
   status: 404

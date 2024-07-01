@@ -31,3 +31,20 @@ export function platformStatus(platform, data) {
   const platformData = data.find((item) => item.platform === platform);
   return platformData ? platformData.isConnect : false;
 }
+
+export function isLabelsMismatch(newLabels, previousLabels) {
+  if (
+    Array.isArray(newLabels) &&
+    Array.isArray(previousLabels) &&
+    newLabels.length === previousLabels.length
+  ) {
+    for (let i = 0; i < newLabels.length; i++) {
+      if (newLabels[i] !== previousLabels[i]) {
+        return true;
+      }
+    }
+    return false;
+  } else {
+    return true;
+  }
+}

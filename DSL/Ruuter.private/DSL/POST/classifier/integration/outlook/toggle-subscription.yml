@@ -66,12 +66,14 @@ subscribe_outlook:
       Authorization: ${'Bearer ' + access_token}
     body:
       changeType: "created"
-      notificationUrl: "ngrok/classifier/integration/outlook/accept"
+      notificationUrl: "https://6040-2402-4000-2180-8a3a-a885-a68-2705-d3e3.ngrok-free.app/outlook/callback"
       resource: "me/mailFolders('inbox')/messages"
-      expirationDateTime: "2024-06-28T21:10:45.9356913Z"
+      expirationDateTime: "2024-07-02T21:10:45.9356913Z"
       clientState: "state"
   result: res_subscribe
   next: check_subscribe_response
+
+#classifier/integration/outlook/accept
 
 check_subscribe_response:
   switch:
