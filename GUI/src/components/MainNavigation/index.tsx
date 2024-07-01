@@ -1,13 +1,13 @@
-import { FC, MouseEvent, useState } from 'react';
+import { FC, MouseEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
-import { MdClose, MdKeyboardArrowDown } from 'react-icons/md';
+import { MdApps, MdClass, MdClose, MdDashboard, MdDataset, MdKeyboardArrowDown, MdOutlineForum, MdPeople, MdSettings, MdTextFormat } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Icon } from 'components';
 import type { MenuItem } from 'types/mainNavigation';
 import { menuIcons } from 'constants/menuIcons';
-// import './MainNavigation.scss';
+import './MainNavigation.scss';
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -15,206 +15,113 @@ const MainNavigation: FC = () => {
 
   const items = [
     {
-      id: 'conversations',
-      label: t('menu.conversations'),
-      path: '/chat',
-      children: [
-        {
-          label: t('menu.unanswered'),
-          path: '/unanswered',
-        },
-        {
-          label: t('menu.active'),
-          path: '/active',
-        },
-        {
-          label: t('menu.history'),
-          path: '/history',
-        },
-      ],
+      id: 'userManagement',
+      label: t('menu.userManagement'),
+      path: '/user-management',
+      icon: <MdPeople />
     },
     {
-      id: 'training',
-      label: t('menu.training'),
+      id: 'integration',
+      label: t('menu.integration'),
+      path: 'integration',
+      icon: <MdSettings />
+
+    },
+    {
+      id: 'datasets',
+      label: t('menu.datasets'),
       path: '#',
+      icon: <MdDataset />,
       children: [
         {
-          label: t('menu.training'),
-          path: '#',
-          children: [
-            {
-              label: t('menu.themes'),
-              path: '#',
-            },
-            {
-              label: t('menu.answers'),
-              path: '#',
-            },
-            {
-              label: t('menu.userStories'),
-              path: '#',
-            },
-            {
-              label: t('menu.configuration'),
-              path: '#',
-            },
-            {
-              label: t('menu.forms'),
-              path: '#',
-            },
-            {
-              label: t('menu.slots'),
-              path: '#',
-            },
-          ],
+          label: t('menu.datasetGroups'),
+          path: 'dataset-groups',
+          icon: <MdOutlineForum />
         },
         {
-          label: t('menu.historicalConversations'),
-          path: '#',
-          children: [
-            {
-              label: t('menu.history'),
-              path: '#',
-            },
-            {
-              label: t('menu.appeals'),
-              path: '#',
-            },
-          ],
-        },
-        {
-          label: t('menu.modelBankAndAnalytics'),
-          path: '#',
-          children: [
-            {
-              label: t('menu.overviewOfTopics'),
-              path: '#',
-            },
-            {
-              label: t('menu.comparisonOfModels'),
-              path: '#',
-            },
-            {
-              label: t('menu.testTracks'),
-              path: '#',
-            },
-          ],
-        },
-        {
-          label: t('menu.trainNewModel'),
-          path: '#',
-        },
+          label: t('menu.versions'),
+          path: 'versions',
+          icon: <MdOutlineForum />
+        }
       ],
     },
     {
-      id: 'analytics',
-      label: t('menu.analytics'),
-      path: '/analytics',
-      children: [
-        {
-          label: t('menu.overview'),
-          path: '#',
-        },
-        {
-          label: t('menu.chats'),
-          path: '#',
-        },
-        {
-          label: t('menu.burokratt'),
-          path: '#',
-        },
-        {
-          label: t('menu.feedback'),
-          path: '#',
-        },
-        {
-          label: t('menu.advisors'),
-          path: '#',
-        },
-        {
-          label: t('menu.reports'),
-          path: '#',
-        },
-      ],
+      id: 'dataModels',
+      label: t('menu.dataModels'),
+      path: '/data-models',
+      icon: <MdApps />
+
     },
     {
-      id: 'settings',
-      label: t('menu.administration'),
-      path: '/settings',
-      children: [
-        {
-          label: t('menu.users'),
-          path: '/settings/users',
-        },
-        {
-          label: t('menu.chatbot'),
-          path: '/settings/chatbot',
-          children: [
-            {
-              label: t('menu.settings'),
-              path: '/settings/chatbot/settings',
-            },
-            {
-              label: t('menu.welcomeMessage'),
-              path: '/settings/chatbot/welcome-message',
-            },
-            {
-              label: t('menu.appearanceAndBehavior'),
-              path: '/settings/chatbot/appearance',
-            },
-            {
-              label: t('menu.emergencyNotices'),
-              path: '/settings/chatbot/emergency-notices',
-            },
-          ],
-        },
-        {
-          label: t('menu.officeOpeningHours'),
-          path: '/settings/working-time',
-        },
-        {
-          label: t('menu.sessionLength'),
-          path: '/settings/session-length',
-        },
-      ],
+      id: 'classes',
+      label: t('menu.classes'),
+      path: '/classes',
+      icon: <MdDashboard />
+
     },
     {
-      id: 'monitoring',
-      label: t('menu.monitoring'),
-      path: '/monitoring',
-      children: [
-        {
-          label: t('menu.workingHours'),
-          path: '/monitoring/uptime',
-        },
-      ],
+      id: 'stopWords',
+      label: t('menu.stopWords'),
+      path: '/stop-words',
+      icon: <MdClass />
+
+    },
+    {
+      id: 'incomingTexts',
+      label: t('menu.incomingTexts'),
+      path: '/incoming-texts',
+      icon: <MdTextFormat />
+
     },
   ];
 
-  useQuery({
-    queryKey: ['/accounts/user-role', 'prod'],
-    onSuccess: (res: any) => {
-      const filteredItems =
-        items.filter((item) => {
-          const role = res.data.get_user[0].authorities[0];
-          switch (role) {
-            case 'ROLE_ADMINISTRATOR':
-              return item.id;
-            case 'ROLE_SERVICE_MANAGER':
-              return item.id != 'settings' && item.id != 'training';
-            case 'ROLE_CUSTOMER_SUPPORT_AGENT':
-              return item.id != 'settings' && item.id != 'analytics';
-            case 'ROLE_CHATBOT_TRAINER':
-              return item.id != 'settings' && item.id != 'conversations';
-            case 'ROLE_ANALYST':
-              return item.id == 'analytics' || item.id == 'monitoring';
-            case 'ROLE_UNAUTHENTICATED':
-              return;
-          }
-        }) ?? [];
-      setMenuItems(filteredItems);
-    },
-  });
+  useEffect(()=>{
+    const filteredItems =
+    items.filter((item) => {
+      const role = "ROLE_ADMINISTRATOR";
+      switch (role) {
+        case 'ROLE_ADMINISTRATOR':
+          return item.id;
+        case 'ROLE_SERVICE_MANAGER':
+          return item.id != 'settings' && item.id != 'training';
+        case 'ROLE_CUSTOMER_SUPPORT_AGENT':
+          return item.id != 'settings' && item.id != 'analytics';
+        case 'ROLE_CHATBOT_TRAINER':
+          return item.id != 'settings' && item.id != 'conversations';
+        case 'ROLE_ANALYST':
+          return item.id == 'analytics' || item.id == 'monitoring';
+        case 'ROLE_UNAUTHENTICATED':
+          return;
+      }
+    }) ?? [];
+  setMenuItems(filteredItems);
+
+  },[])
+
+  // useQuery({
+  //   queryKey: ['/accounts/user-role', 'prod'],
+  //   onSuccess: (res: any) => {
+  //     const filteredItems =
+  //       items.filter((item) => {
+  //         const role = res.data.get_user[0].authorities[0];
+  //         switch (role) {
+  //           case 'ROLE_ADMINISTRATOR':
+  //             return item.id;
+  //           case 'ROLE_SERVICE_MANAGER':
+  //             return item.id != 'settings' && item.id != 'training';
+  //           case 'ROLE_CUSTOMER_SUPPORT_AGENT':
+  //             return item.id != 'settings' && item.id != 'analytics';
+  //           case 'ROLE_CHATBOT_TRAINER':
+  //             return item.id != 'settings' && item.id != 'conversations';
+  //           case 'ROLE_ANALYST':
+  //             return item.id == 'analytics' || item.id == 'monitoring';
+  //           case 'ROLE_UNAUTHENTICATED':
+  //             return;
+  //         }
+  //       }) ?? [];
+  //     setMenuItems(filteredItems);
+  //   },
+  // });
 
   const location = useLocation();
   const [navCollapsed, setNavCollapsed] = useState(false);
@@ -244,11 +151,10 @@ const MainNavigation: FC = () => {
               }
               onClick={handleNavToggle}
             >
-              {menuItem.id && (
+              {/* {menuItem.id && ( */}
                 <Icon
-                  icon={menuIcons.find((icon) => icon.id === menuItem.id)?.icon}
+                  icon={menuItem?.icon}
                 />
-              )}
               <span>{menuItem.label}</span>
               <Icon icon={<MdKeyboardArrowDown />} />
             </button>
@@ -257,7 +163,9 @@ const MainNavigation: FC = () => {
             </ul>
           </>
         ) : (
-          <NavLink to={menuItem.path ?? '#'}>{menuItem.label}</NavLink>
+          <NavLink to={menuItem.path ?? '#'}> <Icon
+          icon={menuItem?.icon}
+        />{menuItem.label}</NavLink>
         )}
       </li>
     ));
