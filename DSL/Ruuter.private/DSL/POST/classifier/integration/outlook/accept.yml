@@ -4,7 +4,7 @@ declaration:
   description: "Description placeholder for 'ACCEPT'"
   method: get
   accepts: json
-  returns: json
+  returns: text/*
   namespace: classifier
   allowlist:
     params:
@@ -22,64 +22,77 @@ extract_request_data:
     payload: ${incoming.body}
   next: check_process_flow
 
-new_val:
-  return: ${validation_token}
-
 check_process_flow:
   switch:
     - condition: ${validation_token !==null}
-      next: assign_validation_token
+      next: return_validation_token_response
     - condition: ${payload !==null}
       next: assign_outlook_mail_info
   next: return_error_found
 
-assign_validation_token:
-  assign:
-    validation_token: ${payload.validationToken}
-  next: set_response_data
-
-set_response_data:
-  call: http.post
-  args:
-    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_outlook_validation_token"
-    headers:
-      type: json
-    body:
-      validationToken: ${validation_token}
-  result: response
-  next: return_validation_response
-
-return_validation_response:
-  return: ${response}
+return_validation_token_response:
+  wrapper: false
+  headers:
+    Content-Type: text/*
+  return: ${validation_token}
   status: 200
+  next: end
 
 assign_outlook_mail_info:
   assign:
-    mail_info: ${payload}
-  next: extract_data_from_payload
+    resource: ${payload.value[0].resource}
+  next: get_token_info
 
-extract_data_from_payload:
+get_token_info:
+  call: http.get
+  args:
+    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/token"
+  result: res
+  next: assign_access_token
+
+assign_access_token:
+  assign:
+    access_token: ${res.response.body.response.access_token}
+  next: get_extracted_mail_info
+
+get_extracted_mail_info:
+  call: http.get
+  args:
+    url: "https://graph.microsoft.com/v1.0/${resource}"
+    headers:
+      Authorization: ${'Bearer ' + access_token}
+  result: mail_info_data
+  next: check_extracted_mail_info
+
+check_extracted_mail_info:
+  switch:
+    - condition: ${200 <= mail_info_data.response.statusCodeValue && mail_info_data.response.statusCodeValue < 300}
+      next: rearrange_mail_payload
+  next: return_mail_info_not_found
+
+rearrange_mail_payload:
   call: http.post
   args:
-    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_outlook_mail_info"
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_outlook_payload_info"
     headers:
       type: json
     body:
-      data: ${mail_info}
-  result: extract_info
-  next: send_issue_data
+      data: ${mail_info_data.response.body}
+  result: outlook_body
+  next: send_outlook_data
 
 #check the mail id is an existing id and check categories from mail and db are same
 #if different or new send to AI model
-
-send_issue_data:
-  call: http.post
+send_outlook_data:
+  call: reflect.mock
   args:
     url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"# need correct url
     headers:
       type: json
     body:
-      info: ${extract_info}
+      info: ${outlook_body}
+    response:
+      statusCodeValue: 200
   result: res
   next: check_response
 
@@ -92,6 +105,11 @@ check_response:
 return_ok:
   status: 200
   return: "Outlook data send successfully"
+  next: end
+
+return_mail_info_not_found:
+  status: 400
+  return: "Mail Info Not Found"
   next: end
 
 return_bad_request:

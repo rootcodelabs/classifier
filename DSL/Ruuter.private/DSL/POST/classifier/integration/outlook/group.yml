@@ -73,7 +73,7 @@ set_data:
 update_mail:
   call: http.put
   args:
-    url: "https://graph.microsoft.com/v1.0/me/messages//${mail_id}"
+    url: "https://graph.microsoft.com/v1.0/me/messages/${mail_id}"
     headers:
       Authorization: ${'Bearer ' + access_token}
     body:
