@@ -41,6 +41,7 @@ return_validation_token_response:
 assign_outlook_mail_info:
   assign:
     resource: ${payload.value[0].resource}
+    event_type: ${payload.value[0].changeType}
   next: get_token_info
 
 get_token_info:
@@ -67,8 +68,35 @@ get_extracted_mail_info:
 check_extracted_mail_info:
   switch:
     - condition: ${200 <= mail_info_data.response.statusCodeValue && mail_info_data.response.statusCodeValue < 300}
-      next: rearrange_mail_payload
+      next: check_event_type
   next: return_mail_info_not_found
+
+check_event_type:
+  switch:
+    - condition: ${event_type === 'updated'}
+      next: get_existing_folder_id
+  next: rearrange_mail_payload
+
+get_existing_folder_id:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-outlook-input-row-data"
+    body:
+      inputId: ${mail_info_data.id}
+  result: existing_outlook_info
+  next: check_input_response
+
+check_input_response:
+  switch:
+    - condition: ${200 <= existing_outlook_info.response.statusCodeValue && existing_outlook_info.response.statusCodeValue < 300}
+      next: check_folder_id
+  next: return_db_request_fail
+
+check_folder_id:
+  switch:
+    - condition: ${check_folder_id.response.body.primaryFolderId !== mail_info_data.parentFolderId }
+      next: rearrange_mail_payload
+  next: end
 
 rearrange_mail_payload:
   call: http.post

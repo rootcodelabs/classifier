@@ -62,10 +62,9 @@ check_event_type:
 get_existing_labels:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RESQL]/get-platform-input-row-data"
+    url: "[#CLASSIFIER_RESQL]/get-jira-input-row-data"
     body:
       inputId: ${issue_info.key}
-      platform: 'JIRA'
   result: res
   next: check_input_response
 
