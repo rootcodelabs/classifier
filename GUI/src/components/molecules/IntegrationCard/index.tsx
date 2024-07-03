@@ -2,6 +2,7 @@ import { FC, PropsWithChildren, ReactNode, useState } from 'react';
 import './IntegrationCard.scss';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Dialog, FormInput, Switch } from 'components';
+import { useNavigate } from 'react-router-dom';
 
 type IntegrationCardProps = {
   logo?: ReactNode;
@@ -24,6 +25,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChecked, setIsChecked] = useState(isActive);
   const [modalType, setModalType] = useState('JIRA_INTEGRATION');
+  const navigate = useNavigate();
 
   const renderStatusIndicators = () => {
     return connectedStatus?.map((status, index) => (
@@ -34,6 +36,9 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
   };
 
   const onSelect=()=>{
+    if(channel==="Outlook"){
+      window.location.href="http://localhost:3003/";
+    }
     if(isChecked){
       setModalType("DISCONNECT");
     }else{
