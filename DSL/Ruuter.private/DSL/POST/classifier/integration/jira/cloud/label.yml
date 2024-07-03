@@ -1,7 +1,7 @@
 declaration:
   call: declare
   version: 0.1
-  description: "Description placeholder for 'UPDATE'"
+  description: "Description placeholder for 'LABEL'"
   method: post
   accepts: json
   returns: json
