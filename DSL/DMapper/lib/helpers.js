@@ -22,12 +22,29 @@ export function getAuthHeader(username, token) {
 }
 
 export function mergeLabelData(labels, existing_labels) {
-  // Merge the arrays
   let mergedArray = [...labels, ...existing_labels];
-
-  // Remove duplicates
   let uniqueArray = [...new Set(mergedArray)];
-
-  // Return as JSON object
   return { labels: uniqueArray };
+}
+
+export function platformStatus(platform, data) {
+  const platformData = data.find((item) => item.platform === platform);
+  return platformData ? platformData.isConnect : false;
+}
+
+export function isLabelsMismatch(newLabels, previousLabels) {
+  if (
+    Array.isArray(newLabels) &&
+    Array.isArray(previousLabels) &&
+    newLabels.length === previousLabels.length
+  ) {
+    for (let i = 0; i < newLabels.length; i++) {
+      if (newLabels[i] !== previousLabels[i]) {
+        return true;
+      }
+    }
+    return false;
+  } else {
+    return true;
+  }
 }

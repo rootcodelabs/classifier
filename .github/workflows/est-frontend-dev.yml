@@ -22,7 +22,6 @@ jobs:
 
       - name: Build and run Docker Compose
         run: |
-          cd GUI
           docker compose up --build -d
 
       - name: Get public IP address
