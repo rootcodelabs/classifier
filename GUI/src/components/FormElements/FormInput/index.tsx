@@ -8,11 +8,12 @@ type InputProps = PropsWithChildren<InputHTMLAttributes<HTMLInputElement>> & {
   name: string;
   hideLabel?: boolean;
   maxLength?: number;
+  error?: string;
 };
 
-const FieldInput = forwardRef<HTMLInputElement, InputProps>(
+const FormInput = forwardRef<HTMLInputElement, InputProps>(
   (
-    { label, name, disabled, hideLabel, maxLength, children, ...rest },
+    { label, name, disabled, hideLabel, maxLength, error, children, ...rest },
     ref
   ) => {
     const id = useId();
@@ -36,6 +37,7 @@ const FieldInput = forwardRef<HTMLInputElement, InputProps>(
             aria-label={hideLabel ? label : undefined}
             {...rest}
           />
+          {error && <p className="input__inline_error">{error}</p>}
           {children}
         </div>
       </div>
@@ -43,4 +45,4 @@ const FieldInput = forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-export default FieldInput;
+export default FormInput;

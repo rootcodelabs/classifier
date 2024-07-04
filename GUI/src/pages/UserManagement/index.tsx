@@ -25,10 +25,63 @@ const UserManagement: FC = () => {
   );
   const { t } = useTranslation();
 
+  const [formValues, setFormValues] = useState({
+    firstName: '',
+    lastName: '',
+    idCode: '',
+    csaTitle: '',
+    csaEmail: '',
+    authorities: [],
+  });
+
+  const [formErrors, setFormErrors] = useState({
+    firstName: '',
+    lastName: '',
+    idCode: '',
+    csaTitle: '',
+    csaEmail: '',
+    authorities: '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+  };
+
+  const handleMultiselectChange = (name: string, value: any) => {
+    setFormValues({ ...formValues, [name]: value });
+  };
+
+  const validateForm = () => {
+    let errors: any = {};
+    if (!formValues.firstName) errors.firstName = 'First name is required';
+    if (!formValues.lastName) errors.lastName = 'Last name is required';
+    if (!formValues.idCode) errors.idCode = 'Personal ID is required';
+    if (!formValues.csaTitle) errors.csaTitle = 'Title is required';
+    if (!formValues.csaEmail) errors.csaEmail = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formValues.csaEmail))
+      errors.csaEmail = 'Email is invalid';
+    if (!formValues.authorities.length)
+      errors.authorities = 'At least one role is required';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      console.log('Form submitted successfully', formValues);
+      // Handle form submission logic
+    }
+  };
+
   const editView = (props: any) => (
     <Button
       appearance="text"
-      onClick={() => setEditableRow(props.row.original)}
+      onClick={() => {
+        setEditableRow(props.row.original);
+        setFormValues(props.row.original);
+      }}
     >
       <Icon icon={<MdOutlineEdit />} />
       {'Edit'}
@@ -109,13 +162,23 @@ const UserManagement: FC = () => {
         <Button
           appearance="primary"
           size="m"
-          onClick={() => setNewUserModal(true)}
+          onClick={() => {
+            setNewUserModal(true);
+            setFormValues({
+              firstName: '',
+              lastName: '',
+              idCode: '',
+              csaTitle: '',
+              csaEmail: '',
+              authorities: [],
+            });
+          }}
         >
           Add a user
         </Button>
       </div>
-      <div >
-        <DataTable data={users} columns={usersColumns} />
+      <div>
+        <DataTable data={users} columns={usersColumns} sortable filterable />
 
         {deletableRow !== null && (
           <Dialog
@@ -147,6 +210,7 @@ const UserManagement: FC = () => {
             onClose={() => {
               setNewUserModal(false);
               setEditableRow(null);
+              setFormErrors({});
             }}
             title={newUserModal ? 'Add User' : 'Edit User'}
             isOpen={newUserModal || editableRow !== null}
@@ -157,74 +221,83 @@ const UserManagement: FC = () => {
                   onClick={() => {
                     setEditableRow(null);
                     setNewUserModal(false);
+                    setFormErrors({});
                   }}
                 >
                   Cancel
                 </Button>
-                <Button appearance="primary">Confirm</Button>
+                <Button appearance="primary" onClick={handleSubmit}>
+                  Confirm
+                </Button>
               </>
             }
           >
-            <>
-              <div className="form-container">
-                <form>
-                  <div className="form-group">
-                    <FormInput
-                      label="First and last name"
-                      placeholder="Enter name"
-                      name="fullName"
-                      value={editableRow?.firstName}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <FormMultiselect
-                      name="role"
-                      label="Role"
-                      options={roles}
-                      value={editableRow?.csaTitle}
-                      selectedOptions={editableRow?.authorities?.map(
-                        (role) => ({
-                          value: role,
-                          label: role
-                            .replace('ROLE_', '')
-                            .split('_')
-                            .map(
-                              (word) =>
-                                word.charAt(0) + word.slice(1).toLowerCase()
-                            )
-                            .join(' '),
-                        })
-                      )}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <FormInput
-                      label="Personal ID"
-                      placeholder="Enter personal ID"
-                      name="personalID"
-                      value={editableRow?.idCode}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <FormInput
-                      label="Title"
-                      placeholder="Enter title"
-                      name="title"
-                      value={editableRow?.csaTitle}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <FormInput
-                      label="Email"
-                      placeholder="Enter email"
-                      name="email"
-                      type="email"
-                      value={editableRow?.csaEmail}
-                    />
-                  </div>
-                </form>
-              </div>
-            </>
+            <div className="form-container">
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <FormInput
+                    label="First and last name"
+                    placeholder="Enter name"
+                    name="firstName"
+                    value={formValues.firstName}
+                    onChange={handleInputChange}
+                    error={formErrors.firstName}
+                  />
+                </div>
+                <div className="form-group">
+                  <FormMultiselect
+                    name="authorities"
+                    label="Role"
+                    options={roles}
+                    value={formValues.authorities}
+                    onChange={(value) => handleMultiselectChange('authorities', value)}
+                    selectedOptions={formValues.authorities.map((role) => ({
+                      value: role,
+                      label: role
+                        .replace('ROLE_', '')
+                        .split('_')
+                        .map(
+                          (word) =>
+                            word.charAt(0) + word.slice(1).toLowerCase()
+                        )
+                        .join(' '),
+                    }))}
+                    error={formErrors.authorities}
+                  />
+                </div>
+                <div className="form-group">
+                  <FormInput
+                    label="Personal ID"
+                    placeholder="Enter personal ID"
+                    name="idCode"
+                    value={formValues.idCode}
+                    onChange={handleInputChange}
+                    error={formErrors.idCode}
+                  />
+                </div>
+                <div className="form-group">
+                  <FormInput
+                    label="Title"
+                    placeholder="Enter title"
+                    name="csaTitle"
+                    value={formValues.csaTitle}
+                    onChange={handleInputChange}
+                    error={formErrors.csaTitle}
+                  />
+                </div>
+                <div className="form-group">
+                  <FormInput
+                    label="Email"
+                    placeholder="Enter email"
+                    name="csaEmail"
+                    type="email"
+                    value={formValues.csaEmail}
+                    onChange={handleInputChange}
+                    error={formErrors.csaEmail}
+                  />
+                </div>
+              </form>
+            </div>
           </Dialog>
         )}
       </div>

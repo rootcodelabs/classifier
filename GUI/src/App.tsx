@@ -52,7 +52,7 @@ const App: FC = () => {
       <Route element={<Layout />}>
         <Route index element={<Navigate to="/user-management" />} />
         <Route path="/user-management" element={<UserManagement />} />
-        <Route path="/integrations" element={<Integrations />} />
+        <Route path="/integration" element={<Integrations />} />
         <Route path="/dataset-groups" element={<DatasetGroups />} />
 
 

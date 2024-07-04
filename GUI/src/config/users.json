@@ -22,11 +22,8 @@
         "csaTitle": "tester",
         "csaEmail": "jaanus@clarifiedsecurity.com",
         "authorities": [
-            "ROLE_SERVICE_MANAGER",
-            "ROLE_CUSTOMER_SUPPORT_AGENT",
-            "ROLE_CHATBOT_TRAINER",
-            "ROLE_ANALYST",
-            "ROLE_ADMINISTRATOR"
+            "ROLE_ADMINISTRATOR",
+            "ROLE_MODEL_TRAINER"
         ],
         "customerSupportStatus": "offline",
         "totalPages": 1
@@ -40,7 +37,7 @@
         "csaTitle": "kolmas",
         "csaEmail": "kolmas@admin.ee",
         "authorities": [
-            "ROLE_ADMINISTRATOR"
+            "ROLE_MODEL_TRAINER"
         ],
         "customerSupportStatus": "offline",
         "totalPages": 1
@@ -68,7 +65,7 @@
         "csaTitle": "Dr",
         "csaEmail": "nipi@tiri.ee",
         "authorities": [
-            "ROLE_CUSTOMER_SUPPORT_AGENT"
+            "ROLE_ADMINISTRATOR"
         ],
         "customerSupportStatus": "offline",
         "totalPages": 1
@@ -96,8 +93,7 @@
         "csaTitle": "Mister",
         "csaEmail": "valter.aro@ria.ee",
         "authorities": [
-            "ROLE_ANALYST",
-            "ROLE_CHATBOT_TRAINER"
+            "ROLE_ADMINISTRATOR"
         ],
         "customerSupportStatus": "offline",
         "totalPages": 1

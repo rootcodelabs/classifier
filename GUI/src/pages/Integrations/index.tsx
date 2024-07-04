@@ -21,8 +21,8 @@ const Integrations: FC = () => {
           channel={"Jira"}
           channelDescription={"Atlassian vea jälgimise ja projektijuhtimise tarkvara"}
           user={"Rickey Walker - Admin"}
-          isActive={true}
-          status={"Connected"}
+          isActive={false}
+          connectedStatus={[{platform:"Jira", status:"Connected"}]}
         />
          <IntegrationCard
           logo={<Outlook/>}
@@ -30,7 +30,7 @@ const Integrations: FC = () => {
           channelDescription={"Atlassian vea jälgimise ja projektijuhtimise tarkvara"}
           user={"Rickey Walker - Admin"}
           isActive={true}
-          status={"Connected"}
+          connectedStatus={[{platform:"Outlook", status:"Connected"}]}
         />
          <IntegrationCard
           logo={<Pinal/>}
@@ -38,7 +38,7 @@ const Integrations: FC = () => {
           channelDescription={"Atlassian vea jälgimise ja projektijuhtimise tarkvara"}
           user={"Rickey Walker - Admin"}
           isActive={true}
-          status={"Connected"}
+          connectedStatus={[{platform:"Outlook", status:"Connected"}, {platform:"Pinal", status:"Disconnected"}]}
         />
       </div></div>
     </>
