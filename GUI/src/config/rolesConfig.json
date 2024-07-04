@@ -1,10 +1,4 @@
 [
-  { "label": "ROLE_SERVICE_MANAGER", "value": "ROLE_SERVICE_MANAGER" },
-  {
-    "label": "ROLE_CUSTOMER_SUPPORT_AGENT",
-    "value": "ROLE_CUSTOMER_SUPPORT_AGENT"
-  },
-  { "label": "ROLE_CHATBOT_TRAINER", "value": "ROLE_CHATBOT_TRAINER" },
-  { "label": "ROLE_ANALYST", "value": "ROLE_ANALYST" },
-  { "label": "ROLE_ADMINISTRATOR", "value": "ROLE_ADMINISTRATOR" }
+  { "label": "ROLE_ADMINISTRATOR", "value": "ROLE_ADMINISTRATOR" },
+  { "label": "ROLE_MODEL_TRAINER", "value": "ROLE_MODEL_TRAINER" }
 ]
