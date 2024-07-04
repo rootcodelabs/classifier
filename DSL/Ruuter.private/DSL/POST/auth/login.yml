@@ -12,18 +12,8 @@ declaration:
         type: string
         description: "Body field 'login'"
       - field: password
-        type: stringDSL/Ruuter.public/DSL/POST/login.yml
+        type: string
         description: "Body field 'password'"
-
-getIsPasswordAuthEnabled:
-  assign:
-    isPasswordAuthEnabled: "[#PASSWORD_AUTH_ENABLED]"
-
-checkPasswordLoginEnabled:
-  switch:
-    - condition: ${isPasswordAuthEnabled === true || isPasswordAuthEnabled.toLowerCase() === "true"}
-      next: extractRequestData
-  next: return_password_login_disabled
 
 extractRequestData:
   assign:
@@ -34,7 +24,7 @@ extractRequestData:
 getUserWithRole:
   call: http.post
   args:
-    url: "[#CHATBOT_RESQL]/get-user-with-roles"
+    url: "[#CLASSIFIER_RESQL]/get-user-with-roles"
     body:
       login: ${login}
       password: ${password}
@@ -50,7 +40,7 @@ check_user_result:
 get_session_length:
   call: http.post
   args:
-    url: "[#CHATBOT_RESQL]/get-configuration"
+    url: "[#CLASSIFIER_RESQL]/get-configuration"
     body:
       key: "session_length"
   result: session_result
@@ -59,7 +49,7 @@ get_session_length:
 generate_cookie:
   call: http.post
   args:
-    url: "[#CHATBOT_TIM]/jwt/custom-jwt-generate"
+    url: "[#CLASSIFIER_TIM]/jwt/custom-jwt-generate"
     body:
       JWTName: "customJwtCookie"
       expirationInMinutes: ${session_result.response.body[0]?.value ?? '120'}
@@ -75,18 +65,6 @@ assign_cookie:
       Secure: true
       HttpOnly: true
       SameSite: "Lax"
-  next: setCustomerSupportAgentAway
-
-setCustomerSupportAgentAway:
-  call: http.post
-  args:
-    url: "[#CHATBOT_RESQL]/set-customer-support-status"
-    body:
-      active: false
-      userIdCode: ${login}
-      created: ${new Date().toISOString()}
-      status: "offline"
-  result: setCustomerSupportAgentAwayResult
   next: return_value
 
 return_value:
@@ -98,9 +76,4 @@ return_value:
 return_user_not_found:
   status: 400
   return: "User Not Found"
-  next: end
-
-return_password_login_disabled:
-  status: 400
-  return: "Password login is disabled"
   next: end
