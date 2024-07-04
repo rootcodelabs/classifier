@@ -1,7 +1,7 @@
 declaration:
   call: declare
   version: 0.1
-  description: "Description placeholder for 'TOGGLE-SUBSCRIPTION'"
+  description: "Description placeholder for 'SUBSCRIBE'"
   method: post
   accepts: json
   returns: json
@@ -14,8 +14,10 @@ declaration:
 
 extract_request_data:
   assign:
-    is_connect: ${incoming.body.isConnect}
+    is_connect: ${incoming.body.is_connect}
   next: get_auth_header
+
+#check already subcribe or not from db
 
 get_auth_header:
   call: http.post
@@ -44,36 +46,50 @@ subscribe_jira:
     body:
       enabled: true
   result: res
-  next: assign_jira_webhook_status
+  next: check_subscribe_response
+
+check_subscribe_response:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: set_subscription_data
+  next: return_result
+
+set_subscription_data:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/connect-platform"
+    body:
+      id: '[#JIRA_WEBHOOK_ID]'
+      platform: 'JIRA'
+  result: res
+  next: return_result
 
 unsubscribe_jira:
   call: http.put
   args:
-    url: "[#JIRA_CLOUD_DOMAIN]/rest/webhooks/1.0/webhook/1"
+    url: "[#JIRA_CLOUD_DOMAIN]/rest/webhooks/1.0/webhook/[#JIRA_WEBHOOK_ID]"
     headers:
       Authorization: ${auth_header.response.body.val}
     body:
       enabled: false
   result: res
-  next: assign_jira_webhook_status
+  next: check_unsubscribe_response
 
-assign_jira_webhook_status:
-  assign:
-    status: ${res.response.body.enabled}
-  next: check_jira_webhook_response
-
-check_jira_webhook_response:
+check_unsubscribe_response:
   switch:
     - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
-      next: return_ok
-  next: return_bad_request
+      next: remove_subscription_data
+  next: return_result
 
-return_ok:
-  status: 200
-  return: "webhook service successfully ${status}"
-  next: end
+remove_subscription_data:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/disconnect-platform"
+    body:
+      platform: 'JIRA'
+  result: res
+  next: return_result
 
-return_bad_request:
-  status: 400
-  return: "Bad Request"
+return_result:
+  return: res.response.body
   next: end

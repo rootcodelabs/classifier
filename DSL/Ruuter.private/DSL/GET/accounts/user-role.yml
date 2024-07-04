@@ -15,7 +15,7 @@ declaration:
 get_user_info:
   call: http.post
   args:
-   url: "[#CHATBOT_TIM]/jwt/custom-jwt-userinfo"
+   url: "[#CLASSIFIER_TIM]/jwt/custom-jwt-userinfo"
    contentType: plaintext
    headers:
     cookie: ${incoming.headers.cookie}
@@ -38,7 +38,7 @@ assignIdCode:
 getUserRole:
   call: http.post
   args:
-    url: "[#CHATBOT_RESQL]/get-user-role"
+    url: "[#CLASSIFIER_RESQL]/get-user-role"
     body:
       userIdCode: ${idCode}
   result: roles_res
