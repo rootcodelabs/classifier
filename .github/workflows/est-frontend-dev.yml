@@ -10,6 +10,15 @@ jobs:
     runs-on: [self-hosted, dev]
 
     steps:
+      - name: Set permissions for workspace directory
+        run: |
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
+          sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
+
+      - name: Clean up workspace
+        run: |
+          sudo rm -rf /home/ubuntu/actions-runner/_work/classifier/classifier/*
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
