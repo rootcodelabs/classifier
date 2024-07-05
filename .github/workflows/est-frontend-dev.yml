@@ -49,5 +49,5 @@ jobs:
           PUBLIC_IP: ${{ env.PUBLIC_IP }}
         run: |
           curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"Build is complete. You can access it with Public IP: $PUBLIC_IP\"
+            \"text\": \"Build is complete. Public IP: $PUBLIC_IP\"
           }" $SLACK_WEBHOOK_URL
