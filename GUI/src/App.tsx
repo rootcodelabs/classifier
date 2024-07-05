@@ -13,39 +13,15 @@ import DatasetGroups from 'pages/DataSetGroups';
 
 const App: FC = () => {
 
-  const res={
-    response: {
-        firstName: "Kustuta",
-        lastName: "Kasutaja",
-        idCode: "EE30303039914",
-        displayName: "Kustutamiseks",
-        JWTCreated: "1.71886644E12" ,
-        fullName: "OK TESTNUMBER",
-        login: "EE30303039914",
-        authMethod: "smartid",
-        csaEmail: "kustutamind@mail.ee",
-        authorities: [
-            "ROLE_ADMINISTRATOR"
-        ],
-        csaTitle: "",
-        JWTExpirationTimestamp: "1.71887364E12"
-    }
-};
-  // useQuery<{
-  //   data: { response: UserInfo };
-  // }>({
-  //   queryKey: ['auth/jwt/userinfo', 'prod'],
-  //   onSuccess: (res: { response: UserInfo }) => {
-  //     localStorage.setItem('exp', res.response.JWTExpirationTimestamp);
-  //     return useStore.getState().setUserInfo(res.response);
-  //   },
-  // });
-
-  useEffect(()=>{
-    localStorage.setItem('exp', res.response.JWTExpirationTimestamp);
-    return useStore.getState().setUserInfo(res.response);
-
-  },[])
+  useQuery<{
+    data: { response: UserInfo };
+  }>({
+    queryKey: ['auth/jwt/userinfo', 'prod'],
+    onSuccess: (res: { response: UserInfo }) => {
+      localStorage.setItem('exp', res.response.JWTExpirationTimestamp);
+      return useStore.getState().setUserInfo(res.response);
+    },
+  });
 
   return (
     <Routes>

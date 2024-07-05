@@ -8,6 +8,7 @@ import { Icon } from 'components';
 import type { MenuItem } from 'types/mainNavigation';
 import { menuIcons } from 'constants/menuIcons';
 import './MainNavigation.scss';
+import { error } from 'console';
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -75,53 +76,53 @@ const MainNavigation: FC = () => {
     },
   ];
 
-  useEffect(()=>{
-    const filteredItems =
-    items.filter((item) => {
-      const role = "ROLE_ADMINISTRATOR";
-      switch (role) {
-        case 'ROLE_ADMINISTRATOR':
-          return item.id;
-        case 'ROLE_SERVICE_MANAGER':
-          return item.id != 'settings' && item.id != 'training';
-        case 'ROLE_CUSTOMER_SUPPORT_AGENT':
-          return item.id != 'settings' && item.id != 'analytics';
-        case 'ROLE_CHATBOT_TRAINER':
-          return item.id != 'settings' && item.id != 'conversations';
-        case 'ROLE_ANALYST':
-          return item.id == 'analytics' || item.id == 'monitoring';
-        case 'ROLE_UNAUTHENTICATED':
-          return;
-      }
-    }) ?? [];
-  setMenuItems(filteredItems);
+  // useEffect(()=>{
+  //   const filteredItems =
+  //   items.filter((item) => {
+  //     const role = "ROLE_ADMINISTRATOR";
+  //     switch (role) {
+  //       case 'ROLE_ADMINISTRATOR':
+  //         return item.id;
+  //       case 'ROLE_SERVICE_MANAGER':
+  //         return item.id != 'settings' && item.id != 'training';
+  //       case 'ROLE_CUSTOMER_SUPPORT_AGENT':
+  //         return item.id != 'settings' && item.id != 'analytics';
+  //       case 'ROLE_CHATBOT_TRAINER':
+  //         return item.id != 'settings' && item.id != 'conversations';
+  //       case 'ROLE_ANALYST':
+  //         return item.id == 'analytics' || item.id == 'monitoring';
+  //       case 'ROLE_UNAUTHENTICATED':
+  //         return;
+  //     }
+  //   }) ?? [];
+  // setMenuItems(filteredItems);
 
-  },[])
+  // },[])
 
-  // useQuery({
-  //   queryKey: ['/accounts/user-role', 'prod'],
-  //   onSuccess: (res: any) => {
-  //     const filteredItems =
-  //       items.filter((item) => {
-  //         const role = res.data.get_user[0].authorities[0];
-  //         switch (role) {
-  //           case 'ROLE_ADMINISTRATOR':
-  //             return item.id;
-  //           case 'ROLE_SERVICE_MANAGER':
-  //             return item.id != 'settings' && item.id != 'training';
-  //           case 'ROLE_CUSTOMER_SUPPORT_AGENT':
-  //             return item.id != 'settings' && item.id != 'analytics';
-  //           case 'ROLE_CHATBOT_TRAINER':
-  //             return item.id != 'settings' && item.id != 'conversations';
-  //           case 'ROLE_ANALYST':
-  //             return item.id == 'analytics' || item.id == 'monitoring';
-  //           case 'ROLE_UNAUTHENTICATED':
-  //             return;
-  //         }
-  //       }) ?? [];
-  //     setMenuItems(filteredItems);
-  //   },
-  // });
+  useQuery({
+    queryKey: ['/accounts/user-role', 'prod'],
+    onSuccess: (res: any) => {
+      const filteredItems =
+        items.filter((item) => {
+
+           const role = res?.response[0];
+          
+          switch (role) {
+            case 'ROLE_ADMINISTRATOR':
+              return item.id;
+            case 'ROLE_MODEL_TRAINER':
+              return item.id !== 'userManagement' && item.id !== 'integration';
+            case 'ROLE_UNAUTHENTICATED':
+              return;
+          }
+        }) ?? [];
+      setMenuItems(filteredItems);
+    },
+    onError:(error:any)=>{
+      console.log(error);
+      
+    }
+  });
 
   const location = useLocation();
   const [navCollapsed, setNavCollapsed] = useState(false);

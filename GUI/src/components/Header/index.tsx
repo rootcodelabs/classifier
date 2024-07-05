@@ -86,23 +86,23 @@ const Header: FC = () => {
         const currentDate = new Date(Date.now());
         if (expirationDate < currentDate) {
           localStorage.removeItem('exp');
-          // window.location.href =import.meta.env.REACT_APP_CUSTOMER_SERVICE_LOGIN;
+           window.location.href =import.meta.env.REACT_APP_CUSTOMER_SERVICE_LOGIN;
         }
       }
     }, 2000);
     return () => clearInterval(interval);
   }, [userInfo]);
 
-  useEffect(() => {
-    getMessages();
-  }, [userInfo?.idCode]);
+  // useEffect(() => {
+  //   getMessages();
+  // }, [userInfo?.idCode]);
 
-  const getMessages = async () => {
-    const { data: res } = await apiDev.get('accounts/settings');
+  // const getMessages = async () => {
+  //   const { data: res } = await apiDev.get('accounts/settings');
 
-    if (res.response && res.response != 'error: not found')
-      setUserProfileSettings(res.response[0]);
-  };
+  //   if (res.response && res.response != 'error: not found')
+  //     setUserProfileSettings(res.response[0]);
+  // };
   // const { data: customerSupportActivity } = useQuery<CustomerSupportActivity>({
   //   queryKey: ['accounts/customer-support-activity', 'prod'],
   //   onSuccess(res: any) {
