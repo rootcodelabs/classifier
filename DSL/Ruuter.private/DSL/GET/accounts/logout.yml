@@ -15,7 +15,7 @@ declaration:
 get_user_info:
   call: http.post
   args:
-    url: "[#CHATBOT_TIM]/jwt/custom-jwt-userinfo"
+    url: "[#CLASSIFIER_TIM]/jwt/custom-jwt-userinfo"
     contentType: plaintext
     headers:
       cookie: ${incoming.headers.cookie}
@@ -26,39 +26,13 @@ get_user_info:
 check_user_info_response:
   switch:
     - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
-      next: assignIdCode
+      next: blacklistCustomJwt
   next: return_bad_request
-
-assignIdCode:
-  assign:
-    idCode: ${res.response.body.idCode}
-  next: unassignAllClaimedChats
-
-unassignAllClaimedChats:
-  call: http.post
-  args:
-    url: "[#CHATBOT_RESQL]/update-chats-assignee-by-user-id"
-    body:
-      userId: ${idCode}
-  result: unclaim_res
-  next: setCustomerSupportAgentAway
-
-setCustomerSupportAgentAway:
-  call: http.post
-  args:
-    url: "[#CHATBOT_RESQL]/set-customer-support-status"
-    body:
-      userIdCode: ${idCode}
-      active: false
-      status: "offline"
-      created: ${new Date().toISOString()}
-  result: set_status_res
-  next: blacklistCustomJwt
 
 blacklistCustomJwt:
   call: http.post
   args:
-    url: "[#CHATBOT_TIM]/jwt/custom-jwt-blacklist"
+    url: "[#CLASSIFIER_TIM]/jwt/custom-jwt-blacklist"
     contentType: plaintext
     headers:
       cookie: ${incoming.headers.cookie}

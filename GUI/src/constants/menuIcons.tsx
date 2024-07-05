@@ -2,7 +2,7 @@ import { MdOutlineForum, MdOutlineAdb, MdOutlineEqualizer, MdSettings, MdOutline
 
 export const menuIcons = [
   {
-    id: 'conversations',
+    id: 'userManagement',
     icon: <MdOutlineForum />,
   },
   {

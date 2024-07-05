@@ -25,7 +25,6 @@ import apiDev from 'services/api-dev';
 import { interval } from 'rxjs';
 import { AUTHORITY } from 'types/authorities';
 import { useCookies } from 'react-cookie';
-import { useDing } from 'hooks/useAudio';
 import './Header.scss';
 
 type CustomerSupportActivity = {
@@ -61,7 +60,6 @@ const Header: FC = () => {
   const [csaStatus, setCsaStatus] = useState<'idle' | 'offline' | 'online'>(
     'online'
   );
-  const [ding] = useDing();
   const chatCsaActive = useStore((state) => state.chatCsaActive);
   const [userProfileSettings, setUserProfileSettings] =
     useState<UserProfileSettings>({
@@ -88,8 +86,7 @@ const Header: FC = () => {
         const currentDate = new Date(Date.now());
         if (expirationDate < currentDate) {
           localStorage.removeItem('exp');
-          window.location.href =
-            import.meta.env.REACT_APP_CUSTOMER_SERVICE_LOGIN;
+          // window.location.href =import.meta.env.REACT_APP_CUSTOMER_SERVICE_LOGIN;
         }
       }
     }, 2000);
@@ -135,9 +132,7 @@ const Header: FC = () => {
       return;
     }
 
-    if (userProfileSettings.newChatSoundNotifications) {
-      ding?.play();
-    }
+
     if (userProfileSettings.newChatEmailNotifications) {
       // To be done: send email notification
     }
@@ -166,9 +161,6 @@ const Header: FC = () => {
       return;
     }
 
-    if (userProfileSettings.forwardedChatSoundNotifications) {
-      ding?.play();
-    }
     if (userProfileSettings.forwardedChatEmailNotifications) {
       // To be done: send email notification
     }

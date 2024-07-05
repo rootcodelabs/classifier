@@ -5,7 +5,7 @@ declaration:
   method: get
   accepts: json
   returns: json
-  namespace: backoffice
+  namespace: classifier
   allowlist:
     headers:
       - field: cookie
@@ -15,7 +15,7 @@ declaration:
 get_user_info:
   call: http.post
   args:
-   url: "[#CHATBOT_TIM]/jwt/custom-jwt-userinfo"
+   url: "[#CLASSIFIER_TIM]/jwt/custom-jwt-userinfo"
    contentType: plaintext
    headers:
     cookie: ${incoming.headers.cookie}
