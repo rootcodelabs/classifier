@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          clean: true
 
       - name: Remove all running containers, images, and prune Docker system
         run: |
