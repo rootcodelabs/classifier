@@ -17,7 +17,6 @@ export const getToken = async (code) => {
       formData.append('client_id', '7063e01a-96cd-46a9-ab98-7d6b36843227');
       formData.append('scope', 'User.Read Mail.ReadWrite MailboxSettings.ReadWrite offline_access');
       formData.append('grant_type', 'authorization_code');
-  
       const response = await apiClient.post('/token', formData);
   
       return response.data;

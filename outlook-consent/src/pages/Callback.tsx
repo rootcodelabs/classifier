@@ -1,44 +1,36 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
-import { getToken } from "../api/api";
+// Callback.js
+import React, { useEffect, useState } from 'react';
+import { exchangeCodeForToken } from '../api/tokenService';
 
-const Callback: React.FC = () => {
-  const location = useLocation();
+const Callback = () => {
+    const [token, setToken] = useState(null);
 
-  // Function to get the URL parameter
-  const getQueryParam = (param: string) => {
-    return new URLSearchParams(location.search).get(param);
-  };
+    useEffect(() => {
+        const fetchTokens = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
 
-  // Get the 'code' parameter from the URL
-  const code = getQueryParam("code");
-  const state = getQueryParam("state");
+            if (code) {
+                try {
+                    const tokens = await exchangeCodeForToken(code);
+                    setToken(tokens.refresh_token);
+                    console.log("Access Token: ", tokens.access_token);
+                    console.log("Refresh Token: ", tokens.refresh_token);
+                } catch (error) {
+                    console.error("Error exchanging code for token: ", error);
+                }
+            }
+        };
 
-  return (
-    <div>
-      {code && state === "12345" ? (
-        <>
-          <h1>Here's your authentication code</h1>
-          <div
-            style={{ display: "flex", alignItems: "center" }}
-            className="copyable-text-field"
-          >
-            <input
-              type="text"
-              value={code}
-              readOnly
-              style={{ marginRight: "10px" }}
-            />
-            <button className="btn" onClick={()=>getToken(code)}>
-                Get Refresh Token
-            </button>
-          </div>
-        </>
-      ) : (
-        <h3>Unable to fetch a valid Auth code!</h3>
-      )}
-    </div>
-  );
+        fetchTokens();
+    }, []);
+
+    return (
+        <div>
+            <h1>Authentication Callback</h1>
+            {token && <p>Refresh Token: {token}</p>}
+        </div>
+    );
 };
 
 export default Callback;

@@ -1,18 +1,19 @@
-import { FC } from "react";
-import "../App.css";
+// App.js
+import React from 'react';
+import { getAuthUrl } from '../api/authService';
 
-const Login: FC = () => {
-  return (
-    <>
-      <button
-        className="btn"
-        onClick={() =>
-          (window.location.href = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=7063e01a-96cd-46a9-ab98-7d6b36843227&response_type=code&redirect_uri=http://localhost:3003/callback&response_mode=query&scope=User.Read Mail.ReadWrite MailboxSettings.ReadWrite offline_access&state=12345`)
-        }
-      >
-        Login with Oulook
-      </button>
-    </>
-  );
+const App = () => {
+    const handleLogin = async () => {
+        const authUrl = await getAuthUrl();
+        window.location.href = authUrl;
+    };
+
+    return (
+        <div>
+            <h1>Welcome to My App</h1>
+            <button onClick={handleLogin}>Login</button>
+        </div>
+    );
 };
-export default Login;
+
+export default App;
