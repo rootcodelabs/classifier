@@ -30,3 +30,12 @@ CREATE TABLE public."user_authority" (
     created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT user_authority_pkey PRIMARY KEY (id)
 );
+
+-- changeset kalsara Magamage:classifier-script-v1-changeset3
+
+INSERT INTO public."user" (login,password_hash,first_name,last_name,id_code,display_name,status,csa_title,csa_email)
+VALUES ('EE30303039914','ok','classifier','test','EE30303039914','classifier','active','Title','classifier.doe@example.com');
+
+INSERT INTO public."user_authority" ( user_id, authority_name)
+VALUES ('EE30303039914', ARRAY['ROLE_ADMINISTRATOR', 'ROLE_MODEL_TRAINER'] );
+
