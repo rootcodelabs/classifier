@@ -14,10 +14,11 @@ get_refresh_token:
     body:
       platform: 'OUTLOOK'
   result: res
+  next: set_refresh_token
 
 set_refresh_token:
   assign:
-    refresh_token: "[#OUTLOOK_REFRESH_KEY]" #${res.response.body.token}
+    refresh_token: ${res.response.body[0].token}
   next: check_refresh_token
 
 check_refresh_token:
@@ -25,6 +26,8 @@ check_refresh_token:
     - condition: ${refresh_token !== null}
       next: get_access_token
   next: return_not_found
+
+#not supported for internal requests
 
 get_access_token:
   call: http.post

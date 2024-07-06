@@ -11,10 +11,14 @@ declaration:
       - field: is_connect
         type: boolean
         description: "Body field 'isConnect'"
+    headers:
+      - field: cookie
+        type: string
+        description: "Cookie field"
 
 extract_request_data:
   assign:
-    is_connect: ${incoming.body.isConnect}
+    is_connect: ${incoming.body.is_connect}
   next: get_platform_integration_status
 
 get_platform_integration_status:
@@ -28,8 +32,8 @@ get_platform_integration_status:
 
 assign_db_platform_integration_data:
   assign:
-    db_platform_status: ${res.response.body.is_connect}
-    subscription_id: ${res.response.body.subscription_id}
+    db_platform_status: ${res.response.body[0].isConnect}
+    subscription_id: ${res.response.body[0].subscriptionId}
   next: validate_request
 
 validate_request:
@@ -41,7 +45,7 @@ validate_request:
 get_token_info:
   call: http.get
   args:
-    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/token"
+    url: "[#CLASSIFIER_RUUTER_PRIVATE_INTERNAL]/internal/xyz"
   result: res
   next: assign_access_token
 
@@ -52,7 +56,7 @@ assign_access_token:
 
 check_integration_type:
   switch:
-    - condition: ${is_connect === true && subscription_id == null}
+    - condition: ${is_connect === true && subscription_id === null}
       next: subscribe_outlook
     - condition: ${is_connect === false && subscription_id !== null}
       next: unsubscribe_outlook
@@ -66,10 +70,10 @@ subscribe_outlook:
       Authorization: ${'Bearer ' + access_token}
     body:
       changeType: "created,updated"
-      notificationUrl: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/accept"
+      notificationUrl: "https://f789-111-223-191-66.ngrok-free.app/classifier/integration/outlook/accept"
       resource: "me/mailFolders('inbox')/messages"
-      expirationDateTime: "2024-07-02T21:10:45.9356913Z"
-      clientState: "state"
+      expirationDateTime: "2024-07-06T21:10:45.9356913Z"
+      clientState: "secretClientValue"
   result: res_subscribe
   next: check_subscribe_response
 
@@ -84,7 +88,7 @@ set_subscription_data:
   args:
     url: "[#CLASSIFIER_RESQL]/connect-platform"
     body:
-      id: ${res_subscribe.response.id}
+      id: ${res_subscribe.response.body.id}
       platform: 'OUTLOOK'
   result: set_status_res
   next: check_db_status
@@ -92,7 +96,7 @@ set_subscription_data:
 unsubscribe_outlook:
   call: http.delete
   args:
-    url: "https://graph.microsoft.com/v1.0/subscriptions/${res_data.response.subscriptionId}"
+    url: "https://graph.microsoft.com/v1.0/subscriptions/${subscription_id}"
     headers:
       Authorization: ${'Bearer ' + access_token}
   result: res_unsubscribe
