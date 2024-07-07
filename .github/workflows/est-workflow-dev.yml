@@ -37,17 +37,10 @@ jobs:
         run: |
           docker compose up --build -d
 
-      - name: Get public IP address
-        id: get_ip
-        run: |
-          PUBLIC_IP=$(curl -s http://checkip.amazonaws.com)
-          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
-
       - name: Send Slack notification
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          PUBLIC_IP: ${{ env.PUBLIC_IP }}
         run: |
           curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"Build is complete. Public IP: $PUBLIC_IP\"
+            \"text\": \"The build is complete and the development environment is now available. Please click the following link to access it: <https://esclassifier-dev.rootcode.software/classifier>\"
           }" $SLACK_WEBHOOK_URL
