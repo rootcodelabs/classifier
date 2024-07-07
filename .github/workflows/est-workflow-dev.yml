@@ -1,4 +1,4 @@
-name: Deploy Frontend
+name: Deploy EST Frontend and Backend to development
 
 on:
   push:
@@ -7,23 +7,35 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, est-cls-dev]
+    runs-on: [self-hosted, dev]
 
     steps:
+      - name: Set permissions for workspace directory
+        run: |
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
+          sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
+
+      - name: Clean up workspace
+        run: |
+          sudo rm -rf /home/ubuntu/actions-runner/_work/classifier/classifier/*
+
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          clean: true
 
       - name: Remove all running containers, images, and prune Docker system
         run: |
           docker stop $(docker ps -a -q) || true
           docker rm $(docker ps -a -q) || true
-          docker rmi $(docker images -q) || true
-          docker system prune -af
+          images_to_keep="authentication-layer|tim|data-mapper|resql|ruuter"
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -Ev "$images_to_keep" | xargs -r docker rmi || true
+          docker volume prune -f
+          docker network prune -f
 
       - name: Build and run Docker Compose
         run: |
-          cd GUI
-          docker-compose up --build -d
+          docker compose up --build -d
 
       - name: Get public IP address
         id: get_ip

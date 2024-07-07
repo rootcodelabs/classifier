@@ -1,0 +1,53 @@
+name: Deploy EST Frontend and Backend to Staging
+
+on:
+  push:
+    branches:
+      - stage
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, stage]
+
+    steps:
+      - name: Set permissions for workspace directory
+        run: |
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
+          sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
+
+      - name: Clean up workspace
+        run: |
+          sudo rm -rf /home/ubuntu/actions-runner/_work/classifier/classifier/*
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          clean: true
+
+      - name: Remove all running containers, images, and prune Docker system
+        run: |
+          docker stop $(docker ps -a -q) || true
+          docker rm $(docker ps -a -q) || true
+          images_to_keep="authentication-layer|tim|data-mapper|resql|ruuter"
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -Ev "$images_to_keep" | xargs -r docker rmi || true
+          docker volume prune -f
+          docker network prune -f
+
+      - name: Build and run Docker Compose
+        run: |
+          docker compose up --build -d
+
+      - name: Get public IP address
+        id: get_ip
+        run: |
+          PUBLIC_IP=$(curl -s http://checkip.amazonaws.com)
+          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
+
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PUBLIC_IP: ${{ env.PUBLIC_IP }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"Build is complete. Public IP: $PUBLIC_IP\"
+          }" $SLACK_WEBHOOK_URL
