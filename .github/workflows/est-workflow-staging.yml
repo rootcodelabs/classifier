@@ -46,8 +46,7 @@ jobs:
       - name: Send Slack notification
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          PUBLIC_IP: ${{ env.PUBLIC_IP }}
         run: |
           curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"Build is complete. Public IP: $PUBLIC_IP\"
+            \"text\": \"The build is complete and the staging environment is now available. Please click the following link to access it: <https://esclassifier-test.rootcode.software/classifier>\"
           }" $SLACK_WEBHOOK_URL
