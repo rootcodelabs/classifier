@@ -1,0 +1,73 @@
+.row {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.switch-row {
+  justify-content: flex-end;
+}
+
+.status-indicators {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.green {
+  background-color: green;
+}
+
+.grey {
+  background-color: grey;
+}
+
+.icon-text-row {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.icon-image {
+  width: 50px;
+  height: 50px;
+}
+
+.icon-text {
+  margin: 5px 0 0 0;
+  font-size: 16px;
+}
+
+.label-row {
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+}
+
+.left-label {
+  font-size: 14px;
+  color: #333;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #555;
+  bottom: 10px;
+  left: 20px;
+}
