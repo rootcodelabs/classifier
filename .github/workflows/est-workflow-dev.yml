@@ -37,7 +37,26 @@ jobs:
         run: |
           docker compose up --build -d
 
-      - name: Send Slack notification
+      - name: Run pyTesting.py
+        id: pytesting
+        run: |
+          output=$(python src/pyTesting.py)
+          if [ "$output" != "True" ]; then
+            echo "PyTesting failed with output: $output"
+            exit 1
+          fi
+
+      - name: Send failure Slack notification
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"The deployment failed during the pyTesting step. Please check the output for details.\"
+          }" $SLACK_WEBHOOK_URL
+
+      - name: Send success Slack notification
+        if: success()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
