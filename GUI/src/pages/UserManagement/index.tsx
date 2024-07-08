@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import {
   Button,
   DataTable,
@@ -39,12 +39,11 @@ const UserManagement: FC = () => {
   });
   const [sorting, setSorting] = useState<SortingState>([]);
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const toast = useToast();
 
-  // useEffect(() => {
-  //   getUsers(pagination, sorting);
-  // }, []);
+  useEffect(() => {
+    getUsers(pagination, sorting);
+  }, []);
 
  
   const getUsers = (pagination: PaginationState, sorting: SortingState) => {
@@ -53,7 +52,7 @@ const UserManagement: FC = () => {
         ? 'name asc'
         : sorting[0].id + ' ' + (sorting[0].desc ? 'desc' : 'asc');
     apiDev
-      .post(`accounts/customer-support-agents`, {
+      .post(`accounts/users`, {
         page: pagination.pageIndex + 1,
         page_size: pagination.pageSize,
         sorting: sort,
@@ -80,7 +79,7 @@ const UserManagement: FC = () => {
   const deleteView = (props: any) => (
     <Button
       appearance="text"
-      onClick={() => setDeletableRow(props.row.original.userIdCode)}
+      onClick={() => setDeletableRow(props.row.original.idCode)}
     >
       <Icon icon={<MdOutlineDeleteOutline />} />
       {'Delete'}
@@ -97,7 +96,7 @@ const UserManagement: FC = () => {
           header: t('settings.users.name') ?? '',
         }
       ),
-      columnHelper.accessor('userIdCode', {
+      columnHelper.accessor('idCode', {
         header: t('settings.users.idCode') ?? '',
       }),
       columnHelper.accessor(
@@ -171,7 +170,7 @@ const UserManagement: FC = () => {
     },
   });
 
-  if (!users) return <>Loading...</>;
+  if (!usersList) return <>Loading...</>;
 
   return (
     <>
@@ -190,27 +189,27 @@ const UserManagement: FC = () => {
         </div>
         <div>
           <DataTable
-            data={users}
+            data={usersList}
             columns={usersColumns}
             sortable
             filterable
-            // pagination={pagination}
-            // setPagination={(state: PaginationState) => {
-            //   if (
-            //     state.pageIndex === pagination.pageIndex &&
-            //     state.pageSize === pagination.pageSize
-            //   )
-            //     return;
-            //   setPagination(state);
-            //   getUsers(state, sorting);
-            // }}
-            // sorting={sorting}
-            // setSorting={(state: SortingState) => {
-            //   setSorting(state);
-            //   getUsers(pagination, state);
-            // }}
-            // pagesCount={totalPages}
-            // isClientSide={false}
+            pagination={pagination}
+            setPagination={(state: PaginationState) => {
+              if (
+                state.pageIndex === pagination.pageIndex &&
+                state.pageSize === pagination.pageSize
+              )
+                return;
+              setPagination(state);
+              getUsers(state, sorting);
+            }}
+            sorting={sorting}
+            setSorting={(state: SortingState) => {
+              setSorting(state);
+              getUsers(pagination, state);
+            }}
+            pagesCount={totalPages}
+            isClientSide={false}
           />
           {deletableRow !== null && (
             <Dialog

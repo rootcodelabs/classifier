@@ -31,11 +31,11 @@ CREATE TABLE public."user_authority" (
     CONSTRAINT user_authority_pkey PRIMARY KEY (id)
 );
 
--- changeset ErangiA:classifier-script-v1-changeset3
+-- changeset kalsara Magamage:classifier-script-v1-changeset3
 
 INSERT INTO public."user" (login,password_hash,first_name,last_name,id_code,display_name,status,csa_title,csa_email)
-VALUES ('EE30303039914','ok','kal','test','EE30303039914','kal','active','Title','kal.doe@example.com');
-
+VALUES ('EE30303039914','ok','classifier','test','EE30303039914','classifier','active','Title','classifier.doe@example.com');
 
 INSERT INTO public."user_authority" ( user_id, authority_name)
 VALUES ('EE30303039914', ARRAY['ROLE_ADMINISTRATOR', 'ROLE_MODEL_TRAINER'] );
+

@@ -2,7 +2,7 @@ import { FC, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Button, Dialog, FormInput, Track } from 'components';
 import { User, UserDTO } from 'types/user';
@@ -22,6 +22,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const queryClient = useQueryClient();
+  
   const {
     register,
     control,
@@ -53,7 +54,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     mutationFn: (data: UserDTO) => createUser(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries([
-        'accounts/customer-support-agents',
+        'accounts/users',
         'prod',
       ]);
       toast.open({
@@ -80,9 +81,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
       id: string | number;
       userData: UserDTO;
     }) => editUser(id, userData),
-    onSuccess: async () => {
+    onSuccess: async () => {      
       await queryClient.invalidateQueries([
-        'accounts/customer-support-agents',
+        'accounts/users',
         'prod',
       ]);
       toast.open({
@@ -129,10 +130,8 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   });
 
   const handleUserSubmit = handleSubmit((data) => {
-    console.log(data);
-
     if (user) {
-      userEditMutation.mutate({ id: user.userIdCode, userData: data });
+      userEditMutation.mutate({ id: user.idCode, userData: data });
     } else {
       checkIfUserExistsMutation.mutate({ userData: data });
     }

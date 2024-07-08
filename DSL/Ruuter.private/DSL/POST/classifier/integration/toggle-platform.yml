@@ -14,11 +14,16 @@ declaration:
       - field: platform
         type: string
         description: "Body field 'platform'"
+    headers:
+      - field: cookie
+        type: string
+        description: "Cookie field"
 
 extract_request_data:
   assign:
     operation: ${incoming.body.operation}
     platform: ${incoming.body.platform}
+    cookie: ${incoming.headers.cookie}
   next: check_operation
 
 check_operation:
@@ -43,25 +48,25 @@ check_platform:
   switch:
     - condition: ${platform === 'jira'}
       next: assign_jira_url
-    - condition: ${operation === 'outlook'}
+    - condition: ${platform === 'outlook'}
       next: assign_outlook_url
-    - condition: ${operation === 'pinal'}
+    - condition: ${platform === 'pinal'}
       next: assign_pinal_url
   next: platform_not_support
 
 assign_jira_url:
   assign:
-    url: "jira/cloud/toggle-subscription"
+    url: "jira/cloud/subscribe"
   next: route_to_platform
 
 assign_outlook_url:
   assign:
-    url: "outlook/toggle-subscription"
+    url: "outlook/subscribe"
   next: route_to_platform
 
 assign_pinal_url:
   assign:
-    url: "pinal/toggle-subscription"
+    url: "pinal/subscribe"
   next: route_to_platform
 
 route_to_platform:
@@ -70,6 +75,7 @@ route_to_platform:
     url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/${url}"
     headers:
       type: json
+      cookie: ${cookie}
     body:
       is_connect: ${is_connect}
   result: res

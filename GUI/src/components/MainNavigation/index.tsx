@@ -111,6 +111,30 @@ const MainNavigation: FC = () => {
     getUserRole();
   }, []);
 
+  useQuery({
+    queryKey: ['/accounts/user-role', 'prod'],
+    onSuccess: (res: any) => {
+      console.log(res);
+      
+      const filteredItems =
+          items.filter((item) => {
+            const role = res?.response[0];
+
+            switch (role) {
+              case 'ROLE_ADMINISTRATOR':
+                return item.id;
+              case 'ROLE_MODEL_TRAINER':
+                return (
+                  item.id !== 'userManagement' && item.id !== 'integration'
+                );
+              case 'ROLE_UNAUTHENTICATED':
+                return null;
+            }
+          }) ?? [];
+        setMenuItems(filteredItems);
+    },
+  });
+
 
   const location = useLocation();
   const [navCollapsed, setNavCollapsed] = useState(false);

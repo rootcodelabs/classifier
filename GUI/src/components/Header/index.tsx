@@ -59,9 +59,6 @@ const Header: FC = () => {
           localStorage.removeItem('exp');
            window.location.href =import.meta.env.REACT_APP_CUSTOMER_SERVICE_LOGIN;
         }
-      }else{
-        window.location.href =import.meta.env.REACT_APP_CUSTOMER_SERVICE_LOGIN;
-
       }
     }, 2000);
     return () => clearInterval(interval);
