@@ -1,4 +1,4 @@
-name: Deploy EST Frontend and Backend to staging
+name: Deploy EST Frontend and Backend to Staging
 
 on:
   push:
@@ -24,6 +24,10 @@ jobs:
         with:
           clean: true
 
+      - name: Give execute permissions to testScript.sh
+        run: |
+          sudo chmod +x /home/ubuntu/actions-runner/_work/classifier/classifier/src/testScript.sh
+
       - name: Remove all running containers, images, and prune Docker system
         run: |
           docker stop $(docker ps -a -q) || true
@@ -37,12 +41,12 @@ jobs:
         run: |
           docker compose up --build -d
 
-      - name: Run pyTesting.py
-        id: pytesting
+      - name: Run testScript.sh
+        id: testscript
         run: |
-          output=$(python src/pyTesting.py)
+          output=$(bash src/testScript.sh)
           if [ "$output" != "True" ]; then
-            echo "PyTesting failed with output: $output"
+            echo "testScript.sh failed with output: $output"
             exit 1
           fi
 
@@ -52,7 +56,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"The deployment failed during the pyTesting step. Please check the output for details.\"
+            \"text\": \"The Staging deployment failed during the testScript.sh step. Please check the output for details.\"
           }" $SLACK_WEBHOOK_URL
 
       - name: Send success Slack notification
