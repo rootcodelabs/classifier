@@ -26,7 +26,7 @@ jobs:
 
       - name: Give execute permissions to testScript.sh
         run: |
-          sudo chmod +x src/testScript.sh
+          sudo chmod +x /home/ubuntu/actions-runner/_work/classifier/classifier/src/testScript.sh
 
       - name: Remove all running containers, images, and prune Docker system
         run: |
