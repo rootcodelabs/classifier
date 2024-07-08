@@ -1,7 +1,18 @@
 import { FC, MouseEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
-import { MdApps, MdClass, MdClose, MdDashboard, MdDataset, MdKeyboardArrowDown, MdOutlineForum, MdPeople, MdSettings, MdTextFormat } from 'react-icons/md';
+import {
+  MdApps,
+  MdClass,
+  MdClose,
+  MdDashboard,
+  MdDataset,
+  MdKeyboardArrowDown,
+  MdOutlineForum,
+  MdPeople,
+  MdSettings,
+  MdTextFormat,
+} from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Icon } from 'components';
@@ -9,6 +20,7 @@ import type { MenuItem } from 'types/mainNavigation';
 import { menuIcons } from 'constants/menuIcons';
 import './MainNavigation.scss';
 import { error } from 'console';
+import apiDev from 'services/api-dev';
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -19,14 +31,13 @@ const MainNavigation: FC = () => {
       id: 'userManagement',
       label: t('menu.userManagement'),
       path: '/user-management',
-      icon: <MdPeople />
+      icon: <MdPeople />,
     },
     {
       id: 'integration',
       label: t('menu.integration'),
       path: 'integration',
-      icon: <MdSettings />
-
+      icon: <MdSettings />,
     },
     {
       id: 'datasets',
@@ -37,92 +48,69 @@ const MainNavigation: FC = () => {
         {
           label: t('menu.datasetGroups'),
           path: 'dataset-groups',
-          icon: <MdOutlineForum />
+          icon: <MdOutlineForum />,
         },
         {
           label: t('menu.versions'),
           path: 'versions',
-          icon: <MdOutlineForum />
-        }
+          icon: <MdOutlineForum />,
+        },
       ],
     },
     {
       id: 'dataModels',
       label: t('menu.dataModels'),
       path: '/data-models',
-      icon: <MdApps />
-
+      icon: <MdApps />,
     },
     {
       id: 'classes',
       label: t('menu.classes'),
       path: '/classes',
-      icon: <MdDashboard />
-
+      icon: <MdDashboard />,
     },
     {
       id: 'stopWords',
       label: t('menu.stopWords'),
       path: '/stop-words',
-      icon: <MdClass />
-
+      icon: <MdClass />,
     },
     {
       id: 'incomingTexts',
       label: t('menu.incomingTexts'),
       path: '/incoming-texts',
-      icon: <MdTextFormat />
-
+      icon: <MdTextFormat />,
     },
   ];
 
-  // useEffect(()=>{
-  //   const filteredItems =
-  //   items.filter((item) => {
-  //     const role = "ROLE_ADMINISTRATOR";
-  //     switch (role) {
-  //       case 'ROLE_ADMINISTRATOR':
-  //         return item.id;
-  //       case 'ROLE_SERVICE_MANAGER':
-  //         return item.id != 'settings' && item.id != 'training';
-  //       case 'ROLE_CUSTOMER_SUPPORT_AGENT':
-  //         return item.id != 'settings' && item.id != 'analytics';
-  //       case 'ROLE_CHATBOT_TRAINER':
-  //         return item.id != 'settings' && item.id != 'conversations';
-  //       case 'ROLE_ANALYST':
-  //         return item.id == 'analytics' || item.id == 'monitoring';
-  //       case 'ROLE_UNAUTHENTICATED':
-  //         return;
-  //     }
-  //   }) ?? [];
-  // setMenuItems(filteredItems);
+  const getUserRole = () => {
+    apiDev
+      .get(`/accounts/user-role`)
+      .then((res: any) => {
+        const filteredItems =
+          items.filter((item) => {
+            const role = res?.data?.response[0];
 
-  // },[])
+            switch (role) {
+              case 'ROLE_ADMINISTRATOR':
+                return item.id;
+              case 'ROLE_MODEL_TRAINER':
+                return (
+                  item.id !== 'userManagement' && item.id !== 'integration'
+                );
+              case 'ROLE_UNAUTHENTICATED':
+                return null;
+            }
+          }) ?? [];
+        setMenuItems(filteredItems);
+      })
+      .catch((error: any) => console.log(error));
+  };
 
-  useQuery({
-    queryKey: ['/accounts/user-role', 'prod'],
-    onSuccess: (res: any) => {
-      const filteredItems =
-        items.filter((item) => {
+  useEffect(() => {
+    getUserRole();
+  }, []);
 
-           const role = res?.response[0];
-          
-          switch (role) {
-            case 'ROLE_ADMINISTRATOR':
-              return item.id;
-            case 'ROLE_MODEL_TRAINER':
-              return item.id !== 'userManagement' && item.id !== 'integration';
-            case 'ROLE_UNAUTHENTICATED':
-              return;
-          }
-        }) ?? [];
-      setMenuItems(filteredItems);
-    },
-    onError:(error:any)=>{
-      console.log(error);
-      
-    }
-  });
 
   const location = useLocation();
   const [navCollapsed, setNavCollapsed] = useState(false);
@@ -153,9 +141,7 @@ const MainNavigation: FC = () => {
               onClick={handleNavToggle}
             >
               {/* {menuItem.id && ( */}
-                <Icon
-                  icon={menuItem?.icon}
-                />
+              <Icon icon={menuItem?.icon} />
               <span>{menuItem.label}</span>
               <Icon icon={<MdKeyboardArrowDown />} />
             </button>
@@ -164,9 +150,11 @@ const MainNavigation: FC = () => {
             </ul>
           </>
         ) : (
-          <NavLink to={menuItem.path ?? '#'}> <Icon
-          icon={menuItem?.icon}
-        />{menuItem.label}</NavLink>
+          <NavLink to={menuItem.path ?? '#'}>
+            {' '}
+            <Icon icon={menuItem?.icon} />
+            {menuItem.label}
+          </NavLink>
         )}
       </li>
     ));
@@ -176,13 +164,6 @@ const MainNavigation: FC = () => {
 
   return (
     <nav className={clsx('nav', { 'nav--collapsed': navCollapsed })}>
-      <button
-        className="nav__menu-toggle"
-        onClick={() => setNavCollapsed(!navCollapsed)}
-      >
-        <Icon icon={<MdClose />} />
-        {t('mainMenu.closeMenu')}
-      </button>
       <ul className="nav__menu">{renderMenuTree(menuItems)}</ul>
     </nav>
   );

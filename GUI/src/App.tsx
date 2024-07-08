@@ -1,27 +1,28 @@
 import { FC, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-
 import { Layout } from 'components';
 import useStore from 'store';
-import { UserInfo } from 'types/userInfo';
-
 import './locale/et_EE';
 import UserManagement from 'pages/UserManagement';
 import Integrations from 'pages/Integrations';
 import DatasetGroups from 'pages/DataSetGroups';
+import apiDev from 'services/api-dev';
 
 const App: FC = () => {
 
-  useQuery<{
-    data: { response: UserInfo };
-  }>({
-    queryKey: ['auth/jwt/userinfo', 'prod'],
-    onSuccess: (res: { response: UserInfo }) => {
-      localStorage.setItem('exp', res.response.JWTExpirationTimestamp);
-      return useStore.getState().setUserInfo(res.response);
-    },
-  });
+  const getUserInfo = () => {
+    apiDev
+      .get(`auth/jwt/userinfo`)
+      .then((res: any) => {
+        localStorage.setItem('exp', res?.data?.response?.JWTExpirationTimestamp);
+        return useStore.getState().setUserInfo(res?.data?.response);
+      })
+      .catch((error: any) => console.log(error));
+  };
+
+  useEffect(() => {
+    getUserInfo();
+  }, []);
 
   return (
     <Routes>
