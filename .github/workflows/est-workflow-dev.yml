@@ -24,6 +24,10 @@ jobs:
         with:
           clean: true
 
+      - name: Give execute permissions to testScript.sh
+        run: |
+          sudo chmod +x src/unitTesting.sh
+
       - name: Remove all running containers, images, and prune Docker system
         run: |
           docker stop $(docker ps -a -q) || true
@@ -37,7 +41,26 @@ jobs:
         run: |
           docker compose up --build -d
 
-      - name: Send Slack notification
+      - name: Run unitTesting.sh
+        id: unittesting
+        run: |
+          output=$(bash src/unitTesting.sh)
+          if [ "$output" != "True" ]; then
+            echo "unitTesting.sh failed with output: $output"
+            exit 1
+          fi
+
+      - name: Send failure Slack notification
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data "{
+             \"text\": \"The Development environment deployment failed during one of the steps. Please check the output for details.\"
+          }" $SLACK_WEBHOOK_URL
+
+      - name: Send success Slack notification
+        if: success()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
