@@ -14,9 +14,6 @@ declaration:
       - field: csa_email
         type: string
         description: "Body field 'csa_email'"
-      - field: displayName
-        type: string
-        description: "Body field 'displayName'"
       - field: firstName
         type: string
         description: "Body field 'firstName'"
@@ -35,7 +32,7 @@ extractRequestData:
     firstName: ${incoming.body.firstName}
     lastName: ${incoming.body.lastName}
     userIdCode: ${incoming.body.userIdCode}
-    displayName: ${incoming.body.displayName}
+    displayName: ${incoming.body.firstName}
     csaTitle: ${incoming.body.csaTitle}
     csa_email: ${incoming.body.csa_email}
     roles: ${incoming.body.roles}

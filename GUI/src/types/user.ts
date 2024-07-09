@@ -5,7 +5,7 @@ export interface User {
   fullName?: string;
   firstName: string;
   lastName: string;
-  idCode: string;
+  userIdCode: string;
   displayName: string;
   csaTitle: string;
   csaEmail: string;
@@ -13,5 +13,5 @@ export interface User {
   customerSupportStatus: 'online' | 'idle' | 'offline';
 }
 
-export interface UserDTO extends Pick<User, 'login' | 'firstName' | 'lastName' | 'fullName' | 'idCode' | 'authorities' | 'displayName' | 'csaTitle' | 'csaEmail'> {
+export interface UserDTO extends Pick<User, 'login' | 'firstName' | 'lastName' | 'fullName' | 'userIdCode' | 'authorities' | 'displayName' | 'csaTitle' | 'csaEmail'> {
 }
