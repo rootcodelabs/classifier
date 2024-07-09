@@ -27,5 +27,3 @@ CREATE TABLE dataset_group_metadata (
     connected_models JSONB,
     CONSTRAINT dataset_group_metadata_pkey PRIMARY KEY (id)
 );
-
-
