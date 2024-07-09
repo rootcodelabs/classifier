@@ -6,8 +6,6 @@ export async function POST(req: NextRequest) {
   const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
   const clientSecret = process.env.CLIENT_SECRET;
   const redirectUri = process.env.REDIRECT_URI;
-console.log("logggg",code,clientId,clientSecret,redirectUri);
-
   try {
     const tokenResponse = await axios.post(
       'https://login.microsoftonline.com/common/oauth2/v2.0/token',

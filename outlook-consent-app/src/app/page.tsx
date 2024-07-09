@@ -6,12 +6,10 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.center}>
-      <div>
-      <LoginButton />
-    </div>
+        <div>
+          <LoginButton />
+        </div>
       </div>
-
-
     </main>
   );
 }

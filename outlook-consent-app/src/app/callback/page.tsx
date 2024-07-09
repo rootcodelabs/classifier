@@ -16,8 +16,7 @@ const CallbackPage = () => {
     const exchangeAuthCode = async (code: string) => {
       try {
         const response = await axios.post("/api/auth/token", { code });
-        console.log(response.data);
-        setToken(response.data?.refresh_token);
+        setToken(response?.data?.refresh_token);
       } catch (error) {
         setError("Error exchanging auth code!");
       }

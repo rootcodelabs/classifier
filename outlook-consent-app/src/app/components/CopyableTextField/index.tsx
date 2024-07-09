@@ -11,7 +11,7 @@ const CopyableTextField: React.FC<{ value: string }> = ({ value }) => {
       textFieldRef.current.select();
       document.execCommand('copy');
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Reset the copied state after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
