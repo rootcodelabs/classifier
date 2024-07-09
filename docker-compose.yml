@@ -95,11 +95,11 @@ services:
     environment:
       - NODE_ENV=development
       - BASE_URL=http://gui:8080
-      - REACT_APP_RUUTER_API_URL=http://gui:8086
-      - REACT_APP_RUUTER_PRIVATE_API_URL=http://gui:8088
-      - REACT_APP_CUSTOMER_SERVICE_LOGIN=http://gui:3004/et/dev-auth
-      - REACT_APP_NOTIFICATION_NODE_URL=http://gui:4040
-      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' http://gui:8086 http://gui:8088 http://gui:8085 http://gui:4040 https://admin.dev.buerokratt.ee/chat/menu.json;
+      - REACT_APP_RUUTER_API_URL=http://ruuter-public:8086
+      - REACT_APP_RUUTER_PRIVATE_API_URL=http://ruuter-private:8088
+      - REACT_APP_CUSTOMER_SERVICE_LOGIN=http://authentication-layer:3004/et/dev-auth
+      # - REACT_APP_NOTIFICATION_NODE_URL=http://gui:4040
+      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' http://ruuter-public:8086 http://ruuter-private:8088;
       - DEBUG_ENABLED=true
       - CHOKIDAR_USEPOLLING=true
       - PORT=3001
