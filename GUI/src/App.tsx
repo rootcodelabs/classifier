@@ -5,7 +5,7 @@ import useStore from 'store';
 import './locale/et_EE';
 import UserManagement from 'pages/UserManagement';
 import Integrations from 'pages/Integrations';
-import DatasetGroups from 'pages/DataSetGroups';
+import DatasetGroups from 'pages/DatasetGroups';
 import apiDev from 'services/api-dev';
 
 const App: FC = () => {
