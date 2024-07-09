@@ -1,7 +1,7 @@
 SELECT u.login,
        u.first_name,
        u.last_name,
-       u.id_code,
+       u.id_code AS userIdCode,
        u.display_name,
        u.csa_title,
        u.csa_email,
