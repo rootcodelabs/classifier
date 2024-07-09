@@ -2,6 +2,7 @@ import { forwardRef, InputHTMLAttributes, PropsWithChildren, useId } from 'react
 import clsx from 'clsx';
 import './FormInput.scss';
 import { CHAT_INPUT_LENGTH } from 'constants/config';
+import { DefaultTFuncReturn } from 'i18next';
 
 type InputProps = PropsWithChildren<InputHTMLAttributes<HTMLInputElement>> & {
   label: string;
@@ -9,11 +10,12 @@ type InputProps = PropsWithChildren<InputHTMLAttributes<HTMLInputElement>> & {
   hideLabel?: boolean;
   maxLength?: number;
   error?: string;
+  placeholder?:string | DefaultTFuncReturn;
 };
 
 const FormInput = forwardRef<HTMLInputElement, InputProps>(
   (
-    { label, name, disabled, hideLabel, maxLength, error, children, ...rest },
+    { label, name, disabled, hideLabel, maxLength, error, children,placeholder, ...rest },
     ref
   ) => {
     const id = useId();
@@ -36,6 +38,7 @@ const FormInput = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             aria-label={hideLabel ? label : undefined}
             {...rest}
+            placeholder={placeholder}
           />
           {error && <p className="input__inline_error">{error}</p>}
           {children}
