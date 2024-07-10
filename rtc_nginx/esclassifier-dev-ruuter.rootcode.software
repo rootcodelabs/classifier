@@ -5,10 +5,6 @@ server {
 
         server_name esclassifier-dev-ruuter.rootcode.software;
 
-        location / {
-                try_files $uri $uri/ =404;
-        }
-
         location /rutter-login {
                 proxy_pass http://localhost:8086/auth/login;
                 proxy_set_header Host $host;
