@@ -5,32 +5,8 @@ server {
 
         server_name esclassifier-dev-ruuter.rootcode.software;
 
-        location /rutter-login {
-                proxy_pass http://localhost:8086/auth/login;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        location /rutter-jira-sub {
-                proxy_pass http://localhost:8086/classifier/integration/jira/cloud/subscribe;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        location /rutter-outlook-sub {
-                proxy_pass http://localhost:8086/classifier/integration/outlook/subscribe;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
         location / {
-                proxy_pass http://localhost:8088;
+                proxy_pass http://localhost:8086;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
