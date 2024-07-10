@@ -1,8 +1,7 @@
-import { FC, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button, Dialog, FormInput, Track } from 'components';
 import { User, UserDTO } from 'types/user';
@@ -11,6 +10,7 @@ import { useToast } from 'hooks/useToast';
 import { ROLES } from 'utils/constants';
 import Select from 'react-select';
 import './SettingsUsers.scss';
+import { FC, useMemo } from 'react';
 
 type UserModalProps = {
   onClose: () => void;
@@ -22,7 +22,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const queryClient = useQueryClient();
-  
+
   const {
     register,
     control,
@@ -30,7 +30,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     formState: { errors },
   } = useForm<UserDTO>({
     defaultValues: {
-      userIdCode: user?.userIdCode,
+      useridcode: user?.useridcode,
       authorities: user?.authorities,
       displayName: user?.fullName,
       csaTitle: user?.csaTitle,
@@ -47,16 +47,13 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
         value: ROLES.ROLE_MODEL_TRAINER,
       },
     ],
-    []
+    [t]
   );
 
   const userCreateMutation = useMutation({
     mutationFn: (data: UserDTO) => createUser(data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries([
-        'accounts/users',
-        'prod',
-      ]);
+      await queryClient.invalidateQueries(['accounts/users']);
       toast.open({
         type: 'success',
         title: t('global.notification'),
@@ -82,10 +79,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
       userData: UserDTO;
     }) => editUser(id, userData),
     onSuccess: async () => {      
-      await queryClient.invalidateQueries([
-        'accounts/users',
-        'prod',
-      ]);
+      await queryClient.invalidateQueries(['accounts/users']);
       toast.open({
         type: 'success',
         title: t('global.notification'),
@@ -131,7 +125,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
 
   const handleUserSubmit = handleSubmit((data) => {
     if (user) {
-      userEditMutation.mutate({ id: user.idCode, userData: data });
+      userEditMutation.mutate({ id: user.useridcode, userData: data });
     } else {
       checkIfUserExistsMutation.mutate({ userData: data });
     }
@@ -186,7 +180,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
                   required={true}
                   options={roles}
                   defaultValue={user?.authorities.map((v) => {
-                    return { label: t(`roles.${v ?? ''}`), value: v };
+                    return { label: t(`roles.${v}`), value: v };
                   })}
                   isMulti={true}
                   placeholder={t('userManagement.addUser.rolePlaceholder')}
@@ -203,7 +197,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
         )}
         {!user && (
           <FormInput
-            {...register('userIdCode', {
+            {...register('useridcode', {
               required: requiredText,
               pattern: {
                 value: /\bEE\d+\b/,
@@ -215,9 +209,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           ></FormInput>
         )}
 
-        {!user && errors.userIdCode && (
+        {!user && errors.useridcode && (
           <span style={{ color: '#f00', marginTop: '-1rem' }}>
-            {errors.userIdCode.message}
+            {errors.useridcode.message}
           </span>
         )}
 
