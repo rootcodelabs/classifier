@@ -1,5 +1,4 @@
 server {
-    listen [::]:443 ssl ipv6only=on; # managed by Certbot
     listen 443 ssl; # managed by Certbot
 
     server_name esclassifier-dev.rootcode.software;
@@ -9,17 +8,16 @@ server {
 
     location / {
         proxy_pass http://esclassifier-dev.rootcode.software:3001;
-        proxy_redirect  http://esclassifier-dev.rootcode.software:3001 /;
-        proxy_set_header          Host            $host;
-        proxy_set_header          X-Real-IP       $remote_addr;
-        proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_redirect http://esclassifier-dev.rootcode.software:3001 /;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     ssl_certificate /etc/letsencrypt/live/esclassifier-dev.rootcode.software/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/esclassifier-dev.rootcode.software/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
 }
 
 server {
