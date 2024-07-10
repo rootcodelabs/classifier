@@ -8,8 +8,8 @@ server {
     index index.html index.htm index.nginx-debian.html;
 
     location /login/ {
-        proxy_pass http://esclassifier-dev.rootcode.software:3004/;
-        proxy_redirect  http://esclassifier-dev.rootcode.software:3004/ /;
+        proxy_pass http://esclassifier-dev.rootcode.software:3004/et/dev-auth;
+        proxy_redirect  http://esclassifier-dev.rootcode.software:3004/et/dev-auth /;
         proxy_set_header          Host            $host;
         proxy_set_header          X-Real-IP       $remote_addr;
         proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
