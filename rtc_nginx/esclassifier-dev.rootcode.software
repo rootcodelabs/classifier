@@ -7,17 +7,17 @@ server {
     root /var/www/esclassifier-dev.rootcode.software/html;
     index index.html index.htm index.nginx-debian.html;
 
-    location /login/ {
-        proxy_pass http://esclassifier-dev.rootcode.software:3004/et/dev-auth;
-        proxy_redirect  http://esclassifier-dev.rootcode.software:3004/et/dev-auth /;
+    location /dev/auth {
+        proxy_pass http://web1:8000;
+        proxy_redirect  http://web1:8000 /dev/auth;
         proxy_set_header          Host            $host;
         proxy_set_header          X-Real-IP       $remote_addr;
         proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
-    location / {
-        proxy_pass http://esclassifier-dev.rootcode.software:3001;
-        proxy_redirect  http://esclassifier-dev.rootcode.software:3001 /;
+    location /dev/auth2 {
+        proxy_pass http://web2:8001;
+        proxy_redirect  http://web2:8001 /dev/auth2;
         proxy_set_header          Host            $host;
         proxy_set_header          X-Real-IP       $remote_addr;
         proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -27,7 +27,6 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/esclassifier-dev.rootcode.software/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
 }
 
 server {
