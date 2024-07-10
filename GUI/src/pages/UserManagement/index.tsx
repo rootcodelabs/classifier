@@ -17,7 +17,8 @@ import { MdOutlineDeleteOutline, MdOutlineEdit } from 'react-icons/md';
 import './UserManagement.scss';
 import { useTranslation } from 'react-i18next';
 import { ROLES } from 'utils/constants';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { deleteUser } from 'services/users';
 import { useToast } from 'hooks/useToast';
 import { AxiosError } from 'axios';
@@ -40,29 +41,25 @@ const UserManagement: FC = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const { t } = useTranslation();
   const toast = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    getUsers(pagination, sorting);
-  }, []);
-
- 
-  const getUsers = (pagination: PaginationState, sorting: SortingState) => {
+  const fetchUsers = async (pagination: PaginationState, sorting: SortingState) => {
     const sort =
       sorting.length === 0
         ? 'name asc'
         : sorting[0].id + ' ' + (sorting[0].desc ? 'desc' : 'asc');
-    apiDev
-      .post(`accounts/users`, {
-        page: pagination.pageIndex + 1,
-        page_size: pagination.pageSize,
-        sorting: sort,
-      })
-      .then((res: any) => {
-        setUsersList(res?.data?.response ?? []);
-        setTotalPages(res?.data?.response[0]?.totalPages ?? 1);
-      })
-      .catch((error: any) => console.log(error));
+    const { data } = await apiDev.post('accounts/users', {
+      page: pagination.pageIndex + 1,
+      page_size: pagination.pageSize,
+      sorting: sort,
+    });
+    return data?.response ?? [];
   };
+
+  const { data: users, isLoading } = useQuery(
+    ['accounts/users', pagination, sorting],
+    () => fetchUsers(pagination, sorting)
+  );
 
   const editView = (props: any) => (
     <Button
@@ -79,7 +76,7 @@ const UserManagement: FC = () => {
   const deleteView = (props: any) => (
     <Button
       appearance="text"
-      onClick={() => setDeletableRow(props.row.original.idCode)}
+      onClick={() => setDeletableRow(props.row.original.useridcode)}
     >
       <Icon icon={<MdOutlineDeleteOutline />} />
       {'Delete'}
@@ -96,7 +93,7 @@ const UserManagement: FC = () => {
           header: t('settings.users.name') ?? '',
         }
       ),
-      columnHelper.accessor('idCode', {
+      columnHelper.accessor('useridcode', {
         header: t('settings.users.idCode') ?? '',
       }),
       columnHelper.accessor(
@@ -153,7 +150,7 @@ const UserManagement: FC = () => {
   const deleteUserMutation = useMutation({
     mutationFn: ({ id }: { id: string | number }) => deleteUser(id),
     onSuccess: async () => {
-      getUsers(pagination, sorting);
+      await queryClient.invalidateQueries(['accounts/users']);
       toast.open({
         type: 'success',
         title: t('global.notification'),
@@ -170,7 +167,7 @@ const UserManagement: FC = () => {
     },
   });
 
-  if (!usersList) return <>Loading...</>;
+  if (isLoading) return <>Loading...</>;
 
   return (
     <>
@@ -189,7 +186,7 @@ const UserManagement: FC = () => {
         </div>
         <div>
           <DataTable
-            data={usersList}
+            data={users}
             columns={usersColumns}
             sortable
             filterable
@@ -201,12 +198,12 @@ const UserManagement: FC = () => {
               )
                 return;
               setPagination(state);
-              getUsers(state, sorting);
+              fetchUsers(state, sorting);
             }}
             sorting={sorting}
             setSorting={(state: SortingState) => {
               setSorting(state);
-              getUsers(pagination, state);
+              fetchUsers(pagination, state);
             }}
             pagesCount={totalPages}
             isClientSide={false}

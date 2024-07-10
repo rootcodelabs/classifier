@@ -6,24 +6,21 @@ import './locale/et_EE';
 import UserManagement from 'pages/UserManagement';
 import Integrations from 'pages/Integrations';
 import DatasetGroups from 'pages/DatasetGroups';
-import apiDev from 'services/api-dev';
+import { useQuery } from '@tanstack/react-query';
+import { UserInfo } from 'types/userInfo';
 
 const App: FC = () => {
 
-  const getUserInfo = () => {
-    apiDev
-      .get(`auth/jwt/userinfo`)
-      .then((res: any) => {
-        localStorage.setItem('exp', res?.data?.response?.JWTExpirationTimestamp);
-        return useStore.getState().setUserInfo(res?.data?.response);
-      })
-      .catch((error: any) => console.log(error));
-  };
-
-  useEffect(() => {
-    getUserInfo();
-  }, []);
-
+  useQuery<{
+    data: { custom_jwt_userinfo: UserInfo };
+  }>({
+    queryKey: ['auth/jwt/userinfo', 'prod'],
+    onSuccess: (res: { response: UserInfo }) => {
+      localStorage.setItem('exp', res.response.JWTExpirationTimestamp);
+      return useStore.getState().setUserInfo(res.response);
+    },
+  });
+ 
   return (
     <Routes>
       <Route element={<Layout />}>
