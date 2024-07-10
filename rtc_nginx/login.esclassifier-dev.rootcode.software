@@ -2,34 +2,34 @@ server {
     listen [::]:443 ssl ipv6only=on; # managed by Certbot
     listen 443 ssl; # managed by Certbot
 
-    server_name esclassifier-dev.rootcode.software;
+    server_name login.esclassifier-dev.rootcode.software;
 
-    root /var/www/esclassifier-dev.rootcode.software/html;
+    root /var/www/login.esclassifier-dev.rootcode.software/html;
     index index.html index.htm index.nginx-debian.html;
 
     location / {
-        proxy_pass http://esclassifier-dev.rootcode.software:3004;
-        proxy_redirect  http://esclassifier-dev.rootcode.software:3004 /;
+        proxy_pass http://login.esclassifier-dev.rootcode.software:3004;
+        proxy_redirect  http://login.esclassifier-dev.rootcode.software:3004 /;
         proxy_set_header          Host            $host;
         proxy_set_header          X-Real-IP       $remote_addr;
         proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
-    ssl_certificate /etc/letsencrypt/live/esclassifier-dev.rootcode.software/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/esclassifier-dev.rootcode.software/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/login.esclassifier-dev.rootcode.software/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/login.esclassifier-dev.rootcode.software/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
 }
 
 server {
-    if ($host = esclassifier-dev.rootcode.software) {
+    if ($host = login.esclassifier-dev.rootcode.software) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
     listen 80;
     listen [::]:80;
 
-    server_name esclassifier-dev.rootcode.software;
+    server_name login.esclassifier-dev.rootcode.software;
     return 404; # managed by Certbot
 }
