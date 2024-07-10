@@ -7,7 +7,7 @@ server {
     root /var/www/esclassifier-dev.rootcode.software/html;
     index index.html index.htm index.nginx-debian.html;
 
-    location /login {
+    location /login/ {
         proxy_pass http://esclassifier-dev.rootcode.software:3004;
         proxy_redirect  http://esclassifier-dev.rootcode.software:3004 /;
         proxy_set_header          Host            $host;
