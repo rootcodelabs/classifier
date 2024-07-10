@@ -8,16 +8,16 @@ server {
     index index.html index.htm index.nginx-debian.html;
 
     location /dev/auth {
-        proxy_pass http://web1:8000;
-        proxy_redirect  http://web1:8000 /dev/auth;
+        proxy_pass http://localhost:8000;
+        proxy_redirect  http://localhost:8000 /dev/auth;
         proxy_set_header          Host            $host;
         proxy_set_header          X-Real-IP       $remote_addr;
         proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     location /dev/auth2 {
-        proxy_pass http://web2:8001;
-        proxy_redirect  http://web2:8001 /dev/auth2;
+        proxy_pass http://localhost:8001;
+        proxy_redirect  http://localhost:8001 /dev/auth2;
         proxy_set_header          Host            $host;
         proxy_set_header          X-Real-IP       $remote_addr;
         proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
