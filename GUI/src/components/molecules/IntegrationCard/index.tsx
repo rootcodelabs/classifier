@@ -1,7 +1,11 @@
 import { FC, PropsWithChildren, ReactNode, useState } from 'react';
 import './IntegrationCard.scss';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Dialog, FormInput, Switch } from 'components';
+import { Button, Card, Dialog, Switch } from 'components';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { IntegrationStatus } from 'types/integration';
+import { togglePlatform } from 'services/integration';
+import { AxiosError } from 'axios';
 
 type IntegrationCardProps = {
   logo?: ReactNode;
@@ -9,7 +13,6 @@ type IntegrationCardProps = {
   channelDescription?: string;
   user?: string;
   isActive?: boolean;
-  connectedStatus?: { platform: string, status: string }[];
 };
 
 const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
@@ -18,38 +21,81 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
   channelDescription,
   user,
   isActive,
-  connectedStatus,
 }) => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChecked, setIsChecked] = useState(isActive);
   const [modalType, setModalType] = useState('JIRA_INTEGRATION');
+  const queryClient = useQueryClient();
 
   const renderStatusIndicators = () => {
-    return connectedStatus?.map((status, index) => (
-      <span key={index} className="status">
-        <span className={`dot ${status.status.toLowerCase() === 'connected' ? 'green' : 'grey'}`}></span>{connectedStatus?.length>1 ? `${status.status} - ${status.platform}`:`${status.status}`} 
+    // return connectedStatus?.map((status, index) => (
+    //   <span key={index} className="status">
+    //     <span
+    //       className={`dot ${
+    //         status.status.toLowerCase() === 'connected' ? 'green' : 'grey'
+    //       }`}
+    //     ></span>
+    //     {connectedStatus?.length > 1
+    //       ? `${status.status} - ${status.platform}`
+    //       : `${status.status}`}
+    //   </span>
+    // ));
+
+    return (
+      <span className="status">
+        <span className={`dot ${isActive ? 'green' : 'grey'}`}></span>
+        <>
+          {isActive
+            ? t('integration.connected')
+            : t('integration.disconnected')}
+        </>
       </span>
-    ));
+    );
   };
 
-  const onSelect=()=>{
-    if(isChecked){
-      setModalType("DISCONNECT");
-    }else{
-      setIsChecked(true)
-      setModalType("SUCCESS");
-     
-    }
-    setIsModalOpen(true)
+  const platformEnableMutation = useMutation({
+    mutationFn: (data: IntegrationStatus) => togglePlatform(data),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([
+        'classifier/integration/platform-status',
+        'prod',
+      ]);
+      // setIsChecked(true);
+      setModalType('INTEGRATION_SUCCESS');
+    },
+    onError: (error: AxiosError) => {
+      setModalType('INTEGRATION_ERROR');
+    },
+  });
 
-  }
+  const platformDisableMutation = useMutation({
+    mutationFn: (data: IntegrationStatus) => togglePlatform(data),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([
+        'classifier/integration/platform-status',
+        'prod',
+      ]);
+      // setIsChecked(true);
+      // setModalType('DISCONNECT_CONFIRMATION');
+    },
+    onError: (error: AxiosError) => {
+      setModalType('DISCONNECT_ERROR');
+    },
+  });
+
+  const onSelect = () => {
+    if (isChecked) {
+      setModalType("DISCONNECT_CONFIRMATION")
+    } else {
+      setModalType("CONNECT_CONFIRMATION")
+    }
+    setIsModalOpen(true);
+  };
 
   return (
     <>
-      <Card
-        isFullWidth={true}
-      >
+      <Card isFullWidth={true}>
         <div className="card_header">
           <div className="logo">{logo}</div>
           <div className="title">
@@ -57,60 +103,114 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
             <p>{channelDescription}</p>
           </div>
           <div className="toggle-switch">
-              <div style={{float:"right",marginBottom:"5px"}}>
-              <Switch label="" checked={isChecked} onCheckedChange={onSelect}/>
-              </div>
-              <div style={{display:"block"}}>
+            <div style={{ float: 'right', marginBottom: '5px' }}>
+              <Switch label="" checked={isActive} onCheckedChange={onSelect} />
+            </div>
+            <div style={{ display: 'block' }}>
               <div className="footer_container">
-              <div className="status-indicators">
-              {renderStatusIndicators()}
+                <div className="status-indicators">
+                  {renderStatusIndicators()}
+                </div>
               </div>
-              </div>
-            </div>            </div>
-
+            </div>{' '}
+          </div>
         </div>
       </Card>
-   
-      {modalType === 'SUCCESS' && (
+
+      {modalType === 'INTEGRATION_SUCCESS' && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
-          title={'Integration Successful'}
+          title={t('integration.integrationSuccessTitle')}
         >
           <div className="form-container">
-            You have successfully connected with {channel}! Your integration is now complete, and you can start working with Jira seamlessly.
+            {t('integration.integrationSuccessDesc', { channel })}
           </div>
         </Dialog>
       )}
-      {modalType === 'ERROR' && (
+      {modalType === 'INTEGRATION_ERROR' && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
-          title={'Integration Error'}
+          title={t('integration.integrationErrorTitle')}
         >
           <div className="form-container">
-            Failed to connect with {channel}. Please check your settings and try again. If the problem persists, contact support for assistance.
+            {t('integration.integrationErrorDesc', { channel })}
           </div>
         </Dialog>
       )}
-      {modalType === 'DISCONNECT' && (
+      {modalType === 'DISCONNECT_CONFIRMATION' && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
-          title={'Are you sure?'}
+          title={t('integration.confirmationModalTitle')}
           footer={
             <>
-              <Button appearance="secondary" onClick={() => setIsModalOpen(false)}>
-                Cancel
+              <Button
+                appearance="secondary"
+                onClick={() => setIsModalOpen(false)}
+              >
+                {t('global.cancel')}
               </Button>
-              <Button appearance="error" onClick={() => {setIsModalOpen(false);setIsChecked(false)}}>
-                Disconnect
+              <Button
+                appearance="error"
+                onClick={() => {
+                  platformDisableMutation.mutate({
+                    operation: 'disable',
+                    platform: channel?.toLowerCase(),
+                  });
+                }}
+              >
+                {t('global.disconnect')}
               </Button>
             </>
           }
         >
           <div className="form-container">
-            Are you sure you want to disconnect the {channel} integration? This action cannot be undone and may affect your workflow and linked issues.
+            {t('integration.disconnectConfirmationModalDesc', { channel })}
+          </div>
+        </Dialog>
+      )}
+      {modalType === 'CONNECT_CONFIRMATION' && (
+        <Dialog
+          onClose={() => setIsModalOpen(false)}
+          isOpen={isModalOpen}
+          title={t('integration.confirmationModalTitle')}
+          footer={
+            <>
+              <Button
+                appearance="secondary"
+                onClick={() => setIsModalOpen(false)}
+              >
+                {t('global.cancel')}
+              </Button>
+              <Button
+                appearance="primary"
+                onClick={() => {
+                  platformEnableMutation.mutate({
+                    operation: 'enable',
+                    platform: channel?.toLowerCase(),
+                  });
+                }}
+              >
+                {t('global.connect')}
+              </Button>
+            </>
+          }
+        >
+          <div className="form-container">
+            {t('integration.connectConfirmationModalDesc', { channel })}
+          </div>
+        </Dialog>
+      )}
+      {modalType === 'DISCONNECT_ERROR' && (
+        <Dialog
+          onClose={() => setIsModalOpen(false)}
+          isOpen={isModalOpen}
+          title={t('integration.disconnectErrorTitle')}
+        >
+          <div className="form-container">
+            {t('integration.disconnectErrorDesc', { channel })}
           </div>
         </Dialog>
       )}
