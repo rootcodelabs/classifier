@@ -3,15 +3,15 @@ import './IntegrationCard.scss';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Dialog, Switch } from 'components';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { IntegrationStatus } from 'types/integration';
+import { OperationConfig } from 'types/integration';
 import { togglePlatform } from 'services/integration';
 import { AxiosError } from 'axios';
+import { INTEGRATION_MODALS, INTEGRATION_OPERATIONS } from 'enums/integrationEnums';
 
 type IntegrationCardProps = {
   logo?: ReactNode;
   channel?: string;
   channelDescription?: string;
-  user?: string;
   isActive?: boolean;
 };
 
@@ -19,16 +19,16 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
   logo,
   channel,
   channelDescription,
-  user,
   isActive,
 }) => {
+
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isChecked, setIsChecked] = useState(isActive);
-  const [modalType, setModalType] = useState('JIRA_INTEGRATION');
+  const [modalType, setModalType] = useState('');
   const queryClient = useQueryClient();
 
   const renderStatusIndicators = () => {
+    //kept this, in case the logic is changed for the connected status
     // return connectedStatus?.map((status, index) => (
     //   <span key={index} className="status">
     //     <span
@@ -55,40 +55,35 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
   };
 
   const platformEnableMutation = useMutation({
-    mutationFn: (data: IntegrationStatus) => togglePlatform(data),
+    mutationFn: (data: OperationConfig) => togglePlatform(data),
     onSuccess: async () => {
+      setModalType(INTEGRATION_MODALS.INTEGRATION_SUCCESS);
       await queryClient.invalidateQueries([
-        'classifier/integration/platform-status',
-        'prod',
+        'classifier/integration/platform-status'
       ]);
-      // setIsChecked(true);
-      setModalType('INTEGRATION_SUCCESS');
     },
     onError: (error: AxiosError) => {
-      setModalType('INTEGRATION_ERROR');
+      setModalType(INTEGRATION_MODALS.INTEGRATION_ERROR);
     },
   });
 
   const platformDisableMutation = useMutation({
-    mutationFn: (data: IntegrationStatus) => togglePlatform(data),
+    mutationFn: (data: OperationConfig) => togglePlatform(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries([
-        'classifier/integration/platform-status',
-        'prod',
+        'classifier/integration/platform-status'
       ]);
-      // setIsChecked(true);
-      // setModalType('DISCONNECT_CONFIRMATION');
-    },
+      setIsModalOpen(false)    },
     onError: (error: AxiosError) => {
-      setModalType('DISCONNECT_ERROR');
+      setModalType(INTEGRATION_MODALS.DISCONNECT_ERROR);
     },
   });
 
   const onSelect = () => {
-    if (isChecked) {
-      setModalType("DISCONNECT_CONFIRMATION")
+    if (isActive) {
+      setModalType(INTEGRATION_MODALS.DISCONNECT_CONFIRMATION)
     } else {
-      setModalType("CONNECT_CONFIRMATION")
+      setModalType(INTEGRATION_MODALS.CONNECT_CONFIRMATION)
     }
     setIsModalOpen(true);
   };
@@ -117,7 +112,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
         </div>
       </Card>
 
-      {modalType === 'INTEGRATION_SUCCESS' && (
+      {modalType === INTEGRATION_MODALS.INTEGRATION_SUCCESS && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
@@ -128,7 +123,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
           </div>
         </Dialog>
       )}
-      {modalType === 'INTEGRATION_ERROR' && (
+      {modalType ===INTEGRATION_MODALS.INTEGRATION_ERROR && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
@@ -139,7 +134,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
           </div>
         </Dialog>
       )}
-      {modalType === 'DISCONNECT_CONFIRMATION' && (
+      {modalType === INTEGRATION_MODALS.DISCONNECT_CONFIRMATION && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
@@ -156,7 +151,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
                 appearance="error"
                 onClick={() => {
                   platformDisableMutation.mutate({
-                    operation: 'disable',
+                    operation: INTEGRATION_OPERATIONS.DISABLE,
                     platform: channel?.toLowerCase(),
                   });
                 }}
@@ -171,7 +166,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
           </div>
         </Dialog>
       )}
-      {modalType === 'CONNECT_CONFIRMATION' && (
+      {modalType === INTEGRATION_MODALS.CONNECT_CONFIRMATION && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
@@ -188,7 +183,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
                 appearance="primary"
                 onClick={() => {
                   platformEnableMutation.mutate({
-                    operation: 'enable',
+                    operation: INTEGRATION_OPERATIONS.ENABLE,
                     platform: channel?.toLowerCase(),
                   });
                 }}
@@ -203,7 +198,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
           </div>
         </Dialog>
       )}
-      {modalType === 'DISCONNECT_ERROR' && (
+      {modalType === INTEGRATION_MODALS.DISCONNECT_ERROR && (
         <Dialog
           onClose={() => setIsModalOpen(false)}
           isOpen={isModalOpen}

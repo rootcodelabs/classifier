@@ -1,4 +1,4 @@
-export interface IntegrationStatus {
-    platform?: string;
-    operation?: string;
+ export interface OperationConfig {
+    operation: 'enable'|'disable';
+    platform: string | undefined;
   }

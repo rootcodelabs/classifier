@@ -16,7 +16,6 @@ import { User } from '../../types/user';
 import { MdOutlineDeleteOutline, MdOutlineEdit } from 'react-icons/md';
 import './UserManagement.scss';
 import { useTranslation } from 'react-i18next';
-import { ROLES } from 'utils/constants';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { deleteUser } from 'services/users';
@@ -24,6 +23,7 @@ import { useToast } from 'hooks/useToast';
 import { AxiosError } from 'axios';
 import apiDev from 'services/api-dev';
 import UserModal from './UserModal';
+import { ROLES } from 'enums/roles';
 
 const UserManagement: FC = () => {
   const columnHelper = createColumnHelper<User>();

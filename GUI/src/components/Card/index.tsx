@@ -9,7 +9,7 @@ type CardProps = {
   borderless?: boolean;
   isHeaderLight?: boolean;
   isBodyDivided?: boolean;
-  isfullwidth?: boolean;
+  isFullWidth?: boolean;
 };
 
 const Card: FC<PropsWithChildren<CardProps>> = ({
@@ -19,10 +19,10 @@ const Card: FC<PropsWithChildren<CardProps>> = ({
   isHeaderLight,
   isBodyDivided,
   children,
-  isfullwidth,
+  isFullWidth,
 }) => {
   return (
-    <div className={clsx('card', { 'card--borderless': borderless }, { 'card--fullWidth': isfullwidth })}>
+    <div className={clsx('card', { 'card--borderless': borderless }, { 'card--fullWidth': isFullWidth })}>
       {header && (
         <div className={`card__header ${isHeaderLight ? 'white' : ''}`}>
           {header}
