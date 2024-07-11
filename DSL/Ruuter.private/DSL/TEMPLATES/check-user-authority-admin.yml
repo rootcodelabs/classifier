@@ -31,6 +31,8 @@ check_cookie_info_response:
 
 check_user_authority:
   switch:
+    - condition: ${res.response.body === null}
+      next: return_unauthorized
     - condition: ${res.response.body.authorities.includes("ROLE_ADMINISTRATOR")}
       next: return_authorized
   next: return_unauthorized
@@ -40,7 +42,7 @@ return_authorized:
   next: end
 
 return_unauthorized:
-  status: 200
+  status: 400
   return: false
   next: end
 
