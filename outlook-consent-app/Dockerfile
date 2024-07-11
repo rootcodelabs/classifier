@@ -1,43 +1,22 @@
-# Use the official Node.js image as a base image
-FROM node:18-alpine AS builder
+# Stage 1: Build the Next.js app
+ARG node_version=node:lts
+ARG nginx_version=nginx:1.21.3-alpine
 
-# Set the working directory
-WORKDIR /app
+FROM $node_version as image
+WORKDIR /usr/src/app
+COPY ./package*.json ./
 
-# Copy package.json and package-lock.json (or yarn.lock) files
-COPY package.json package-lock.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application code
+FROM image AS build
+RUN npm install --legacy-peer-deps --mode=development
 COPY . .
+RUN npm run build
+VOLUME /usr/buerokratt-classifier
 
-# Build the Next.js application without linting and type-checking
-# Skip linting by setting NEXT_SKIP_LINT during build
-# Skip type-checking by using NEXT_SKIP_TYPE_CHECK during build
-RUN NEXT_SKIP_LINT=true NEXT_SKIP_TYPE_CHECK=true npm run build
-
-# Use a smaller base image for the final stage
-FROM node:18-alpine
-
-# Set the working directory
-WORKDIR /app
-
-# Copy only the necessary files from the builder stage
-COPY --from=builder /app/package.json /app/package-lock.json ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-
-# Install only production dependencies
-RUN npm install --production
-
-# Set environment variables
-ENV PORT=3003
-ENV NODE_ENV=production
-
-# Expose the port the app runs on
+# Stage 2: Serve the app with Nginx
+FROM $nginx_version
+COPY ./nginx/http-nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /usr/src/app/.next /usr/share/nginx/html
 EXPOSE 3003
+CMD ["nginx", "-g", "daemon off;"]
 
-# Command to run the application
-CMD ["npm", "start"]
+
