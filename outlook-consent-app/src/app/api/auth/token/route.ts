@@ -3,9 +3,9 @@ import axios from 'axios';
 
 export async function POST(req: NextRequest) {
   const { code } = await req.json();
-  const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-  const clientSecret = process.env.CLIENT_SECRET;
-  const redirectUri = process.env.REDIRECT_URI;
+  const clientId = process.env.NEXT_PUBLIC_CLIENT_ID || "'";
+  const clientSecret = process.env.CLIENT_SECRET || "";
+  const redirectUri = process.env.REDIRECT_URI || "";
   try {
     const tokenResponse = await axios.post(
       'https://login.microsoftonline.com/common/oauth2/v2.0/token',
@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(tokenResponse.data);
   } catch (error) {
-    console.error('Error fetching tokens:', error);
     return NextResponse.json({ error: 'Error fetching tokens' }, { status: 500 });
   }
 }
