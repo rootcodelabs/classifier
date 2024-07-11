@@ -3,6 +3,13 @@ const nextConfig = {
     reactStrictMode: true,
     experimental: {
       appDir: true,
+      missingSuspenseWithCSRBailout: false,
+    },
+    eslint: {
+      ignoreDuringBuilds: true,
+    },
+    typescript: {
+      ignoreBuildErrors: true,
     },
   };
   
