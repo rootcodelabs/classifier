@@ -1,0 +1,115 @@
+[
+    {
+        "login": "EE40404049985",
+        "firstName": "admin",
+        "lastName": "admin",
+        "userIdCode": "EE40404049985",
+        "displayName": "admin",
+        "csaTitle": "admin",
+        "csaEmail": "admin@admin.ee",
+        "authorities": [
+            "ROLE_ADMINISTRATOR"
+        ],
+        "customerSupportStatus": "offline",
+        "totalPages": 1
+    },
+    {
+        "login": "EE38807130279",
+        "firstName": "Jaanus",
+        "lastName": "Kääp",
+        "userIdCode": "EE38807130279",
+        "displayName": "Jaanus",
+        "csaTitle": "tester",
+        "csaEmail": "jaanus@clarifiedsecurity.com",
+        "authorities": [
+            "ROLE_ADMINISTRATOR",
+            "ROLE_MODEL_TRAINER"
+        ],
+        "customerSupportStatus": "offline",
+        "totalPages": 1
+    },
+    {
+        "login": "EE30303039816",
+        "firstName": "kolmas",
+        "lastName": "admin",
+        "userIdCode": "EE30303039816",
+        "displayName": "kolmas",
+        "csaTitle": "kolmas",
+        "csaEmail": "kolmas@admin.ee",
+        "authorities": [
+            "ROLE_MODEL_TRAINER"
+        ],
+        "customerSupportStatus": "offline",
+        "totalPages": 1
+    },
+    {
+        "login": "EE30303039914",
+        "firstName": "Kustuta",
+        "lastName": "Kasutaja",
+        "userIdCode": "EE30303039914",
+        "displayName": "Kustutamiseks",
+        "csaTitle": "",
+        "csaEmail": "kustutamind@mail.ee",
+        "authorities": [
+            "ROLE_ADMINISTRATOR"
+        ],
+        "customerSupportStatus": "offline",
+        "totalPages": 1
+    },
+    {
+        "login": "EE50001029996",
+        "firstName": "Nipi",
+        "lastName": "Tiri",
+        "userIdCode": "EE50001029996",
+        "displayName": "Nipi",
+        "csaTitle": "Dr",
+        "csaEmail": "nipi@tiri.ee",
+        "authorities": [
+            "ROLE_ADMINISTRATOR"
+        ],
+        "customerSupportStatus": "offline",
+        "totalPages": 1
+    },
+    {
+        "login": "EE40404049996",
+        "firstName": "teine",
+        "lastName": "admin",
+        "userIdCode": "EE40404049996",
+        "displayName": "teine admin",
+        "csaTitle": "teine admin",
+        "csaEmail": "Teine@admin.ee",
+        "authorities": [
+            "ROLE_ADMINISTRATOR"
+        ],
+        "customerSupportStatus": "offline",
+        "totalPages": 1
+    },
+    {
+        "login": "EE50701019992",
+        "firstName": "Valter",
+        "lastName": "Aro",
+        "userIdCode": "EE50701019992",
+        "displayName": "Valter",
+        "csaTitle": "Mister",
+        "csaEmail": "valter.aro@ria.ee",
+        "authorities": [
+            "ROLE_ADMINISTRATOR"
+        ],
+        "customerSupportStatus": "offline",
+        "totalPages": 1
+    },
+    {
+        "login": "EE38104266023",
+        "firstName": "Varmo",
+        "lastName": "",
+        "userIdCode": "EE38104266023",
+        "displayName": "Varmo",
+        "csaTitle": "MISTER",
+        "csaEmail": "mail@mail.ee",
+        "authorities": [
+            "ROLE_ADMINISTRATOR"
+        ],
+        "customerSupportStatus": "online",
+        "totalPages": 1
+    }
+]

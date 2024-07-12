@@ -1,0 +1,69 @@
+name: Deploy EST Frontend and Backend to development
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, dev]
+
+    steps:
+      - name: Set permissions for workspace directory
+        run: |
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
+          sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
+
+      - name: Clean up workspace
+        run: |
+          sudo rm -rf /home/ubuntu/actions-runner/_work/classifier/classifier/*
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          clean: true
+
+      - name: Give execute permissions to testScript.sh
+        run: |
+          sudo chmod +x src/unitTesting.sh
+
+      - name: Remove all running containers, images, and prune Docker system
+        run: |
+          docker stop $(docker ps -a -q) || true
+          docker rm $(docker ps -a -q) || true
+          images_to_keep="authentication-layer|tim|data-mapper|resql|ruuter"
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -Ev "$images_to_keep" | xargs -r docker rmi || true
+          docker volume prune -f
+          docker network prune -f
+
+      - name: Build and run Docker Compose
+        run: |
+          docker compose up --build -d
+
+      - name: Run unitTesting.sh
+        id: unittesting
+        run: |
+          output=$(bash src/unitTesting.sh)
+          if [ "$output" != "True" ]; then
+            echo "unitTesting.sh failed with output: $output"
+            exit 1
+          fi
+
+      - name: Send failure Slack notification
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data "{
+             \"text\": \"The Development environment deployment failed during one of the steps. Please check the output for details.\"
+          }" $SLACK_WEBHOOK_URL
+
+      - name: Send success Slack notification
+        if: success()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"The build is complete and the development environment is now available. Please click the following link to access it: <https://esclassifier-dev.rootcode.software/classifier>\"
+          }" $SLACK_WEBHOOK_URL
