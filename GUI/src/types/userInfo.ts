@@ -9,7 +9,7 @@ export interface UserInfo {
   fullName: string;
   authorities: string[];
   displayName: string;
-  idCode: string;
+  userIdCode: string;
   email: string;
   csaEmail: string;
   csaTitle: string;
