@@ -157,7 +157,7 @@ services:
     ports:
       - 5433:5432
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - /home/ubuntu/user_db_files:/var/lib/postgresql/data
     networks:
       - bykstack
 
