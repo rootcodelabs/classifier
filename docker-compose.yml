@@ -64,7 +64,7 @@ services:
       - tim-postgresql
     environment:
       - SECURITY_ALLOWLIST_JWT=ruuter-private,ruuter-public,data-mapper,resql,tim,tim-postgresql,chat-widget,authentication-layer,esclassifier-dev-tim.rootcode.software,127.0.0.1,::1
-      - FRONTPAGE_REDIRECT_URL=https://tara-test.ria.ee
+      - FRONTPAGE_REDIRECT_URL=https://tara-test.ria.ee/auth/init
     ports:
       - 8085:8085
     networks:
