@@ -3,7 +3,7 @@ services:
     container_name: ruuter-public
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=https://esclassifier-dev.rootcode.software/,https://esclassifier-dev-ruuter.rootcode.software,https://login.esclassifier-dev.rootcode.software
+      - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080
       - application.httpCodesAllowList=200,201,202,400,401,403,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -18,14 +18,12 @@ services:
       - bykstack
     cpus: "0.5"
     mem_limit: "512M"
-# - application.cors.allowedOrigins=http://localhost:8086,http://gui:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080
-# - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8088,http://localhost:3002,http://localhost:3004
 
   ruuter-private:
     container_name: ruuter-private
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=https://esclassifier-dev.rootcode.software/,https://esclassifier-dev-ruuter.rootcode.software,https://login.esclassifier-dev.rootcode.software
+      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8088,http://localhost:3002,http://localhost:3004
       - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -71,7 +69,7 @@ services:
     networks:
       - bykstack
     extra_hosts:
-      - "localhost:host-gateway"
+      - "host.docker.internal:host-gateway"
     cpus: "0.5"
     mem_limit: "512M"
 
@@ -94,12 +92,12 @@ services:
     container_name: gui
     environment:
       - NODE_ENV=development
-      - BASE_URL=https://esclassifier-dev.rootcode.software
-      - REACT_APP_RUUTER_API_URL=https://esclassifier-dev-ruuter.rootcode.software
-      - REACT_APP_RUUTER_PRIVATE_API_URL=https://esclassifier-dev-ruuter.rootcode.software
-      - REACT_APP_CUSTOMER_SERVICE_LOGIN=https://login.esclassifier-dev.rootcode.software
-      # - REACT_APP_NOTIFICATION_NODE_URL=http://gui:4040
-      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' https://esclassifier-dev-ruuter.rootcode.software https://esclassifier-dev-ruuter.rootcode.software;
+      - BASE_URL=http://localhost:8080
+      - REACT_APP_RUUTER_API_URL=http://localhost:8086
+      - REACT_APP_RUUTER_PRIVATE_API_URL=http://localhost:8088
+      - REACT_APP_CUSTOMER_SERVICE_LOGIN=http://localhost:3004/et/dev-auth
+      - REACT_APP_NOTIFICATION_NODE_URL=http://localhost:4040
+      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' http://localhost:8086 http://localhost:8088 http://localhost:8085 http://localhost:4040 https://admin.dev.buerokratt.ee/chat/menu.json;
       - DEBUG_ENABLED=true
       - CHOKIDAR_USEPOLLING=true
       - PORT=3001

@@ -30,8 +30,8 @@ jobs:
 
       - name: Remove all running containers, images, and prune Docker system
         run: |
-          docker stop $(docker ps -a -q | grep -v $(docker ps -q --filter "name=users_db")) || true
-          docker rm $(docker ps -a -q | grep -v $(docker ps -q --filter "name=users_db")) || true
+          docker stop $(docker ps -a -q | grep -v -E "($(docker ps -q --filter "name=users_db")|$(docker ps -q --filter "name=tim")|$(docker ps -q --filter "name=authentication-layer")|$(docker ps -q --filter "name=tim-postgresql"))") || true
+          docker rm $(docker ps -a -q | grep -v -E "($(docker ps -q --filter "name=users_db")|$(docker ps -q --filter "name=tim")|$(docker ps -q --filter "name=authentication-layer")|$(docker ps -q --filter "name=tim-postgresql"))") || true
           images_to_keep="authentication-layer|tim|data-mapper|resql|ruuter"
           docker images --format "{{.Repository}}:{{.Tag}}" | grep -Ev "$images_to_keep" | xargs -r docker rmi || true
           docker volume prune -f
