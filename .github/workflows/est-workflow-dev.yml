@@ -37,6 +37,10 @@ jobs:
           docker volume prune -f
           docker network prune -f
 
+      - name: Update constants.ini with GitHub secret
+        run: |
+          sed -i 's/DB_PASSWORD=value/DB_PASSWORD=${{ secrets.password }}/' constants.ini
+
       - name: Build and run Docker Compose
         run: |
           docker compose up --build -d
