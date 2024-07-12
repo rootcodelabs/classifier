@@ -3,6 +3,7 @@ import './DatasetGroups.scss';
 import { useTranslation } from 'react-i18next';
 import { Button, FormInput, FormSelect } from 'components';
 import DatasetGroupCard from 'components/molecules/DatasetGroupCard';
+import Pagination from 'components/molecules/Pagination';
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -31,15 +32,37 @@ const DatasetGroups: FC = () => {
         </div>
         <div>
           <div className="search-panel">
-            <FormInput
-              placeholder="search dataset groups"
-              name="search"
+          <FormSelect
               label=""
+              name="sort"
+              placeholder="Dataset Group"
+              options={[
+                { label: 'A-Z', value: 'az' },
+                { label: 'Z-A', value: 'za' },
+              ]}
             />
             <FormSelect
               label=""
               name="sort"
-              placeholder="Filter by alphabetical order"
+              placeholder="Version"
+              options={[
+                { label: 'A-Z', value: 'az' },
+                { label: 'Z-A', value: 'za' },
+              ]}
+            />
+            <FormSelect
+              label=""
+              name="sort"
+              placeholder="Validation Status"
+              options={[
+                { label: 'A-Z', value: 'az' },
+                { label: 'Z-A', value: 'za' },
+              ]}
+            />
+            <FormSelect
+              label=""
+              name="sort"
+              placeholder="Sort by name (A - Z)"
               options={[
                 { label: 'A-Z', value: 'az' },
                 { label: 'Z-A', value: 'za' },
@@ -60,6 +83,8 @@ const DatasetGroups: FC = () => {
               );
             })}
           </div>
+
+          <Pagination pageCount={1} pageSize={1} pageIndex={0} canPreviousPage={true} canNextPage={true} ></Pagination>
         </div>
       </div>
     </>

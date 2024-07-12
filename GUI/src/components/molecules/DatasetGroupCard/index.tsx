@@ -2,6 +2,8 @@ import { FC, PropsWithChildren } from 'react';
 import './DatasetGroupCard.scss';
 import Dataset from 'assets/Dataset';
 import { Switch } from 'components/FormElements';
+import Button from 'components/Button';
+import Label from 'components/Label';
 
 type DatasetGroupCardProps = {
   isEnabled?: boolean;
@@ -17,28 +19,25 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
   return (
     <>
       <div className="dataset-group-card">
+      
         <div className="row switch-row">
+        <p className="icon-text">{datasetName}</p>
           <Switch label="" checked={isEnabled} />
         </div>
-        <div className="row icon-text-row">
-          <div className="icon">
-            <Dataset />
-          </div>
+        <Label type='error'>Validation Failed</Label>
+        <div className='py-3'>
+        <p className="text">{"Last Model Trained: Model Alpha"}</p>
+        <p className="text">{"Last Used For Training:  8.6.24-13:01"}</p>
+        <p className="text">{"Last Updated:  7.6.24-15:31"}</p>
         </div>
-        <div className="row icon-text-row">
-          <p className="icon-text">{datasetName}</p>
+        <div className='flex'>
+<Label type='success'>V5.3.1</Label>
+<Label type='success'>latest</Label>
+
         </div>
+       
         <div className="label-row">
-          <div className="status-indicators">
-            <span className="status">
-              <span
-                className={`dot ${
-                  status?.toLowerCase() === 'connected' ? 'green' : 'grey'
-                }`}
-              ></span>{' '}
-              {status}
-            </span>
-          </div>
+          <Button appearance='primary' size='s'>Settings</Button>
         </div>
       </div>
     </>

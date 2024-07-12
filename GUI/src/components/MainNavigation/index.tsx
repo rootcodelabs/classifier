@@ -3,14 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   MdApps,
+  MdBackup,
   MdClass,
   MdClose,
   MdDashboard,
   MdDataset,
   MdKeyboardArrowDown,
+  MdOutlineDataset,
   MdOutlineForum,
   MdPeople,
   MdSettings,
+  MdSettingsBackupRestore,
   MdTextFormat,
 } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
@@ -43,17 +46,19 @@ const MainNavigation: FC = () => {
       id: 'datasets',
       label: t('menu.datasets'),
       path: '#',
-      icon: <MdDataset />,
+      icon: <MdOutlineDataset />,
       children: [
         {
           label: t('menu.datasetGroups'),
           path: 'dataset-groups',
-          icon: <MdOutlineForum />,
         },
         {
-          label: t('menu.versions'),
-          path: 'versions',
-          icon: <MdOutlineForum />,
+          label: t('menu.validationSessions'),
+          path: 'validation-sessions',
+        },
+        {
+          label: t('menu.stopWords'),
+          path: 'stop-words',
         },
       ],
     },
@@ -64,22 +69,16 @@ const MainNavigation: FC = () => {
       icon: <MdApps />,
     },
     {
-      id: 'classes',
-      label: t('menu.classes'),
-      path: '/classes',
-      icon: <MdDashboard />,
-    },
-    {
-      id: 'stopWords',
-      label: t('menu.stopWords'),
-      path: '/stop-words',
-      icon: <MdClass />,
-    },
-    {
       id: 'incomingTexts',
       label: t('menu.incomingTexts'),
       path: '/incoming-texts',
       icon: <MdTextFormat />,
+    },
+    {
+      id: 'testModel',
+      label: t('menu.testModel'),
+      path: '/test-model',
+      icon: <MdSettingsBackupRestore />,
     },
   ];
 
