@@ -65,6 +65,10 @@ services:
     environment:
       - SECURITY_ALLOWLIST_JWT=ruuter-private,ruuter-public,data-mapper,resql,tim,tim-postgresql,chat-widget,authentication-layer,esclassifier-dev-tim.rootcode.software,127.0.0.1,::1
       - FRONTPAGE_REDIRECT_URL=https://tara-test.ria.ee/auth/init
+      - SECURITY_OAUTH2_CLIENT_REGISTERED_REDIRECT_URI=https://tara-test.ria.ee/authenticate
+      - SECURITY_OAUTH2_CLIENT_USER_AUTHORIZATION_URI=https://tara-test.ria.ee/oidc/authorize
+      - SECURITY_OAUTH2_CLIENT_ACCESS_TOKEN_URI=https://tara-test.ria.ee/oidc/token
+      - SECURITY_OAUTH2_RESOURCE_JWK_KEY_SET_URI=https://tara-test.ria.ee/oidc/jwks
     ports:
       - 8085:8085
     networks:
