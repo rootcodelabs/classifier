@@ -160,6 +160,7 @@ services:
       - /home/ubuntu/user_db_files:/var/lib/postgresql/data
     networks:
       - bykstack
+    restart: always
 
 networks:
   bykstack:
