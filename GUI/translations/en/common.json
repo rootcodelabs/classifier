@@ -17,6 +17,8 @@
     "active": "Active",
     "activate": "Activate",
     "deactivate": "Deactivate",
+    "disconnect":"Disconnect",
+    "connect":"Connect",
     "on": "On",
     "off": "Off",
     "back": "Back",
@@ -64,8 +66,8 @@
     "incomingTexts": "Incoming Texts"
   },
   "userManagement": {
-    "title":"User Management",
-    "addUserButton":" Add a user",
+    "title": "User Management",
+    "addUserButton": " Add a user",
     "addUser": {
       "name": "First and last name",
       "namePlaceholder": "Enter name",
@@ -77,7 +79,39 @@
       "titlePlaceholder": "Enter title",
       "email": "Email",
       "emailPlaceholder": "Enter email"
-
+    }
+  },
+  "integration": {
+    "title": "Integration",
+    "jira": "Jira",
+    "outlook": "Outlook",
+    "pinal": "Pinal",
+    "jiraDesc": "Atlassian issue tracking and project management software",
+    "outlookDesc": "Personal information manager and email application developed by Microsoft",
+    "pinalDesc": "Atlassian issue tracking and project management software",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "integrationErrorTitle": "Integration Unsuccessful",
+    "integrationErrorDesc": "Failed to connect with {{channel}}. Please check your settings and try again. If the problem persists, contact support for assistance.",
+    "integrationSuccessTitle": "Integration Successful",
+    "integrationSuccessDesc": "You have successfully connected with {{channel}}! Your integration is now complete, and you can start working with {{Jira}} seamlessly.",
+    "confirmationModalTitle": "Are you sure?",
+    "disconnectConfirmationModalDesc": "Are you sure you want to disconnect the {{channel}} integration? This action cannot be undone and may affect your workflow and linked issues.",
+    "connectConfirmationModalDesc": "Are you sure you want to connect the {{channel}} integration?",
+    "disconnectErrorTitle": "Disconnection Unsuccessful",
+    "disconnectErrorDesc": "Failed to disconnect {{channel}}. Please check your settings and try again. If the problem persists, contact support for assistance.",
+    "addUserButton": " Add a user",
+    "addUser": {
+      "name": "First and last name",
+      "namePlaceholder": "Enter name",
+      "role": "Role",
+      "rolePlaceholder": "-Select-",
+      "personalId": "Personal ID",
+      "personalIdPlaceholder": "Enter personal ID",
+      "title": "Title",
+      "titlePlaceholder": "Enter title",
+      "email": "Email",
+      "emailPlaceholder": "Enter email"
     }
   },
   "roles": {

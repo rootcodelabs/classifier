@@ -1,6 +1,6 @@
+import { ROLES } from 'enums/roles';
 import React from 'react';
 import useStore from 'store';
-import { ROLES } from 'utils/constants';
 
 function withAuthorization<P extends object>(
   WrappedComponent: React.ComponentType<P>,
