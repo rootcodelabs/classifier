@@ -7,10 +7,10 @@ import { Button, Dialog, FormInput, Track } from 'components';
 import { User, UserDTO } from 'types/user';
 import { checkIfUserExists, createUser, editUser } from 'services/users';
 import { useToast } from 'hooks/useToast';
-import { ROLES } from 'utils/constants';
 import Select from 'react-select';
 import './SettingsUsers.scss';
 import { FC, useMemo } from 'react';
+import { ROLES } from 'enums/roles';
 
 type UserModalProps = {
   onClose: () => void;
