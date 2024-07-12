@@ -66,8 +66,6 @@ services:
       - tim-postgresql
     environment:
       - SECURITY_ALLOWLIST_JWT=ruuter-private,ruuter-public,data-mapper,resql,tim,tim-postgresql,chat-widget,authentication-layer,127.0.0.1,::1
-      - logging.level.org.springframework=DEBUG
-      - logging.level.your.package.name=DEBUG
     ports:
       - 8085:8085
     networks:
