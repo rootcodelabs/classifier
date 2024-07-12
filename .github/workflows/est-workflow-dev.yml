@@ -30,16 +30,39 @@ jobs:
 
       - name: Remove all running containers, images, and prune Docker system
         run: |
-          docker stop $(docker ps -a -q) || true
-          docker rm $(docker ps -a -q) || true
+          docker stop $(docker ps -a -q | grep -v -E "($(docker ps -q --filter "name=users_db")|$(docker ps -q --filter "name=tim")|$(docker ps -q --filter "name=authentication-layer")|$(docker ps -q --filter "name=tim-postgresql"))") || true
+          docker rm $(docker ps -a -q | grep -v -E "($(docker ps -q --filter "name=users_db")|$(docker ps -q --filter "name=tim")|$(docker ps -q --filter "name=authentication-layer")|$(docker ps -q --filter "name=tim-postgresql"))") || true
           images_to_keep="authentication-layer|tim|data-mapper|resql|ruuter"
           docker images --format "{{.Repository}}:{{.Tag}}" | grep -Ev "$images_to_keep" | xargs -r docker rmi || true
           docker volume prune -f
           docker network prune -f
 
+      - name: Update constants.ini with GitHub secret
+        run: |
+          sed -i 's/DB_PASSWORD=value/DB_PASSWORD=${{ secrets.password }}/' constants.ini
+
       - name: Build and run Docker Compose
         run: |
           docker compose up --build -d
+
+      - name: Check for db_update label
+        id: check_label
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.number
+            });
+            const labels = pr.data.labels.map(label => label.name);
+            return labels.includes('db_update');
+
+      - name: Run migration script
+        if: steps.check_label.outputs.result == 'true'
+        run: |
+          sudo chmod +x migrate.sh
+          ./migrate.sh
 
       - name: Run unitTesting.sh
         id: unittesting
