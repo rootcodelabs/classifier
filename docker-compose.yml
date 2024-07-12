@@ -71,7 +71,7 @@ services:
     networks:
       - bykstack
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "localhost:host-gateway"
     cpus: "0.5"
     mem_limit: "512M"
 
