@@ -45,7 +45,9 @@ validate_request:
 get_token_info:
   call: http.get
   args:
-    url: "[#CLASSIFIER_RUUTER_PRIVATE_INTERNAL]/internal/xyz"
+    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/token"
+    headers:
+      cookie: ${incoming.headers.cookie}
   result: res
   next: assign_access_token
 
@@ -57,10 +59,24 @@ assign_access_token:
 check_integration_type:
   switch:
     - condition: ${is_connect === true && subscription_id === null}
-      next: subscribe_outlook
+      next: set_expiration_date_time
     - condition: ${is_connect === false && subscription_id !== null}
       next: unsubscribe_outlook
   next: return_bad_request
+
+set_expiration_date_time:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_outlook_expiration_date_time"
+    headers:
+      type: json
+  result: expiration_date_time_res
+  next: assign_expiration_date_time
+
+assign_expiration_date_time:
+  assign:
+    expiration_date_time: ${expiration_date_time_res.response.body.expirationDateTime}
+  next: subscribe_outlook
 
 subscribe_outlook:
   call: http.post
@@ -70,9 +86,9 @@ subscribe_outlook:
       Authorization: ${'Bearer ' + access_token}
     body:
       changeType: "created,updated"
-      notificationUrl: "https://f789-111-223-191-66.ngrok-free.app/classifier/integration/outlook/accept"
+      notificationUrl: "[#CLASSIFIER_RUUTER_PUBLIC_FRONTEND_URL]/classifier/integration/outlook/accept"
       resource: "me/mailFolders('inbox')/messages"
-      expirationDateTime: "2024-07-06T21:10:45.9356913Z"
+      expirationDateTime: ${expiration_date_time}
       clientState: "secretClientValue"
   result: res_subscribe
   next: check_subscribe_response

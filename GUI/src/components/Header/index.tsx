@@ -1,29 +1,19 @@
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useIdleTimer } from 'react-idle-timer';
 import { MdOutlineExpandMore } from 'react-icons/md';
 
 import {
   Track,
-  Button,
-  Icon,
-  Drawer,
-  Section,
-  SwitchBox,
-  Switch,
-  Dialog,
+  Button
 } from 'components';
 import useStore from 'store';
 import { ReactComponent as BykLogo } from 'assets/logo.svg';
-import { UserProfileSettings } from 'types/userProfileSettings';
-import { Chat as ChatType } from 'types/chat';
 import { useToast } from 'hooks/useToast';
 import { USER_IDLE_STATUS_TIMEOUT } from 'constants/config';
 import apiDev from 'services/api-dev';
-import { interval } from 'rxjs';
-import { AUTHORITY } from 'types/authorities';
 import { useCookies } from 'react-cookie';
 import './Header.scss';
 
