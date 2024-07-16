@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MdOutlineWest, MdOutlineEast } from 'react-icons/md';
 import clsx from 'clsx';
-import "./Pagination.scss"
+// import "./Pagination.scss"
 import { useTranslation } from 'react-i18next';
 
 interface PaginationProps {
@@ -67,7 +67,7 @@ const Pagination: React.FC<PaginationProps> = ({
           </button>
         </div>
       )}
-      <div className='data-table__page-size'>
+      {/* <div className='data-table__page-size'>
         <label htmlFor={id}>{t('global.resultCount')}</label>
         <select
           id={id}
@@ -80,7 +80,7 @@ const Pagination: React.FC<PaginationProps> = ({
             </option>
           ))}
         </select>
-      </div>
+      </div> */}
     </div>
   );
 };

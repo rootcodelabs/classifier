@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Button, FormInput, FormSelect } from 'components';
 import DatasetGroupCard from 'components/molecules/DatasetGroupCard';
 import Pagination from 'components/molecules/Pagination';
+import { getDatasetsOverview } from 'services/datasets';
+import { useQuery } from '@tanstack/react-query';
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -19,8 +21,18 @@ const DatasetGroups: FC = () => {
     { datasetName: 'Dataset 2', status: 'Disconnected', isEnabled: true },
     { datasetName: 'Dataset 4', status: 'Disconnected', isEnabled: true },
     { datasetName: 'Dataset 3', status: 'Disconnected', isEnabled: false },
+    { datasetName: 'Dataset 3', status: 'Disconnected', isEnabled: false },
+    { datasetName: 'Dataset 3', status: 'Disconnected', isEnabled: false },
+
   ];
 
+  const { data: datasetGroupsData, isLoading } = useQuery(
+    ['datasets/groups'],
+    () => getDatasetsOverview(1)
+  );
+
+  console.log(datasetGroupsData);
+  
   return (
     <>
       <div className="container">
@@ -84,7 +96,7 @@ const DatasetGroups: FC = () => {
             })}
           </div>
 
-          <Pagination pageCount={1} pageSize={1} pageIndex={0} canPreviousPage={true} canNextPage={true} ></Pagination>
+          <Pagination pageCount={10} pageSize={1} pageIndex={0} canPreviousPage={true} canNextPage={true} ></Pagination>
         </div>
       </div>
     </>
