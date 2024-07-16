@@ -40,7 +40,6 @@ jobs:
       - name: Update constants.ini with GitHub secret
         run: |
           sed -i 's/DB_PASSWORD=value/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/' constants.ini
-          sed -i 's/DOMAIN=value/DOMAIN=${{ secrets.DB_DOMAIN }}/' constants.ini
 
       - name: Build and run Docker Compose
         run: |
