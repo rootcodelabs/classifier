@@ -1,0 +1,180 @@
+services:
+  ruuter-public:
+    container_name: ruuter-public
+    image: ruuter
+    environment:
+      - application.cors.allowedOrigins=https://login.esclassifier-dev.rootcode.software
+      - application.httpCodesAllowList=200,201,202,400,401,403,500
+      - application.internalRequests.allowedIPs=127.0.0.1
+      - application.logging.displayRequestContent=true
+      - application.logging.displayResponseContent=true
+      - server.port=8086
+    volumes:
+      - ./DSL/Ruuter.public/DSL:/DSL
+      - ./constants.ini:/app/constants.ini
+    ports:
+      - 8086:8086
+    networks:
+      - bykstack
+    cpus: "0.5"
+    mem_limit: "512M"
+
+  ruuter-private:
+    container_name: ruuter-private
+    image: ruuter
+    environment:
+      - application.cors.allowedOrigins=https://esclassifier-dev.rootcode.software,https://esclassifier-dev-ruuter-private.rootcode.software,https://login.esclassifier-dev.rootcode.software
+      - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
+      - application.internalRequests.allowedIPs=127.0.0.1
+      - application.logging.displayRequestContent=true
+      - application.incomingRequests.allowedMethodTypes=POST,GET,PUT
+      - application.logging.displayResponseContent=true
+      - application.logging.printStackTrace=true
+      - server.port=8088
+    volumes:
+      - ./DSL/Ruuter.private/DSL:/DSL
+      - ./constants.ini:/app/constants.ini
+    ports:
+      - 8088:8088
+    networks:
+      - bykstack
+    cpus: "0.5"
+    mem_limit: "512M"
+
+  data-mapper:
+    container_name: data-mapper
+    image: data-mapper
+    environment:
+      - PORT=3000
+      - CONTENT_FOLDER=/data
+    volumes:
+      - ./DSL:/data
+      - ./DSL/DMapper/hbs:/workspace/app/views/classifier
+      - ./DSL/DMapper/js:/workspace/app/js/classifier
+      - ./DSL/DMapper/lib:/workspace/app/lib
+    ports:
+      - 3000:3000
+    networks:
+      - bykstack
+
+  tim:
+    container_name: tim
+    image: tim
+    depends_on:
+      - tim-postgresql
+    environment:
+      - SECURITY_ALLOWLIST_JWT=ruuter-private,ruuter-public,data-mapper,resql,tim,tim-postgresql,chat-widget,authentication-layer,127.0.0.1,::1
+    ports:
+      - 8085:8085
+    networks:
+      - bykstack
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cpus: "0.5"
+    mem_limit: "512M"
+
+  tim-postgresql:
+    container_name: tim-postgresql
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=tim
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=tim
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ./tim-db:/var/lib/postgresql/data
+    ports:
+      - 9876:5432
+    networks:
+      - bykstack
+
+  gui:
+    container_name: gui
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_RUUTER_API_URL=https://esclassifier-dev-ruuter.rootcode.software
+      - REACT_APP_RUUTER_PRIVATE_API_URL=https://esclassifier-dev-ruuter-private.rootcode.software
+      - REACT_APP_CUSTOMER_SERVICE_LOGIN=https://login.esclassifier-dev.rootcode.software
+      # - REACT_APP_NOTIFICATION_NODE_URL=http://localhost:4040
+      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' https://esclassifier-dev-ruuter.rootcode.software https://esclassifier-dev-ruuter-private.rootcode.software https://esclassifier-dev-tim.rootcode.software;
+      - DEBUG_ENABLED=true
+      - CHOKIDAR_USEPOLLING=true
+      - PORT=3001
+      - REACT_APP_SERVICE_ID=conversations,settings,monitoring
+      - REACT_APP_ENABLE_HIDDEN_FEATURES=TRUE
+
+    build:
+      context: ./GUI
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3001:3001
+    volumes:
+      - /app/node_modules
+      - ./GUI:/app
+    networks:
+      - bykstack
+    cpus: "0.5"
+    mem_limit: "1G"
+
+  authentication-layer:
+    container_name: authentication-layer
+    image: authentication-layer
+    ports:
+      - 3004:3004
+    networks:
+      - bykstack
+
+  resql:
+    container_name: resql
+    image: resql
+    depends_on:
+      - users_db
+    environment:
+      - sqlms.datasources.[0].name=classifier
+      - sqlms.datasources.[0].jdbcUrl=jdbc:postgresql://users_db:5432/classifier #For LocalDb Use
+      # sqlms.datasources.[0].jdbcUrl=jdbc:postgresql://171.22.247.13:5433/byk?sslmode=require
+      - sqlms.datasources.[0].username=postgres
+      - sqlms.datasources.[0].password=rootcode
+      - logging.level.org.springframework.boot=INFO
+    ports:
+      - 8082:8082
+    volumes:
+      - ./DSL/Resql:/workspace/app/templates/classifier
+    networks:
+      - bykstack
+
+  users_db:
+    container_name: users_db
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=rootcode
+      - POSTGRES_DB=classifier
+    ports:
+      - 5433:5432
+    volumes:
+      - /home/ubuntu/user_db_files:/var/lib/postgresql/data
+    networks:
+      - bykstack
+    restart: always
+
+  cron-manager:
+    container_name: cron-manager
+    image: cron-manager
+    volumes:
+      - ./DSL/CronManager/DSL:/DSL
+      - ./DSL/CronManager/script:/app/scripts
+      - ./DSL/CronManager/config:/app/config
+    environment:
+      - server.port=9010
+    ports:
+      - 9010:8080
+    networks:
+      - bykstack
+
+networks:
+  bykstack:
+    name: bykstack
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1400
