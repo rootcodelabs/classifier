@@ -27,8 +27,6 @@ check_refresh_token:
       next: get_access_token
   next: return_not_found
 
-#not supported for internal requests
-
 get_access_token:
   call: http.post
   args:

@@ -48,3 +48,10 @@ export function isLabelsMismatch(newLabels, previousLabels) {
     return true;
   }
 }
+
+export function getOutlookExpirationDateTime() {
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() + 3);
+  const updatedDateISOString = currentDate.toISOString();
+  return updatedDateISOString;
+}
