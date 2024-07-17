@@ -3,7 +3,7 @@ services:
     container_name: ruuter-public
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=https://login.esclassifier-dev.rootcode.software
+      - application.cors.allowedOrigins=https://login.esclassifier-dev.rootcode.software, https://esclassifier-dev-ruuter.rootcode.software, https://esclassifier-dev.rootcode.software
       - application.httpCodesAllowList=200,201,202,400,401,403,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
