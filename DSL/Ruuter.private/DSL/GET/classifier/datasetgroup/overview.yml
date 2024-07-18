@@ -10,38 +10,39 @@ declaration:
     params:
       - field: page
         type: number
-        description: "Parameter  'page'"
-      - field: page_size
+        description: "Parameter 'page'"
+      - field: pageSize
         type: number
-        description: "Parameter field 'page_size'"
-      - field: sort_type
+        description: "Parameter field 'pageSize'"
+      - field: sortType
         type: string
-        description: "Parameter field 'sort_type'"
-      - field: major_version
+        description: "Parameter field 'sortType'"
+      - field: majorVersion
         type: string
-        description: "Parameter field 'major_version'"
-      - field: minor_version
+        description: "Parameter field 'majorVersion'"
+      - field: minorVersion
         type: string
-        description: "Parameter field 'minor_version'"
-      - field: patch_version
+        description: "Parameter field 'minorVersion'"
+      - field: patchVersion
         type: string
-        description: "Parameter field 'patch_version'"
-      - field: group_name
+        description: "Parameter field 'patchVersion'"
+      - field: groupName
         type: string
-        description: "Parameter field 'group_name'"
-      - field: validation_status
+        description: "Parameter field 'groupName'"
+      - field: validationStatus
         type: string
-        description: "Parameter field 'validation_status'"
+        description: "Parameter field 'validationStatus'"
 
 extract_data:
   assign:
     page: ${Number(incoming.params.page)}
-    page_size: ${Number(incoming.params.page_size)}
-    major_version: ${Number(incoming.params.major_version)}
-    minor_version: ${Number(incoming.params.minor_version)}
-    patch_version: ${Number(incoming.params.patch_version)}
-    group_name: ${incoming.params.group_name}
-    validation_status: ${incoming.params.validation_status}
+    page_size: ${Number(incoming.params.pageSize)}
+    major_version: ${Number(incoming.params.majorVersion)}
+    minor_version: ${Number(incoming.params.minorVersion)}
+    patch_version: ${Number(incoming.params.patchVersion)}
+    group_name: ${incoming.params.groupName}
+    validation_status: ${incoming.params.validationStatus}
+    sort_type: ${incoming.params.sortType}
   next: get_dataset_meta_data_overview
 
 get_dataset_meta_data_overview:
@@ -51,7 +52,7 @@ get_dataset_meta_data_overview:
     body:
       page: ${page}
       page_size: ${page_size}
-      sorting: ${incoming.params.sort_type}
+      sorting: ${sort_type}
       major_version: ${major_version}
       minor_version: ${minor_version}
       patch_version: ${patch_version}
@@ -69,7 +70,7 @@ check_status:
 assign_success_response:
   assign:
     format_res: {
-      operation_successful: true,
+      operationSuccessful: true,
       data: '${res_dataset.response.body}'
     }
   next: return_ok
@@ -77,7 +78,7 @@ assign_success_response:
 assign_fail_response:
   assign:
     format_res: {
-      operation_successful: false,
+      operationSuccessful: false,
       data: '${[]}'
     }
   next: return_bad_request

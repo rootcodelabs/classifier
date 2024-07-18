@@ -8,72 +8,72 @@ declaration:
   namespace: classifier
   allowlist:
     body:
-      - field: group_name
+      - field: groupName
         type: string
-        description: "Body field 'group_name'"
-      - field: major_version
+        description: "Body field 'groupName'"
+      - field: majorVersion
         type: integer
-        description: "Body field 'major_version'"
-      - field: minor_version
+        description: "Body field 'majorVersion'"
+      - field: minorVersion
         type: integer
-        description: "Body field 'minor_version'"
-      - field: patch_version
+        description: "Body field 'minorVersion'"
+      - field: patchVersion
         type: integer
-        description: "Body field 'patch_version'"
+        description: "Body field 'patchVersion'"
       - field: latest
         type: boolean
         description: "Body field 'latest'"
-      - field: is_enabled
+      - field: isEnabled
         type: boolean
-        description: "Body field 'is_enabled'"
-      - field: enable_allowed
+        description: "Body field 'isEnabled'"
+      - field: enableAllowed
         type: boolean
-        description: "Body field 'enable_allowed'"
-      - field: last_model_trained
+        description: "Body field 'enableAllowed'"
+      - field: lastModelTrained
         type: string
-        description: "Body field 'last_model_trained'"
-      - field: creation_timestamp
+        description: "Body field 'lastModelTrained'"
+      - field: creationTimestamp
         type: number
-        description: "Body field 'creation_timestamp'"
-      - field: last_updated_timestamp
+        description: "Body field 'creationTimestamp'"
+      - field: lastUpdatedTimestamp
         type: number
-        description: "Body field 'last_updated_timestamp'"
-      - field: last_used_for_training
+        description: "Body field 'lastUpdatedTimestamp'"
+      - field: lastUsedForTraining
         type: number
-        description: "Body field 'last_used_for_training'"
-      - field: validation_status
+        description: "Body field 'lastUsedForTraining'"
+      - field: validationStatus
         type: string
-        description: "Body field 'validation_status'"
-      - field: validation_errors
+        description: "Body field 'validationStatus'"
+      - field: validationErrors
         type: json
-        description: "Body field 'validation_errors'"
-      - field: processed_data_available
+        description: "Body field 'validationErrors'"
+      - field: processedDataAvailable
         type: boolean
-        description: "Body field 'processed_data_available'"
-      - field: raw_data_available
+        description: "Body field 'processedDataAvailable'"
+      - field: rawDataAvailable
         type: boolean
-        description: "Body field 'raw_data_available'"
-      - field: num_samples
+        description: "Body field 'rawDataAvailable'"
+      - field: numSamples
         type: integer
-        description: "Body field 'num_samples'"
-      - field: num_pages
+        description: "Body field 'numSamples'"
+      - field: numPages
         type: integer
-        description: "Body field 'num_pages'"
-      - field: raw_data_location
+        description: "Body field 'numPages'"
+      - field: rawDataLocation
         type: string
-        description: "Body field 'raw_data_location'"
-      - field: preprocess_data_location
+        description: "Body field 'rawDataLocation'"
+      - field: preprocessDataLocation
         type: string
-        description: "Body field 'preprocess_data_location'"
-      - field: validation_criteria
+        description: "Body field 'preprocessDataLocation'"
+      - field: validationCriteria
         type: json
-        description: "Body field 'validation_criteria'"
-      - field: class_hierarchy
+        description: "Body field 'validationCriteria'"
+      - field: classHierarchy
         type: json
-        description: "Body field 'class_hierarchy'"
-      - field: connected_models
+        description: "Body field 'classHierarchy'"
+      - field: connectedModels
         type: array
-        description: "Body field 'connected_models'"
+        description: "Body field 'connectedModels'"
     headers:
       - field: cookie
         type: string
@@ -81,28 +81,28 @@ declaration:
 
 extract_request_data:
   assign:
-    group_name: ${incoming.body.group_name}
-    major_version: ${incoming.body.major_version}
-    minor_version: ${incoming.body.minor_version}
-    patch_version: ${incoming.body.patch_version}
+    group_name: ${incoming.body.groupName}
+    major_version: ${incoming.body.majorVersion}
+    minor_version: ${incoming.body.minorVersion}
+    patch_version: ${incoming.body.patchVersion}
     latest: ${incoming.body.latest === null ? false :incoming.body.latest}
-    is_enabled: ${incoming.body.is_enabled === null ? false :incoming.body.is_enabled}
-    enable_allowed: ${incoming.body.enable_allowed === null ? false :incoming.body.enable_allowed}
-    last_model_trained: ${incoming.body.last_model_trained === null ? '' :incoming.body.last_model_trained }
-    creation_timestamp: ${incoming.body.creation_timestamp}
-    last_updated_timestamp: ${incoming.body.last_updated_timestamp}
-    last_used_for_training: ${incoming.body.last_used_for_training}
-    validation_status: ${incoming.body.validation_status}
-    validation_errors: ${incoming.body.validation_errors}
-    processed_data_available: ${incoming.body.processed_data_available === null ? false :incoming.body.processed_data_available }
-    raw_data_available: ${incoming.body.raw_data_available === null ? false :incoming.body.raw_data_available}
-    num_samples: ${incoming.body.num_samples}
-    num_pages: ${incoming.body.num_pages}
-    raw_data_location: ${incoming.body.raw_data_location}
-    preprocess_data_location: ${incoming.body.preprocess_data_location}
-    validation_criteria: ${incoming.body.validation_criteria}
-    class_hierarchy: ${incoming.body.class_hierarchy}
-    connected_models: ${incoming.body.connected_models}
+    is_enabled: ${incoming.body.isEnabled === null ? false :incoming.body.isEnabled}
+    enable_allowed: ${incoming.body.enableAllowed === null ? false :incoming.body.enableAllowed}
+    last_model_trained: ${incoming.body.lastModelTrained === null ? '' :incoming.body.lastModelTrained}
+    creation_timestamp: ${incoming.body.creationTimestamp}
+    last_updated_timestamp: ${incoming.body.lastUpdatedTimestamp}
+    last_used_for_training: ${incoming.body.lastUsedForTraining}
+    validation_status: ${incoming.body.validationStatus}
+    validation_errors: ${incoming.body.validationErrors}
+    processed_data_available: ${incoming.body.processedDataAvailable === null ? false :incoming.body.processedDataAvailable}
+    raw_data_available: ${incoming.body.rawDataAvailable === null ? false :incoming.body.rawDataAvailable}
+    num_samples: ${incoming.body.numSamples}
+    num_pages: ${incoming.body.numPages}
+    raw_data_location: ${incoming.body.rawDataLocation}
+    preprocess_data_location: ${incoming.body.preprocessDataLocation}
+    validation_criteria: ${incoming.body.validationCriteria}
+    class_hierarchy: ${incoming.body.classHierarchy}
+    connected_models: ${incoming.body.connectedModels}
   next: check_for_request_data
 
 check_for_request_data:
@@ -150,16 +150,16 @@ check_status:
 assign_success_response:
   assign:
     format_res: {
-      dg_id: '${res_dataset.response.body[0].id}',
-      operation_successful: true,
+      dgId: '${res_dataset.response.body[0].id}',
+      operationSuccessful: true,
     }
   next: return_ok
 
 assign_fail_response:
   assign:
     format_res: {
-      dg_id: '',
-      operation_successful: false,
+      dgId: '',
+      operationSuccessful: false,
     }
   next: return_bad_request
 

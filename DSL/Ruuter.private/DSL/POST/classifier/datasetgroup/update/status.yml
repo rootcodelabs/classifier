@@ -8,17 +8,17 @@ declaration:
   namespace: classifier
   allowlist:
     body:
-      - field: dg_id
+      - field: dgId
         type: string
-        description: "Body field 'dg_id'"
-      - field: operation_type
+        description: "Body field 'dgId'"
+      - field: operationType
         type: string
-        description: "Body field 'operation_type'"
+        description: "Body field 'operationType'"
 
 extract_request_data:
   assign:
-    id: ${incoming.body.dg_id}
-    operation_type: ${incoming.body.operation_type}
+    id: ${incoming.body.dgId}
+    operation_type: ${incoming.body.operationType}
   next: get_dataset_group
 
 get_dataset_group:
@@ -83,40 +83,40 @@ check_enable_disable_status:
 assign_success_response:
   assign:
     format_res: {
-      dg_id: '${id}',
-      operation_type: '${operation_type}',
-      operation_successful: true,
-      error_response: ""
+      dgId: '${id}',
+      operationType: '${operation_type}',
+      operationSuccessful: true,
+      errorResponse: ""
     }
   next: return_ok
 
 assign_not_allowed_response:
   assign:
     format_res: {
-      dg_id: '${id}',
-      operation_type: '${operation_type}',
-      operation_successful: false,
-      error_response: "This dataset is not ready to be enabled"
+      dgId: '${id}',
+      operationType: '${operation_type}',
+      operationSuccessful: false,
+      errorResponse: "This dataset is not ready to be enabled"
     }
   next: return_not_allowed
 
 assign_not_found_response:
   assign:
     format_res: {
-      dg_id: '${id}',
-      operation_type: '${operation_type}',
-      operation_successful: false,
-      error_response: "dataset doesn't exist"
+      dgId: '${id}',
+      operationType: '${operation_type}',
+      operationSuccessful: false,
+      errorResponse: "dataset doesn't exist"
     }
   next: return_not_found
 
 assign_status_update_error_response:
   assign:
     format_res: {
-      dg_id: '${id}',
-      operation_type: '${operation_type}',
-      operation_successful: false,
-      error_response: "Dataset group status not updated"
+      dgId: '${id}',
+      operationType: '${operation_type}',
+      operationSuccessful: false,
+      errorResponse: "Dataset group status not updated"
     }
   next: return_not_found
 

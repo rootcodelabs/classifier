@@ -1,4 +1,4 @@
-SELECT  dt.id as dg_id,
+SELECT  dt.id,
         dt.group_name,
        dt.major_version,
        dt.minor_version,
