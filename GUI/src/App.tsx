@@ -8,6 +8,7 @@ import Integrations from 'pages/Integrations';
 import DatasetGroups from 'pages/DatasetGroups';
 import { useQuery } from '@tanstack/react-query';
 import { UserInfo } from 'types/userInfo';
+import CreateDatasetGroup from 'pages/DatasetGroups/CreateDatasetGroup';
 
 const App: FC = () => {
 
@@ -28,6 +29,7 @@ const App: FC = () => {
         <Route path="/user-management" element={<UserManagement />} />
         <Route path="/integration" element={<Integrations />} />
         <Route path="/dataset-groups" element={<DatasetGroups />} />
+        <Route path="/create-dataset-group" element={<CreateDatasetGroup />} />
 
 
       </Route>

@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import './DatasetGroups.scss';
 import { useTranslation } from 'react-i18next';
 import { Button, FormInput, FormSelect } from 'components';
@@ -6,45 +6,32 @@ import DatasetGroupCard from 'components/molecules/DatasetGroupCard';
 import Pagination from 'components/molecules/Pagination';
 import { getDatasetsOverview } from 'services/datasets';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  const datasets = [
-    { datasetName: 'Dataset 10', status: 'Connected', isEnabled: false },
-    { datasetName: 'Dataset 2', status: 'Disconnected', isEnabled: false },
-    { datasetName: 'Dataset 2', status: 'Disconnected', isEnabled: true },
-    { datasetName: 'Dataset 9', status: 'Disconnected', isEnabled: false },
-    { datasetName: 'Dataset 4', status: 'Disconnected', isEnabled: true },
-    { datasetName: 'Dataset 10', status: 'Connected', isEnabled: true },
-    { datasetName: 'Dataset 9', status: 'Disconnected', isEnabled: true },
-    { datasetName: 'Dataset 2', status: 'Disconnected', isEnabled: true },
-    { datasetName: 'Dataset 4', status: 'Disconnected', isEnabled: true },
-    { datasetName: 'Dataset 3', status: 'Disconnected', isEnabled: false },
-    { datasetName: 'Dataset 3', status: 'Disconnected', isEnabled: false },
-    { datasetName: 'Dataset 3', status: 'Disconnected', isEnabled: false },
+  const [pageIndex, setPageIndex] = useState(1);
 
-  ];
+  const { data: datasetGroupsData, isLoading, isError } = useQuery(['datasets/groups', pageIndex], () => getDatasetsOverview(pageIndex), {
+    keepPreviousData: true,
+  });
 
-  const { data: datasetGroupsData, isLoading } = useQuery(
-    ['datasets/groups'],
-    () => getDatasetsOverview(1)
-  );
+  const pageCount = datasetGroupsData?.totalPages || 5
 
-  console.log(datasetGroupsData);
-  
   return (
     <>
       <div className="container">
         <div className="title_container">
           <div className="title">Dataset Groups</div>
-          <Button appearance="primary" size="m">
+          <Button appearance="primary" size="m" onClick={()=>navigate('/create-dataset-group')}>
             Create Dataset Group
           </Button>
         </div>
         <div>
           <div className="search-panel">
-          <FormSelect
+            <FormSelect
               label=""
               name="sort"
               placeholder="Dataset Group"
@@ -85,18 +72,31 @@ const DatasetGroups: FC = () => {
             className="bordered-card grid-container"
             style={{ padding: '20px', marginTop: '20px' }}
           >
-            {datasets.map((dataset) => {
+            {isLoading && <>Loading...</>}
+            {datasetGroupsData?.data?.map((dataset) => {
               return (
                 <DatasetGroupCard
-                  isEnabled={dataset.isEnabled}
-                  status={dataset.status}
-                  datasetName={dataset.datasetName}
+                datasetGroupId={dataset?.dgId}
+                  isEnabled={dataset?.isEnabled}
+                  datasetName={dataset?.name}
+                  version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                  isLatest={dataset.latest}
+                  enableAllowed={dataset.enableAllowed}
+                  lastUpdated={dataset.lastUpdated}
+                  lastUsed={dataset?.linkedModels[0]?.trainingTimestamp}
+                  validationStatus={dataset.validationStatus}
+                  lastModelTrained={dataset?.linkedModels[0]?.modelNname}
                 />
               );
             })}
           </div>
-
-          <Pagination pageCount={10} pageSize={1} pageIndex={0} canPreviousPage={true} canNextPage={true} ></Pagination>
+          <Pagination
+            pageCount={pageCount}
+            pageIndex={pageIndex}
+            canPreviousPage={pageIndex > 1}
+            canNextPage={pageIndex < pageCount}
+            onPageChange={setPageIndex}
+          />
         </div>
       </div>
     </>

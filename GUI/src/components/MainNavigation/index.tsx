@@ -22,7 +22,6 @@ import { Icon } from 'components';
 import type { MenuItem } from 'types/mainNavigation';
 import { menuIcons } from 'constants/menuIcons';
 import './MainNavigation.scss';
-import { error } from 'console';
 import apiDev from 'services/api-dev';
 
 const MainNavigation: FC = () => {
@@ -112,9 +111,7 @@ const MainNavigation: FC = () => {
 
   useQuery({
     queryKey: ['/accounts/user-role', 'prod'],
-    onSuccess: (res: any) => {
-      console.log(res);
-      
+    onSuccess: (res: any) => {      
       const filteredItems =
           items.filter((item) => {
             const role = res?.response[0];

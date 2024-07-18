@@ -19,6 +19,7 @@ type FormSelectProps = Partial<ControllerRenderProps> & SelectHTMLAttributes<HTM
     value: string;
   }[];
   onSelectionChange?: (selection: { label: string, value: string } | null) => void;
+  error?:string
 }
 
 const itemToString = (item: ({ label: string, value: string } | null)) => {
@@ -35,6 +36,7 @@ const FormSelect= forwardRef<HTMLSelectElement, FormSelectProps>((
     placeholder,
     defaultValue,
     onSelectionChange,
+    error,
     ...rest
   },
   ref
@@ -63,8 +65,8 @@ const FormSelect= forwardRef<HTMLSelectElement, FormSelectProps>((
 
   const selectClasses = clsx(
     'select',
-    disabled && 'select--disabled',
-  );
+    disabled && 'select--disabled'  );
+
 
   const placeholderValue = placeholder || t('global.choose');
 
@@ -72,7 +74,7 @@ const FormSelect= forwardRef<HTMLSelectElement, FormSelectProps>((
     <div className={selectClasses} style={rest.style}>
       {label && !hideLabel && <label htmlFor={id} className='select__label' {...getLabelProps()}>{label}</label>}
       <div className='select__wrapper' >
-        <div className='select__trigger' {...getToggleButtonProps()}>
+        <div className={`select__trigger ${error?`select__error`:`select__default`}`} {...getToggleButtonProps()}>
           {selectedItem?.label ?? placeholderValue}
           <Icon label='Dropdown icon' size='medium' icon={<MdArrowDropDown color='#5D6071' />} />
         </div>
@@ -86,6 +88,8 @@ const FormSelect= forwardRef<HTMLSelectElement, FormSelectProps>((
             ))
           )}
         </ul>
+        {error && <p className="input__inline_error">{error}</p>}
+
       </div>
     </div>
   );

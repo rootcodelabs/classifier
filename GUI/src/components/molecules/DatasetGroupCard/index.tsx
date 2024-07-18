@@ -4,17 +4,20 @@ import Dataset from 'assets/Dataset';
 import { Switch } from 'components/FormElements';
 import Button from 'components/Button';
 import Label from 'components/Label';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { enableDataset } from 'services/datasets';
 
 type DatasetGroupCardProps = {
   datasetGroupId?: string;
   datasetName?: string;
   version?: string;
   isLatest?: boolean;
-  isEnabled?:boolean;
-  enableAllowed?:boolean;
-  lastUpdated?:string;
-  validationStatus?:string;
-  lastModelTrained?:string
+  isEnabled?: boolean;
+  enableAllowed?: boolean;
+  lastUpdated?: string;
+  lastUsed?: string;
+  validationStatus?: string;
+  lastModelTrained?: string;
 };
 
 const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
@@ -25,25 +28,92 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
   isEnabled,
   enableAllowed,
   lastUpdated,
+  lastUsed,
   validationStatus,
-  lastModelTrained
+  lastModelTrained,
 }) => {
+  const queryClient = useQueryClient();
+
+  const renderValidationStatus = (status) => {
+    if (status === 'successful') {
+      return <Label type="success">{'Validation Successful'}</Label>;
+    } else if (status === 'failed') {
+      return <Label type="error">{'Validation Failed'}</Label>;
+    } else if (status === 'pending') {
+      return <Label type="warning">{'Validation Pending'}</Label>;
+    } else if (status === 'in_progress') {
+      return <Label type="warning">{'Validation In Progress'}</Label>;
+    }
+  };
+
+  const datasetEnableMutation = useMutation({
+    mutationFn: (data) => enableDataset(data),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([
+        'GET/datasetgroup/overview',1
+      ]);
+      // setIsModalOpen(false);
+    },
+    // onError: (error: AxiosError) => {
+    //   setModalType(INTEGRATION_MODALS.DISCONNECT_ERROR);
+    // },
+  });
+
+  const datasetDisableMutation = useMutation({
+    mutationFn: (data) => enableDataset(data),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([
+        'GET/datasetgroup/overview',1
+      ]);
+      // setIsModalOpen(false);
+    },
+    // onError: (error: AxiosError) => {
+    //   setModalType(INTEGRATION_MODALS.DISCONNECT_ERROR);
+    // },
+  });
+
+  const handleCheck =()=>{
+    if(isEnabled)
+      datasetDisableMutation.mutate({
+        dgId: datasetGroupId,
+        operationType: 'disable'
+      });
+      else
+      datasetEnableMutation.mutate({
+        dgId: datasetGroupId,
+        operationType: 'enable'
+      });
+  }
+
   return (
     <>
       <div className="dataset-group-card">
         <div className="row switch-row">
           <p className="icon-text">{datasetName}</p>
-          <Switch label="" checked={isEnabled} />
+          <Switch
+            label=""
+            checked={isEnabled}
+            onCheckedChange={() =>handleCheck()}
+          />
         </div>
-        <Label type="error">{validationStatus}</Label>
+        {renderValidationStatus(validationStatus)}
         <div className="py-3">
-          <p className="text">{'Last Model Trained:'}{lastModelTrained}</p>
-          <p className="text">{'Last Used For Training:'}{}</p>
-          <p className="text">{'Last Updated:  7.6.24-15:31'}</p>
+          <p className="text">
+            {'Last Model Trained:'}
+            {lastModelTrained}
+          </p>
+          <p className="text">
+            {'Last Used For Training:'}
+            {lastUsed}
+          </p>
+          <p className="text">
+            {'Last Updated:'}
+            {lastUpdated}
+          </p>
         </div>
         <div className="flex">
-          <Label type="success">V5.3.1</Label>
-          <Label type="success">latest</Label>
+          <Label type="success">{version}</Label>
+          {isLatest ? <Label type="success">latest</Label> : null}
         </div>
 
         <div className="label-row">

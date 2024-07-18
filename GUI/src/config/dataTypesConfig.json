@@ -1,0 +1,6 @@
+[
+    { "label": "Text", "value": "TEXT" },
+    { "label": "Numbers", "value": "NUMBER" },
+    { "label": "Date Time", "value": "DATETIME" }
+
+  ]
