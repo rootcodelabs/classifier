@@ -14,14 +14,34 @@ declaration:
       - field: page_size
         type: number
         description: "Parameter field 'page_size'"
-      - field: sorting
+      - field: sort_type
         type: string
-        description: "Parameter field 'sorting'"
+        description: "Parameter field 'sort_type'"
+      - field: major_version
+        type: string
+        description: "Parameter field 'major_version'"
+      - field: minor_version
+        type: string
+        description: "Parameter field 'minor_version'"
+      - field: patch_version
+        type: string
+        description: "Parameter field 'patch_version'"
+      - field: group_name
+        type: string
+        description: "Parameter field 'group_name'"
+      - field: validation_status
+        type: string
+        description: "Parameter field 'validation_status'"
 
 extract_data:
   assign:
     page: ${Number(incoming.params.page)}
     page_size: ${Number(incoming.params.page_size)}
+    major_version: ${Number(incoming.params.major_version)}
+    minor_version: ${Number(incoming.params.minor_version)}
+    patch_version: ${Number(incoming.params.patch_version)}
+    group_name: ${incoming.params.group_name}
+    validation_status: ${incoming.params.validation_status}
   next: get_dataset_meta_data_overview
 
 get_dataset_meta_data_overview:
@@ -31,7 +51,12 @@ get_dataset_meta_data_overview:
     body:
       page: ${page}
       page_size: ${page_size}
-      sorting: ${incoming.params.sorting}
+      sorting: ${incoming.params.sort_type}
+      major_version: ${major_version}
+      minor_version: ${minor_version}
+      patch_version: ${patch_version}
+      group_name: ${group_name}
+      validation_status: ${validation_status}
   result: res_dataset
   next: check_status
 
