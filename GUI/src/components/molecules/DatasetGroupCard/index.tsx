@@ -6,9 +6,10 @@ import Button from 'components/Button';
 import Label from 'components/Label';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { enableDataset } from 'services/datasets';
+import { useDialog } from 'hooks/useDialog';
 
 type DatasetGroupCardProps = {
-  datasetGroupId?: string;
+  datasetGroupId?: number;
   datasetName?: string;
   version?: string;
   isLatest?: boolean;
@@ -33,6 +34,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
   lastModelTrained,
 }) => {
   const queryClient = useQueryClient();
+  const { open, close } = useDialog();
 
   const renderValidationStatus = (status) => {
     if (status === 'successful') {
@@ -48,42 +50,62 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
 
   const datasetEnableMutation = useMutation({
     mutationFn: (data) => enableDataset(data),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries([
-        'GET/datasetgroup/overview',1
-      ]);
-      // setIsModalOpen(false);
+    onSuccess: async (response) => {
+      await queryClient.invalidateQueries(['GET/datasetgroup/overview', 1]);
+      if (response?.operationSuccessful)
+        open({
+          title: 'Cannot Enable Dataset Group',
+          content: (
+            <p>
+              The dataset group cannot be enabled until data is added. Please
+              add datasets to this group and try again.
+            </p>
+          ),
+        });
     },
-    // onError: (error: AxiosError) => {
-    //   setModalType(INTEGRATION_MODALS.DISCONNECT_ERROR);
-    // },
+    onError: (error: AxiosError) => {
+      open({
+        title: 'Operation Unsuccessful',
+        content: <p>Something went wrong. Please try again.</p>,
+      });
+    },
   });
 
   const datasetDisableMutation = useMutation({
     mutationFn: (data) => enableDataset(data),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries([
-        'GET/datasetgroup/overview',1
-      ]);
-      // setIsModalOpen(false);
+    onSuccess: async (response) => {
+      await queryClient.invalidateQueries(['GET/datasetgroup/overview', 1]);
+      if (response?.operationSuccessful)
+        open({
+          title: 'Cannot Enable Dataset Group',
+          content: (
+            <p>
+              The dataset group cannot be enabled until data is added. Please
+              add datasets to this group and try again.
+            </p>
+          ),
+        });
     },
-    // onError: (error: AxiosError) => {
-    //   setModalType(INTEGRATION_MODALS.DISCONNECT_ERROR);
-    // },
+    onError: (error: AxiosError) => {
+      open({
+        title: 'Operation Unsuccessful',
+        content: <p>Something went wrong. Please try again.</p>,
+      });
+    },
   });
 
-  const handleCheck =()=>{
-    if(isEnabled)
+  const handleCheck = () => {
+    if (isEnabled)
       datasetDisableMutation.mutate({
         dgId: datasetGroupId,
-        operationType: 'disable'
+        operationType: 'disable',
       });
-      else
+    else
       datasetEnableMutation.mutate({
         dgId: datasetGroupId,
-        operationType: 'enable'
+        operationType: 'enable',
       });
-  }
+  };
 
   return (
     <>
@@ -93,7 +115,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
           <Switch
             label=""
             checked={isEnabled}
-            onCheckedChange={() =>handleCheck()}
+            onCheckedChange={() => handleCheck()}
           />
         </div>
         {renderValidationStatus(validationStatus)}

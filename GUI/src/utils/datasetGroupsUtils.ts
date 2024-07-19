@@ -58,30 +58,30 @@ export const validateValidationRules = (data: ValidationRule[]) => {
   return false;
 };
 
-export const getTimestampNow = ()=>{
- return Math.floor(Date.now() / 1000);
-}
+export const getTimestampNow = () => {
+  return Math.floor(Date.now() / 1000);
+};
 
-export const isValidationRulesSatisfied=(data: ValidationRule[])=>{
+export const isValidationRulesSatisfied = (data: ValidationRule[]) => {
   if (data.length < 2) {
-    return false; 
-}
+    return false;
+  }
 
-let hasDataClassTrue = false;
-let hasDataClassFalse = false;
+  let hasDataClassTrue = false;
+  let hasDataClassFalse = false;
 
-for (let item of data) {
+  for (let item of data) {
     if (item.isDataClass === true) {
-        hasDataClassTrue = true;
+      hasDataClassTrue = true;
     }
     if (item.isDataClass === false) {
-        hasDataClassFalse = true;
+      hasDataClassFalse = true;
     }
 
     if (hasDataClassTrue && hasDataClassFalse) {
-        return true;
+      return true;
     }
-}
+  }
 
-return false;
-}
+  return false;
+};

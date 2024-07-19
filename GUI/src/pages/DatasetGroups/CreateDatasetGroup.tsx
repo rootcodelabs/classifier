@@ -19,11 +19,13 @@ import {
 } from 'utils/datasetGroupsUtils';
 import ValidationCriteria from 'components/molecules/ValidationCriteria';
 import { ValidationRule } from 'types/datasetGroups';
+import { useNavigate } from 'react-router-dom';
 
 const CreateDatasetGroup: FC = () => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
+  const navigate = useNavigate();
 
   const initialValidationRules = [
     { id: 1, fieldName: '', dataType: '', isDataClass: false },
@@ -162,7 +164,7 @@ const CreateDatasetGroup: FC = () => {
           style={{ alignItems: 'end', gap: '10px', justifyContent: 'end', marginTop:"25px" }}
         >
           <Button onClick={() => validateData()}>Create Dataset Group</Button>
-          <Button appearance="secondary">Cancel</Button>
+          <Button appearance="secondary" onClick={()=>navigate('/dataset-groups')}>Cancel</Button>
         </div>
         
       </div>
