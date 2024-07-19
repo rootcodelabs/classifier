@@ -107,7 +107,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
   };
 
   return (
-    <>
+    <div>
       <div className="dataset-group-card">
         <div className="row switch-row">
           <p className="icon-text">{datasetName}</p>
@@ -143,7 +143,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

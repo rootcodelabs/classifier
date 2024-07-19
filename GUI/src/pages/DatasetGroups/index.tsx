@@ -73,7 +73,7 @@ const DatasetGroups: FC = () => {
   };
 
   return (
-    <>
+    <div>
       <div className="container">
         <div className="title_container">
           <div className="title">Dataset Groups</div>
@@ -139,7 +139,7 @@ const DatasetGroups: FC = () => {
             className="bordered-card grid-container"
             style={{ padding: '20px', marginTop: '20px' }}
           >
-            {isLoading && <>Loading...</>}
+            {isLoading && <div>Loading...</div>}
             {datasetGroupsData?.data?.map(
               (dataset: DatasetGroup, index: number) => {
                 return (
@@ -173,7 +173,7 @@ const DatasetGroups: FC = () => {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -141,7 +141,7 @@ const MainNavigation: FC = () => {
     return menuItems.map((menuItem) => (
       <li key={menuItem.label}>
         {menuItem.children ? (
-          <>
+          <div>
             <button
               className={clsx('nav__toggle', {
                 'nav__toggle--icon': !!menuItem.id,
@@ -161,7 +161,7 @@ const MainNavigation: FC = () => {
             <ul className="nav__submenu">
               {renderMenuTree(menuItem.children)}
             </ul>
-          </>
+          </div>
         ) : (
           <NavLink to={menuItem.path ?? '#'}>
             {' '}

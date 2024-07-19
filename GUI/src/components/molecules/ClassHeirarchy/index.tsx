@@ -153,7 +153,7 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
   };
 
   return (
-    <>
+    <div>
       <div className="title-sm">Class Hierarchy</div>
       <Card>
         <Button onClick={addMainClass}>Add Main Class</Button>
@@ -172,18 +172,18 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
         isOpen={isModalOpen}
         title={'Are you sure?'}
         footer={
-          <>
+          <div>
             <Button appearance='secondary' onClick={()=>setIsModalOpen(false)}>Cancel</Button>
             <Button appearance="error" onClick={() => confirmDeleteNode()}>
               Delete
             </Button>
-          </>
+          </div>
         }
         onClose={() => setIsModalOpen(false)}
       >
         Confirm that you are wish to delete the following record
       </Dialog>
-    </>
+    </div>
   );
 };
 

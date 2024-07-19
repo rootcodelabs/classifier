@@ -77,14 +77,14 @@ const CreateDatasetGroup: FC = () => {
   }, [datasetName, nodes, validationRules]);
 
   return (
-    <>
+    <div>
       <div className="container">
         <div className="title_container">
           <div className="title">Create Dataset Group</div>
         </div>
         <div>
           <Card isHeaderLight={false} header={' Dataset Details'}>
-            <>
+            <div>
               <FormInput
                 label="Dataset Name"
                 placeholder="Enter dataset name"
@@ -94,7 +94,7 @@ const CreateDatasetGroup: FC = () => {
                   !datasetName && datasetNameError ? 'Enter dataset name' : ''
                 }
               />
-            </>
+            </div>
           </Card>
           <ValidationCriteria
             validationRules={validationRules}
@@ -114,7 +114,7 @@ const CreateDatasetGroup: FC = () => {
             isOpen={isModalOpen}
             title={'Insufficient Columns in Dataset'}
             footer={
-              <>
+              <div>
                 <Button
                   appearance="secondary"
                   onClick={() => setIsModalOpen(false)}
@@ -122,7 +122,7 @@ const CreateDatasetGroup: FC = () => {
                   Cancel
                 </Button>
                 <Button onClick={() => setIsModalOpen(false)}>Add now</Button>
-              </>
+              </div>
             }
             onClose={() => setIsModalOpen(false)}
           >
@@ -136,7 +136,7 @@ const CreateDatasetGroup: FC = () => {
             isOpen={isModalOpen}
             title={'Dataset Group Created Successfully'}
             footer={
-              <>
+              <div>
                 <Button
                   appearance="secondary"
                   onClick={() => setIsModalOpen(false)}
@@ -146,7 +146,7 @@ const CreateDatasetGroup: FC = () => {
                 <Button onClick={() => setIsModalOpen(false)}>
                   Go to Detailed View
                 </Button>
-              </>
+              </div>
             }
             onClose={() => setIsModalOpen(false)}
           >
@@ -163,7 +163,7 @@ const CreateDatasetGroup: FC = () => {
         </div>
         
       </div>
-    </>
+    </div>
   );
 };
 

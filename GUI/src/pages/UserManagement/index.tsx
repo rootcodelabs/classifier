@@ -167,10 +167,10 @@ const UserManagement: FC = () => {
     },
   });
 
-  if (isLoading) return <>Loading...</>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
-    <>
+    <div>
       <div className="container">
         <div className="title_container">
           <div className="title">{t('userManagement.title')}</div>
@@ -214,7 +214,7 @@ const UserManagement: FC = () => {
               onClose={() => setDeletableRow(null)}
               isOpen={true}
               footer={
-                <>
+                <div>
                   <Button
                     appearance="secondary"
                     onClick={() => setDeletableRow(null)}
@@ -227,7 +227,7 @@ const UserManagement: FC = () => {
                   >
                     {t('global.yes')}
                   </Button>
-                </>
+                </div>
               }
             >
               <p>{t('global.removeValidation')}</p>
@@ -244,7 +244,7 @@ const UserManagement: FC = () => {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
