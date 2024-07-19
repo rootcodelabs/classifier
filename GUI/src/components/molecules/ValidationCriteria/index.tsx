@@ -1,13 +1,13 @@
-import React, { FC, PropsWithChildren, useCallback, useState } from 'react';
+import React, { FC, PropsWithChildren, useCallback } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import dataTypes from '../../../config/dataTypesConfig.json';
-import { MdDehaze, MdDelete, MdExpand } from 'react-icons/md';
+import { MdDehaze, MdDelete } from 'react-icons/md';
 import Card from 'components/Card';
 import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';
 import Button from 'components/Button';
-import { transformValidationRules } from 'utils/datasetGroupsUtils';
 import { ValidationRule } from 'types/datasetGroups';
+import { Link } from 'react-router-dom';
 
 const ItemTypes = {
   ITEM: 'item',
@@ -96,14 +96,15 @@ const ValidationCriteria: FC<PropsWithChildren<ValidationRulesProps>> = ({
             <div
               style={{ display: 'flex', justifyContent: 'end', gap: '10px' }}
             >
-              <a
+              <Link
+              to={""}
                 style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
                 onClick={() => deleteItem(item.id)}
                 className='link'
               >
                 <MdDelete />
                 Delete
-              </a>
+              </Link>
               <FormCheckbox
                 label=""
                 item={{

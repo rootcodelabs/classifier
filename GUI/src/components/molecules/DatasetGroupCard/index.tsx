@@ -1,6 +1,5 @@
 import { FC, PropsWithChildren } from 'react';
 import './DatasetGroupCard.scss';
-import Dataset from 'assets/Dataset';
 import { Switch } from 'components/FormElements';
 import Button from 'components/Button';
 import Label from 'components/Label';
@@ -34,9 +33,9 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
   lastModelTrained,
 }) => {
   const queryClient = useQueryClient();
-  const { open, close } = useDialog();
+  const { open } = useDialog();
 
-  const renderValidationStatus = (status) => {
+  const renderValidationStatus = (status:string) => {
     if (status === 'successful') {
       return <Label type="success">{'Validation Successful'}</Label>;
     } else if (status === 'failed') {
@@ -63,7 +62,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
           ),
         });
     },
-    onError: (error: AxiosError) => {
+    onError: () => {
       open({
         title: 'Operation Unsuccessful',
         content: <p>Something went wrong. Please try again.</p>,

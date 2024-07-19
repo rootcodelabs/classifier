@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react';
+import { FC } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from 'components';
 import useStore from 'store';
@@ -9,6 +9,7 @@ import DatasetGroups from 'pages/DatasetGroups';
 import { useQuery } from '@tanstack/react-query';
 import { UserInfo } from 'types/userInfo';
 import CreateDatasetGroup from 'pages/DatasetGroups/CreateDatasetGroup';
+import ViewDatasetGroup from 'pages/DatasetGroups/ViewDatasetGroup';
 
 const App: FC = () => {
 
@@ -30,6 +31,7 @@ const App: FC = () => {
         <Route path="/integration" element={<Integrations />} />
         <Route path="/dataset-groups" element={<DatasetGroups />} />
         <Route path="/create-dataset-group" element={<CreateDatasetGroup />} />
+        <Route path="/view-dataset-group" element={<ViewDatasetGroup />} />
 
 
       </Route>

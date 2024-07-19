@@ -1,15 +1,11 @@
-import React, { FC, PropsWithChildren, useCallback, useState } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import dataTypes from '../../../config/dataTypesConfig.json';
-import { MdDelete, MdDeleteOutline, MdExpand } from 'react-icons/md';
+import React, { FC, PropsWithChildren, useState } from 'react';
+import { MdDeleteOutline } from 'react-icons/md';
 import Card from 'components/Card';
-import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';
+import { FormInput } from 'components/FormElements';
 import Button from 'components/Button';
 import { v4 as uuidv4 } from 'uuid';
 import './index.css';
 import Dialog from 'components/Dialog';
-import { transformClassHierarchy } from 'utils/datasetGroupsUtils';
 import { Class } from 'types/datasetGroups';
 
 type ClassHierarchyProps = {

@@ -1,5 +1,4 @@
 import apiMock from './api-mock';
-import { User, UserDTO } from 'types/user';
 
 export async function getDatasetsOverview(
   pageNum: number,

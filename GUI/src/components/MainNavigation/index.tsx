@@ -3,14 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   MdApps,
-  MdBackup,
-  MdClass,
-  MdClose,
-  MdDashboard,
-  MdDataset,
   MdKeyboardArrowDown,
   MdOutlineDataset,
-  MdOutlineForum,
   MdPeople,
   MdSettings,
   MdSettingsBackupRestore,
@@ -20,7 +14,6 @@ import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Icon } from 'components';
 import type { MenuItem } from 'types/mainNavigation';
-import { menuIcons } from 'constants/menuIcons';
 import './MainNavigation.scss';
 import apiDev from 'services/api-dev';
 

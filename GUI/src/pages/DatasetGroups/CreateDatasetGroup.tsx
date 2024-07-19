@@ -1,12 +1,7 @@
 import { FC, useCallback, useState } from 'react';
 import './DatasetGroups.scss';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Dialog, FormInput, FormSelect } from 'components';
-import DatasetGroupCard from 'components/molecules/DatasetGroupCard';
-import Pagination from 'components/molecules/Pagination';
-import { getDatasetsOverview } from 'services/datasets';
-import { useQuery } from '@tanstack/react-query';
-import DraggableRows from 'components/molecules/ValidationCriteria';
+import { Button, Card, Dialog, FormInput } from 'components';
 import { v4 as uuidv4 } from 'uuid';
 import ClassHierarchy from 'components/molecules/ClassHeirarchy';
 import {
