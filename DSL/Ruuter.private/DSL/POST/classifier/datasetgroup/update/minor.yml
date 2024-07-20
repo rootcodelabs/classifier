@@ -11,6 +11,9 @@ declaration:
       - field: dgId
         type: number
         description: "Body field 'dgId'"
+      - field: groupKey
+        type: string
+        description: "Body field 'groupKey'"
       - field: s3FilePath
         type: string
         description: "Body field 's3FilePath'"
@@ -22,6 +25,7 @@ declaration:
 extract_request_data:
   assign:
     dg_id: ${incoming.body.dgId}
+    group_key: ${incoming.body.groupKey}
     s3_file_path: ${incoming.body.s3FilePath}
     next: snapshot_dataset_group
 
@@ -46,7 +50,8 @@ update_old_dataset_group:
     url: "[#CLASSIFIER_RESQL]/set-old-dataset-group-for-validation"
     body:
       id: ${dg_id}
-      s3_file_path: ${s3_file_path}
+      group_key: ${group_key}
+      last_updated_timestamp: ${Date.now()}
   result: res
   next: check_old_dataset_status
 
@@ -62,6 +67,10 @@ execute_cron_manager:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/<group_name>/<job_name>"
     body:
       cookie: ${incoming.header.cookie}
+      dgId: ${dg_id}
+      updateType: 'minor'
+      savedFilePath: ${s3_file_path}
+      patchPayload: ${[]}
   result: res
   next: assign_success_response
 
