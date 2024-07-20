@@ -130,8 +130,8 @@ create_dataset_group_metadata:
       latest: true
       is_enabled: false
       enable_allowed: false
-      created_timestamp: ${current_epoch}
-      last_updated_timestamp: ${current_epoch}
+      created_timestamp: ${new Date().toISOString()}
+      last_updated_timestamp: ${new Date().toISOString()}
       validation_status: unvalidated
       processed_data_available: false
       raw_data_available: false

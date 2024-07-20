@@ -17,7 +17,7 @@ update_specific AS (
         is_enabled = false,
         patch_version = 0,
         latest = true,
-        last_updated_timestamp = to_timestamp(:last_updated_timestamp)::timestamp with time zone
+        last_updated_timestamp = :last_updated_timestamp::timestamp with time zone
     WHERE id = :id
     RETURNING 1
 )
