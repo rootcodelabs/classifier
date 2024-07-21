@@ -1,18 +1,19 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.responses import FileResponse, JSONResponse
 import os
-import requests
-from file_converter import FileConverter
 import json
-from pydantic import BaseModel
 import uuid
+from pydantic import BaseModel
+from file_converter import FileConverter
 from constants import UPLOAD_FAILED, UPLOAD_SUCCESS, EXPORT_TYPE_ERROR, IMPORT_TYPE_ERROR, S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED
+from s3_ferry import S3Ferry
 
 app = FastAPI()
 
 UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
+s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
     dgId: int
@@ -60,16 +61,9 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
         json.dump(convertedData, jsonFile, indent=4)
 
     saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json"
-    sourceFilePath = fileName.replace('.yml', '.json').replace('.xlsx', ".json"),
+    sourceFilePath = fileName.replace('.yml', '.json').replace('.xlsx', ".json")
     
-    payload = {
-        "destinationFilePath": saveLocation,
-        "destinationStorageType": "S3",
-        "sourceFilePath": sourceFilePath,
-        "sourceStorageType": "FS"
-    }
-
-    response = requests.post(S3_FERRY_URL, json=payload)
+    response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
     if response.status_code == 201:
         os.remove(fileLocation)
         if fileLocation != jsonLocalFilePath:
@@ -94,21 +88,13 @@ async def download_and_convert(request: Request, exportData: ExportFile):
     if version == "minor":
         saveLocation = f"/dataset/{dgId}/minor_update_temp/minor_update_.json"
         localFileName = f"group_{dgId}minor_update"
-
     elif version == "major":
         saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json"
         localFileName = f"group_{dgId}_aggregated"
     else:
         raise HTTPException(status_code=500, detail=IMPORT_TYPE_ERROR)
 
-    payload = {
-        "destinationFilePath": f"{localFileName}.json",
-        "destinationStorageType": "FS",
-        "sourceFilePath": saveLocation,
-        "sourceStorageType": "S3"
-    }
-
-    response = requests.post(S3_FERRY_URL, json=payload)
+    response = s3_ferry.transfer_file(f"{localFileName}.json", "FS", saveLocation, "S3")
     if response.status_code != 201:
         raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
