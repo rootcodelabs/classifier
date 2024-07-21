@@ -38,19 +38,8 @@ async def authenticate_user(request: Request):
         raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/datasetgroup/data/import")
-async def upload_and_copy(request: Request, dg_id: int = Form(...), import_type: str = Form(...), data_file: UploadFile = File(...)):
+async def upload_and_copy(request: Request, dg_id: int = Form(...), data_file: UploadFile = File(...)):
     await authenticate_user(request)
-    if import_type not in ["major","minor"]:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason" : "import_type should be either minor or major."
-            }
-        )
-
     file_location = os.path.join(UPLOAD_DIRECTORY, data_file.filename)
     file_name = data_file.filename
     with open(file_location, "wb") as f:
@@ -73,20 +62,7 @@ async def upload_and_copy(request: Request, dg_id: int = Form(...), import_type:
     with open(json_local_file_path, 'w') as json_file:
         json.dump(converted_data, json_file, indent=4)
 
-    if import_type == "minor":
-        save_location = f"/dataset/{dg_id}/minor_update_temp/minor_update_.json"
-    elif import_type == "major":
-        save_location = f"/dataset/{dg_id}/primary_dataset/dataset_{dg_id}_aggregated.json"
-    else:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason" : "import_type should be either minor or major."
-            }
-        )
+    save_location = f"/dataset/{dg_id}/primary_dataset/dataset_{dg_id}_aggregated.json"
     
     payload = {
         "destinationFilePath": save_location,
