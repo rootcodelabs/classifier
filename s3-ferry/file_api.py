@@ -13,9 +13,9 @@ RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
 
 class ExportFile(BaseModel):
-    dg_id: int
+    dgId: int
     version: str
-    export_type: str
+    exportType: str
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
@@ -38,15 +38,15 @@ async def authenticate_user(request: Request):
         raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/datasetgroup/data/import")
-async def upload_and_copy(request: Request, dg_id: int = Form(...), data_file: UploadFile = File(...)):
+async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
     await authenticate_user(request)
-    file_location = os.path.join(UPLOAD_DIRECTORY, data_file.filename)
-    file_name = data_file.filename
-    with open(file_location, "wb") as f:
-        f.write(data_file.file.read())
+    fileLocation = os.path.join(UPLOAD_DIRECTORY, dataFile.filename)
+    fileName = dataFile.filename
+    with open(fileLocation, "wb") as f:
+        f.write(dataFile.file.read())
 
-    file_converter = FileConverter()
-    success, converted_data = file_converter.convert_to_json(file_location)
+    fileConverter = FileConverter()
+    success, convertedData = fileConverter.convert_to_json(fileLocation)
     if not success:
         raise HTTPException(
             status_code=500,
@@ -58,31 +58,31 @@ async def upload_and_copy(request: Request, dg_id: int = Form(...), data_file: U
             }
         )
     
-    json_local_file_path = file_location.replace('.yaml', '.json').replace('.yml', '.json').replace('.xlsx', ".json")
-    with open(json_local_file_path, 'w') as json_file:
-        json.dump(converted_data, json_file, indent=4)
+    jsonLocalFilePath = fileLocation.replace('.yaml', '.json').replace('.yml', '.json').replace('.xlsx', ".json")
+    with open(jsonLocalFilePath, 'w') as jsonFile:
+        json.dump(convertedData, jsonFile, indent=4)
 
-    save_location = f"/dataset/{dg_id}/primary_dataset/dataset_{dg_id}_aggregated.json"
-    source_file_path = file_name.replace('.yml', '.json').replace('.xlsx', ".json"),
+    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json"
+    sourceFilePath = fileName.replace('.yml', '.json').replace('.xlsx', ".json"),
     
     payload = {
-        "destinationFilePath": save_location,
+        "destinationFilePath": saveLocation,
         "destinationStorageType": "S3",
-        "sourceFilePath": source_file_path,
+        "sourceFilePath": sourceFilePath,
         "sourceStorageType": "FS"
     }
 
     response = requests.post(S3_FERRY_URL, json=payload)
     if response.status_code == 201:
-        os.remove(file_location)
-        if(file_location!=json_local_file_path):
-            os.remove(json_local_file_path)
-        response_data = {
+        os.remove(fileLocation)
+        if(fileLocation!=jsonLocalFilePath):
+            os.remove(jsonLocalFilePath)
+        responseData = {
             "upload_status": 200,
             "operation_successful": True,
-            "saved_file_path": save_location
+            "saved_file_path": saveLocation
         }
-        return JSONResponse(status_code=200, content=response_data)
+        return JSONResponse(status_code=200, content=responseData)
     else:
         raise HTTPException(
             status_code=500,
@@ -96,13 +96,13 @@ async def upload_and_copy(request: Request, dg_id: int = Form(...), data_file: U
 
 
 @app.post("/datasetgroup/data/download")
-async def download_and_convert(request: Request, export_data: ExportFile):
+async def download_and_convert(request: Request, exportData: ExportFile):
     await authenticate_user(request)
-    dg_id = export_data.dg_id
-    version = export_data.version
-    export_type = export_data.export_type
+    dgId = exportData.dgId
+    version = exportData.version
+    exportType = exportData.exportType
 
-    if export_type not in ["xlsx", "yaml", "json"]:
+    if exportType not in ["xlsx", "yaml", "json"]:
         raise HTTPException(
             status_code=500,
             detail={
@@ -114,12 +114,12 @@ async def download_and_convert(request: Request, export_data: ExportFile):
         )
 
     if version == "minor":
-        save_location = f"/dataset/{dg_id}/minor_update_temp/minor_update_.json"
-        local_file_name = f"group_{dg_id}minor_update"
+        saveLocation = f"/dataset/{dgId}/minor_update_temp/minor_update_.json"
+        localFileName = f"group_{dgId}minor_update"
 
     elif version == "major":
-        save_location = f"/dataset/{dg_id}/primary_dataset/dataset_{dg_id}_aggregated.json"
-        local_file_name = f"group_{dg_id}_aggregated"
+        saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json"
+        localFileName = f"group_{dgId}_aggregated"
     else:
         raise HTTPException(
             status_code=500,
@@ -132,9 +132,9 @@ async def download_and_convert(request: Request, export_data: ExportFile):
         )
 
     payload = {
-        "destinationFilePath": f"{local_file_name}.json",
+        "destinationFilePath": f"{localFileName}.json",
         "destinationStorageType": "FS",
-        "sourceFilePath": save_location,
+        "sourceFilePath": saveLocation,
         "sourceStorageType": "S3"
     }
 
@@ -150,23 +150,23 @@ async def download_and_convert(request: Request, export_data: ExportFile):
             }
         )
 
-    shared_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'shared')
-    json_file_path = os.path.join(shared_directory, f"{local_file_name}.json")
+    sharedDirectory = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'shared')
+    jsonFilePath = os.path.join(sharedDirectory, f"{localFileName}.json")
 
-    json_file_path = os.path.join('..', 'shared', f"{local_file_name}.json")
+    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}.json")
 
-    file_converter = FileConverter()
-    with open(f"{json_file_path}", 'r') as json_file:
-        json_data = json.load(json_file)
+    fileConverter = FileConverter()
+    with open(f"{jsonFilePath}", 'r') as jsonFile:
+        jsonData = json.load(jsonFile)
     
-    if export_type == "xlsx":
-        output_file = f"{local_file_name}.xlsx"
-        file_converter.convert_json_to_xlsx(json_data, output_file)
-    elif export_type == "yaml":
-        output_file = f"{local_file_name}.yaml"
-        file_converter.convert_json_to_yaml(json_data, output_file)
-    elif export_type == "json":
-        output_file = f"{json_file_path}"
+    if exportType == "xlsx":
+        outputFile = f"{localFileName}.xlsx"
+        fileConverter.convert_json_to_xlsx(jsonData, outputFile)
+    elif exportType == "yaml":
+        outputFile = f"{localFileName}.yaml"
+        fileConverter.convert_json_to_yaml(jsonData, outputFile)
+    elif exportType == "json":
+        outputFile = f"{jsonFilePath}"
     else:
         raise HTTPException(
             status_code=500,
@@ -178,4 +178,4 @@ async def download_and_convert(request: Request, export_data: ExportFile):
             }
         )
 
-    return FileResponse(output_file, filename=os.path.basename(output_file))
+    return FileResponse(outputFile, filename=os.path.basename(outputFile))
