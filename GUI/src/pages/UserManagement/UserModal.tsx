@@ -139,12 +139,12 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
       title={user ? t('settings.users.editUser') : t('settings.users.addUser')}
       onClose={onClose}
       footer={
-        <>
+        <div>
           <Button appearance="secondary" onClick={onClose}>
             {t('global.cancel')}
           </Button>
           <Button onClick={handleUserSubmit}>{t('global.confirm')}</Button>
-        </>
+        </div>
       }
     >
       <Track direction="vertical" gap={16} align="right">

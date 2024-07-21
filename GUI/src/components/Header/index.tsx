@@ -110,7 +110,7 @@ const Header: FC = () => {
   });
 
   return (
-    <>
+    <div>
       <header className="header">
         <Track justify="between">
           <BykLogo height={50} />
@@ -131,7 +131,7 @@ const Header: FC = () => {
           )}
         </Track>
       </header>
-    </>
+    </div>
   );
 };
 

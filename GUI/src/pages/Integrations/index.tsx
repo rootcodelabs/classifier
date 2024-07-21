@@ -20,7 +20,7 @@ const Integrations: FC = () => {
 console.log(integrationStatus);
 
   return (
-    <><div className='container'>
+    <div><div className='container'>
       <div className="title_container">
         <div className="title">{t('integration.title')}</div>
       </div>
@@ -45,7 +45,7 @@ console.log(integrationStatus);
           isActive={integrationStatus?.pinal_connection_status}
         />
       </div></div>
-    </>
+    </div>
   );
 };
 
