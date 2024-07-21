@@ -80,17 +80,3 @@ class FileConverter:
         except Exception as e:
             print(f"Error converting JSON to YAML: {e}")
             return False
-
-if __name__ == "__main__":
-    converter = FileConverter()
-    
-    # Convert files to JSON
-    file_paths = ['example.json', 'example.yaml', 'example.xlsx', 'example.txt']
-    for file_path in file_paths:
-        success, json_data = converter.convert_to_json(file_path)
-        if success:
-            print(f"JSON data for '{file_path}':\n{json.dumps(json_data, indent=4)}\n")
-    
-    if json_data:
-        converter.convert_json_to_xlsx(json_data, 'output.xlsx')
-        converter.convert_json_to_yaml(json_data, 'output.yaml')
