@@ -40,3 +40,8 @@ S3_DOWNLOAD_FAILED = {
     "saved_file_path": None,
     "reason": "Failed to download from S3"
 }
+
+JSON_EXT = ".json"
+YAML_EXT = ".yaml"
+YML_EXT = ".yml"
+XLSX_EXT = ".xlsx"

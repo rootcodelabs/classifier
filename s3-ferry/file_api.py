@@ -3,9 +3,10 @@ from fastapi.responses import FileResponse, JSONResponse
 import os
 import json
 import uuid
+import requests
 from pydantic import BaseModel
 from file_converter import FileConverter
-from constants import UPLOAD_FAILED, UPLOAD_SUCCESS, EXPORT_TYPE_ERROR, IMPORT_TYPE_ERROR, S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED
+from constants import UPLOAD_FAILED, UPLOAD_SUCCESS, EXPORT_TYPE_ERROR, IMPORT_TYPE_ERROR, S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED, JSON_EXT, YAML_EXT, YML_EXT, XLSX_EXT
 from s3_ferry import S3Ferry
 
 app = FastAPI()
@@ -56,12 +57,12 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
         upload_failed["reason"] = "Json file convert failed."
         raise HTTPException(status_code=500, detail=upload_failed)
     
-    jsonLocalFilePath = fileLocation.replace('.yaml', '.json').replace('.yml', '.json').replace('.xlsx', ".json")
+    jsonLocalFilePath = fileLocation.replace(YAML_EXT, JSON_EXT).replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
     with open(jsonLocalFilePath, 'w') as jsonFile:
         json.dump(convertedData, jsonFile, indent=4)
 
-    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json"
-    sourceFilePath = fileName.replace('.yml', '.json').replace('.xlsx', ".json")
+    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
+    sourceFilePath = fileName.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
     
     response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
     if response.status_code == 201:
@@ -86,29 +87,29 @@ async def download_and_convert(request: Request, exportData: ExportFile):
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
     if version == "minor":
-        saveLocation = f"/dataset/{dgId}/minor_update_temp/minor_update_.json"
+        saveLocation = f"/dataset/{dgId}/minor_update_temp/minor_update_{JSON_EXT}"
         localFileName = f"group_{dgId}minor_update"
     elif version == "major":
-        saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json"
+        saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
         localFileName = f"group_{dgId}_aggregated"
     else:
         raise HTTPException(status_code=500, detail=IMPORT_TYPE_ERROR)
 
-    response = s3_ferry.transfer_file(f"{localFileName}.json", "FS", saveLocation, "S3")
+    response = s3_ferry.transfer_file(f"{localFileName}{JSON_EXT}", "FS", saveLocation, "S3")
     if response.status_code != 201:
         raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
-    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}.json")
+    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}{JSON_EXT}")
 
     fileConverter = FileConverter()
     with open(f"{jsonFilePath}", 'r') as jsonFile:
         jsonData = json.load(jsonFile)
     
     if exportType == "xlsx":
-        outputFile = f"{localFileName}.xlsx"
+        outputFile = f"{localFileName}{XLSX_EXT}"
         fileConverter.convert_json_to_xlsx(jsonData, outputFile)
     elif exportType == "yaml":
-        outputFile = f"{localFileName}.yaml"
+        outputFile = f"{localFileName}{YAML_EXT}"
         fileConverter.convert_json_to_yaml(jsonData, outputFile)
     elif exportType == "json":
         outputFile = f"{jsonFilePath}"
