@@ -6,6 +6,7 @@ from file_converter import FileConverter
 import json
 from pydantic import BaseModel
 import uuid
+from constants import UPLOAD_FAILED, UPLOAD_SUCCESS, EXPORT_TYPE_ERROR, IMPORT_TYPE_ERROR, S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED
 
 app = FastAPI()
 
@@ -50,15 +51,9 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
     fileConverter = FileConverter()
     success, convertedData = fileConverter.convert_to_json(fileLocation)
     if not success:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason" : "Json file convert failed."
-            }
-        )
+        upload_failed = UPLOAD_FAILED.copy()
+        upload_failed["reason"] = "Json file convert failed."
+        raise HTTPException(status_code=500, detail=upload_failed)
     
     jsonLocalFilePath = fileLocation.replace('.yaml', '.json').replace('.yml', '.json').replace('.xlsx', ".json")
     with open(jsonLocalFilePath, 'w') as jsonFile:
@@ -77,24 +72,13 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
     response = requests.post(S3_FERRY_URL, json=payload)
     if response.status_code == 201:
         os.remove(fileLocation)
-        if(fileLocation!=jsonLocalFilePath):
+        if fileLocation != jsonLocalFilePath:
             os.remove(jsonLocalFilePath)
-        responseData = {
-            "upload_status": 200,
-            "operation_successful": True,
-            "saved_file_path": saveLocation
-        }
-        return JSONResponse(status_code=200, content=responseData)
+        upload_success = UPLOAD_SUCCESS.copy()
+        upload_success["saved_file_path"] = saveLocation
+        return JSONResponse(status_code=200, content=upload_success)
     else:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason" : "Failed to upload to S3"
-            }
-        )
+        raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
 
 
 @app.post("/datasetgroup/data/download")
@@ -105,15 +89,7 @@ async def download_and_convert(request: Request, exportData: ExportFile):
     exportType = exportData.exportType
 
     if exportType not in ["xlsx", "yaml", "json"]:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason": "export_type should be either json, xlsx or yaml."
-            }
-        )
+        raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
     if version == "minor":
         saveLocation = f"/dataset/{dgId}/minor_update_temp/minor_update_.json"
@@ -123,15 +99,7 @@ async def download_and_convert(request: Request, exportData: ExportFile):
         saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json"
         localFileName = f"group_{dgId}_aggregated"
     else:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason": "import_type should be either minor or major."
-            }
-        )
+        raise HTTPException(status_code=500, detail=IMPORT_TYPE_ERROR)
 
     payload = {
         "destinationFilePath": f"{localFileName}.json",
@@ -142,15 +110,7 @@ async def download_and_convert(request: Request, exportData: ExportFile):
 
     response = requests.post(S3_FERRY_URL, json=payload)
     if response.status_code != 201:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason": "Failed to download from S3"
-            }
-        )
+        raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
     jsonFilePath = os.path.join('..', 'shared', f"{localFileName}.json")
 
@@ -167,14 +127,6 @@ async def download_and_convert(request: Request, exportData: ExportFile):
     elif exportType == "json":
         outputFile = f"{jsonFilePath}"
     else:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "upload_status": 500,
-                "operation_successful": False,
-                "saved_file_path": None,
-                "reason": "export_type should be either json, xlsx or yaml."
-            }
-        )
+        raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
     return FileResponse(outputFile, filename=os.path.basename(outputFile))
