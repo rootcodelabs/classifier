@@ -63,11 +63,12 @@ async def upload_and_copy(request: Request, dg_id: int = Form(...), data_file: U
         json.dump(converted_data, json_file, indent=4)
 
     save_location = f"/dataset/{dg_id}/primary_dataset/dataset_{dg_id}_aggregated.json"
+    source_file_path = file_name.replace('.yml', '.json').replace('.xlsx', ".json"),
     
     payload = {
         "destinationFilePath": save_location,
         "destinationStorageType": "S3",
-        "sourceFilePath": file_name.replace('.yml', '.json').replace('.xlsx', ".json"),
+        "sourceFilePath": source_file_path,
         "sourceStorageType": "FS"
     }
 
