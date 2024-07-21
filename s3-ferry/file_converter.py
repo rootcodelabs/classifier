@@ -4,8 +4,6 @@ import yaml
 import pandas as pd
 
 class FileConverter:
-    def __init__(self):
-        pass
     
     def _detect_file_type(self, filePath):
         if filePath.endswith('.json'):

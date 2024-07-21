@@ -5,6 +5,7 @@ import requests
 from file_converter import FileConverter
 import json
 from pydantic import BaseModel
+import uuid
 
 app = FastAPI()
 
@@ -40,8 +41,9 @@ async def authenticate_user(request: Request):
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
     await authenticate_user(request)
-    fileLocation = os.path.join(UPLOAD_DIRECTORY, dataFile.filename)
-    fileName = dataFile.filename
+    fileName = f"{uuid.uuid4()}_{dataFile.filename}"
+    fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
+    
     with open(fileLocation, "wb") as f:
         f.write(dataFile.file.read())
 
@@ -149,9 +151,6 @@ async def download_and_convert(request: Request, exportData: ExportFile):
                 "reason": "Failed to download from S3"
             }
         )
-
-    sharedDirectory = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'shared')
-    jsonFilePath = os.path.join(sharedDirectory, f"{localFileName}.json")
 
     jsonFilePath = os.path.join('..', 'shared', f"{localFileName}.json")
 
