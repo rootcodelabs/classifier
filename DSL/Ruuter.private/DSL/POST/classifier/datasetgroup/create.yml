@@ -32,15 +32,15 @@ declaration:
       - field: lastModelTrained
         type: string
         description: "Body field 'lastModelTrained'"
-      - field: creationTimestamp
+      - field: createdTimestamp
         type: number
-        description: "Body field 'creationTimestamp'"
+        description: "Body field 'createdTimestamp'"
       - field: lastUpdatedTimestamp
         type: number
         description: "Body field 'lastUpdatedTimestamp'"
-      - field: lastUsedForTraining
+      - field: lastTrainedTimestamp
         type: number
-        description: "Body field 'lastUsedForTraining'"
+        description: "Body field 'lastTrainedTimestamp'"
       - field: validationStatus
         type: string
         description: "Body field 'validationStatus'"
@@ -89,9 +89,9 @@ extract_request_data:
     is_enabled: ${incoming.body.isEnabled === null ? false :incoming.body.isEnabled}
     enable_allowed: ${incoming.body.enableAllowed === null ? false :incoming.body.enableAllowed}
     last_model_trained: ${incoming.body.lastModelTrained === null ? '' :incoming.body.lastModelTrained}
-    creation_timestamp: ${incoming.body.creationTimestamp}
+    created_timestamp: ${incoming.body.createdTimestamp}
     last_updated_timestamp: ${incoming.body.lastUpdatedTimestamp}
-    last_used_for_training: ${incoming.body.lastUsedForTraining}
+    last_trained_timestamp: ${incoming.body.lastTrainedTimestamp}
     validation_status: ${incoming.body.validationStatus}
     validation_errors: ${incoming.body.validationErrors}
     processed_data_available: ${incoming.body.processedDataAvailable === null ? false :incoming.body.processedDataAvailable}
@@ -108,8 +108,14 @@ extract_request_data:
 check_for_request_data:
   switch:
     - condition: ${group_name !== null || validation_criteria !=null || class_hierarchy !==null }
-      next: create_dataset_group_metadata
+      next: get_epoch_date
   next: return_incorrect_request
+
+get_epoch_date:
+  assign:
+    current_epoch: ${Date.now()}
+    random_num: ${Math.floor(Math.random() * 100000)}
+  next: create_dataset_group_metadata
 
 create_dataset_group_metadata:
   call: http.post
@@ -117,27 +123,22 @@ create_dataset_group_metadata:
     url: "[#CLASSIFIER_RESQL]/insert-dataset-group-metadata"
     body:
       group_name: ${group_name}
-      major_version: ${major_version}
-      minor_version: ${minor_version}
-      patch_version: ${patch_version}
-      latest: ${latest}
-      is_enabled: ${is_enabled}
-      enable_allowed: ${enable_allowed}
-      last_model_trained: ${last_model_trained}
-      creation_timestamp: ${creation_timestamp}
-      last_updated_timestamp: ${last_updated_timestamp}
-      last_used_for_training: ${last_used_for_training}
-      validation_status: ${validation_status}
-      validation_errors: ${JSON.stringify(validation_errors)}
-      processed_data_available: ${processed_data_available}
-      raw_data_available: ${raw_data_available}
-      num_samples: ${num_samples}
-      num_pages: ${num_pages}
-      raw_data_location: ${raw_data_location}
-      preprocess_data_location: ${preprocess_data_location}
+      group_key:  "${random_num+ '_'+current_epoch}"
+      major_version: 1
+      minor_version: 0
+      patch_version: 0
+      latest: true
+      is_enabled: false
+      enable_allowed: false
+      created_timestamp: ${new Date(current_epoch).toISOString()}
+      last_updated_timestamp: ${new Date(current_epoch).toISOString()}
+      validation_status: unvalidated
+      processed_data_available: false
+      raw_data_available: false
+      num_samples: 0
+      num_pages: 0
       validation_criteria: ${JSON.stringify(validation_criteria)}
       class_hierarchy: ${JSON.stringify(class_hierarchy)}
-      connected_models: ${JSON.stringify(connected_models)}
   result: res_dataset
   next: check_status
 
