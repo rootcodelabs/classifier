@@ -59,9 +59,9 @@
     "integration": "Integration",
     "datasets": "Datasets",
     "datasetGroups": "Dataset Groups",
-    "versions": "Versions",
+    "validationSessions": "Validation Sessions",
     "dataModels": "Data Models",
-    "classes": "Classes",
+    "testModel": "Test Model",
     "stopWords": "Stop Words",
     "incomingTexts": "Incoming Texts"
   },

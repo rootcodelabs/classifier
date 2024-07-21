@@ -9,6 +9,7 @@
   align-items: center;
   gap: get-spacing(paldiski);
   width: 100%;
+  
 
   &__label {
     flex: 0 0 185px;
@@ -21,6 +22,16 @@
     position: relative;
   }
 
+  &__error {
+    border: 1px solid get-color(jasper-10);
+
+  }
+
+  &__default {
+    border: 1px solid get-color(black-coral-6);
+
+  }
+
   &__trigger {
     width: 100%;
     display: flex;
@@ -28,7 +39,6 @@
     justify-content: space-between;
     appearance: none;
     background-color: get-color(white);
-    border: 1px solid get-color(black-coral-6);
     border-radius: $veera-radius-s;
     color: get-color(black);
     font-size: $veera-font-size-100;

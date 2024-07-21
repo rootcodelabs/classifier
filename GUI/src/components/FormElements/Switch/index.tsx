@@ -14,7 +14,7 @@ type SwitchProps = Partial<ControllerRenderProps> & {
   checked?: boolean;
   defaultChecked?: boolean;
   hideLabel?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
+  onCheckedChange?: (checked: boolean) => void|any;
 };
 
 const Switch = forwardRef<HTMLButtonElement, SwitchProps>(

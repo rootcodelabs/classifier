@@ -45,11 +45,11 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
     return (
       <span className="status">
         <span className={`dot ${isActive ? 'green' : 'grey'}`}></span>
-        <>
+        <div>
           {isActive
             ? t('integration.connected')
             : t('integration.disconnected')}
-        </>
+        </div>
       </span>
     );
   };
@@ -89,7 +89,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
   };
 
   return (
-    <>
+    <div>
       <Card isFullWidth={true}>
         <div className="card_header">
           <div className="logo">{logo}</div>
@@ -140,7 +140,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
           isOpen={isModalOpen}
           title={t('integration.confirmationModalTitle')}
           footer={
-            <>
+            <div>
               <Button
                 appearance="secondary"
                 onClick={() => setIsModalOpen(false)}
@@ -158,7 +158,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
               >
                 {t('global.disconnect')}
               </Button>
-            </>
+            </div>
           }
         >
           <div className="form-container">
@@ -172,7 +172,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
           isOpen={isModalOpen}
           title={t('integration.confirmationModalTitle')}
           footer={
-            <>
+            <div>
               <Button
                 appearance="secondary"
                 onClick={() => setIsModalOpen(false)}
@@ -190,7 +190,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
               >
                 {t('global.connect')}
               </Button>
-            </>
+            </div>
           }
         >
           <div className="form-container">
@@ -209,7 +209,7 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
           </div>
         </Dialog>
       )}
-    </>
+    </div>
   );
 };
 
