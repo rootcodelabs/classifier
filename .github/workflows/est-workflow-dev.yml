@@ -3,7 +3,7 @@ name: Deploy EST Frontend and Backend to development
 on:
   push:
     branches:
-      - classifier-142
+      - dev
 
 jobs:
   deploy:
