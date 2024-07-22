@@ -20,7 +20,7 @@ const FormInput = forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const id = useId();
 
-    const inputClasses = clsx('input', disabled && 'input--disabled');
+    const inputClasses = clsx('input', disabled && 'input--disabled', error && 'input--error');
 
     return (
       <div className={inputClasses}>

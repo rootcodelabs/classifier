@@ -3,23 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   MdApps,
-  MdClass,
-  MdClose,
-  MdDashboard,
-  MdDataset,
   MdKeyboardArrowDown,
-  MdOutlineForum,
+  MdOutlineDataset,
   MdPeople,
   MdSettings,
+  MdSettingsBackupRestore,
   MdTextFormat,
 } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Icon } from 'components';
 import type { MenuItem } from 'types/mainNavigation';
-import { menuIcons } from 'constants/menuIcons';
 import './MainNavigation.scss';
-import { error } from 'console';
 import apiDev from 'services/api-dev';
 
 const MainNavigation: FC = () => {
@@ -43,17 +38,19 @@ const MainNavigation: FC = () => {
       id: 'datasets',
       label: t('menu.datasets'),
       path: '#',
-      icon: <MdDataset />,
+      icon: <MdOutlineDataset />,
       children: [
         {
           label: t('menu.datasetGroups'),
           path: 'dataset-groups',
-          icon: <MdOutlineForum />,
         },
         {
-          label: t('menu.versions'),
-          path: 'versions',
-          icon: <MdOutlineForum />,
+          label: t('menu.validationSessions'),
+          path: 'validation-sessions',
+        },
+        {
+          label: t('menu.stopWords'),
+          path: 'stop-words',
         },
       ],
     },
@@ -64,22 +61,16 @@ const MainNavigation: FC = () => {
       icon: <MdApps />,
     },
     {
-      id: 'classes',
-      label: t('menu.classes'),
-      path: '/classes',
-      icon: <MdDashboard />,
-    },
-    {
-      id: 'stopWords',
-      label: t('menu.stopWords'),
-      path: '/stop-words',
-      icon: <MdClass />,
-    },
-    {
       id: 'incomingTexts',
       label: t('menu.incomingTexts'),
       path: '/incoming-texts',
       icon: <MdTextFormat />,
+    },
+    {
+      id: 'testModel',
+      label: t('menu.testModel'),
+      path: '/test-model',
+      icon: <MdSettingsBackupRestore />,
     },
   ];
 
@@ -113,9 +104,7 @@ const MainNavigation: FC = () => {
 
   useQuery({
     queryKey: ['/accounts/user-role', 'prod'],
-    onSuccess: (res: any) => {
-      console.log(res);
-      
+    onSuccess: (res: any) => {      
       const filteredItems =
           items.filter((item) => {
             const role = res?.response[0];
@@ -152,7 +141,7 @@ const MainNavigation: FC = () => {
     return menuItems.map((menuItem) => (
       <li key={menuItem.label}>
         {menuItem.children ? (
-          <>
+          <div>
             <button
               className={clsx('nav__toggle', {
                 'nav__toggle--icon': !!menuItem.id,
@@ -172,7 +161,7 @@ const MainNavigation: FC = () => {
             <ul className="nav__submenu">
               {renderMenuTree(menuItem.children)}
             </ul>
-          </>
+          </div>
         ) : (
           <NavLink to={menuItem.path ?? '#'}>
             {' '}

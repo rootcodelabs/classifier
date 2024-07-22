@@ -93,4 +93,10 @@
       background-color: get-color(black-coral-0);
     }
   }
+
+  &--disabled & {
+    input {
+      border: solid 1px get-color(jasper-10);
+    }
+  }
 }

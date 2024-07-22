@@ -13,6 +13,9 @@
   background-color: get-color(white);
   border-radius: $veera-radius-s;
   position: relative;
+  width: fit-content;
+  height: fit-content;
+  margin-right: 5px;
 
   &--info {
     color: get-color(sapphire-blue-10);
