@@ -113,10 +113,13 @@ jobs:
         if: failure()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        shell: powershell
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{
-             \"text\": \"The Development environment deployment failed during one of the steps. Please check the output for details.\"
-          }" $SLACK_WEBHOOK_URL
+          $payload = @{
+            text = "The Development environment deployment failed during one of the steps. Please check the output for details."
+          }
+          $payloadJson = $payload | ConvertTo-Json
+          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -ContentType 'application/json' -Body $payloadJson
 
       - name: Send success Slack notification
         if: success()
