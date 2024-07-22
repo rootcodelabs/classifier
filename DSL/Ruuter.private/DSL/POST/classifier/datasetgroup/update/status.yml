@@ -24,7 +24,7 @@ extract_request_data:
 get_dataset_group:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RESQL]/get-dataset-group-metadata-by-id"
+    url: "[#CLASSIFIER_RESQL]/get-dataset-group-allowed-status-by-id"
     body:
       id: ${id}
   result: res
