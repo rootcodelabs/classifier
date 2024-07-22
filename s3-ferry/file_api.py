@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 import os
 import json
@@ -44,13 +44,15 @@ async def authenticate_user(request: Request):
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
     await authenticate_user(request)
-    fileName = f"{uuid.uuid4()}"
+
+    fileConverter = FileConverter()
+    file_type = fileConverter._detect_file_type(dataFile.filename)
+    fileName = f"{uuid.uuid4()}.{file_type}"
     fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
     
     with open(fileLocation, "wb") as f:
         f.write(dataFile.file.read())
 
-    fileConverter = FileConverter()
     success, convertedData = fileConverter.convert_to_json(fileLocation)
     if not success:
         upload_failed = UPLOAD_FAILED.copy()
@@ -75,9 +77,8 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
     else:
         raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
 
-
 @app.post("/datasetgroup/data/download")
-async def download_and_convert(request: Request, exportData: ExportFile):
+async def download_and_convert(request: Request, exportData: ExportFile, background_tasks: BackgroundTasks):
     await authenticate_user(request)
     dgId = exportData.dgId
     version = exportData.version
@@ -115,5 +116,9 @@ async def download_and_convert(request: Request, exportData: ExportFile):
         outputFile = f"{jsonFilePath}"
     else:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
+
+    background_tasks.add_task(os.remove, jsonFilePath)
+    if outputFile != jsonFilePath:
+        background_tasks.add_task(os.remove, outputFile)
 
     return FileResponse(outputFile, filename=os.path.basename(outputFile))
