@@ -52,7 +52,7 @@ jobs:
           }
 
       - name: Remove all containers except the specified ones
-        shell: pwsh
+        shell: powershell
         run: |
           $containers_to_keep = @(
               $(docker ps -q --filter "name=users_db"),
@@ -67,7 +67,7 @@ jobs:
           }
 
       - name: Remove all images except the specified ones
-        shell: pwsh
+        shell: powershell
         run: |
           $images_to_keep = "authentication-layer|tim|data-mapper|resql|ruuter|cron-manager"
           $images_to_remove = docker images --format "{{.Repository}}:{{.Tag}}" | Where-Object {$_ -notmatch $images_to_keep}
@@ -76,11 +76,11 @@ jobs:
           }
 
       - name: Prune unused volumes
-        shell: pwsh
+        shell: powershell
         run: docker volume prune -f
 
       - name: Prune unused networks
-        shell: pwsh
+        shell: powershell
         run: docker network prune -f
 
       - name: Update constants.ini with GitHub secret
