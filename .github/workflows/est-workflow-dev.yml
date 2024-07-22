@@ -98,7 +98,7 @@ jobs:
       - name: Run migration script
         # if: steps.check_label.outputs.result == 'true'
         run: |
-          wsl sh migrate.sh
+          wsl sh migrate_win.sh
 
       # - name: Run unitTesting.sh
       #   id: unittesting
