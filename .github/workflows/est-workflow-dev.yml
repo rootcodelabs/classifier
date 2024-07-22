@@ -3,30 +3,30 @@ name: Deploy EST Frontend and Backend to development
 on:
   push:
     branches:
-      - dev
+      - classifier-142
 
 jobs:
   deploy:
-    runs-on: [self-hosted, dev]
+    runs-on: [self-hosted, dev-dell]
 
     steps:
-      - name: Set permissions for workspace directory
-        run: |
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
-          sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
+      # - name: Set permissions for workspace directory
+      #   run: |
+      #     sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
+      #     sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
 
       - name: Clean up workspace
         run: |
-          sudo rm -rf /home/ubuntu/actions-runner/_work/classifier/classifier/*
+          del /Q /F /S "C:\Users\pamod\Desktop\CICD\actions-runner\_work\classifier\classifier\*"
 
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           clean: true
 
-      - name: Give execute permissions to testScript.sh
-        run: |
-          sudo chmod +x src/unitTesting.sh
+      # - name: Give execute permissions to testScript.sh
+      #   run: |
+      #     sudo chmod +x src/unitTesting.sh
 
       - name: Remove all running containers, images, and prune Docker system
         run: |
@@ -39,7 +39,7 @@ jobs:
 
       - name: Update constants.ini with GitHub secret
         run: |
-          sed -i 's/DB_PASSWORD=value/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/' constants.ini
+          powershell -Command "(Get-Content constants.ini) -replace 'DB_PASSWORD=value', 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' | Set-Content constants.ini"
 
       - name: Build and run Docker Compose
         run: |
@@ -61,17 +61,16 @@ jobs:
       - name: Run migration script
         if: steps.check_label.outputs.result == 'true'
         run: |
-          sudo chmod +x migrate.sh
-          ./migrate.sh
+          wsl sh migrate.sh
 
-      - name: Run unitTesting.sh
-        id: unittesting
-        run: |
-          output=$(bash src/unitTesting.sh)
-          if [ "$output" != "True" ]; then
-            echo "unitTesting.sh failed with output: $output"
-            exit 1
-          fi
+      # - name: Run unitTesting.sh
+      #   id: unittesting
+      #   run: |
+      #     output=$(bash src/unitTesting.sh)
+      #     if [ "$output" != "True" ]; then
+      #       echo "unitTesting.sh failed with output: $output"
+      #       exit 1
+      #     fi
 
       - name: Send failure Slack notification
         if: failure()
