@@ -10,6 +10,10 @@ jobs:
     runs-on: [self-hosted, dev-dell]
 
     steps:
+      - name: Set PowerShell execution policy
+        run: |
+          powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force"
+
       # - name: Set permissions for workspace directory
       #   run: |
       #     sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
