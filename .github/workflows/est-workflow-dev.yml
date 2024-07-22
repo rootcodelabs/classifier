@@ -10,9 +10,9 @@ jobs:
     runs-on: [self-hosted, dev-dell]
 
     steps:
-      - name: Set PowerShell execution policy and clean up workspace
-        run: |
-          powershell.exe -Command "Set-ExecutionPolicy RemoteSigned -Scope Process -Force; del /Q /F /S 'C:\Users\pamod\Desktop\CICD\actions-runner\_work\classifier\classifier\*'"
+      # - name: Set PowerShell execution policy and clean up workspace
+      #   run: |
+      #     powershell.exe -Command "Set-ExecutionPolicy RemoteSigned -Scope Process -Force; del /Q /F /S 'C:\Users\pamod\Desktop\CICD\actions-runner\_work\classifier\classifier\*'"
 
       - name: Clean up workspace
         run: |
