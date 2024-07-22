@@ -10,14 +10,10 @@ jobs:
     runs-on: [self-hosted, dev-dell]
 
     steps:
-      - name: Set PowerShell execution policy
+      - name: Set PowerShell execution policy and execute the script
         run: |
-          powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force"
+          powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force; . 'C:\Users\pamod\Desktop\CICD\actions-runner\_work\_temp\d63affe9-c5fc-4cc6-9f6d-8d20c3c1955c.ps1'"
 
-      # - name: Set permissions for workspace directory
-      #   run: |
-      #     sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
-      #     sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
 
       - name: Clean up workspace
         run: |
