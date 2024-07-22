@@ -122,7 +122,10 @@ jobs:
         if: success()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        shell: powershell
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"The build is complete and the development environment is now available. Please click the following link to access it: https://esclassifier-dev.rootcode.software/classifier\"
-          }" $SLACK_WEBHOOK_URL
+          $payload = @{
+            text = "The build is complete and the development environment is now available. Please click the following link to access it: https://esclassifier-dev.rootcode.software/classifier"
+          }
+          $payloadJson = $payload | ConvertTo-Json
+          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -ContentType 'application/json' -Body $payloadJson
