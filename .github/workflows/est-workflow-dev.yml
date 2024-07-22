@@ -16,7 +16,7 @@ jobs:
 
       - name: Clean up workspace
         run: |
-          Remove-Item -Path 'C:\Users\pamod\Desktop\CICD\actions-runner\_work\classifier\classifier\*' -Recurse -Force"
+          Remove-Item -Path 'C:\Users\pamod\Desktop\CICD\actions-runner\_work\classifier\classifier\*' -Recurse -Force
 
       - name: Checkout code
         uses: actions/checkout@v3
