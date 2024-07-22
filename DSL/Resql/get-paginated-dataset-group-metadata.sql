@@ -8,6 +8,7 @@ SELECT  dt.id,
        dt.created_timestamp,
        dt.last_updated_timestamp,
        dt.last_used_for_training,
+       dt.last_model_trained,
        dt.validation_status,
        CEIL(COUNT(*) OVER() / :page_size::DECIMAL) AS total_pages
 FROM "dataset_group_metadata" dt
