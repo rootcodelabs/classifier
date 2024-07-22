@@ -44,7 +44,7 @@ async def authenticate_user(request: Request):
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
     await authenticate_user(request)
-    fileName = f"{uuid.uuid4()}_{dataFile.filename}"
+    fileName = f"{uuid.uuid4()}"
     fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
     
     with open(fileLocation, "wb") as f:
