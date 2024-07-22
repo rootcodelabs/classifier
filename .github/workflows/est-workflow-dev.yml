@@ -37,7 +37,6 @@ jobs:
       #     docker network prune -f
 
       - name: Stop all containers except the specified ones
-        shell: pwsh
         run: |
           $containers_to_keep = @(
               $(docker ps -q --filter "name=users_db"),
