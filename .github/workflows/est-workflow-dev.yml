@@ -36,52 +36,52 @@ jobs:
       #     docker volume prune -f
       #     docker network prune -f
 
-    - name: Stop all containers except the specified ones
-      shell: pwsh
-      run: |
-        $containers_to_keep = @(
-            $(docker ps -q --filter "name=users_db"),
-            $(docker ps -q --filter "name=tim"),
-            $(docker ps -q --filter "name=authentication-layer"),
-            $(docker ps -q --filter "name=tim-postgresql")
-        ) -join "|"
+      - name: Stop all containers except the specified ones
+        shell: pwsh
+        run: |
+          $containers_to_keep = @(
+              $(docker ps -q --filter "name=users_db"),
+              $(docker ps -q --filter "name=tim"),
+              $(docker ps -q --filter "name=authentication-layer"),
+              $(docker ps -q --filter "name=tim-postgresql")
+          ) -join "|"
 
-        $containers_to_stop = docker ps -a -q | Where-Object {$_ -notmatch $containers_to_keep}
-        if ($containers_to_stop) {
-            docker stop $containers_to_stop
-        }
+          $containers_to_stop = docker ps -a -q | Where-Object {$_ -notmatch $containers_to_keep}
+          if ($containers_to_stop) {
+              docker stop $containers_to_stop
+          }
 
-    - name: Remove all containers except the specified ones
-      shell: pwsh
-      run: |
-        $containers_to_keep = @(
-            $(docker ps -q --filter "name=users_db"),
-            $(docker ps -q --filter "name=tim"),
-            $(docker ps -q --filter "name=authentication-layer"),
-            $(docker ps -q --filter "name=tim-postgresql")
-        ) -join "|"
+      - name: Remove all containers except the specified ones
+        shell: pwsh
+        run: |
+          $containers_to_keep = @(
+              $(docker ps -q --filter "name=users_db"),
+              $(docker ps -q --filter "name=tim"),
+              $(docker ps -q --filter "name=authentication-layer"),
+              $(docker ps -q --filter "name=tim-postgresql")
+          ) -join "|"
 
-        $containers_to_remove = docker ps -a -q | Where-Object {$_ -notmatch $containers_to_keep}
-        if ($containers_to_remove) {
-            docker rm $containers_to_remove
-        }
+          $containers_to_remove = docker ps -a -q | Where-Object {$_ -notmatch $containers_to_keep}
+          if ($containers_to_remove) {
+              docker rm $containers_to_remove
+          }
 
-    - name: Remove all images except the specified ones
-      shell: pwsh
-      run: |
-        $images_to_keep = "authentication-layer|tim|data-mapper|resql|ruuter|cron-manager"
-        $images_to_remove = docker images --format "{{.Repository}}:{{.Tag}}" | Where-Object {$_ -notmatch $images_to_keep}
-        if ($images_to_remove) {
-            $images_to_remove | ForEach-Object { docker rmi $_ }
-        }
+      - name: Remove all images except the specified ones
+        shell: pwsh
+        run: |
+          $images_to_keep = "authentication-layer|tim|data-mapper|resql|ruuter|cron-manager"
+          $images_to_remove = docker images --format "{{.Repository}}:{{.Tag}}" | Where-Object {$_ -notmatch $images_to_keep}
+          if ($images_to_remove) {
+              $images_to_remove | ForEach-Object { docker rmi $_ }
+          }
 
-    - name: Prune unused volumes
-      shell: pwsh
-      run: docker volume prune -f
+      - name: Prune unused volumes
+        shell: pwsh
+        run: docker volume prune -f
 
-    - name: Prune unused networks
-      shell: pwsh
-      run: docker network prune -f
+      - name: Prune unused networks
+        shell: pwsh
+        run: docker network prune -f
 
       - name: Update constants.ini with GitHub secret
         run: |
