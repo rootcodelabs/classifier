@@ -5,7 +5,7 @@ import requests
 from data_enrichment.data_enrichment import DataEnrichment
 from constants import *
 
-RUUTER_URL = os.getenv("RUUTER_URL")
+RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
 FILE_HANDLER_STOPWORDS_URL = os.getenv("FILE_HANDLER_STOPWORDS_URL")
 FILE_HANDLER_IMPORT_CHUNKS_URL = os.getenv("FILE_HANDLER_IMPORT_CHUNKS_URL")
