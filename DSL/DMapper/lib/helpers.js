@@ -55,3 +55,10 @@ export function getOutlookExpirationDateTime() {
   const updatedDateISOString = currentDate.toISOString();
   return updatedDateISOString;
 }
+
+export function findDuplicates(inputArray, existingArray) {
+  const set1 = new Set(inputArray);
+  const duplicates = existingArray.filter((item) => set1.has(item));
+  const value = JSON.stringify(duplicates);
+  return value;
+}
