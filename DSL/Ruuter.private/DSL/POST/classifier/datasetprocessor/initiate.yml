@@ -1,0 +1,25 @@
+description: Initiate dataset processing with dgID and cookie, then call the cron manager.
+
+request:
+  method: POST
+  url: "/classifier/datasetprocessor/initiate"
+  headers:
+    - field: cookie
+      type: string
+      description: "Cookie field"
+  body:
+    - field: dgId
+      type: number
+      description: "Body field 'dgId'"
+
+response:
+  status: 200
+  body:
+    message: "Dataset processing initiated successfully."
+  after:
+    - call: /data_processor
+      args:
+        url: "[#CLASSIFIER_CRON_MANAGER]/execute/<group_name>/<job_name>"
+        body:
+          cookie: ${incoming.header.cookie}
+          dgId: ${dg_id}
