@@ -1,7 +1,14 @@
+from msilib.schema import _Validation
 import re
 import os
 import json
+import requests
 from data_enrichment.data_enrichment import DataEnrichment
+
+RUUTER_URL = os.getenv("RUUTER_URL")
+FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
+FILE_HANDLER_STOPWORDS_URL = os.getenv("FILE_HANDLER_STOPWORDS_URL")
+FILE_HANDLER_IMPORT_CHUNKS_URL = os.getenv("FILE_HANDLER_IMPORT_CHUNKS_URL")
 
 class DatasetProcessor:
     def __init__(self):
@@ -13,7 +20,8 @@ class DatasetProcessor:
         elif self._is_single_sheet_structure(data):
             return data
         else:
-            raise ValueError("The provided dictionary does not match the expected structures.")
+            print("The provided dictionary does not match the expected structures.")
+            return None
 
     def _is_multple_sheet_structure(self, data):
         if isinstance(data, dict):
@@ -41,28 +49,24 @@ class DatasetProcessor:
         return result
 
     def remove_stop_words(self, data, stop_words):
-        stop_words_set = set(stop_words)
-        stop_words_pattern = re.compile(r'\b(' + r'|'.join(re.escape(word) for word in stop_words_set) + r')\b', re.IGNORECASE)
+        try:
+            stop_words_set = set(stop_words)
+            stop_words_pattern = re.compile(r'\b(' + r'|'.join(re.escape(word) for word in stop_words_set) + r')\b', re.IGNORECASE)
 
-        def clean_text(text):
-            return stop_words_pattern.sub('', text).strip()
+            def clean_text(text):
+                return stop_words_pattern.sub('', text).strip()
 
-        cleaned_data = []
-        for entry in data:
-            cleaned_entry = {key: clean_text(value) if isinstance(value, str) else value for key, value in entry.items()}
-            cleaned_data.append(cleaned_entry)
+            cleaned_data = []
+            for entry in data:
+                cleaned_entry = {key: clean_text(value) if isinstance(value, str) else value for key, value in entry.items()}
+                cleaned_data.append(cleaned_entry)
 
-        return cleaned_data
+            return cleaned_data
+        except Exception as e:
+            print("Error while removing Stop Words")
+            return None
     
-    def select_data_to_enrich(self, data_types):
-        selected_fields = []
-        for data_feild, type in data_types.items():
-            if type == "text":
-                selected_fields.append(data_feild)
-        return selected_fields
-    
-    def enrich_data(self, data, data_types):
-        selected_fields = self.select_data_to_enrich(data_types)
+    def enrich_data(self, data, selected_fields):
         enriched_data = []
         for entry in data:
             enriched_entry = {}
@@ -76,58 +80,97 @@ class DatasetProcessor:
         return enriched_data
     
     def chunk_data(self, data, chunk_size=5):
-        return [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
+        try:
+            return [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
+        except Exception as e:
+            print("Error while splitting data into chunks")
+            return None
     
-    def save_data_to_local(self, chunked_data, output_folder='output'):
+    def save_chunked_data(self, chunked_data, authCookie, dgID):
+        headers = {
+            'cookie': f'customJwtCookie={authCookie}',
+            'Content-Type': 'application/json'
+        }
 
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+        for chunk in chunked_data:
+            payload = {
+                "dg_id": dgID,
+                "chunks": chunk
+            }
+            try:
+                response = requests.post(FILE_HANDLER_IMPORT_CHUNKS_URL, json=payload, headers=headers)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                print(f"An error occurred while uploading chunk: {e}")
+                return False
         
-        for i, chunk in enumerate(chunked_data, start=1):
-            file_path = os.path.join(output_folder, f'{i}.json')
-            with open(file_path, 'w') as f:
-                json.dump(chunk, f, indent=4)
-            print(f'Saved: {file_path}')
+        return True
 
-if __name__ == "__main__":
-    data1 = {
-        "Sheet1": [
-            {"from": "alice@example.com", "to": "bob@example.com", "subject": "Meeting Reminder", "body": "Don't forget our meeting tomorrow at 10 AM."},
-            {"from": "carol@example.com", "to": "dave@example.com", "subject": "Project Update", "body": "The project is on track for completion next week."},
-            # {"from": "eve@example.com", "to": "frank@example.com", "subject": "Happy Birthday!", "body": "Wishing you a very happy birthday!"},
-            # {"from": "grace@example.com", "to": "heidi@example.com", "subject": "Team Lunch", "body": "Let's have lunch together this Friday."},
-            # {"from": "ivy@example.com", "to": "jack@example.com", "subject": "New Opportunity", "body": "We have a new opportunity that I think you'll be interested in."},
-            # {"from": "ken@example.com", "to": "laura@example.com", "subject": "Meeting Follow-up", "body": "Following up on our meeting last week."},
-            # {"from": "mike@example.com", "to": "nancy@example.com", "subject": "Question about report", "body": "Could you clarify the numbers in section 3 of the report?"},
-            # {"from": "oliver@example.com", "to": "pam@example.com", "subject": "Vacation Plans", "body": "I'll be out of office next week for vacation."},
-            # {"from": "quinn@example.com", "to": "rachel@example.com", "subject": "Conference Call", "body": "Can we schedule a conference call for Thursday?"},
-            # {"from": "steve@example.com", "to": "tina@example.com", "subject": "Document Review", "body": "Please review the attached document."},
-        ],
-        # "Sheet2": [
-        #     {"from": "ursula@example.com", "to": "victor@example.com", "subject": "Sales Report", "body": "The sales report for Q2 is ready."},
-        #     {"from": "wendy@example.com", "to": "xander@example.com", "subject": "Job Application", "body": "I am interested in the open position at your company."},
-        #     {"from": "yara@example.com", "to": "zane@example.com", "subject": "Invoice", "body": "Attached is the invoice for the recent purchase."},
-        #     {"from": "adam@example.com", "to": "betty@example.com", "subject": "Networking Event", "body": "Join us for a networking event next month."},
-        #     {"from": "charlie@example.com", "to": "diana@example.com", "subject": "Product Feedback", "body": "We'd love to hear your feedback on our new product."},
-        #     {"from": "ed@example.com", "to": "fay@example.com", "subject": "Workshop Invitation", "body": "You are invited to attend our upcoming workshop."},
-        #     {"from": "george@example.com", "to": "hannah@example.com", "subject": "Performance Review", "body": "Your performance review is scheduled for next week."},
-        #     {"from": "ian@example.com", "to": "jane@example.com", "subject": "Event Reminder", "body": "Reminder: The event is on Saturday at 5 PM."},
-        #     {"from": "kevin@example.com", "to": "lisa@example.com", "subject": "Thank You", "body": "Thank you for your assistance with the project."},
-        #     {"from": "mark@example.com", "to": "nina@example.com", "subject": "New Policy", "body": "Please review the new company policy on remote work."},
-        # ]
-    }
-    converter1 = DatasetProcessor()
-    structured_data = converter1.check_and_convert(data1)
+    def get_selected_data_fields(self, dgID:int):
 
-    data_types = {"to":"email", "from":"email",  "subject":"text", "body":"text"}
-    enriched_data = converter1.enrich_data(structured_data, data_types)
+        data_dict = self.get_validation_data(dgID)
 
-    stop_words = ["to", "New", "remote", "Work"]
-    cleaned_data = converter1.remove_stop_words(enriched_data, stop_words)
+        validation_rules = data_dict.get("response", {}).get("validationCriteria", {}).get("validationRules", {})
+        
+        text_fields = []
 
-    chunked_data =  converter1.chunk_data(cleaned_data)
+        for field, rules in validation_rules.items():
+            if rules.get("type") == "text":
+                text_fields.append(field)
+        
+        return text_fields
+    
+    def get_validation_data(self, dgID):
+        try:
+            params = {'dgId': dgID}
+            response = requests.get(RUUTER_URL, params=params)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+            return None
+        
+    def get_dataset(self, dg_id, custom_jwt_cookie):
+        params = {'dgId': dg_id}
+        headers = {
+            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+        }
 
-    converter1.save_data_to_local(chunked_data)
+        try:
+            response = requests.get(FILE_HANDLER_DOWNLOAD_JSON_URL, params=params, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+            return None
+        
+    def get_stopwords(self, dg_id, custom_jwt_cookie):
+        params = {'dgId': dg_id}
+        headers = {
+            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+        }
 
-    for x in cleaned_data:
-        print(x)
+        try:
+            response = requests.get(FILE_HANDLER_STOPWORDS_URL, params=params, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+            return None
+        
+    def process_handler(self, dgID, authCookie):
+        dataset = self.get_dataset(dgID, authCookie)
+        if dataset != None:
+            structured_data = self.check_and_convert(dataset)
+            if structured_data != None:
+                selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
+                if selected_data_fields_to_enrich != None:
+                    enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
+                    if enriched_data != None:
+                        stop_words = self.get_stopwords(dgID, authCookie)
+                        if stop_words != None:
+                            cleaned_data = self.remove_stop_words(enriched_data, stop_words)
+                            if cleaned_data != None:
+                                chunked_data =  self.chunk_data(cleaned_data)
+                                if chunked_data != None:
+                                    self.save_chunked_data(chunked_data, authCookie, dgID)

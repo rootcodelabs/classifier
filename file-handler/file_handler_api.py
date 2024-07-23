@@ -15,6 +15,7 @@ from s3_ferry import S3Ferry
 app = FastAPI()
 
 UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
+CHUNK_UPLOAD_DIRECTORY = os.getenv("CHUNK_UPLOAD_DIRECTORY", "/shared/chunks")
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
 s3_ferry = S3Ferry(S3_FERRY_URL)
@@ -23,6 +24,10 @@ class ExportFile(BaseModel):
     dgId: int
     version: str
     exportType: str
+
+class ImportChunks(BaseModel):
+    dg_id: int
+    chunks: list
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
@@ -125,6 +130,48 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
         background_tasks.add_task(os.remove, outputFile)
 
     return FileResponse(outputFile, filename=os.path.basename(outputFile))
+
+@app.get("/datasetgroup/data/download/json")
+async def download_and_convert(request: Request, dgId: int, background_tasks: BackgroundTasks):
+    await authenticate_user(request)
+
+    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
+    localFileName = f"group_{dgId}_aggregated"
+
+    response = s3_ferry.transfer_file(f"{localFileName}{JSON_EXT}", "FS", saveLocation, "S3")
+    if response.status_code != 201:
+        raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
+
+    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}{JSON_EXT}")
+
+    with open(f"{jsonFilePath}", 'r') as jsonFile:
+        jsonData = json.load(jsonFile)
+
+    background_tasks.add_task(os.remove, jsonFilePath)
+
+    return jsonData
+
+@app.post("/datasetgroup/data/import/chunk")
+async def upload_and_copy(request: Request, import_chunks: ImportChunks):
+    await authenticate_user(request)
+
+    dgID = import_chunks.dg_id
+    chunks = import_chunks.chunks
+    
+    for index, chunk in enumerate(chunks, start=1):
+        fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{index}.json")
+        with open(fileLocation, 'w') as jsonFile:
+            json.dump(chunk, jsonFile, indent=4)
+
+        saveLocation = f"/dataset/{dgID}/chunks/{index}{JSON_EXT}"
+    
+        response = s3_ferry.transfer_file(saveLocation, "S3", fileLocation, "FS")
+        if response.status_code == 201:
+            os.remove(fileLocation)
+        else:
+            raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+    else:
+        return True
 
 @app.get("/datasetgroup/data/download/chunk")
 async def download_and_convert(request: Request, dgId: int, pageId: int, background_tasks: BackgroundTasks):
