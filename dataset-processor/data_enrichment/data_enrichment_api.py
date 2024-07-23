@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from data_enrichment import DataEnrichment
+from data_enrichment.data_enrichment import DataEnrichment
 from typing import List, Optional
 
 app = FastAPI()
