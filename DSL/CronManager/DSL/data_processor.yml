@@ -1,0 +1,5 @@
+init_data_processor:
+  trigger: off
+  type: exec
+  command: "../app/scripts/data_processor_exec.sh"
+  allowedEnvs: ["dgID", "customJwtCookie"]
