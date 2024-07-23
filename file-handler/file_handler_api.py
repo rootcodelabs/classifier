@@ -8,10 +8,7 @@ from pydantic import BaseModel
 from file_converter import FileConverter
 from constants import (
     UPLOAD_FAILED, UPLOAD_SUCCESS, EXPORT_TYPE_ERROR, IMPORT_TYPE_ERROR,
-    S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED, JSON_EXT, YAML_EXT, YML_EXT, XLSX_EXT,
-    SAVE_LOCATION_MINOR_UPDATE, LOCAL_FILE_NAME_MINOR_UPDATE,
-    SAVE_LOCATION_MAJOR_UPDATE, LOCAL_FILE_NAME_MAJOR_UPDATE,
-    SAVE_LOCATION_AGGREGATED, SAVE_LOCATION_CHUNK, LOCAL_FILE_NAME_CHUNK
+    S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED, JSON_EXT, YAML_EXT, YML_EXT, XLSX_EXT
 )
 from s3_ferry import S3Ferry
 
@@ -69,7 +66,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
     with open(jsonLocalFilePath, 'w') as jsonFile:
         json.dump(convertedData, jsonFile, indent=4)
 
-    saveLocation = SAVE_LOCATION_AGGREGATED.format(dgId, JSON_EXT)
+    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
     sourceFilePath = fileName.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
     
     response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
@@ -94,11 +91,11 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
     if version == "minor":
-        saveLocation = SAVE_LOCATION_MINOR_UPDATE.format(dgId, JSON_EXT)
-        localFileName = LOCAL_FILE_NAME_MINOR_UPDATE.format(dgId)
+        saveLocation = f"/dataset/{dgId}/minor_update_temp/minor_update_{JSON_EXT}"
+        localFileName = f"group_{dgId}minor_update"
     elif version == "major":
-        saveLocation = SAVE_LOCATION_MAJOR_UPDATE.format(dgId, JSON_EXT)
-        localFileName = LOCAL_FILE_NAME_MAJOR_UPDATE.format(dgId)
+        saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
+        localFileName = f"group_{dgId}_aggregated"
     else:
         raise HTTPException(status_code=500, detail=IMPORT_TYPE_ERROR)
 
@@ -132,8 +129,8 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
 @app.get("/datasetgroup/data/download/chunk")
 async def download_and_convert(request: Request, dgId: int, pageId: int, background_tasks: BackgroundTasks):
     await authenticate_user(request)
-    saveLocation = SAVE_LOCATION_CHUNK.format(dgId, pageId, JSON_EXT)
-    localFileName = LOCAL_FILE_NAME_CHUNK.format(dgId, pageId)
+    saveLocation = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
+    localFileName = f"group_{dgId}_chunk_{pageId}"
 
     response = s3_ferry.transfer_file(f"{localFileName}{JSON_EXT}", "FS", saveLocation, "S3")
     if response.status_code != 201:

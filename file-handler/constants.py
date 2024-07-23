@@ -46,12 +46,13 @@ YAML_EXT = ".yaml"
 YML_EXT = ".yml"
 XLSX_EXT = ".xlsx"
 
-SAVE_LOCATION_MINOR_UPDATE = "/dataset/{dgId}/minor_update_temp/minor_update_{}"
-LOCAL_FILE_NAME_MINOR_UPDATE = "group_{dgId}minor_update"
+def GET_S3_FERRY_PAYLOAD(destinationFilePath:str, destinationStorageType:str, sourceFilePath:str, sourceStorageType:str):
+    S3_FERRY_PAYLOAD = {
+            "destinationFilePath": destinationFilePath,
+            "destinationStorageType": destinationStorageType,
+            "sourceFilePath": sourceFilePath,
+            "sourceStorageType": sourceStorageType
+        }
+    return S3_FERRY_PAYLOAD
 
-SAVE_LOCATION_MAJOR_UPDATE = "/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{}"
-LOCAL_FILE_NAME_MAJOR_UPDATE = "group_{dgId}_aggregated"
 
-SAVE_LOCATION_AGGREGATED = "/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{}"
-SAVE_LOCATION_CHUNK = "/dataset/{dgId}/chunks/{}{}"
-LOCAL_FILE_NAME_CHUNK = "group_{dgId}_chunk_{}"
