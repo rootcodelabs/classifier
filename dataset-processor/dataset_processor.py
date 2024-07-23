@@ -1,9 +1,9 @@
-from msilib.schema import _Validation
 import re
 import os
 import json
 import requests
 from data_enrichment.data_enrichment import DataEnrichment
+from constants import *
 
 RUUTER_URL = os.getenv("RUUTER_URL")
 FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
@@ -67,17 +67,21 @@ class DatasetProcessor:
             return None
     
     def enrich_data(self, data, selected_fields):
-        enriched_data = []
-        for entry in data:
-            enriched_entry = {}
-            for key, value in entry.items():
-                if isinstance(value, str) and (key in selected_fields):
-                    enriched_value = self.data_enricher.enrich_data(value, num_return_sequences=1, language_id='en')
-                    enriched_entry[key] = enriched_value[0] if enriched_value else value
-                else:
-                    enriched_entry[key] = value
-            enriched_data.append(enriched_entry)
-        return enriched_data
+        try:
+            enriched_data = []
+            for entry in data:
+                enriched_entry = {}
+                for key, value in entry.items():
+                    if isinstance(value, str) and (key in selected_fields):
+                        enriched_value = self.data_enricher.enrich_data(value, num_return_sequences=1, language_id='en')
+                        enriched_entry[key] = enriched_value[0] if enriched_value else value
+                    else:
+                        enriched_entry[key] = value
+                enriched_data.append(enriched_entry)
+            return enriched_data
+        except Exception as e:
+            print(f"Internal Error occured while data enrichment : {e}")
+            return None
     
     def chunk_data(self, data, chunk_size=5):
         try:
@@ -102,23 +106,22 @@ class DatasetProcessor:
                 response.raise_for_status()
             except requests.exceptions.RequestException as e:
                 print(f"An error occurred while uploading chunk: {e}")
-                return False
+                return None
         
         return True
 
     def get_selected_data_fields(self, dgID:int):
-
-        data_dict = self.get_validation_data(dgID)
-
-        validation_rules = data_dict.get("response", {}).get("validationCriteria", {}).get("validationRules", {})
-        
-        text_fields = []
-
-        for field, rules in validation_rules.items():
-            if rules.get("type") == "text":
-                text_fields.append(field)
-        
-        return text_fields
+        try:
+            data_dict = self.get_validation_data(dgID)
+            validation_rules = data_dict.get("response", {}).get("validationCriteria", {}).get("validationRules", {})
+            text_fields = []
+            for field, rules in validation_rules.items():
+                if rules.get("type") == "text":
+                    text_fields.append(field)
+            return text_fields
+        except Exception as e:
+            print(e)
+            return None
     
     def get_validation_data(self, dgID):
         try:
@@ -160,17 +163,35 @@ class DatasetProcessor:
         
     def process_handler(self, dgID, authCookie):
         dataset = self.get_dataset(dgID, authCookie)
-        if dataset != None:
+        if dataset is not None:
             structured_data = self.check_and_convert(dataset)
-            if structured_data != None:
+            if structured_data is not None:
                 selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
-                if selected_data_fields_to_enrich != None:
+                if selected_data_fields_to_enrich is not None:
                     enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
-                    if enriched_data != None:
+                    if enriched_data is not None:
                         stop_words = self.get_stopwords(dgID, authCookie)
-                        if stop_words != None:
+                        if stop_words is not None:
                             cleaned_data = self.remove_stop_words(enriched_data, stop_words)
-                            if cleaned_data != None:
-                                chunked_data =  self.chunk_data(cleaned_data)
-                                if chunked_data != None:
-                                    self.save_chunked_data(chunked_data, authCookie, dgID)
+                            if cleaned_data is not None:
+                                chunked_data = self.chunk_data(cleaned_data)
+                                if chunked_data is not None:
+                                    operation_result = self.save_chunked_data(chunked_data, authCookie, dgID)
+                                    if operation_result:
+                                        return SUCCESSFUL_OPERATION
+                                    else:
+                                        return FAILED_TO_SAVE_CHUNKED_DATA
+                                else:
+                                    return FAILED_TO_CHUNK_CLEANED_DATA
+                            else:
+                                return FAILED_TO_REMOVE_STOP_WORDS
+                        else:
+                            return FAILED_TO_GET_STOP_WORDS
+                    else:
+                        return FAILED_TO_ENRICH_DATA
+                else:
+                    return FAILED_TO_GET_SELECTED_FIELDS
+            else:
+                return FAILED_TO_CHECK_AND_CONVERT
+        else:
+            return FAILED_TO_GET_DATASET
