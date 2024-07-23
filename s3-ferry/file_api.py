@@ -122,3 +122,25 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
         background_tasks.add_task(os.remove, outputFile)
 
     return FileResponse(outputFile, filename=os.path.basename(outputFile))
+
+@app.get("/datasetgroup/data/download/chunk")
+async def download_and_convert(request: Request, dgId: int, pageId:int, background_tasks: BackgroundTasks):
+    await authenticate_user(request)
+    saveLocation = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
+    localFileName = f"group_{dgId}_chunk_{pageId}"
+
+    response = s3_ferry.transfer_file(f"{localFileName}{JSON_EXT}", "FS", saveLocation, "S3")
+    if response.status_code != 201:
+        raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
+
+    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}{JSON_EXT}")
+
+    with open(f"{jsonFilePath}", 'r') as jsonFile:
+        jsonData = json.load(jsonFile)
+
+    for index, item in enumerate(jsonData, start=1):
+        item['rowID'] = index
+
+    background_tasks.add_task(os.remove, jsonFilePath)
+
+    return jsonData
