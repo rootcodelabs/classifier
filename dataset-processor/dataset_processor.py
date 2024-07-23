@@ -54,12 +54,20 @@ class DatasetProcessor:
 
         return cleaned_data
     
-    def enrich_data(self, data):
+    def select_data_to_enrich(self, data_types):
+        selected_fields = []
+        for data_feild, type in data_types.items():
+            if type == "text":
+                selected_fields.append(data_feild)
+        return selected_fields
+    
+    def enrich_data(self, data, data_types):
+        selected_fields = self.select_data_to_enrich(data_types)
         enriched_data = []
         for entry in data:
             enriched_entry = {}
             for key, value in entry.items():
-                if isinstance(value, str):
+                if isinstance(value, str) and (key in selected_fields):
                     enriched_value = self.data_enricher.enrich_data(value, num_return_sequences=1, language_id='en')
                     enriched_entry[key] = enriched_value[0] if enriched_value else value
                 else:
@@ -86,14 +94,14 @@ if __name__ == "__main__":
         "Sheet1": [
             {"from": "alice@example.com", "to": "bob@example.com", "subject": "Meeting Reminder", "body": "Don't forget our meeting tomorrow at 10 AM."},
             {"from": "carol@example.com", "to": "dave@example.com", "subject": "Project Update", "body": "The project is on track for completion next week."},
-            {"from": "eve@example.com", "to": "frank@example.com", "subject": "Happy Birthday!", "body": "Wishing you a very happy birthday!"},
-            {"from": "grace@example.com", "to": "heidi@example.com", "subject": "Team Lunch", "body": "Let's have lunch together this Friday."},
-            {"from": "ivy@example.com", "to": "jack@example.com", "subject": "New Opportunity", "body": "We have a new opportunity that I think you'll be interested in."},
-            {"from": "ken@example.com", "to": "laura@example.com", "subject": "Meeting Follow-up", "body": "Following up on our meeting last week."},
-            {"from": "mike@example.com", "to": "nancy@example.com", "subject": "Question about report", "body": "Could you clarify the numbers in section 3 of the report?"},
-            {"from": "oliver@example.com", "to": "pam@example.com", "subject": "Vacation Plans", "body": "I'll be out of office next week for vacation."},
-            {"from": "quinn@example.com", "to": "rachel@example.com", "subject": "Conference Call", "body": "Can we schedule a conference call for Thursday?"},
-            {"from": "steve@example.com", "to": "tina@example.com", "subject": "Document Review", "body": "Please review the attached document."},
+            # {"from": "eve@example.com", "to": "frank@example.com", "subject": "Happy Birthday!", "body": "Wishing you a very happy birthday!"},
+            # {"from": "grace@example.com", "to": "heidi@example.com", "subject": "Team Lunch", "body": "Let's have lunch together this Friday."},
+            # {"from": "ivy@example.com", "to": "jack@example.com", "subject": "New Opportunity", "body": "We have a new opportunity that I think you'll be interested in."},
+            # {"from": "ken@example.com", "to": "laura@example.com", "subject": "Meeting Follow-up", "body": "Following up on our meeting last week."},
+            # {"from": "mike@example.com", "to": "nancy@example.com", "subject": "Question about report", "body": "Could you clarify the numbers in section 3 of the report?"},
+            # {"from": "oliver@example.com", "to": "pam@example.com", "subject": "Vacation Plans", "body": "I'll be out of office next week for vacation."},
+            # {"from": "quinn@example.com", "to": "rachel@example.com", "subject": "Conference Call", "body": "Can we schedule a conference call for Thursday?"},
+            # {"from": "steve@example.com", "to": "tina@example.com", "subject": "Document Review", "body": "Please review the attached document."},
         ],
         # "Sheet2": [
         #     {"from": "ursula@example.com", "to": "victor@example.com", "subject": "Sales Report", "body": "The sales report for Q2 is ready."},
@@ -111,7 +119,8 @@ if __name__ == "__main__":
     converter1 = DatasetProcessor()
     structured_data = converter1.check_and_convert(data1)
 
-    enriched_data = converter1.enrich_data(structured_data)
+    data_types = {"to":"email", "from":"email",  "subject":"text", "body":"text"}
+    enriched_data = converter1.enrich_data(structured_data, data_types)
 
     stop_words = ["to", "New", "remote", "Work"]
     cleaned_data = converter1.remove_stop_words(enriched_data, stop_words)
