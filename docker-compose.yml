@@ -178,11 +178,11 @@ services:
     volumes:
       - shared-volume:/shared
 
-  python_file_api:
+  file_handler:
     build:
-      context: ./s3-ferry
+      context: ./file-handler
       dockerfile: Dockerfile
-    container_name: python_file_api
+    container_name: file_handler
     volumes:
       - shared-volume:/shared
     environment:
@@ -214,7 +214,7 @@ services:
     ports:
       - "3002:3000"
     depends_on:
-      - python_file_api
+      - file_handler
       - init
     networks:
       - bykstack

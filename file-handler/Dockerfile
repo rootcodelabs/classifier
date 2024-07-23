@@ -4,7 +4,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY file_api.py .
+COPY file_handler_api.py .
 COPY file_converter.py .
 COPY constants.py .
 COPY s3_ferry.py .
@@ -14,4 +14,4 @@ RUN chown -R appuser:appuser /app
 EXPOSE 8000
 USER appuser
 
-CMD ["uvicorn", "file_api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "file_handler_api:app", "--host", "0.0.0.0", "--port", "8000"]
