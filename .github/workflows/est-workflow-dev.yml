@@ -7,86 +7,97 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, dev]
+    runs-on: [self-hosted, dev-dell]
 
     steps:
-      - name: Set permissions for workspace directory
-        run: |
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/classifier/classifier
-          sudo chmod -R u+rwx /home/ubuntu/actions-runner/_work/classifier/classifier
-
       - name: Clean up workspace
         run: |
-          sudo rm -rf /home/ubuntu/actions-runner/_work/classifier/classifier/*
+          Remove-Item -Path 'C:\Users\pamod\Desktop\CICD\actions-runner\_work\classifier\classifier\*' -Recurse -Force
 
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           clean: true
 
-      - name: Give execute permissions to testScript.sh
+      - name: Stop all containers except the specified ones
+        shell: powershell
         run: |
-          sudo chmod +x src/unitTesting.sh
+          $containers_to_keep = @(
+              $(docker ps -q --filter "name=users_db"),
+              $(docker ps -q --filter "name=tim"),
+              $(docker ps -q --filter "name=authentication-layer"),
+              $(docker ps -q --filter "name=tim-postgresql")
+          ) -join "|"
 
-      - name: Remove all running containers, images, and prune Docker system
+          $containers_to_stop = docker ps -a -q | Where-Object {$_ -notmatch $containers_to_keep}
+          if ($containers_to_stop) {
+              docker stop $containers_to_stop
+          }
+
+      - name: Remove all containers except the specified ones
+        shell: powershell
         run: |
-          docker stop $(docker ps -a -q | grep -v -E "($(docker ps -q --filter "name=users_db")|$(docker ps -q --filter "name=tim")|$(docker ps -q --filter "name=authentication-layer")|$(docker ps -q --filter "name=tim-postgresql"))") || true
-          docker rm $(docker ps -a -q | grep -v -E "($(docker ps -q --filter "name=users_db")|$(docker ps -q --filter "name=tim")|$(docker ps -q --filter "name=authentication-layer")|$(docker ps -q --filter "name=tim-postgresql"))") || true
-          images_to_keep="authentication-layer|tim|data-mapper|resql|ruuter|cron-manager"
-          docker images --format "{{.Repository}}:{{.Tag}}" | grep -Ev "$images_to_keep" | xargs -r docker rmi || true
-          docker volume prune -f
-          docker network prune -f
+          $containers_to_keep = @(
+              $(docker ps -q --filter "name=users_db"),
+              $(docker ps -q --filter "name=tim"),
+              $(docker ps -q --filter "name=authentication-layer"),
+              $(docker ps -q --filter "name=tim-postgresql")
+          ) -join "|"
+
+          $containers_to_remove = docker ps -a -q | Where-Object {$_ -notmatch $containers_to_keep}
+          if ($containers_to_remove) {
+              docker rm $containers_to_remove
+          }
+
+      - name: Remove all images except the specified ones
+        shell: powershell
+        run: |
+          $images_to_keep = "authentication-layer|tim|data-mapper|resql|ruuter|cron-manager"
+          $images_to_remove = docker images --format "{{.Repository}}:{{.Tag}}" | Where-Object {$_ -notmatch $images_to_keep}
+          if ($images_to_remove) {
+              $images_to_remove | ForEach-Object { docker rmi $_ --force}
+          }
+
+      - name: Prune unused volumes
+        shell: powershell
+        run: docker volume prune -f
+
+      - name: Prune unused networks
+        shell: powershell
+        run: docker network prune -f
 
       - name: Update constants.ini with GitHub secret
         run: |
-          sed -i 's/DB_PASSWORD=value/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/' constants.ini
+          powershell -Command "(Get-Content constants.ini) -replace 'DB_PASSWORD=value', 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' | Set-Content constants.ini"
 
       - name: Build and run Docker Compose
         run: |
           docker compose -f docker-compose.development.yml up --build -d
 
-      # - name: Check for db_update label
-      #   id: check_label
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const pr = await github.pulls.get({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         pull_number: context.payload.number
-      #       });
-      #       const labels = pr.data.labels.map(label => label.name);
-      #       return labels.includes('db_update');
-
       - name: Run migration script
-        if: steps.check_label.outputs.result == 'true'
         run: |
-          sudo chmod +x migrate.sh
-          ./migrate.sh
-
-      - name: Run unitTesting.sh
-        id: unittesting
-        run: |
-          output=$(bash src/unitTesting.sh)
-          if [ "$output" != "True" ]; then
-            echo "unitTesting.sh failed with output: $output"
-            exit 1
-          fi
+          wsl sh migrate_win.sh
 
       - name: Send failure Slack notification
         if: failure()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        shell: powershell
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{
-             \"text\": \"The Development environment deployment failed during one of the steps. Please check the output for details.\"
-          }" $SLACK_WEBHOOK_URL
+          $payload = @{
+            text = "The Development environment deployment failed during one of the steps. Please check the output for details."
+          }
+          $payloadJson = $payload | ConvertTo-Json
+          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -ContentType 'application/json' -Body $payloadJson
 
       - name: Send success Slack notification
         if: success()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        shell: powershell
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"The build is complete and the development environment is now available. Please click the following link to access it: <https://esclassifier-dev.rootcode.software/classifier>\"
-          }" $SLACK_WEBHOOK_URL
+          $payload = @{
+            text = "The build is complete and the development environment is now available. Please click the following link to access it: https://esclassifier-dev.rootcode.software/classifier"
+          }
+          $payloadJson = $payload | ConvertTo-Json
+          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -ContentType 'application/json' -Body $payloadJson

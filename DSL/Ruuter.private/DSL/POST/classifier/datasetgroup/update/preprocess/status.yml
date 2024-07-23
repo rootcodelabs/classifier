@@ -26,9 +26,6 @@ declaration:
       - field: enableAllowed
         type: boolean
         description: "Body field 'enableAllowed'"
-      - field: lastUpdatedTimestamp
-        type: integer
-        description: "Body field 'lastUpdatedTimestamp'"
       - field: numSamples
         type: integer
         description: "Body field 'numSamples'"
@@ -44,7 +41,6 @@ extract_request_data:
     preprocess_data_location: ${incoming.body.preprocessDataLocation}
     raw_data_location: ${incoming.body.rawDataLocation}
     enable_allowed: ${incoming.body.enableAllowed}
-    last_updated_timestamp: ${incoming.body.lastUpdatedTimestamp}
     num_samples: ${incoming.body.numSamples}
     num_pages: ${incoming.body.numPages}
   next: update_dataset_group_preprocess_status
@@ -60,7 +56,7 @@ update_dataset_group_preprocess_status:
       preprocess_data_location: ${preprocess_data_location}
       raw_data_location: ${raw_data_location}
       enable_allowed: ${enable_allowed}
-      last_updated_timestamp: ${last_updated_timestamp}
+      last_updated_timestamp: ${new Date().toISOString()}
       num_samples: ${num_samples}
       num_pages: ${num_pages}
   result: res

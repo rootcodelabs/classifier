@@ -11,69 +11,12 @@ declaration:
       - field: groupName
         type: string
         description: "Body field 'groupName'"
-      - field: majorVersion
-        type: integer
-        description: "Body field 'majorVersion'"
-      - field: minorVersion
-        type: integer
-        description: "Body field 'minorVersion'"
-      - field: patchVersion
-        type: integer
-        description: "Body field 'patchVersion'"
-      - field: latest
-        type: boolean
-        description: "Body field 'latest'"
-      - field: isEnabled
-        type: boolean
-        description: "Body field 'isEnabled'"
-      - field: enableAllowed
-        type: boolean
-        description: "Body field 'enableAllowed'"
-      - field: lastModelTrained
-        type: string
-        description: "Body field 'lastModelTrained'"
-      - field: createdTimestamp
-        type: number
-        description: "Body field 'createdTimestamp'"
-      - field: lastUpdatedTimestamp
-        type: number
-        description: "Body field 'lastUpdatedTimestamp'"
-      - field: lastTrainedTimestamp
-        type: number
-        description: "Body field 'lastTrainedTimestamp'"
-      - field: validationStatus
-        type: string
-        description: "Body field 'validationStatus'"
-      - field: validationErrors
-        type: json
-        description: "Body field 'validationErrors'"
-      - field: processedDataAvailable
-        type: boolean
-        description: "Body field 'processedDataAvailable'"
-      - field: rawDataAvailable
-        type: boolean
-        description: "Body field 'rawDataAvailable'"
-      - field: numSamples
-        type: integer
-        description: "Body field 'numSamples'"
-      - field: numPages
-        type: integer
-        description: "Body field 'numPages'"
-      - field: rawDataLocation
-        type: string
-        description: "Body field 'rawDataLocation'"
-      - field: preprocessDataLocation
-        type: string
-        description: "Body field 'preprocessDataLocation'"
       - field: validationCriteria
         type: json
         description: "Body field 'validationCriteria'"
       - field: classHierarchy
         type: json
         description: "Body field 'classHierarchy'"
-      - field: connectedModels
-        type: array
-        description: "Body field 'connectedModels'"
     headers:
       - field: cookie
         type: string
@@ -82,27 +25,8 @@ declaration:
 extract_request_data:
   assign:
     group_name: ${incoming.body.groupName}
-    major_version: ${incoming.body.majorVersion}
-    minor_version: ${incoming.body.minorVersion}
-    patch_version: ${incoming.body.patchVersion}
-    latest: ${incoming.body.latest === null ? false :incoming.body.latest}
-    is_enabled: ${incoming.body.isEnabled === null ? false :incoming.body.isEnabled}
-    enable_allowed: ${incoming.body.enableAllowed === null ? false :incoming.body.enableAllowed}
-    last_model_trained: ${incoming.body.lastModelTrained === null ? '' :incoming.body.lastModelTrained}
-    created_timestamp: ${incoming.body.createdTimestamp}
-    last_updated_timestamp: ${incoming.body.lastUpdatedTimestamp}
-    last_trained_timestamp: ${incoming.body.lastTrainedTimestamp}
-    validation_status: ${incoming.body.validationStatus}
-    validation_errors: ${incoming.body.validationErrors}
-    processed_data_available: ${incoming.body.processedDataAvailable === null ? false :incoming.body.processedDataAvailable}
-    raw_data_available: ${incoming.body.rawDataAvailable === null ? false :incoming.body.rawDataAvailable}
-    num_samples: ${incoming.body.numSamples}
-    num_pages: ${incoming.body.numPages}
-    raw_data_location: ${incoming.body.rawDataLocation}
-    preprocess_data_location: ${incoming.body.preprocessDataLocation}
     validation_criteria: ${incoming.body.validationCriteria}
     class_hierarchy: ${incoming.body.classHierarchy}
-    connected_models: ${incoming.body.connectedModels}
   next: check_for_request_data
 
 check_for_request_data:

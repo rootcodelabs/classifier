@@ -11,9 +11,6 @@ declaration:
       - field: dgId
         type: number
         description: "Body field 'dgId'"
-      - field: fields
-        type: array
-        description: "Body field 'fields'"
       - field: updateDataPayload
         type: json
         description: "Body field 'updateDataPayload'"
@@ -26,7 +23,6 @@ extract_request_data:
   assign:
     dg_id: ${incoming.body.dgId}
     group_key: ${incoming.body.groupKey}
-    fields: ${incoming.body.fields}
     update_data_payload: ${incoming.body.updateDataPayload}
   next: get_dataset_group
 
