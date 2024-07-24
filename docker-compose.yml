@@ -23,7 +23,7 @@ services:
     container_name: ruuter-private
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8088,http://localhost:3002,http://localhost:3004
+      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8088,http://localhost:3002,http://localhost:3004,http://localhost:8000
       - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -178,11 +178,11 @@ services:
     volumes:
       - shared-volume:/shared
 
-  file_handler:
+  file-handler:
     build:
       context: ./file-handler
       dockerfile: Dockerfile
-    container_name: file_handler
+    container_name: file-handler
     volumes:
       - shared-volume:/shared
     environment:
