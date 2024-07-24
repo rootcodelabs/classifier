@@ -21,7 +21,6 @@ s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
     dgId: int
-    version: str
     exportType: str
 
 if not os.path.exists(UPLOAD_DIRECTORY):
@@ -46,58 +45,58 @@ async def authenticate_user(request: Request):
 
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
-    await authenticate_user(request)
+    try:
+        await authenticate_user(request)
 
-    fileConverter = FileConverter()
-    file_type = fileConverter._detect_file_type(dataFile.filename)
-    fileName = f"{uuid.uuid4()}.{file_type}"
-    fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
-    
-    with open(fileLocation, "wb") as f:
-        f.write(dataFile.file.read())
+        print(f"Received dgId: {dgId}")
+        print(f"Received filename: {dataFile.filename}")
 
-    success, convertedData = fileConverter.convert_to_json(fileLocation)
-    if not success:
-        upload_failed = UPLOAD_FAILED.copy()
-        upload_failed["reason"] = "Json file convert failed."
-        raise HTTPException(status_code=500, detail=upload_failed)
-    
-    jsonLocalFilePath = fileLocation.replace(YAML_EXT, JSON_EXT).replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
-    with open(jsonLocalFilePath, 'w') as jsonFile:
-        json.dump(convertedData, jsonFile, indent=4)
+        fileConverter = FileConverter()
+        file_type = fileConverter._detect_file_type(dataFile.filename)
+        fileName = f"{uuid.uuid4()}.{file_type}"
+        fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
+        
+        with open(fileLocation, "wb") as f:
+            f.write(dataFile.file.read())
 
-    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
-    sourceFilePath = fileName.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
-    
-    response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
-    if response.status_code == 201:
-        os.remove(fileLocation)
-        if fileLocation != jsonLocalFilePath:
-            os.remove(jsonLocalFilePath)
-        upload_success = UPLOAD_SUCCESS.copy()
-        upload_success["saved_file_path"] = saveLocation
-        return JSONResponse(status_code=200, content=upload_success)
-    else:
-        raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+        success, convertedData = fileConverter.convert_to_json(fileLocation)
+        if not success:
+            upload_failed = UPLOAD_FAILED.copy()
+            upload_failed["reason"] = "Json file convert failed."
+            raise HTTPException(status_code=500, detail=upload_failed)
+        
+        jsonLocalFilePath = fileLocation.replace(YAML_EXT, JSON_EXT).replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
+        with open(jsonLocalFilePath, 'w') as jsonFile:
+            json.dump(convertedData, jsonFile, indent=4)
+
+        saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
+        sourceFilePath = fileName.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
+        
+        response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
+        if response.status_code == 201:
+            os.remove(fileLocation)
+            if fileLocation != jsonLocalFilePath:
+                os.remove(jsonLocalFilePath)
+            upload_success = UPLOAD_SUCCESS.copy()
+            upload_success["saved_file_path"] = saveLocation
+            return JSONResponse(status_code=200, content=upload_success)
+        else:
+            raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+    except Exception as e:
+        print(f"Exception in data/import : {e}")
+        raise HTTPException(status_code=500, detail=str(e)) 
 
 @app.post("/datasetgroup/data/download")
 async def download_and_convert(request: Request, exportData: ExportFile, background_tasks: BackgroundTasks):
     await authenticate_user(request)
     dgId = exportData.dgId
-    version = exportData.version
     exportType = exportData.exportType
 
     if exportType not in ["xlsx", "yaml", "json"]:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
-    if version == "minor":
-        saveLocation = f"/dataset/{dgId}/minor_update_temp/minor_update_{JSON_EXT}"
-        localFileName = f"group_{dgId}minor_update"
-    elif version == "major":
-        saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
-        localFileName = f"group_{dgId}_aggregated"
-    else:
-        raise HTTPException(status_code=500, detail=IMPORT_TYPE_ERROR)
+    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
+    localFileName = f"group_{dgId}_aggregated"
 
     response = s3_ferry.transfer_file(f"{localFileName}{JSON_EXT}", "FS", saveLocation, "S3")
     if response.status_code != 201:
