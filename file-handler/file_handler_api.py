@@ -62,8 +62,8 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
         print(f"Received filename: {dataFile.filename}")
 
         fileConverter = FileConverter()
-        file_type = fileConverter._detect_file_type(dataFile.filename)
-        fileName = f"{uuid.uuid4()}.{file_type}"
+        fileType = fileConverter._detect_file_type(dataFile.filename)
+        fileName = f"{uuid.uuid4()}.{fileType}"
         fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
         
         with open(fileLocation, "wb") as f:
@@ -71,9 +71,9 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
 
         success, convertedData = fileConverter.convert_to_json(fileLocation)
         if not success:
-            upload_failed = UPLOAD_FAILED.copy()
-            upload_failed["reason"] = "Json file convert failed."
-            raise HTTPException(status_code=500, detail=upload_failed)
+            uploadFailed = UPLOAD_FAILED.copy()
+            uploadFailed["reason"] = "Json file convert failed."
+            raise HTTPException(status_code=500, detail=uploadFailed)
         
         jsonLocalFilePath = fileLocation.replace(YAML_EXT, JSON_EXT).replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         with open(jsonLocalFilePath, 'w') as jsonFile:
@@ -87,9 +87,9 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
             os.remove(fileLocation)
             if fileLocation != jsonLocalFilePath:
                 os.remove(jsonLocalFilePath)
-            upload_success = UPLOAD_SUCCESS.copy()
-            upload_success["saved_file_path"] = saveLocation
-            return JSONResponse(status_code=200, content=upload_success)
+            uploadSuccess = UPLOAD_SUCCESS.copy()
+            uploadSuccess["saved_file_path"] = saveLocation
+            return JSONResponse(status_code=200, content=uploadSuccess)
         else:
             raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
     except Exception as e:
