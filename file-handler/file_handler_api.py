@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 import os
 import json
@@ -13,6 +14,15 @@ from constants import (
 from s3_ferry import S3Ferry
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3001", "http://localhost:3002"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+
 
 UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
@@ -87,7 +97,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
         raise HTTPException(status_code=500, detail=str(e)) 
 
 @app.post("/datasetgroup/data/download")
-async def download_and_convert(request: Request, exportData: ExportFile, background_tasks: BackgroundTasks):
+async def download_and_convert(request: Request, exportData: ExportFile, backgroundTasks: BackgroundTasks):
     await authenticate_user(request)
     dgId = exportData.dgId
     exportType = exportData.exportType
@@ -119,14 +129,14 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
     else:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
-    background_tasks.add_task(os.remove, jsonFilePath)
+    backgroundTasks.add_task(os.remove, jsonFilePath)
     if outputFile != jsonFilePath:
-        background_tasks.add_task(os.remove, outputFile)
+        backgroundTasks.add_task(os.remove, outputFile)
 
     return FileResponse(outputFile, filename=os.path.basename(outputFile))
 
 @app.get("/datasetgroup/data/download/chunk")
-async def download_and_convert(request: Request, dgId: int, pageId: int, background_tasks: BackgroundTasks):
+async def download_and_convert(request: Request, dgId: int, pageId: int, backgroundTasks: BackgroundTasks):
     await authenticate_user(request)
     saveLocation = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
     localFileName = f"group_{dgId}_chunk_{pageId}"
@@ -143,6 +153,6 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
     for index, item in enumerate(jsonData, start=1):
         item['rowID'] = index
 
-    background_tasks.add_task(os.remove, jsonFilePath)
+    backgroundTasks.add_task(os.remove, jsonFilePath)
 
     return jsonData
