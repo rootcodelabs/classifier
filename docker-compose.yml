@@ -215,24 +215,24 @@ services:
       - init
       - s3-ferry
 
-  dataset-processor:
-    build:
-      context: ./dataset-processor
-      dockerfile: Dockerfile
-    container_name: dataset-processor
-    environment:
-      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
-      - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file_handler:8000/datasetgroup/data/download/json
-      - FILE_HANDLER_STOPWORDS_URL=http://file_handler:8000/datasetgroup/data/download/json/stopwords
-      - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file_handler:8000/datasetgroup/data/import/chunk
-    ports:
-      - "8001:8001"
-    networks:
-      - bykstack
-    depends_on:
-      - init
-      - s3-ferry
-      - file_handler
+  # dataset-processor:
+  #   build:
+  #     context: ./dataset-processor
+  #     dockerfile: Dockerfile
+  #   container_name: dataset-processor
+  #   environment:
+  #     - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+  #     - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file_handler:8000/datasetgroup/data/download/json
+  #     - FILE_HANDLER_STOPWORDS_URL=http://file_handler:8000/datasetgroup/data/download/json/stopwords
+  #     - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file_handler:8000/datasetgroup/data/import/chunk
+  #   ports:
+  #     - "8001:8001"
+  #   networks:
+  #     - bykstack
+  #   depends_on:
+  #     - init
+  #     - s3-ferry
+  #     - file_handler
 
 volumes:
   shared-volume:
