@@ -84,10 +84,10 @@ check_old_dataset_status:
   next: assign_fail_response
 
 execute_cron_manager:
-  call: reflect.mock
+  call: http.post
   args:
-    url: "[#CLASSIFIER_CRON_MANAGER]/execute/<group_name>/<job_name>"
-    body:
+    url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_processing/data_validation"
+    query:
       cookie: ${incoming.header.cookie}
       dgId: ${dg_id}
       updateType: 'minor'
