@@ -7,5 +7,5 @@ cd "$(dirname "$0")"
 source ../config/config.ini
 
 echo "dgID $dgId"
-echo "cookie $cookie"
+# echo "cookie $cookie"
 echo "API $INIT_DATESET_PROCESSOR_API"

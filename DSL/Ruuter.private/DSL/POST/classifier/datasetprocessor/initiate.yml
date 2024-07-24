@@ -11,23 +11,19 @@ declaration:
       - field: dgId
         type: number
         description: "Body field 'dgId'"
-    headers:
-      - field: cookie
-        type: string
-        description: "Cookie field"
 
 extract_request_data:
   assign:
     dg_id: ${incoming.body.dgId}
-    cookie: ${incoming.headers.cookie}
+    # cookie: ${incoming.headers.cookie}
     next: execute_cron_manager
 
 execute_cron_manager:
   call: http.post
   args:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_processor/init_data_processor"
-    body:
-      cookie: ${incoming.header.cookie}
+    query:
+      # cookie: ${incoming.header.cookie}
       dgId: ${dg_id}
   result: res
   next: assign_success_response
