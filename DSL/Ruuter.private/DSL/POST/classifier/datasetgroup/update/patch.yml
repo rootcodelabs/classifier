@@ -70,7 +70,7 @@ check_old_dataset_status:
   next: assign_fail_response
 
 execute_cron_manager:
-  call: http.post
+  call: reflect.mock
   args:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_processing/data_validation"
     query:
