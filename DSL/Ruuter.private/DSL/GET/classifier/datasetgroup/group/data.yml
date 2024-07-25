@@ -14,11 +14,16 @@ declaration:
       - field: pageNum
         type: number
         description: "Parameter 'pageNum'"
+    headers:
+      - field: cookie
+        type: string
+        description: "Cookie field"
 
 extract_data:
   assign:
     group_id: ${Number(incoming.params.groupId)}
     page_num: ${Number(incoming.params.pageNum)}
+    cookie: ${incoming.headers.cookie}
   next: get_dataset_group_fields_by_id
 
 get_dataset_group_fields_by_id:
@@ -43,15 +48,15 @@ check_fields_data_exist:
   next: assign_fail_response
 
 get_dataset_group_data_by_id:
-  call: reflect.mock
+  call: http.get
   args:
-    url: "[#CLASSIFIER_RESQL]/get-dataset-group-metadata-by-id"
-    body:
-      group_id: ${group_id}
-      page_num: ${page_num}
-    response:
-      statusCodeValue: 200
-      dataPayload: []
+    url: "[#CLASSIFIER_FILE_HANDLER]/datasetgroup/data/download/chunk"
+    headers:
+      type: json
+      cookie: ${cookie}
+    query:
+      dgId: ${group_id}
+      pageId: ${page_num}
   result: res_data
   next: check_data_status
 
@@ -64,6 +69,7 @@ check_data_status:
 assign_fields_response:
   assign:
     val: ${res_dataset.response.body[0].validationCriteria === null ? [] :JSON.parse(res_dataset.response.body[0].validationCriteria.value)}
+    num_pages: ${res_dataset.response.body[0].numPages}
   next: assign_formated_response
 
 assign_formated_response:
@@ -71,7 +77,8 @@ assign_formated_response:
     val: [{
       dgId: '${group_id}',
       fields: '${val === [] ? [] :val.fields}',
-      dataPayload: '[]'
+      numPages: '${num_pages}',
+      dataPayload: '${res_data.response.body}'
     }]
   next: assign_success_response
 
