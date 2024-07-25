@@ -62,8 +62,7 @@ async def authenticate_user(request: Request):
     }
 
     response = requests.get(url, headers=headers)
-    # if response.status_code != 200:
-    if False:
+    if response.status_code != 200:
         raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/datasetgroup/data/import")

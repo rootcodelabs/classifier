@@ -31,9 +31,9 @@ async def authenticate_user(request: Request):
 
 @app.post("/init-dataset-process")
 async def process_handler_endpoint(process_request: ProcessHandlerRequest):
-    # await authenticate_user(request)
-    # authCookie = request.cookies.get("customJwtCookie")
-    result = processor.process_handler(process_request.dgID, process_request.cookie, process_request.updateType, process_request.savedFilePath, process_request.patchPayload)
+    await authenticate_user(process_request)
+    authCookie = process_request.cookies.get("customJwtCookie")
+    result = processor.process_handler(process_request.dgID, authCookie, process_request.updateType, process_request.savedFilePath, process_request.patchPayload)
     if result:
         return result
     else:
