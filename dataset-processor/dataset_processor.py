@@ -12,6 +12,7 @@ FILE_HANDLER_IMPORT_CHUNKS_URL = os.getenv("FILE_HANDLER_IMPORT_CHUNKS_URL")
 FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL")
 GET_PAGE_COUNT_URL = os.getenv("GET_PAGE_COUNT_URL")
 SAVE_JSON_AGGREGRATED_DATA_URL = os.getenv("SAVE_JSON_AGGREGRATED_DATA_URL")
+DOWNLOAD_CHUNK_URL = os.getenv("DOWNLOAD_CHUNK_URL")
 
 class DatasetProcessor:
     def __init__(self):
@@ -214,6 +215,20 @@ class DatasetProcessor:
             return None
         
         return True
+
+    def download_chunk(self, dgID, cookie, pageId):
+        params = {'dgId': dgID, 'pageId': pageId}
+        headers = {
+            'cookie': f'customJwtCookie={cookie}'
+        }
+
+        try:
+            response = requests.get(DOWNLOAD_CHUNK_URL, params=params, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred while downloading chunk: {e}")
+            return None
         
     def process_handler(self, dgID, cookie, updateType, savedFilePath, patchPayload):
         if updateType == "Major":
@@ -297,4 +312,54 @@ class DatasetProcessor:
                     return FAILED_TO_GET_MINOR_UPDATE_DATASET
             else:
                 return FAILED_TO_GET_AGGREGATED_DATASET
+        elif updateType == "Patch":
+            stop_words = self.get_stopwords(dgID, cookie)
+            if stop_words is not None:
+                cleaned_patch_payload = self.remove_stop_words(patchPayload, stop_words)
+                if cleaned_patch_payload is not None:
+                    page_count = self.get_page_count(dgID, cookie)
+                    if page_count is not None:
+                        chunk_updates = {}
+                        for entry in cleaned_patch_payload:
+                            rowID = entry.get("rowID")
+                            chunkNum = (rowID - 1) // 5 + 1
+                            if chunkNum not in chunk_updates:
+                                chunk_updates[chunkNum] = []
+                            chunk_updates[chunkNum].append(entry)
+                        for chunkNum, entries in chunk_updates.items():
+                            chunk_data = self.download_chunk(dgID, cookie, chunkNum)
+                            if chunk_data is not None:
+                                for entry in entries:
+                                    rowID = entry.get("rowID")
+                                    for idx, chunk_entry in enumerate(chunk_data):
+                                        if chunk_entry.get("rowID") == rowID:
+                                            chunk_data[idx] = entry
+                                            break
+                                
+                                chunk_save_operation = self.save_chunked_data([chunk_data], cookie, dgID, chunkNum - 1)
+                                if chunk_save_operation == None:
+                                    return FAILED_TO_SAVE_CHUNKED_DATA
+                            else:
+                                return FAILED_TO_DOWNLOAD_CHUNK
+                        agregated_dataset = self.get_dataset(dgID, cookie)
+                        if agregated_dataset is not None:
+                            for entry in cleaned_patch_payload:
+                                rowID = entry.get("rowID")
+                                for index, item in enumerate(agregated_dataset):
+                                    if item.get("rowID") == rowID:
+                                        agregated_dataset[index] = entry
+                                        break
 
+                            save_result = self.save_aggregrated_data(dgID, cookie, agregated_dataset)
+                            if save_result:
+                                return SUCCESSFUL_OPERATION
+                            else:
+                                return FAILED_TO_SAVE_AGGREGATED_DATA
+                        else:
+                            return FAILED_TO_GET_AGGREGATED_DATASET
+                    else:
+                        return FAILED_TO_GET_PAGE_COUNT
+                else:
+                    return FAILED_TO_REMOVE_STOP_WORDS
+            else:
+                return FAILED_TO_GET_STOP_WORDS

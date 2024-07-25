@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
-from main import DatasetProcessor
+from dataset_processor import DatasetProcessor
 import requests
 import os
 
@@ -10,7 +10,10 @@ RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 
 class ProcessHandlerRequest(BaseModel):
     dgID: int
-    authCookie: str
+    cookie: str
+    updateType: str
+    savedFilePath: str
+    patchPayload: list
 
 async def authenticate_user(request: Request):
     cookie = request.cookies.get("customJwtCookie")
@@ -27,10 +30,10 @@ async def authenticate_user(request: Request):
         raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/init-dataset-process")
-async def process_handler_endpoint(request: Request, process_request: ProcessHandlerRequest):
-    await authenticate_user(request)
-    authCookie = request.cookies.get("customJwtCookie")
-    result = processor.process_handler(process_request.dgID, authCookie)
+async def process_handler_endpoint(process_request: ProcessHandlerRequest):
+    # await authenticate_user(request)
+    # authCookie = request.cookies.get("customJwtCookie")
+    result = processor.process_handler(process_request.dgID, process_request.cookie, process_request.updateType, process_request.savedFilePath, process_request.patchPayload)
     if result:
         return result
     else:
