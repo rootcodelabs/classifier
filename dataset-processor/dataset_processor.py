@@ -4,6 +4,7 @@ import json
 import requests
 # from data_enrichment.data_enrichment import DataEnrichment
 from constants import *
+from s3_mock import S3FileCounter
 
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
@@ -16,8 +17,7 @@ DOWNLOAD_CHUNK_URL = os.getenv("DOWNLOAD_CHUNK_URL")
 
 class DatasetProcessor:
     def __init__(self):
-        pass
-        # self.data_enricher = DataEnrichment()
+        self.s3_file_counter = S3FileCounter()
 
     def check_and_convert(self, data):
         print(data)
@@ -205,7 +205,9 @@ class DatasetProcessor:
         #     page_count = data["numpages"]
         #     return page_count
         try:
-            return 16
+            folder_path = f'data/dataset/{dg_id}/chunks/'
+            file_count = self.s3_file_counter.count_files_in_folder(folder_path)
+            return file_count
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
@@ -236,6 +238,7 @@ class DatasetProcessor:
         }
 
         try:
+            
             response = requests.get(DOWNLOAD_CHUNK_URL, params=params, headers=headers)
             response.raise_for_status()
             return response.json()
