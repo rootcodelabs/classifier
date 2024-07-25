@@ -40,10 +40,13 @@ class ImportChunks(BaseModel):
 
 class ImportJsonMajor(BaseModel):
     dgId: int
-    dataset: dict
+    dataset: list
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
+
+if not os.path.exists(CHUNK_UPLOAD_DIRECTORY):
+    os.makedirs(CHUNK_UPLOAD_DIRECTORY)
 
 def get_ruuter_private_url():
     return os.getenv("RUUTER_PRIVATE_URL")
@@ -195,15 +198,20 @@ async def upload_and_copy(request: Request, import_chunks: ImportChunks):
     dgID = import_chunks.dg_id
     chunks = import_chunks.chunks
     exsisting_chunks = import_chunks.exsistingChunks
+
+    # print("%$%$")
+    # print(chunks)
+    # print("%$%$")
     
     for index, chunk in enumerate(chunks, start=1):
         fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{exsisting_chunks+index}.json")
+        s3_ferry_view_file_location= os.path.join("/chunks", f"{exsisting_chunks+index}.json")
         with open(fileLocation, 'w') as jsonFile:
             json.dump(chunk, jsonFile, indent=4)
 
         saveLocation = f"/dataset/{dgID}/chunks/{exsisting_chunks+index}{JSON_EXT}"
     
-        response = s3_ferry.transfer_file(saveLocation, "S3", fileLocation, "FS")
+        response = s3_ferry.transfer_file(saveLocation, "S3", s3_ferry_view_file_location, "FS")
         if response.status_code == 201:
             os.remove(fileLocation)
         else:
