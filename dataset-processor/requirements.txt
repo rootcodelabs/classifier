@@ -1,5 +1,7 @@
 fastapi
 pydantic
 requests
-langdetect
-transformers
+# langdetect
+# transformers
+# torch
+# sentencepiece
