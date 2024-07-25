@@ -221,13 +221,13 @@ services:
     container_name: dataset-processor
     environment:
       - RUUTER_PRIVATE_URL=http://ruuter-private:8088
-      - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file_handler:8000/datasetgroup/data/download/json
-      - FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL=http://file_handler:8000/datasetgroup/data/download/json/location
-      - FILE_HANDLER_STOPWORDS_URL=http://file_handler:8000/datasetgroup/data/download/json/stopwords
-      - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file_handler:8000/datasetgroup/data/import/chunk
+      - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json
+      - FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json/location
+      - FILE_HANDLER_STOPWORDS_URL=http://file-handler:8000/datasetgroup/data/download/json/stopwords
+      - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/import/chunk
       - GET_PAGE_COUNT_URL=http://ruuter-private:8088/datasetgroup/group/data?groupd_id={dgid}&page_num=1
-      - SAVE_JSON_AGGREGRATED_DATA_URL=http://file_handler:8000/datasetgroup/data/import/json
-      - DOWNLOAD_CHUNK=http://file_handler:8000/datasetgroup/data/download/chunk
+      - SAVE_JSON_AGGREGRATED_DATA_URL=http://file-handler:8000/datasetgroup/data/import/json
+      - DOWNLOAD_CHUNK=http://file-handler:8000/datasetgroup/data/download/chunk
     ports:
       - "8001:8001"
     networks:
@@ -235,7 +235,7 @@ services:
     depends_on:
       - init
       - s3-ferry
-      - file_handler
+      - file-handler
 
 volumes:
   shared-volume:
