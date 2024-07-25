@@ -50,14 +50,25 @@ class FileConverter:
             print(f"Error converting YAML file '{filePath}' to JSON: {e}")
             return (False, {})
     
+    # def _convert_xlsx_to_json(self, filePath):
+    #     try:
+    #         data = pd.read_excel(filePath, sheet_name=None)
+    #         jsonData = {sheet: data[sheet].to_dict(orient='records') for sheet in data}
+    #         return (True, jsonData)
+    #     except Exception as e:
+    #         print(f"Error converting XLSX file '{filePath}' to JSON: {e}")
+    #         return (False, {})
+
     def _convert_xlsx_to_json(self, filePath):
         try:
             data = pd.read_excel(filePath, sheet_name=None)
-            jsonData = {sheet: data[sheet].to_dict(orient='records') for sheet in data}
-            return (True, jsonData)
+            combined_data = []
+            for sheet in data:
+                combined_data.extend(data[sheet].to_dict(orient='records'))
+            return (True, combined_data)
         except Exception as e:
             print(f"Error converting XLSX file '{filePath}' to JSON: {e}")
-            return (False, {})
+            return (False, [])
     
     def convert_json_to_xlsx(self, jsonData, outputPath):
         try:
