@@ -9,6 +9,9 @@ RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
 FILE_HANDLER_STOPWORDS_URL = os.getenv("FILE_HANDLER_STOPWORDS_URL")
 FILE_HANDLER_IMPORT_CHUNKS_URL = os.getenv("FILE_HANDLER_IMPORT_CHUNKS_URL")
+FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL")
+GET_PAGE_COUNT_URL = os.getenv("GET_PAGE_COUNT_URL")
+SAVE_JSON_AGGREGRATED_DATA_URL = os.getenv("SAVE_JSON_AGGREGRATED_DATA_URL")
 
 class DatasetProcessor:
     def __init__(self):
@@ -90,16 +93,17 @@ class DatasetProcessor:
             print("Error while splitting data into chunks")
             return None
     
-    def save_chunked_data(self, chunked_data, authCookie, dgID):
+    def save_chunked_data(self, chunked_data, cookie, dgID, exsistingChunks=0):
         headers = {
-            'cookie': f'customJwtCookie={authCookie}',
+            'cookie': f'customJwtCookie={cookie}',
             'Content-Type': 'application/json'
         }
 
         for chunk in chunked_data:
             payload = {
                 "dg_id": dgID,
-                "chunks": chunk
+                "chunks": chunk,
+                "exsistingChunks": exsistingChunks
             }
             try:
                 response = requests.post(FILE_HANDLER_IMPORT_CHUNKS_URL, json=payload, headers=headers)
@@ -116,7 +120,7 @@ class DatasetProcessor:
             validation_rules = data_dict.get("response", {}).get("validationCriteria", {}).get("validationRules", {})
             text_fields = []
             for field, rules in validation_rules.items():
-                if rules.get("type") == "text":
+                if rules.get("type") == "text" and rules.get("isDataClass")!=True:
                     text_fields.append(field)
             return text_fields
         except Exception as e:
@@ -126,7 +130,7 @@ class DatasetProcessor:
     def get_validation_data(self, dgID):
         try:
             params = {'dgId': dgID}
-            response = requests.get(RUUTER_URL, params=params)
+            response = requests.get(RUUTER_PRIVATE_URL, params=params)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -147,6 +151,20 @@ class DatasetProcessor:
             print(f"An error occurred: {e}")
             return None
         
+    def get_dataset_by_location(self, fileLocation, custom_jwt_cookie):
+        params = {'saveLocation': fileLocation}
+        headers = {
+            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+        }
+
+        try:
+            response = requests.get(FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL, params=params, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+            return None
+        
     def get_stopwords(self, dg_id, custom_jwt_cookie):
         params = {'dgId': dg_id}
         headers = {
@@ -161,37 +179,100 @@ class DatasetProcessor:
             print(f"An error occurred: {e}")
             return None
         
-    def process_handler(self, dgID, authCookie):
-        dataset = self.get_dataset(dgID, authCookie)
-        if dataset is not None:
-            structured_data = self.check_and_convert(dataset)
-            if structured_data is not None:
-                selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
-                if selected_data_fields_to_enrich is not None:
-                    enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
-                    if enriched_data is not None:
-                        stop_words = self.get_stopwords(dgID, authCookie)
-                        if stop_words is not None:
-                            cleaned_data = self.remove_stop_words(enriched_data, stop_words)
-                            if cleaned_data is not None:
-                                chunked_data = self.chunk_data(cleaned_data)
-                                if chunked_data is not None:
-                                    operation_result = self.save_chunked_data(chunked_data, authCookie, dgID)
-                                    if operation_result:
-                                        return SUCCESSFUL_OPERATION
+    def get_page_count(self, dg_id, custom_jwt_cookie):
+        params = {'dgId': dg_id}
+        headers = {
+            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+        }
+
+        try:
+            page_count_url = GET_PAGE_COUNT_URL.replace("{dgif}",str(dg_id))
+            response = requests.get(page_count_url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            page_count = data["numpages"]
+            return page_count
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+            return None
+    
+    def save_aggregrated_data(self, dgID, cookie, aggregratedData):
+        headers = {
+            'cookie': f'customJwtCookie={cookie}',
+            'Content-Type': 'application/json'
+        }
+
+        payload = {
+            "dgId": dgID,
+            "dataset": aggregratedData
+        }
+        try:
+            response = requests.post(SAVE_JSON_AGGREGRATED_DATA_URL, json=payload, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred while uploading aggregrated dataset: {e}")
+            return None
+        
+        return True
+        
+    def process_handler(self, dgID, cookie, updateType, savedFilePath, patchPayload):
+        if updateType == "Major":
+            dataset = self.get_dataset(dgID, cookie)
+            if 4 is not None:
+                structured_data = self.check_and_convert(dataset)
+                if structured_data is not None:
+                    selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
+                    if selected_data_fields_to_enrich is not None:
+                        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
+                        if enriched_data is not None:
+                            stop_words = self.get_stopwords(dgID, cookie)
+                            if stop_words is not None:
+                                cleaned_data = self.remove_stop_words(enriched_data, stop_words)
+                                if cleaned_data is not None:
+                                    chunked_data = self.chunk_data(cleaned_data)
+                                    if chunked_data is not None:
+                                        operation_result = self.save_chunked_data(chunked_data, cookie, dgID, 0)
+                                        if operation_result:
+                                            return SUCCESSFUL_OPERATION
+                                        else:
+                                            return FAILED_TO_SAVE_CHUNKED_DATA
                                     else:
-                                        return FAILED_TO_SAVE_CHUNKED_DATA
+                                        return FAILED_TO_CHUNK_CLEANED_DATA
                                 else:
-                                    return FAILED_TO_CHUNK_CLEANED_DATA
+                                    return FAILED_TO_REMOVE_STOP_WORDS
                             else:
-                                return FAILED_TO_REMOVE_STOP_WORDS
+                                return FAILED_TO_GET_STOP_WORDS
                         else:
-                            return FAILED_TO_GET_STOP_WORDS
+                            return FAILED_TO_ENRICH_DATA
                     else:
-                        return FAILED_TO_ENRICH_DATA
+                        return FAILED_TO_GET_SELECTED_FIELDS
                 else:
-                    return FAILED_TO_GET_SELECTED_FIELDS
+                    return FAILED_TO_CHECK_AND_CONVERT
             else:
-                return FAILED_TO_CHECK_AND_CONVERT
-        else:
-            return FAILED_TO_GET_DATASET
+                return FAILED_TO_GET_DATASET
+        elif updateType == "Minor":
+            agregated_dataset = self.get_dataset(dgID, cookie)
+            minor_update_dataset = self.get_dataset_by_location(savedFilePath, cookie)
+            if minor_update_dataset is not None:
+                structured_data = self.check_and_convert(minor_update_dataset)
+                if structured_data is not None:
+                    selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
+                    if selected_data_fields_to_enrich is not None:
+                        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
+                        if enriched_data is not None:
+                            stop_words = self.get_stopwords(dgID, cookie)
+                            if stop_words is not None:
+                                cleaned_data = self.remove_stop_words(enriched_data, stop_words)
+                                if cleaned_data is not None:
+                                    chunked_data = self.chunk_data(cleaned_data)
+                                    if chunked_data is not None:
+                                        page_count = self.get_page_count(dgID)
+                                        operation_result = self.save_chunked_data(chunked_data, cookie, dgID, page_count)
+                                        if operation_result is not None:
+                                            agregated_dataset = agregated_dataset + cleaned_data
+                                            agregated_dataset_operation = self.save_aggregrated_data(dgID, cookie, agregated_dataset)
+                                            if agregated_dataset_operation:
+                                                return SUCCESSFUL_OPERATION
+
+
+
