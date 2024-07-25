@@ -238,7 +238,7 @@ class DatasetProcessor:
         }
 
         try:
-            
+
             response = requests.get(DOWNLOAD_CHUNK_URL, params=params, headers=headers)
             response.raise_for_status()
             return response.json()
@@ -347,8 +347,9 @@ class DatasetProcessor:
                                 print("Minor update data enrichment successful")
                                 stop_words = self.get_stopwords(dgID, cookie)
                                 if stop_words is not None:
+                                    combined_new_dataset = structured_data + enriched_data
                                     print("Stop words for minor update retrieved successfully")
-                                    cleaned_data = self.remove_stop_words(enriched_data, stop_words)
+                                    cleaned_data = self.remove_stop_words(combined_new_dataset, stop_words)
                                     if cleaned_data is not None:
                                         print("Stop words for minor update removed successfully")
                                         chunked_data = self.chunk_data(cleaned_data)
@@ -358,7 +359,7 @@ class DatasetProcessor:
                                             if page_count is not None:
                                                 print(f"Page count retrieved successfully: {page_count}")
                                                 print(chunked_data)
-                                                operation_result = self.save_chunked_data(chunked_data, cookie, dgID, page_count+2)
+                                                operation_result = self.save_chunked_data(chunked_data, cookie, dgID, page_count)
                                                 if operation_result is not None:
                                                     print("Chunked data for minor update saved successfully")
                                                     agregated_dataset += cleaned_data
@@ -429,7 +430,7 @@ class DatasetProcessor:
                                             chunk_data[idx] = entry
                                             break
                                 
-                                chunk_save_operation = self.save_chunked_data([chunk_data], cookie, dgID, chunkNum)
+                                chunk_save_operation = self.save_chunked_data([chunk_data], cookie, dgID, chunkNum-1)
                                 if chunk_save_operation == None:
                                     print(f"Failed to save chunk {chunkNum}")
                                     return FAILED_TO_SAVE_CHUNKED_DATA
