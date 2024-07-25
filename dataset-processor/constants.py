@@ -75,3 +75,9 @@ FAILED_TO_SAVE_AGGREGATED_DATA = {
     "operation_successful": False,
     "reason": "Failed to save aggregated dataset"
 }
+
+FAILED_TO_DOWNLOAD_CHUNK = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to download chunk"
+}
