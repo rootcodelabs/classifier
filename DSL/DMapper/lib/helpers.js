@@ -55,3 +55,18 @@ export function getOutlookExpirationDateTime() {
   const updatedDateISOString = currentDate.toISOString();
   return updatedDateISOString;
 }
+
+export function findDuplicateStopWords(inputArray, existingArray) {
+  const set1 = new Set(existingArray);
+  const duplicates = inputArray.filter((item) => set1.has(item));
+  const value = JSON.stringify(duplicates);
+  return value;
+}
+
+export function findNotExistingStopWords(inputArray, existingArray) {
+  const set1 = new Set(existingArray);
+  const notExisting = inputArray.filter((item) => !set1.has(item));
+  const value = JSON.stringify(notExisting);
+  return value;
+}
+
