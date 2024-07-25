@@ -1,4 +1,4 @@
-init_data_processor:
+dataset_processor:
   trigger: off
   type: exec
   command: "../app/scripts/data_processor_exec.sh"
