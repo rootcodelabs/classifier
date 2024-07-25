@@ -73,7 +73,7 @@ class DatasetProcessor:
             print("Error while removing Stop Words")
             return None
     
-    def enrich_data(self, data, selected_fields):
+    def enrich_data(self, data, selected_fields, record_count):
         try:
             enriched_data = []
             for entry in data:
@@ -85,6 +85,8 @@ class DatasetProcessor:
                         enriched_entry[key] = enriched_value[0] if enriched_value else value
                     else:
                         enriched_entry[key] = value
+                record_count = record_count+1
+                enriched_entry["rowID"] = record_count
                 enriched_data.append(enriched_entry)
             return enriched_data
         except Exception as e:
@@ -105,10 +107,12 @@ class DatasetProcessor:
         }
 
         for index, chunk in enumerate(chunked_data):
+            print("%$%$")
+            print(chunk)
             payload = {
                 "dg_id": dgID,
                 "chunks": chunk,
-                "exsistingChunks": exsistingChunks+index
+                "exsistingChunks": exsistingChunks+index+1
             }
             try:
                 response = requests.post(FILE_HANDLER_IMPORT_CHUNKS_URL, json=payload, headers=headers)
@@ -188,18 +192,20 @@ class DatasetProcessor:
             return None
         
     def get_page_count(self, dg_id, custom_jwt_cookie):
-        params = {'dgId': dg_id}
-        headers = {
-            'cookie': f'customJwtCookie={custom_jwt_cookie}'
-        }
+        # params = {'dgId': dg_id}
+        # headers = {
+        #     'cookie': f'customJwtCookie={custom_jwt_cookie}'
+        # }
 
+        # try:
+        #     page_count_url = GET_PAGE_COUNT_URL.replace("{dgif}",str(dg_id))
+        #     response = requests.get(page_count_url, headers=headers)
+        #     response.raise_for_status()
+        #     data = response.json()
+        #     page_count = data["numpages"]
+        #     return page_count
         try:
-            page_count_url = GET_PAGE_COUNT_URL.replace("{dgif}",str(dg_id))
-            response = requests.get(page_count_url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            page_count = data["numpages"]
-            return page_count
+            return 16
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
@@ -237,6 +243,18 @@ class DatasetProcessor:
             print(f"An error occurred while downloading chunk: {e}")
             return None
         
+    def add_row_id(self, structured_data, max_row_id):
+        try:
+            processed_data = []
+            for data in structured_data:
+                max_row_id = max_row_id + 1
+                data["rowID"] = max_row_id
+                processed_data.append(data)
+            return processed_data
+        except Exception as e:
+            print(e)
+            return None
+        
     def process_handler(self, dgID, cookie, updateType, savedFilePath, patchPayload):
         print(f"Process handler started with updateType: {updateType}")
         
@@ -251,7 +269,8 @@ class DatasetProcessor:
                     selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
                     if selected_data_fields_to_enrich is not None:
                         print("Selected data fields to enrich retrieved successfully")
-                        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
+                        max_row_id = max(item["rowID"] for item in structured_data)
+                        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
 
                         agregated_dataset = structured_data + enriched_data
                         
@@ -260,6 +279,7 @@ class DatasetProcessor:
                             stop_words = self.get_stopwords(dgID, cookie)
                             if stop_words is not None:
                                 print("Stop words retrieved successfully")
+                                print(agregated_dataset)
                                 cleaned_data = self.remove_stop_words(agregated_dataset, stop_words)
                                 if cleaned_data is not None:
                                     print("Stop words removed successfully")
@@ -304,18 +324,22 @@ class DatasetProcessor:
         elif updateType == "Minor":
             print("Handling Minor update")
             agregated_dataset = self.get_dataset(dgID, cookie)
+            max_row_id = max(item["rowID"] for item in agregated_dataset)
             if agregated_dataset is not None:
                 print("Aggregated dataset retrieved successfully")
                 minor_update_dataset = self.get_dataset_by_location(savedFilePath, cookie)
                 if minor_update_dataset is not None:
                     print("Minor update dataset retrieved successfully")
                     structured_data = self.check_and_convert(minor_update_dataset)
+                    structured_data = self.add_row_id(structured_data, max_row_id)
+                    print(structured_data[-1])
                     if structured_data is not None:
                         print("Minor update dataset converted successfully")
                         selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
                         if selected_data_fields_to_enrich is not None:
                             print("Selected data fields to enrich for minor update retrieved successfully")
-                            enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
+                            max_row_id = max(item["rowID"] for item in structured_data)
+                            enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
                             if enriched_data is not None:
                                 print("Minor update data enrichment successful")
                                 stop_words = self.get_stopwords(dgID, cookie)
@@ -330,7 +354,8 @@ class DatasetProcessor:
                                             page_count = self.get_page_count(dgID, cookie)
                                             if page_count is not None:
                                                 print(f"Page count retrieved successfully: {page_count}")
-                                                operation_result = self.save_chunked_data(chunked_data, cookie, dgID, page_count+1)
+                                                print(chunked_data)
+                                                operation_result = self.save_chunked_data(chunked_data, cookie, dgID, page_count+2)
                                                 if operation_result is not None:
                                                     print("Chunked data for minor update saved successfully")
                                                     agregated_dataset += cleaned_data

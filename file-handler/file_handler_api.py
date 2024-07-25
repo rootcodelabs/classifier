@@ -88,7 +88,6 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
             upload_failed["reason"] = "Json file convert failed."
             raise HTTPException(status_code=500, detail=upload_failed)
         
-        # Add rowID to each dictionary in converted_data
         for idx, record in enumerate(converted_data, start=1):
             record["rowID"] = idx
         
@@ -176,7 +175,9 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
 async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
     await authenticate_user(request)
 
-    localFileName = saveLocation.split("/")["-1"]
+    print(saveLocation)
+
+    localFileName = saveLocation.split("/")[-1]
 
     response = s3_ferry.transfer_file(f"{localFileName}", "FS", saveLocation, "S3")
     if response.status_code != 201:
@@ -199,25 +200,26 @@ async def upload_and_copy(request: Request, import_chunks: ImportChunks):
     chunks = import_chunks.chunks
     exsisting_chunks = import_chunks.exsistingChunks
 
-    # print("%$%$")
-    # print(chunks)
-    # print("%$%$")
-    
-    for index, chunk in enumerate(chunks, start=1):
-        fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{exsisting_chunks+index}.json")
-        s3_ferry_view_file_location= os.path.join("/chunks", f"{exsisting_chunks+index}.json")
-        with open(fileLocation, 'w') as jsonFile:
-            json.dump(chunk, jsonFile, indent=4)
 
-        saveLocation = f"/dataset/{dgID}/chunks/{exsisting_chunks+index}{JSON_EXT}"
     
-        response = s3_ferry.transfer_file(saveLocation, "S3", s3_ferry_view_file_location, "FS")
-        if response.status_code == 201:
-            os.remove(fileLocation)
-        else:
-            raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+    # for index, chunk in enumerate(chunks, start=1):
+    #     print("%$%$")
+    #     print(chunk)
+    #     print("%$%$")
+    fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{exsisting_chunks}.json")
+    s3_ferry_view_file_location= os.path.join("/chunks", f"{exsisting_chunks}.json")
+    with open(fileLocation, 'w') as jsonFile:
+        json.dump(chunks, jsonFile, indent=4)
+
+    saveLocation = f"/dataset/{dgID}/chunks/{exsisting_chunks}{JSON_EXT}"
+
+    response = s3_ferry.transfer_file(saveLocation, "S3", s3_ferry_view_file_location, "FS")
+    if response.status_code == 201:
+        os.remove(fileLocation)
     else:
-        return True
+        raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+    # else:
+    #     return True
 
 @app.get("/datasetgroup/data/download/chunk")
 async def download_and_convert(request: Request, dgId: int, pageId: int, backgroundTasks: BackgroundTasks):
@@ -234,8 +236,8 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
     with open(f"{json_file_path}", 'r') as json_file:
         json_data = json.load(json_file)
 
-    for index, item in enumerate(json_data, start=1):
-        item['rowID'] = index
+    # for index, item in enumerate(json_data, start=1):
+    #     item['rowID'] = index
 
     backgroundTasks.add_task(os.remove, json_file_path)
 
