@@ -200,12 +200,6 @@ async def upload_and_copy(request: Request, import_chunks: ImportChunks):
     chunks = import_chunks.chunks
     exsisting_chunks = import_chunks.exsistingChunks
 
-
-    
-    # for index, chunk in enumerate(chunks, start=1):
-    #     print("%$%$")
-    #     print(chunk)
-    #     print("%$%$")
     fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{exsisting_chunks}.json")
     s3_ferry_view_file_location= os.path.join("/chunks", f"{exsisting_chunks}.json")
     with open(fileLocation, 'w') as jsonFile:
