@@ -51,3 +51,27 @@ FAILED_TO_GET_DATASET = {
     "operation_successful": False,
     "reason": "Failed to get dataset"
 }
+
+FAILED_TO_GET_MINOR_UPDATE_DATASET = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to get minor update dataset"
+}
+
+FAILED_TO_GET_AGGREGATED_DATASET = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to get aggregated dataset"
+}
+
+FAILED_TO_GET_PAGE_COUNT = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to get page count"
+}
+
+FAILED_TO_SAVE_AGGREGATED_DATA = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to save aggregated dataset"
+}

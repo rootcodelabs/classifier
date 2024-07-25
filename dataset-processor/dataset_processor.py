@@ -218,7 +218,7 @@ class DatasetProcessor:
     def process_handler(self, dgID, cookie, updateType, savedFilePath, patchPayload):
         if updateType == "Major":
             dataset = self.get_dataset(dgID, cookie)
-            if 4 is not None:
+            if dataset is not None:
                 structured_data = self.check_and_convert(dataset)
                 if structured_data is not None:
                     selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
@@ -252,27 +252,49 @@ class DatasetProcessor:
                 return FAILED_TO_GET_DATASET
         elif updateType == "Minor":
             agregated_dataset = self.get_dataset(dgID, cookie)
-            minor_update_dataset = self.get_dataset_by_location(savedFilePath, cookie)
-            if minor_update_dataset is not None:
-                structured_data = self.check_and_convert(minor_update_dataset)
-                if structured_data is not None:
-                    selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
-                    if selected_data_fields_to_enrich is not None:
-                        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
-                        if enriched_data is not None:
-                            stop_words = self.get_stopwords(dgID, cookie)
-                            if stop_words is not None:
-                                cleaned_data = self.remove_stop_words(enriched_data, stop_words)
-                                if cleaned_data is not None:
-                                    chunked_data = self.chunk_data(cleaned_data)
-                                    if chunked_data is not None:
-                                        page_count = self.get_page_count(dgID)
-                                        operation_result = self.save_chunked_data(chunked_data, cookie, dgID, page_count)
-                                        if operation_result is not None:
-                                            agregated_dataset = agregated_dataset + cleaned_data
-                                            agregated_dataset_operation = self.save_aggregrated_data(dgID, cookie, agregated_dataset)
-                                            if agregated_dataset_operation:
-                                                return SUCCESSFUL_OPERATION
-
-
+            if agregated_dataset is not None:
+                minor_update_dataset = self.get_dataset_by_location(savedFilePath, cookie)
+                if minor_update_dataset is not None:
+                    structured_data = self.check_and_convert(minor_update_dataset)
+                    if structured_data is not None:
+                        selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
+                        if selected_data_fields_to_enrich is not None:
+                            enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich)
+                            if enriched_data is not None:
+                                stop_words = self.get_stopwords(dgID, cookie)
+                                if stop_words is not None:
+                                    cleaned_data = self.remove_stop_words(enriched_data, stop_words)
+                                    if cleaned_data is not None:
+                                        chunked_data = self.chunk_data(cleaned_data)
+                                        if chunked_data is not None:
+                                            page_count = self.get_page_count(dgID, cookie)
+                                            if page_count is not None:
+                                                operation_result = self.save_chunked_data(chunked_data, cookie, dgID, page_count)
+                                                if operation_result is not None:
+                                                    agregated_dataset += cleaned_data
+                                                    agregated_dataset_operation = self.save_aggregrated_data(dgID, cookie, agregated_dataset)
+                                                    if agregated_dataset_operation:
+                                                        return SUCCESSFUL_OPERATION
+                                                    else:
+                                                        return FAILED_TO_SAVE_AGGREGATED_DATA
+                                                else:
+                                                    return FAILED_TO_SAVE_CHUNKED_DATA
+                                            else:
+                                                return FAILED_TO_GET_PAGE_COUNT
+                                        else:
+                                            return FAILED_TO_CHUNK_CLEANED_DATA
+                                    else:
+                                        return FAILED_TO_REMOVE_STOP_WORDS
+                                else:
+                                    return FAILED_TO_GET_STOP_WORDS
+                            else:
+                                return FAILED_TO_ENRICH_DATA
+                        else:
+                            return FAILED_TO_GET_SELECTED_FIELDS
+                    else:
+                        return FAILED_TO_CHECK_AND_CONVERT
+                else:
+                    return FAILED_TO_GET_MINOR_UPDATE_DATASET
+            else:
+                return FAILED_TO_GET_AGGREGATED_DATASET
 
