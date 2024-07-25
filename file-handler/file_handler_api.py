@@ -226,7 +226,7 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
 
     backgroundTasks.add_task(os.remove, json_file_path)
 
-    return jsonData
+    return json_data
 
 @app.post("/datasetgroup/data/import/json")
 async def upload_and_copy(request: Request, importData: ImportJsonMajor):
