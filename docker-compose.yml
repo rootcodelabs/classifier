@@ -228,6 +228,7 @@ services:
       - GET_PAGE_COUNT_URL=http://ruuter-private:8088/datasetgroup/group/data?groupd_id={dgid}&page_num=1
       - SAVE_JSON_AGGREGRATED_DATA_URL=http://file-handler:8000/datasetgroup/data/import/json
       - DOWNLOAD_CHUNK_URL=http://file-handler:8000/datasetgroup/data/download/chunk
+      - STATUS_UPDATE_URL = http://ruuter-private:8088/classifier/datasetgroup/update/preprocess/status
       - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
       - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
       - S3_BUCKET_NAME=esclassifier-test

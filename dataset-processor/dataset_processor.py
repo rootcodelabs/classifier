@@ -14,6 +14,7 @@ FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_LOCAT
 GET_PAGE_COUNT_URL = os.getenv("GET_PAGE_COUNT_URL")
 SAVE_JSON_AGGREGRATED_DATA_URL = os.getenv("SAVE_JSON_AGGREGRATED_DATA_URL")
 DOWNLOAD_CHUNK_URL = os.getenv("DOWNLOAD_CHUNK_URL")
+STATUS_UPDATE_URL = os.getenv("STATUS_UPDATE_URL")
 
 class DatasetProcessor:
     def __init__(self):
@@ -256,6 +257,31 @@ class DatasetProcessor:
             return processed_data
         except Exception as e:
             print(e)
+            return None
+        
+    def update_preprocess_status(dg_id, cookie, processed_data_available, raw_data_available, preprocess_data_location, raw_data_location, enable_allowed, num_samples, num_pages):
+        url = STATUS_UPDATE_URL
+        headers = {
+            'Content-Type': 'application/json',
+            'Cookie': f'customJwtCookie={cookie}'
+        }
+        data = {
+            "dgId": dg_id,
+            "processedDataAvailable": processed_data_available,
+            "rawDataAvailable": raw_data_available,
+            "preprocessDataLocation": preprocess_data_location,
+            "rawDataLocation": raw_data_location,
+            "enableAllowed": enable_allowed,
+            "numSamples": num_samples,
+            "numPages": num_pages
+        }
+
+        try:
+            response = requests.post(url, json=data, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
             return None
         
     def process_handler(self, dgID, cookie, updateType, savedFilePath, patchPayload):
