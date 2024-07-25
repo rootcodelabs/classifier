@@ -28,6 +28,11 @@ class ExportFile(BaseModel):
 class ImportChunks(BaseModel):
     dg_id: int
     chunks: list
+    exsistingChunks: int
+
+class ImportJsonMajor(BaseModel):
+    dgId: int
+    dataset: dict
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
@@ -151,19 +156,39 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
 
     return jsonData
 
+@app.get("/datasetgroup/data/download/json/location")
+async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
+    await authenticate_user(request)
+
+    localFileName = saveLocation.split("/")["-1"]
+
+    response = s3_ferry.transfer_file(f"{localFileName}", "FS", saveLocation, "S3")
+    if response.status_code != 201:
+        raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
+
+    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}")
+
+    with open(f"{jsonFilePath}", 'r') as jsonFile:
+        jsonData = json.load(jsonFile)
+
+    background_tasks.add_task(os.remove, jsonFilePath)
+
+    return jsonData
+
 @app.post("/datasetgroup/data/import/chunk")
 async def upload_and_copy(request: Request, import_chunks: ImportChunks):
     await authenticate_user(request)
 
     dgID = import_chunks.dg_id
     chunks = import_chunks.chunks
+    exsisting_chunks = import_chunks.exsistingChunks
     
     for index, chunk in enumerate(chunks, start=1):
-        fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{index}.json")
+        fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{exsisting_chunks+index}.json")
         with open(fileLocation, 'w') as jsonFile:
             json.dump(chunk, jsonFile, indent=4)
 
-        saveLocation = f"/dataset/{dgID}/chunks/{index}{JSON_EXT}"
+        saveLocation = f"/dataset/{dgID}/chunks/{exsisting_chunks+index}{JSON_EXT}"
     
         response = s3_ferry.transfer_file(saveLocation, "S3", fileLocation, "FS")
         if response.status_code == 201:
@@ -194,3 +219,25 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
     background_tasks.add_task(os.remove, jsonFilePath)
 
     return jsonData
+
+@app.post("/datasetgroup/data/import/json")
+async def upload_and_copy(request: Request, importData: ImportJsonMajor):
+    await authenticate_user(request)
+
+    fileName = f"{uuid.uuid4()}.{JSON_EXT}"
+    fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
+    
+    with open(fileLocation, 'w') as jsonFile:
+        json.dump(importData.dataset, jsonFile, indent=4)
+
+    saveLocation = f"/dataset/{importData.dgId}/primary_dataset/dataset_{importData.dgId}_aggregated{JSON_EXT}"
+    sourceFilePath = fileName.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
+    
+    response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
+    if response.status_code == 201:
+        os.remove(fileLocation)
+        upload_success = UPLOAD_SUCCESS.copy()
+        upload_success["saved_file_path"] = saveLocation
+        return JSONResponse(status_code=200, content=upload_success)
+    else:
+        raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
