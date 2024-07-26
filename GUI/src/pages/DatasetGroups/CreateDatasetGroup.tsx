@@ -5,19 +5,22 @@ import { Button, Card, Dialog, FormInput } from 'components';
 import { v4 as uuidv4 } from 'uuid';
 import ClassHierarchy from 'components/molecules/ClassHeirarchy';
 import {
-  getTimestampNow,
   isValidationRulesSatisfied,
   transformClassHierarchy,
   transformValidationRules,
   validateClassHierarchy,
   validateValidationRules,
 } from 'utils/datasetGroupsUtils';
-import ValidationCriteria from 'components/molecules/ValidationCriteria';
-import { ValidationRule } from 'types/datasetGroups';
+import { DatasetGroup, ValidationRule } from 'types/datasetGroups';
 import { useNavigate } from 'react-router-dom';
+import ValidationCriteriaCardsView from 'components/molecules/ValidationCriteria/CardsView';
+import { useMutation } from '@tanstack/react-query';
+import { createDatasetGroup } from 'services/datasets';
+import { useDialog } from 'hooks/useDialog';
 
 const CreateDatasetGroup: FC = () => {
   const { t } = useTranslation();
+  const { open } = useDialog();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
@@ -44,37 +47,40 @@ const CreateDatasetGroup: FC = () => {
 
   const validateData = useCallback(() => {
     setNodesError(validateClassHierarchy(nodes));
-    setDatasetNameError(!datasetName && true);
+    setDatasetNameError(!datasetName);
     setValidationRuleError(validateValidationRules(validationRules));
     if (
       !validateClassHierarchy(nodes) &&
       datasetName &&
-      true &&
       !validateValidationRules(validationRules)
     ) {
       if (!isValidationRulesSatisfied(validationRules)) {
         setIsModalOpen(true);
         setModalType('VALIDATION_ERROR');
-      }else{
-        const payload = {
-          name: datasetName,
-          major_version: 1,
-          minor_version: 0,
-          patch_version: 0,
-          created_timestamp: getTimestampNow(),
-          last_updated_timestamp: getTimestampNow(),
-          ...transformValidationRules(validationRules),
+      } else {
+        const payload: DatasetGroup = {
+          groupName: datasetName,
+          validationCriteria: { ...transformValidationRules(validationRules) },
           ...transformClassHierarchy(nodes),
         };
-  
-        console.log(payload);
-        setIsModalOpen(true);
-        setModalType('SUCCESS');
+        createDatasetGroupMutation.mutate(payload);
       }
-      
     }
-    
   }, [datasetName, nodes, validationRules]);
+
+  const createDatasetGroupMutation = useMutation({
+    mutationFn: (data: DatasetGroup) => createDatasetGroup(data),
+    onSuccess: async (response) => {
+      setIsModalOpen(true);
+      setModalType('SUCCESS');
+    },
+    onError: () => {
+      open({
+        title: 'Dataset Group Creation Unsuccessful',
+        content: <p>Something went wrong. Please try again.</p>,
+      });
+    },
+  });
 
   return (
     <div>
@@ -96,18 +102,24 @@ const CreateDatasetGroup: FC = () => {
               />
             </div>
           </Card>
-          <ValidationCriteria
+
+          <ValidationCriteriaCardsView
             validationRules={validationRules}
             setValidationRules={setValidationRules}
             validationRuleError={validationRuleError}
             setValidationRuleError={setValidationRuleError}
           />
-          <ClassHierarchy
-            nodes={nodes}
-            setNodes={setNodes}
-            nodesError={nodesError}
-            setNodesError={setNodesError}
-          />
+
+          <div className="title-sm">Class Hierarchy</div>
+          <Card>
+            {' '}
+            <ClassHierarchy
+              nodes={nodes}
+              setNodes={setNodes}
+              nodesError={nodesError}
+              setNodesError={setNodesError}
+            />
+          </Card>
         </div>
         {modalType === 'VALIDATION_ERROR' && (
           <Dialog
@@ -136,14 +148,14 @@ const CreateDatasetGroup: FC = () => {
             isOpen={isModalOpen}
             title={'Dataset Group Created Successfully'}
             footer={
-              <div>
+              <div className="flex-grid">
                 <Button
                   appearance="secondary"
                   onClick={() => setIsModalOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button onClick={() => setIsModalOpen(false)}>
+                <Button onClick={() => navigate('/dataset-groups')}>
                   Go to Detailed View
                 </Button>
               </div>
@@ -156,12 +168,21 @@ const CreateDatasetGroup: FC = () => {
         )}
         <div
           className="flex"
-          style={{ alignItems: 'end', gap: '10px', justifyContent: 'end', marginTop:"25px" }}
+          style={{
+            alignItems: 'end',
+            gap: '10px',
+            justifyContent: 'end',
+            marginTop: '25px',
+          }}
         >
           <Button onClick={() => validateData()}>Create Dataset Group</Button>
-          <Button appearance="secondary" onClick={()=>navigate('/dataset-groups')}>Cancel</Button>
+          <Button
+            appearance="secondary"
+            onClick={() => navigate('/dataset-groups')}
+          >
+            Cancel
+          </Button>
         </div>
-        
       </div>
     </div>
   );
