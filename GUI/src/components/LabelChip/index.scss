@@ -1,0 +1,20 @@
+.label-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 15px;
+    border-radius: 16px;
+    background-color: #e0e0e0;
+    margin: 4px;
+  }
+  
+  .label-chip .label {
+    margin-right: 8px;
+  }
+  
+  .label-chip .button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }

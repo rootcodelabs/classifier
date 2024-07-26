@@ -6,9 +6,12 @@ import Label from 'components/Label';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { enableDataset } from 'services/datasets';
 import { useDialog } from 'hooks/useDialog';
+import { createSearchParams, URLSearchParamsInit, useNavigate } from 'react-router-dom';
+import { Operation } from 'types/datasetGroups';
+import { AxiosError } from 'axios';
 
 type DatasetGroupCardProps = {
-  datasetGroupId?: number;
+  datasetGroupId?: number|string|undefined;
   datasetName?: string;
   version?: string;
   isLatest?: boolean;
@@ -18,6 +21,9 @@ type DatasetGroupCardProps = {
   lastUsed?: string;
   validationStatus?: string;
   lastModelTrained?: string;
+  setId?: React.Dispatch<React.SetStateAction<number>>
+  setView?: React.Dispatch<React.SetStateAction<string>>
+
 };
 
 const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
@@ -31,26 +37,46 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
   lastUsed,
   validationStatus,
   lastModelTrained,
+  setId,
+  setView
 }) => {
   const queryClient = useQueryClient();
   const { open } = useDialog();
-
-  const renderValidationStatus = (status:string) => {
-    if (status === 'successful') {
+  
+  const renderValidationStatus = (status:string|undefined) => {
+    if (status === 'success') {
       return <Label type="success">{'Validation Successful'}</Label>;
-    } else if (status === 'failed') {
+    } else if (status === 'fail') {
       return <Label type="error">{'Validation Failed'}</Label>;
-    } else if (status === 'pending') {
-      return <Label type="warning">{'Validation Pending'}</Label>;
-    } else if (status === 'in_progress') {
+    } else if (status === 'unvalidated') {
+      return <Label type="info">{'Not Validated'}</Label>;
+    } else if (status === 'in-progress') {
       return <Label type="warning">{'Validation In Progress'}</Label>;
     }
   };
 
   const datasetEnableMutation = useMutation({
-    mutationFn: (data) => enableDataset(data),
+    mutationFn: (data:Operation) => enableDataset(data),
     onSuccess: async (response) => {
-      await queryClient.invalidateQueries(['GET/datasetgroup/overview', 1]);
+      await queryClient.invalidateQueries(['datasetgroup/overview', 1]);
+    },
+    onError: (error) => {
+      open({
+        title: 'Cannot Enable Dataset Group',
+        content: (
+          <p>
+            The dataset group cannot be enabled until data is added. Please
+            add datasets to this group and try again.
+          </p>
+        ),
+      });
+    },
+  });
+
+  const datasetDisableMutation = useMutation({
+    mutationFn: (data:Operation) => enableDataset(data),
+    onSuccess: async (response) => {
+      await queryClient.invalidateQueries(['datasetgroup/overview', 1]);
       if (response?.operationSuccessful)
         open({
           title: 'Cannot Enable Dataset Group',
@@ -63,29 +89,6 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
         });
     },
     onError: () => {
-      open({
-        title: 'Operation Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
-      });
-    },
-  });
-
-  const datasetDisableMutation = useMutation({
-    mutationFn: (data) => enableDataset(data),
-    onSuccess: async (response) => {
-      await queryClient.invalidateQueries(['GET/datasetgroup/overview', 1]);
-      if (response?.operationSuccessful)
-        open({
-          title: 'Cannot Enable Dataset Group',
-          content: (
-            <p>
-              The dataset group cannot be enabled until data is added. Please
-              add datasets to this group and try again.
-            </p>
-          ),
-        });
-    },
-    onError: (error: AxiosError) => {
       open({
         title: 'Operation Unsuccessful',
         content: <p>Something went wrong. Please try again.</p>,
@@ -110,7 +113,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
     <div>
       <div className="dataset-group-card">
         <div className="row switch-row">
-          <p className="icon-text">{datasetName}</p>
+          <div className='text'>{datasetName}</div>
           <Switch
             label=""
             checked={isEnabled}
@@ -119,15 +122,15 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
         </div>
         {renderValidationStatus(validationStatus)}
         <div className="py-3">
-          <p className="text">
+          <p >
             {'Last Model Trained:'}
             {lastModelTrained}
           </p>
-          <p className="text">
+          <p >
             {'Last Used For Training:'}
             {lastUsed}
           </p>
-          <p className="text">
+          <p >
             {'Last Updated:'}
             {lastUpdated}
           </p>
@@ -138,7 +141,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
         </div>
 
         <div className="label-row">
-          <Button appearance="primary" size="s">
+          <Button appearance="primary" size="s" onClick={()=>{setId(datasetGroupId);setView("individual")}}>
             Settings
           </Button>
         </div>
