@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import './DatasetGroups.scss';
 import { useTranslation } from 'react-i18next';
 import { Button, FormInput, FormSelect } from 'components';
@@ -13,13 +13,20 @@ import {
   parseVersionString,
 } from 'utils/commonUtilts';
 import { DatasetGroup } from 'types/datasetGroups';
+import ViewDatasetGroup from './ViewDatasetGroup';
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [pageIndex, setPageIndex] = useState(1);
+  const [id, setId] = useState(0);
   const [enableFetch, setEnableFetch] = useState(true);
+  const [view, setView] = useState("list");
+
+useEffect(()=>{
+  setEnableFetch(true)
+},[view]);
 
   const [filters, setFilters] = useState({
     datasetGroupName: 'all',
@@ -31,10 +38,9 @@ const DatasetGroups: FC = () => {
   const {
     data: datasetGroupsData,
     isLoading,
-    refetch,
   } = useQuery(
     [
-      'datasets/groups',
+      'datasetgroup/overview',
       pageIndex,
       filters.datasetGroupName,
       parseVersionString(filters?.version)?.major,
@@ -61,9 +67,8 @@ const DatasetGroups: FC = () => {
   const { data: filterData } = useQuery(['datasets/filters'], () =>
     getFilterData()
   );
-  const pageCount = datasetGroupsData?.totalPages || 5;
+  const pageCount = datasetGroupsData?.response?.data?.[0]?.totalPages || 1;
 
-  // Handler for updating filters state
   const handleFilterChange = (name: string, value: string) => {
     setEnableFetch(false);
     setFilters((prevFilters) => ({
@@ -72,9 +77,10 @@ const DatasetGroups: FC = () => {
     }));
   };
 
+
   return (
     <div>
-      <div className="container">
+      {view==="list" &&(<div className="container">
         <div className="title_container">
           <div className="title">Dataset Groups</div>
           <Button
@@ -91,7 +97,7 @@ const DatasetGroups: FC = () => {
               label=""
               name="sort"
               placeholder="Dataset Group Name"
-              options={formattedArray(filterData?.dgNames) ?? []}
+              options={formattedArray(filterData?.response?.dgNames) ?? []}
               onSelectionChange={(selection) =>
                 handleFilterChange('datasetGroupName', selection?.value ?? '')
               }
@@ -100,7 +106,7 @@ const DatasetGroups: FC = () => {
               label=""
               name="sort"
               placeholder="Version"
-              options={formattedArray(filterData?.dgVersions) ?? []}
+              options={formattedArray(filterData?.response?.dgVersions) ?? []}
               onSelectionChange={(selection) =>
                 handleFilterChange('version', selection?.value ?? '')
               }
@@ -109,7 +115,7 @@ const DatasetGroups: FC = () => {
               label=""
               name="sort"
               placeholder="Validation Status"
-              options={formattedArray(filterData?.dgValidationStatuses) ?? []}
+              options={formattedArray(filterData?.response?.dgValidationStatuses) ?? []}
               onSelectionChange={(selection) =>
                 handleFilterChange('validationStatus', selection?.value ?? '')
               }
@@ -140,25 +146,23 @@ const DatasetGroups: FC = () => {
             style={{ padding: '20px', marginTop: '20px' }}
           >
             {isLoading && <div>Loading...</div>}
-            {datasetGroupsData?.data?.map(
-              (dataset: DatasetGroup, index: number) => {
+            {datasetGroupsData?.response?.data?.map(
+              (dataset, index: number) => {
                 return (
                   <DatasetGroupCard
                     key={index}
-                    datasetGroupId={dataset?.dgId}
+                    datasetGroupId={dataset?.id}
                     isEnabled={dataset?.isEnabled}
-                    datasetName={dataset?.name}
+                    datasetName={dataset?.groupName}
                     version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
                     isLatest={dataset.latest}
-                    enableAllowed={dataset.enableAllowed}
-                    lastUpdated={convertTimestampToDateTime(
-                      dataset?.lastUpdated
-                    )}
-                    lastUsed={convertTimestampToDateTime(
-                      dataset?.linkedModels[0]?.trainingTimestamp
-                    )}
+                    lastUpdated={dataset?.lastUpdatedTimestamp}
+                    lastUsed={dataset?.lastTrainedTimestamp}
                     validationStatus={dataset.validationStatus}
-                    lastModelTrained={dataset?.linkedModels[0]?.modelName}
+                    lastModelTrained={dataset?.lastModelTrained}
+                    setId={setId}
+                    setView={setView}
+
                   />
                 );
               }
@@ -172,7 +176,10 @@ const DatasetGroups: FC = () => {
             onPageChange={setPageIndex}
           />
         </div>
-      </div>
+      </div>)}
+      {view==="individual" && (
+      <ViewDatasetGroup dgId={id} setView={setView}></ViewDatasetGroup>
+      )}
     </div>
   );
 };

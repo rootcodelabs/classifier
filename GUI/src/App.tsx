@@ -10,6 +10,8 @@ import { useQuery } from '@tanstack/react-query';
 import { UserInfo } from 'types/userInfo';
 import CreateDatasetGroup from 'pages/DatasetGroups/CreateDatasetGroup';
 import ViewDatasetGroup from 'pages/DatasetGroups/ViewDatasetGroup';
+import StopWords from 'pages/StopWords';
+import ValidationSessions from 'pages/ValidationSessions';
 
 const App: FC = () => {
 
@@ -31,7 +33,8 @@ const App: FC = () => {
         <Route path="/integration" element={<Integrations />} />
         <Route path="/dataset-groups" element={<DatasetGroups />} />
         <Route path="/create-dataset-group" element={<CreateDatasetGroup />} />
-        <Route path="/view-dataset-group" element={<ViewDatasetGroup />} />
+        <Route path="/stop-words" element={<StopWords />} />
+        <Route path="/validation-sessions" element={<ValidationSessions />} />
 
 
       </Route>

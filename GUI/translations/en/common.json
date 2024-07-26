@@ -94,7 +94,7 @@
     "integrationErrorTitle": "Integration Unsuccessful",
     "integrationErrorDesc": "Failed to connect with {{channel}}. Please check your settings and try again. If the problem persists, contact support for assistance.",
     "integrationSuccessTitle": "Integration Successful",
-    "integrationSuccessDesc": "You have successfully connected with {{channel}}! Your integration is now complete, and you can start working with {{Jira}} seamlessly.",
+    "integrationSuccessDesc": "You have successfully connected with {{channel}}! Your integration is now complete, and you can start working with {{channel}} seamlessly.",
     "confirmationModalTitle": "Are you sure?",
     "disconnectConfirmationModalDesc": "Are you sure you want to disconnect the {{channel}} integration? This action cannot be undone and may affect your workflow and linked issues.",
     "connectConfirmationModalDesc": "Are you sure you want to connect the {{channel}} integration?",

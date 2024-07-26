@@ -57,6 +57,16 @@ body {
   margin: 20px 0px;
 }
 
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.flex-grid {
+  display: flex;
+  gap: 10px;
+}
+
 a,
 input,
 select,
@@ -64,6 +74,10 @@ textarea,
 button {
   font-family: inherit;
   transition: background-color 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+p {
+margin-bottom: 10px;
 }
 
 a {

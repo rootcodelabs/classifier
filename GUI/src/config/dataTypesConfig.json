@@ -1,6 +1,10 @@
 [
-    { "label": "Text", "value": "TEXT" },
-    { "label": "Numbers", "value": "NUMBER" },
-    { "label": "Date Time", "value": "DATETIME" }
+    { "label": "Text", "value": "text" },
+    { "label": "Numbers", "value": "numbers" },
+    { "label": "Date Time", "value": "datetime" },
+    { "label": "Email", "value": "email" },
+    { "label": "File Attachments", "value": "file_attachments" }
+
+
 
   ]
