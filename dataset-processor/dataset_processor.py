@@ -7,6 +7,7 @@ from constants import *
 from s3_mock import S3FileCounter
 
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
+GET_VALIDATION_SCHEMA = os.getenv("GET_VALIDATION_SCHEMA")
 FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
 FILE_HANDLER_STOPWORDS_URL = os.getenv("FILE_HANDLER_STOPWORDS_URL")
 FILE_HANDLER_IMPORT_CHUNKS_URL = os.getenv("FILE_HANDLER_IMPORT_CHUNKS_URL")
@@ -125,24 +126,27 @@ class DatasetProcessor:
         
         return True
 
-    def get_selected_data_fields(self, dgID:int):
+    def get_selected_data_fields(self, dgID:int, cookie:str):
         try:
-            return ["Subject","Body"]
-            # data_dict = self.get_validation_data(dgID)
-            # validation_rules = data_dict.get("response", {}).get("validationCriteria", {}).get("validationRules", {})
-            # text_fields = []
-            # for field, rules in validation_rules.items():
-            #     if rules.get("type") == "text" and rules.get("isDataClass")!=True:
-            #         text_fields.append(field)
-            # return text_fields
+            # return ["Subject","Body"]
+            data_dict = self.get_validation_data(dgID, cookie)
+            validation_rules = data_dict.get("response", {}).get("validationCriteria", {}).get("validationRules", {})
+            text_fields = []
+            for field, rules in validation_rules.items():
+                if rules.get("type") == "text" and rules.get("isDataClass")!=True:
+                    text_fields.append(field)
+            return text_fields
         except Exception as e:
             print(e)
             return None
     
-    def get_validation_data(self, dgID):
+    def get_validation_data(self, dgID, custom_jwt_cookie):
         try:
             params = {'dgId': dgID}
-            response = requests.get(RUUTER_PRIVATE_URL, params=params)
+            headers = {
+            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+            }
+            response = requests.get(GET_VALIDATION_SCHEMA, params=params, headers=headers)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -296,7 +300,7 @@ class DatasetProcessor:
                 structured_data = self.check_and_convert(dataset)
                 if structured_data is not None:
                     print("Dataset converted successfully")
-                    selected_data_fields_to_enrich = self.get_selected_data_fields(dgID)
+                    selected_data_fields_to_enrich = self.get_selected_data_fields(dgID, cookie)
                     if selected_data_fields_to_enrich is not None:
                         print("Selected data fields to enrich retrieved successfully")
                         max_row_id = max(item["rowID"] for item in structured_data)

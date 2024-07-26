@@ -221,6 +221,7 @@ services:
     container_name: dataset-processor
     environment:
       - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+      - GET_VALIDATION_SCHEMA=http://ruuter-private:8088/classifier/datasetgroup/schema
       - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json
       - FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json/location
       - FILE_HANDLER_STOPWORDS_URL=http://file-handler:8000/datasetgroup/data/download/json/stopwords
