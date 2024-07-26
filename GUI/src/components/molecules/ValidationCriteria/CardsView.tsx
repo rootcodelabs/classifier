@@ -8,6 +8,7 @@ import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';
 import Button from 'components/Button';
 import { ValidationRule } from 'types/datasetGroups';
 import { Link } from 'react-router-dom';
+import { isFieldNameExisting } from 'utils/datasetGroupsUtils';
 
 const ItemTypes = {
   ITEM: 'item',
@@ -19,14 +20,18 @@ type ValidationRulesProps = {
   validationRuleError?: boolean;
   setValidationRuleError: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const ValidationCriteria: FC<PropsWithChildren<ValidationRulesProps>> = ({
+const ValidationCriteriaCardsView: FC<
+  PropsWithChildren<ValidationRulesProps>
+> = ({
   validationRules,
   setValidationRules,
   setValidationRuleError,
   validationRuleError,
 }) => {
+  
+
   const setIsDataClass = (id, isDataClass) => {
-    const updatedItems = validationRules.map((item) =>
+    const updatedItems = validationRules?.map((item) =>
       item.id === id ? { ...item, isDataClass: !isDataClass } : item
     );
     setValidationRules(updatedItems);
@@ -76,6 +81,11 @@ const ValidationCriteria: FC<PropsWithChildren<ValidationRulesProps>> = ({
               error={
                 validationRuleError && !item.fieldName
                   ? 'Enter a field name'
+                  : validationRuleError &&
+                    item.fieldName &&
+                    item?.fieldName.toString().toLocaleLowerCase() === 'rowid'
+                  ? `${item?.fieldName} cannot be used as a field name`
+                  : item.fieldName && isFieldNameExisting(validationRules,item?.fieldName)?`${item?.fieldName} alreday exist as field name`
                   : ''
               }
             />
@@ -97,10 +107,10 @@ const ValidationCriteria: FC<PropsWithChildren<ValidationRulesProps>> = ({
               style={{ display: 'flex', justifyContent: 'end', gap: '10px' }}
             >
               <Link
-              to={""}
+                to={''}
                 style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
                 onClick={() => deleteItem(item.id)}
-                className='link'
+                className="link"
               >
                 <MdDelete />
                 Delete
@@ -114,8 +124,9 @@ const ValidationCriteria: FC<PropsWithChildren<ValidationRulesProps>> = ({
                 name="dataClass"
                 checked={item.isDataClass}
                 onChange={() => setIsDataClass(item.id, item.isDataClass)}
+                style={{width:"150px"}}
               />
-              <MdDehaze className='link' size={50} />
+              <MdDehaze className="link" size={30} />
             </div>
           </div>
         </Card>
@@ -131,7 +142,7 @@ const ValidationCriteria: FC<PropsWithChildren<ValidationRulesProps>> = ({
   };
 
   const addNewClass = () => {
-    setValidationRuleError(false)
+    setValidationRuleError(false);
     const newId = validationRules[validationRules?.length - 1]?.id + 1;
     const updatedItems = [
       ...validationRules,
@@ -161,9 +172,8 @@ const ValidationCriteria: FC<PropsWithChildren<ValidationRulesProps>> = ({
       <div className="flex" style={{ justifyContent: 'end' }}>
         <Button onClick={addNewClass}>Add Class</Button>
       </div>
-      
     </DndProvider>
   );
 };
 
-export default ValidationCriteria;
+export default ValidationCriteriaCardsView;

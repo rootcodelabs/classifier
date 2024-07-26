@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import './index.css';
 import Dialog from 'components/Dialog';
 import { Class } from 'types/datasetGroups';
+import { isClassHierarchyDuplicated } from 'utils/datasetGroupsUtils';
 
 type ClassHierarchyProps = {
   nodes?: Class[];
@@ -30,6 +31,10 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
     const handleChange = (e) => {
       setFieldName(e.target.value);
       node.fieldName = e.target.value;
+      if(isClassHierarchyDuplicated(nodes,e.target.value))
+        setNodesError(true)
+      else
+      setNodesError(false)
     };
 
     return (
@@ -48,7 +53,13 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
               placeholder="Enter Field Name"
               value={fieldName}
               onChange={handleChange}
-              error={nodesError && !fieldName ? 'Enter a field name' : ''}
+              error={
+                nodesError && !fieldName
+                  ? 'Enter a field name'
+                  : fieldName && isClassHierarchyDuplicated(nodes, fieldName)
+                  ? 'Class name already exists'
+                  : ''
+              }
             />
           </div>
           <div
@@ -86,7 +97,7 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
 
   const addSubClass = (parentId) => {
     const addSubClassRecursive = (nodes) => {
-      return nodes.map((node) => {
+      return nodes?.map((node) => {
         if (node.id === parentId) {
           const newNode = {
             id: uuidv4(),
@@ -136,7 +147,7 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
 
   const confirmDeleteNode = () => {
     const deleteNodeRecursive = (nodes) => {
-      return nodes.filter((node) => {
+      return nodes?.filter((node) => {
         if (node.id === currentNode.id) {
           return false; // Remove this node
         }
@@ -154,11 +165,10 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
 
   return (
     <div>
-      <div className="title-sm">Class Hierarchy</div>
-      <Card>
+      <div>
         <Button onClick={addMainClass}>Add Main Class</Button>
         <div>
-          {nodes.map((node) => (
+          {nodes?.map((node) => (
             <TreeNode
               key={node.id}
               node={node}
@@ -167,13 +177,18 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
             />
           ))}
         </div>
-      </Card>
+      </div>
       <Dialog
         isOpen={isModalOpen}
         title={'Are you sure?'}
         footer={
           <div>
-            <Button appearance='secondary' onClick={()=>setIsModalOpen(false)}>Cancel</Button>
+            <Button
+              appearance="secondary"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Cancel
+            </Button>
             <Button appearance="error" onClick={() => confirmDeleteNode()}>
               Delete
             </Button>
@@ -181,7 +196,7 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
         }
         onClose={() => setIsModalOpen(false)}
       >
-        Confirm that you are wish to delete the following record
+        Confirm that you are wish to delete the following record. This will delete the current class and all subclasses of it
       </Dialog>
     </div>
   );
