@@ -1,5 +1,5 @@
-from translator import Translator
-from paraphraser import Paraphraser
+from data_enrichment.translator import Translator
+from data_enrichment.paraphraser import Paraphraser
 from langdetect import detect
 from typing import List, Optional
 
@@ -37,4 +37,5 @@ class DataEnrichment:
                 translated_paraphrases.append(translated_paraphrase)
             return translated_paraphrases
 
+        print("*")
         return paraphrases

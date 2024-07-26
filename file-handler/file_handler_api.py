@@ -24,6 +24,7 @@ app.add_middleware(
 )
 
 UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
+CHUNK_UPLOAD_DIRECTORY = os.getenv("CHUNK_UPLOAD_DIRECTORY", "/shared/chunks")
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
 s3_ferry = S3Ferry(S3_FERRY_URL)
@@ -32,8 +33,20 @@ class ExportFile(BaseModel):
     dgId: int
     exportType: str
 
+class ImportChunks(BaseModel):
+    dg_id: int
+    chunks: list
+    exsistingChunks: int
+
+class ImportJsonMajor(BaseModel):
+    dgId: int
+    dataset: list
+
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
+
+if not os.path.exists(CHUNK_UPLOAD_DIRECTORY):
+    os.makedirs(CHUNK_UPLOAD_DIRECTORY)
 
 def get_ruuter_private_url():
     return os.getenv("RUUTER_PRIVATE_URL")
@@ -74,6 +87,9 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
             upload_failed["reason"] = "Json file convert failed."
             raise HTTPException(status_code=500, detail=upload_failed)
         
+        for idx, record in enumerate(converted_data, start=1):
+            record["rowID"] = idx
+        
         json_local_file_path = file_location.replace(YAML_EXT, JSON_EXT).replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         with open(json_local_file_path, 'w') as json_file:
             json.dump(converted_data, json_file, indent=4)
@@ -93,7 +109,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
             raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
     except Exception as e:
         print(f"Exception in data/import : {e}")
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/datasetgroup/data/download")
 async def download_and_convert(request: Request, exportData: ExportFile, backgroundTasks: BackgroundTasks):
@@ -134,6 +150,70 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
 
     return FileResponse(output_file, filename=os.path.basename(output_file))
 
+@app.get("/datasetgroup/data/download/json")
+async def download_and_convert(request: Request, dgId: int, background_tasks: BackgroundTasks):
+    await authenticate_user(request)
+
+    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
+    localFileName = f"group_{dgId}_aggregated"
+
+    response = s3_ferry.transfer_file(f"{localFileName}{JSON_EXT}", "FS", saveLocation, "S3")
+    if response.status_code != 201:
+        raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
+
+    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}{JSON_EXT}")
+
+    with open(f"{jsonFilePath}", 'r') as jsonFile:
+        jsonData = json.load(jsonFile)
+
+    background_tasks.add_task(os.remove, jsonFilePath)
+
+    return jsonData
+
+@app.get("/datasetgroup/data/download/json/location")
+async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
+    await authenticate_user(request)
+
+    print(saveLocation)
+
+    localFileName = saveLocation.split("/")[-1]
+
+    response = s3_ferry.transfer_file(f"{localFileName}", "FS", saveLocation, "S3")
+    if response.status_code != 201:
+        raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
+
+    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}")
+
+    with open(f"{jsonFilePath}", 'r') as jsonFile:
+        jsonData = json.load(jsonFile)
+
+    background_tasks.add_task(os.remove, jsonFilePath)
+
+    return jsonData
+
+@app.post("/datasetgroup/data/import/chunk")
+async def upload_and_copy(request: Request, import_chunks: ImportChunks):
+    await authenticate_user(request)
+
+    dgID = import_chunks.dg_id
+    chunks = import_chunks.chunks
+    exsisting_chunks = import_chunks.exsistingChunks
+
+    fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{exsisting_chunks}.json")
+    s3_ferry_view_file_location= os.path.join("/chunks", f"{exsisting_chunks}.json")
+    with open(fileLocation, 'w') as jsonFile:
+        json.dump(chunks, jsonFile, indent=4)
+
+    saveLocation = f"/dataset/{dgID}/chunks/{exsisting_chunks}{JSON_EXT}"
+
+    response = s3_ferry.transfer_file(saveLocation, "S3", s3_ferry_view_file_location, "FS")
+    if response.status_code == 201:
+        os.remove(fileLocation)
+    else:
+        raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+    # else:
+    #     return True
+
 @app.get("/datasetgroup/data/download/chunk")
 async def download_and_convert(request: Request, dgId: int, pageId: int, backgroundTasks: BackgroundTasks):
     await authenticate_user(request)
@@ -149,9 +229,31 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
     with open(f"{json_file_path}", 'r') as json_file:
         json_data = json.load(json_file)
 
-    for index, item in enumerate(json_data, start=1):
-        item['rowID'] = index
+    # for index, item in enumerate(json_data, start=1):
+    #     item['rowID'] = index
 
     backgroundTasks.add_task(os.remove, json_file_path)
 
     return json_data
+
+@app.post("/datasetgroup/data/import/json")
+async def upload_and_copy(request: Request, importData: ImportJsonMajor):
+    await authenticate_user(request)
+
+    fileName = f"{uuid.uuid4()}.{JSON_EXT}"
+    fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
+    
+    with open(fileLocation, 'w') as jsonFile:
+        json.dump(importData.dataset, jsonFile, indent=4)
+
+    saveLocation = f"/dataset/{importData.dgId}/primary_dataset/dataset_{importData.dgId}_aggregated{JSON_EXT}"
+    sourceFilePath = fileName.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
+    
+    response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
+    if response.status_code == 201:
+        os.remove(fileLocation)
+        upload_success = UPLOAD_SUCCESS.copy()
+        upload_success["saved_file_path"] = saveLocation
+        return JSONResponse(status_code=200, content=upload_success)
+    else:
+        raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
