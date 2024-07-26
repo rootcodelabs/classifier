@@ -69,6 +69,7 @@ check_data_status:
 assign_fields_response:
   assign:
     val: ${res_dataset.response.body[0].validationCriteria === null ? [] :JSON.parse(res_dataset.response.body[0].validationCriteria.value)}
+    num_pages: ${res_dataset.response.body[0].numPages}
   next: assign_formated_response
 
 assign_formated_response:
@@ -76,6 +77,7 @@ assign_formated_response:
     val: [{
       dgId: '${group_id}',
       fields: '${val === [] ? [] :val.fields}',
+      numPages: '${num_pages}',
       dataPayload: '${res_data.response.body}'
     }]
   next: assign_success_response
