@@ -62,8 +62,8 @@ async def authenticate_user(request: Request):
     }
 
     response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+    # if response.status_code != 200:
+    #     raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
