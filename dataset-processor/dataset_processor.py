@@ -264,8 +264,9 @@ class DatasetProcessor:
             print(e)
             return None
         
-    def update_preprocess_status(dg_id, cookie, processed_data_available, raw_data_available, preprocess_data_location, raw_data_location, enable_allowed, num_samples, num_pages):
+    def update_preprocess_status(self,dg_id, cookie, processed_data_available, raw_data_available, preprocess_data_location, raw_data_location, enable_allowed, num_samples, num_pages):
         url = STATUS_UPDATE_URL
+        print(url)
         headers = {
             'Content-Type': 'application/json',
             'Cookie': f'customJwtCookie={cookie}'
@@ -292,9 +293,10 @@ class DatasetProcessor:
     def process_handler(self, dgID, cookie, updateType, savedFilePath, patchPayload):
         print(f"Process handler started with updateType: {updateType}")
         
-        if updateType == "Major":
-            print("Handling Major update")
-            dataset = self.get_dataset(dgID, cookie)
+        if updateType == "minor":
+            print("Handling Minor update")
+            # dataset = self.get_dataset(dgID, cookie)
+            dataset = self.get_dataset_by_location(savedFilePath, cookie)
             if dataset is not None:
                 print("Dataset retrieved successfully")
                 structured_data = self.check_and_convert(dataset)
@@ -327,6 +329,8 @@ class DatasetProcessor:
                                             print("Chunked data saved successfully")
                                             agregated_dataset_operation = self.save_aggregrated_data(dgID, cookie, cleaned_data)
                                             if agregated_dataset_operation != None:
+                                                return_data = self.update_preprocess_status(dgID, cookie, True, False, f"/dataset/{dgID}/chunks/", "", True, 100, len(chunked_data))
+                                                print(return_data)
                                                 return SUCCESSFUL_OPERATION
                                             else:
                                                 print("Failed to save aggregated dataset for minor update")
@@ -355,7 +359,7 @@ class DatasetProcessor:
             else:
                 print("Failed to retrieve dataset")
                 return FAILED_TO_GET_DATASET
-        elif updateType == "Minor":
+        elif updateType == "Minor2":
             print("Handling Minor update")
             agregated_dataset = self.get_dataset(dgID, cookie)
             max_row_id = max(item["rowID"] for item in agregated_dataset)
@@ -431,7 +435,7 @@ class DatasetProcessor:
             else:
                 print("Failed to retrieve aggregated dataset for minor update")
                 return FAILED_TO_GET_AGGREGATED_DATASET
-        elif updateType == "Patch":
+        elif updateType == "patch":
             print("Handling Patch update")
             stop_words = self.get_stopwords(dgID, cookie)
             if stop_words is not None:

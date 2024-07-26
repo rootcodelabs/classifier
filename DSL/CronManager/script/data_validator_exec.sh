@@ -7,20 +7,20 @@ if [ -z "$dgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFil
   exit 1
 fi
 
-# Construct the payload using grep
+# Construct the payload using here document
 payload=$(cat <<EOF
 {
-  "dgID": "$dgId",
-  "cookie": "$cookie",
+  "dgId": "$dgId",
   "updateType": "$updateType",
   "savedFilePath": "$savedFilePath",
-  "patchPayload": "$patchPayload"
+  "patchPayload": "$patchPayload",
+  "cookie": "$cookie"
 }
 EOF
 )
 
 # Set the forward URL
-forward_url="http://dataset-processor:8001/init-dataset-process"
+forward_url="http://dataset-processor:8001/datasetgroup/update/validation/status"
 
 # Send the request
 response=$(curl -s -w "\nHTTP_STATUS_CODE:%{http_code}" -X POST "$forward_url" \
@@ -41,4 +41,5 @@ if [ "$http_status" -ge 200 ] && [ "$http_status" -lt 300 ]; then
 else
   echo "Request failed with status code $http_status."
   echo "Response: $http_body"
-  exit
+  exit 1
+fi

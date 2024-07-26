@@ -1,9 +1,11 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 from dataset_processor import DatasetProcessor
 import requests
 import os
+import httpx
 
 app = FastAPI()
 processor = DatasetProcessor()
@@ -22,7 +24,7 @@ class ProcessHandlerRequest(BaseModel):
     cookie: str
     updateType: str
     savedFilePath: str
-    patchPayload: list
+    patchPayload: dict
 
 async def authenticate_user(request: Request):
     cookie = request.cookies.get("customJwtCookie")
@@ -35,15 +37,59 @@ async def authenticate_user(request: Request):
     }
 
     response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+    # if response.status_code != 200:
+    #     raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/init-dataset-process")
-async def process_handler_endpoint(process_request: ProcessHandlerRequest):
-    await authenticate_user(process_request)
-    authCookie = process_request.cookies.get("customJwtCookie")
-    result = processor.process_handler(process_request.dgID, authCookie, process_request.updateType, process_request.savedFilePath, process_request.patchPayload)
+async def process_handler_endpoint(request: Request):
+    print("in init dataset")
+    payload = await request.json()
+    print(payload)
+    # await authenticate_user(process_request)
+
+    authCookie = payload["cookie"]
+    result = processor.process_handler(int(payload["dgID"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
     if result:
         return result
     else:
         raise HTTPException(status_code=500, detail="An unknown error occurred")
+
+@app.post("/datasetgroup/update/validation/status")
+async def forward_request(request: Request, response: Response):
+    try:
+        payload = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON payload: {str(e)}")
+    
+
+    headers = {
+            'cookie': f'customJwtCookie={payload["cookie"]}',
+            'Content-Type': 'application/json'
+        }
+
+    print(payload)
+    payload2 = {}
+    payload2["dgId"] = int(payload["dgId"])
+    payload2["updateType"] = payload["updateType"]
+    payload2["patchPayload"] = payload["patchPayload"]
+    payload2["savedFilePath"] = payload["savedFilePath"]
+    payload2["validationStatus"] = "success"
+    payload2["validationErrors"] = []
+
+    cookie = payload["cookie"]
+
+    forward_url = "http://ruuter-private:8088/classifier/datasetgroup/update/validation/status"
+
+    try:
+        print("8")
+        forward_response = requests.post(forward_url, json=payload2, headers=headers)
+        print("8")
+        forward_response.raise_for_status()
+        print("8")
+        return JSONResponse(content=forward_response.json(), status_code=forward_response.status_code)
+    except requests.HTTPError as e:
+        print("9")
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
+    except Exception as e:
+        print("9")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -61,15 +61,15 @@ check_validation_status_type:
   next: assign_success_response
 
 execute_cron_manager:
-  call: reflect.mock
+  call: http.post
   args:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_processing/dataset_processor"
     query:
-      cookie: ${incoming.header.cookie}
+      cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}
       updateType: ${update_type}
       savedFilePath: ${save_file_path}
-      patchPayload: ${patchPayload}
+      patchPayload: ${patch_payload}
   result: res
   next: assign_success_response
 
