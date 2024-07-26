@@ -2,7 +2,7 @@ fastapi
 pydantic
 requests
 boto3
-langdetect
-transformers
-torch
-sentencepiece
+# langdetect
+# transformers
+# torch
+# sentencepiece
