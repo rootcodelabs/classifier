@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dataset_processor import DatasetProcessor
 import requests
@@ -7,6 +8,14 @@ import os
 app = FastAPI()
 processor = DatasetProcessor()
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ProcessHandlerRequest(BaseModel):
     dgID: int
