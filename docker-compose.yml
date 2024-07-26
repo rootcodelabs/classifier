@@ -3,7 +3,7 @@ services:
     container_name: ruuter-public
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080,http://localhost:8000
+      - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080
       - application.httpCodesAllowList=200,201,202,400,401,403,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -23,7 +23,7 @@ services:
     container_name: ruuter-private
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8088,http://localhost:3002,http://localhost:3004,http://localhost:8000
+      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8000,http://localhost:3006,http://localhost:8088,http://localhost:3002,http://localhost:3004
       - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -158,19 +158,19 @@ services:
       - bykstack
     restart: always
 
-  cron-manager:
-    container_name: cron-manager
-    image: cron-manager
-    volumes:
-      - ./DSL/CronManager/DSL:/DSL
-      - ./DSL/CronManager/script:/app/scripts
-      - ./DSL/CronManager/config:/app/config
-    environment:
-      - server.port=9010
-    ports:
-      - 9010:8080
-    networks:
-      - bykstack
+  # cron-manager:
+  #   container_name: cron-manager
+  #   image: cron-manager
+  #   volumes:
+  #     - ./DSL/CronManager/DSL:/DSL
+  #     - ./DSL/CronManager/script:/app/scripts
+  #     - ./DSL/CronManager/config:/app/config
+  #   environment:
+  #     - server.port=9010
+  #   ports:
+  #     - 9010:8080
+  #   networks:
+  #     - bykstack
 
   init:
     image: busybox
@@ -207,7 +207,7 @@ services:
       - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
       - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
     ports:
-      - "3002:3000"
+      - "3006:3000"
     depends_on:
       - file-handler
       - init
