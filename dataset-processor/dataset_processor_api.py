@@ -5,7 +5,6 @@ from fastapi.responses import JSONResponse
 from dataset_processor import DatasetProcessor
 import requests
 import os
-import httpx
 
 app = FastAPI()
 processor = DatasetProcessor()
@@ -37,15 +36,15 @@ async def authenticate_user(request: Request):
     }
 
     response = requests.get(url, headers=headers)
-    # if response.status_code != 200:
-    #     raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/init-dataset-process")
 async def process_handler_endpoint(request: Request):
     print("in init dataset")
     payload = await request.json()
     print(payload)
-    # await authenticate_user(process_request)
+    await authenticate_user(request)
 
     authCookie = payload["cookie"]
     result = processor.process_handler(int(payload["dgID"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
@@ -63,7 +62,7 @@ async def forward_request(request: Request, response: Response):
     
 
     headers = {
-            'cookie': f'{payload["cookie"]}',
+            'cookie': payload["cookie"],
             'Content-Type': 'application/json'
         }
 
@@ -82,9 +81,8 @@ async def forward_request(request: Request, response: Response):
 
     try:
         print("8")
-        forward_response = requests.post(forward_url, json=payload2, headers=
-                                         )
-        print()
+        forward_response = requests.post(forward_url, json=payload2, headers=headers)
+        print(headers)
         print("9")
         forward_response.raise_for_status()
         print("10")

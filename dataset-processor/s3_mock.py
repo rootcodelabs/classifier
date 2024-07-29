@@ -1,6 +1,6 @@
 import os
-import boto3
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+# import boto3
+# from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 class S3FileCounter:
     def __init__(self):
@@ -12,12 +12,12 @@ class S3FileCounter:
         if not all([self.s3_access_key_id, self.s3_secret_access_key, self.bucket_name, self.region_name]):
             raise ValueError("Missing one or more environment variables: S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET_NAME, S3_REGION_NAME")
 
-        self.s3_client = boto3.client(
-            's3',
-            aws_access_key_id=self.s3_access_key_id,
-            aws_secret_access_key=self.s3_secret_access_key,
-            region_name=self.region_name
-        )
+        # self.s3_client = boto3.client(
+        #     's3',
+        #     aws_access_key_id=self.s3_access_key_id,
+        #     aws_secret_access_key=self.s3_secret_access_key,
+        #     region_name=self.region_name
+        # )
 
     def count_files_in_folder(self, folder_path):
         try:
@@ -26,15 +26,15 @@ class S3FileCounter:
                 return len(response['Contents'])
             else:
                 return 0
-        except NoCredentialsError:
-            print("Credentials not available")
-            return 0
-        except PartialCredentialsError:
-            print("Incomplete credentials provided")
-            return 0
+        # except NoCredentialsError:
+        #     print("Credentials not available")
+        #     return 0
+        # except PartialCredentialsError:
+        #     print("Incomplete credentials provided")
+        #     return 0
         except Exception as e:
             print(f"An error occurred: {e}")
-            return 0
+            return 20
 
 # Example usage:
 # Ensure the environment variables are set before running the script

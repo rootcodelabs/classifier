@@ -17,7 +17,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3001", "http://localhost:3002"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
@@ -62,8 +62,8 @@ async def authenticate_user(request: Request):
     }
 
     response = requests.get(url, headers=headers)
-    # if response.status_code != 200:
-    #     raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Authentication failed")
 
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
@@ -172,6 +172,7 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
 
 @app.get("/datasetgroup/data/download/json/location")
 async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
+    print(request)
     await authenticate_user(request)
 
     print(saveLocation)
