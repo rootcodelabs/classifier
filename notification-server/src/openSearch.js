@@ -23,11 +23,13 @@ async function searchNotification({ sessionId, connectionId, sender }) {
 
     for (const hit of response.body.hits.hits) {
       console.log(`hit: ${JSON.stringify(hit)}`);
-      const jsonObject = {
+      const sessionJson = {
         sessionId: hit._source.sessionId,
-        progress: hit._source.progress,
+        progressPercentage: hit._source.progressPercentage,
+        validationStatus: hit._source.validationStatus,
+        validationMessage: hit._source.validationMessage
       };
-      await sender(jsonObject);
+      await sender(sessionJson);
       await markAsSent(hit, connectionId);
     }
   } catch (e) {
@@ -55,12 +57,14 @@ async function markAsSent({ _index, _id }, connectionId) {
   });
 }
 
-async function updateProgress(sessionId, progress) {
+async function updateProgress(sessionId, progressPercentage, validationStatus, validationMessage) {
   await client.index({
-    index: "dataset_group_progress",
+    index: "dataset_progress_sessions",
     body: {
       sessionId,
-      progress,
+      validationStatus,
+      progressPercentage,
+      validationMessage,
       timestamp: new Date(),
     },
   });

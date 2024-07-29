@@ -1,0 +1,13 @@
+{"index":{"_id":"1"}}
+{"sessionId": "1","validationStatus": "Initiating Validation","validationMessage": "","progressPercentage": 1,"timestamp": "1801371325497", "sentTo": []}
+{"index":{"_id":"2"}}
+{"sessionId": "2","validationStatus": "Validation In-Progress","validationMessage": "","progressPercentage": 26,"timestamp": "1801371325597", "sentTo": []}
+{"index":{"_id":"3"}}
+{"sessionId": "3","validationStatus": "Cleaning Dataset","validationMessage": "","progressPercentage": 52,"timestamp": "1801371325697", "sentTo": []}
+{"index":{"_id":"4"}}
+{"sessionId": "4","validationStatus": "Generating Data","validationMessage": "","progressPercentage": 97,"timestamp": "1801371325797", "sentTo": []}
+{"index":{"_id":"5"}}
+{"sessionId": "5","validationStatus": "Success","validationMessage": "","progressPercentage": 100,"timestamp": "1801371325797", "sentTo": []}
+{"index":{"_id":"6"}}
+{"sessionId": "6","validationStatus": "Fail","validationMessage": "Validation failed because class called 'complaints' in 'police' column doesn't exist in the dataset`","progressPercentage": 100,"timestamp": "1801371325797", "sentTo": []}
+

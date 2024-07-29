@@ -4,7 +4,7 @@ const { client } = require('./src/openSearch');
 (async () => {
   try {
     await client.indices.putSettings({
-      index: 'dataset_group_progress',
+      index: 'dataset_progress_sessions',
       body: {
         refresh_interval: '5s',
       },

@@ -27,19 +27,26 @@ app.get("/sse/notifications/:sessionId", (req, res) => {
 });
 
 app.get("/csrf-token", (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
+  console.log(`Cookies: ${JSON.stringify(req.cookies)}`);
+  res.json({ csrfToken: req.csrfToken(), });
 });
 
-// Endpoint to update the dataset_group_progress index
-app.post("/dataset-group/update-progress", async (req, res) => {
-  const { sessionId, progress } = req.body;
+// Endpoint to update the dataset_progress_sessions index
+app.post("/dataset/progress", async (req, res) => {
+  const { sessionId, progressPercentage, validationStatus, validationMessage } =
+    req.body;
 
-  if (!sessionId || progress === undefined) {
+  if (!sessionId || progressPercentage === undefined || !validationStatus) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
   try {
-    await updateProgress(sessionId, progress);
+    await updateProgress(
+      sessionId,
+      progressPercentage,
+      validationStatus,
+      validationMessage
+    );
     res.status(201).json({ message: "Document created successfully" });
   } catch (error) {
     console.error("Error creating document:", error);

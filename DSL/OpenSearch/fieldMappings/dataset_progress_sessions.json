@@ -7,7 +7,10 @@
       "validationStatus": {
         "type": "keyword"
       },
-      "progress": {
+      "validationMessage": {
+        "type": "keyword"
+      },
+      "progressPercentage": {
         "type": "integer"
       },
       "timestamp": {
