@@ -17,13 +17,17 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ formData, onSubmit,setPatchUp
     
 
     return (
+      <div style={{display: key?.toLocaleLowerCase()==="rowid"?"none":"block" }}>
+      <label>{key}</label>
       <FormInput
         label=""
         {...register(key)}
         type="text"
         placeholder={key}
         defaultValue={formData[key]}
+        
       />
+      </div>
     );
   };
 
@@ -31,12 +35,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ formData, onSubmit,setPatchUp
     <form onSubmit={handleSubmit(onSubmit)}>
       {Object.keys(formData).map((key) => (
         <div key={key}>
-          {key.toLowerCase() !== 'rowid' && (
             <div style={{ marginBottom: '15px' }}>
-              <label>{key}</label>
               {renderInput(key, formData[key])}
             </div>
-          )}
         </div>
       ))}
       <Track className="dialog__footer" gap={16} justify="end">

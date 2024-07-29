@@ -63,7 +63,7 @@ async def forward_request(request: Request, response: Response):
     
 
     headers = {
-            'cookie': f'customJwtCookie={payload["cookie"]}',
+            'cookie': payload["cookie"],
             'Content-Type': 'application/json'
         }
 
@@ -83,13 +83,16 @@ async def forward_request(request: Request, response: Response):
     try:
         print("8")
         forward_response = requests.post(forward_url, json=payload2, headers=headers)
-        print("8")
+        print(headers)
+        print("9")
         forward_response.raise_for_status()
-        print("8")
+        print("10")
         return JSONResponse(content=forward_response.json(), status_code=forward_response.status_code)
     except requests.HTTPError as e:
-        print("9")
+        print("11")
+        print(e)
         raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
     except Exception as e:
-        print("9")
+        print("12")
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))

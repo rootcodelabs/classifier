@@ -50,12 +50,10 @@ const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = 
   };
 
   const addNewClass = () => {
-    setValidationRuleError(false)
-    const newId = validationRules[validationRules?.length - 1]?.id + 1;
-    
+    setValidationRuleError(false)    
     const updatedItems = [
       ...validationRules,
-      { id: newId, fieldName: '', dataType: '', isDataClass: false },
+      { id: uuidv4(), fieldName: '', dataType: '', isDataClass: false },
     ];
     
 

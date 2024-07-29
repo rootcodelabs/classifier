@@ -8,9 +8,6 @@
     "confirm": "Confirm",
     "modifiedAt": "Last modified at",
     "addNew": "Add new",
-    "dependencies": "Dependencies",
-    "language": "Language",
-    "choose": "Choose",
     "search": "Search",
     "notification": "Notification",
     "notificationError": "Error",
@@ -31,7 +28,6 @@
     "name": "Name",
     "idCode": "ID code",
     "status": "Status",
-    "statusChangeQuestion": "Would you like to change your status to \"present\"?",
     "yes": "Yes",
     "no": "No",
     "removeValidation": "Are you sure?",
@@ -39,21 +35,10 @@
     "endDate": "End date",
     "preview": "Preview",
     "logout": "Logout",
-    "anonymous": "Anonymous",
-    "csaStatus": "Customer support status",
-    "present": "Present",
-    "away": "Away",
-    "today": "Today",
-    "forward": "Forward",
-    "chosen": "Chosen",
-    "read": "Read"
+    "choose": "Choose"
+
   },
-  "mainMenu": {
-    "menuLabel": "Main navigation",
-    "closeMenu": "Close menu",
-    "openIcon": "Open menu icon",
-    "closeIcon": "Close menu icon"
-  },
+
   "menu": {
     "userManagement": "User Management",
     "integration": "Integration",
@@ -122,9 +107,6 @@
   "toast": {
     "success": {
       "updateSuccess": "Updated Successfully",
-      "messageToUserEmail": "Message sent to user email",
-      "chatStatusChanged": "Chat status changed",
-      "chatCommentChanged": "Chat comment changed",
       "copied": "Copied",
       "userDeleted": "User deleted",
       "newUserAdded": "New user added",

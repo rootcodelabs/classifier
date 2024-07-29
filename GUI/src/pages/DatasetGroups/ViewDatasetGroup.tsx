@@ -71,7 +71,6 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
 
   const [validationRuleError, setValidationRuleError] = useState(false);
   const [nodesError, setNodesError] = useState(false);
-  const [updatedData, setUpdatedData] = useState('');
   const [importFormat, setImportFormat] = useState('');
   const [exportFormat, setExportFormat] = useState('');
   const [importStatus, setImportStatus] = useState('');
@@ -202,14 +201,18 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   }, [metadata]);
 
   const patchDataUpdate = (dataset) => {
-    const payload = {
+    const payload=  datasets?.dataPayload?.map((row) =>
+      row.rowID === selectedRow?.rowID ? dataset : row
+    );
+
+    const updatedPayload = {
       dgId,
-      updateDataPayload: {
-        rowID: selectedRow?.rowID,
-        ...dataset,
-      },
+      updateDataPayload: payload
     };
-    patchUpdateMutation.mutate(payload);
+    patchUpdateMutation.mutate(updatedPayload);
+
+    console.log(updatedPayload);
+    
   };
 
   const patchUpdateMutation = useMutation({
@@ -219,6 +222,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       setPatchUpdateModalOpen(false);
     },
     onError: () => {
+      setPatchUpdateModalOpen(false);
       open({
         title: 'Patch Data Update Unsuccessful',
         content: <p>Something went wrong. Please try again.</p>,
@@ -261,7 +265,6 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         appearance="text"
         onClick={() => {
           setSelectedRow(props.row.original);
-          setUpdatedData(props.row.original?.Country);
           setPatchUpdateModalOpen(true);
         }}
       >
@@ -554,7 +557,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
                   setPagination(state);
                   getDatasets(state, dgId);
                 }}
-                pagesCount={10}
+                pagesCount={datasets?.numPages}
                 isClientSide={false}
               />
             )}
