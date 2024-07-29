@@ -1,0 +1,21 @@
+{
+  "mappings": {
+    "properties": {
+      "sessionId": {
+        "type": "keyword"
+      },
+      "validationStatus": {
+        "type": "keyword"
+      },
+      "progress": {
+        "type": "integer"
+      },
+      "timestamp": {
+        "type": "keyword"
+      },
+      "sentTo": {
+        "type": "keyword"
+      }
+    }
+  }
+}

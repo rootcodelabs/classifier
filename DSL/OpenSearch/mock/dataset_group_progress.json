@@ -1,0 +1,8 @@
+{"index":{"_id":"1"}}
+{"sessionId": "1","validationStatus": "in-progress","progress": 1,"timestamp": "1801371325497", "sentTo": []}
+{"index":{"_id":"2"}}
+{"sessionId": "2","validationStatus": "in-progress","progress": 10,"timestamp": "1801371325597", "sentTo": []}
+{"index":{"_id":"3"}}
+{"sessionId": "3","validationStatus": "in-progress","progress": 52,"timestamp": "1801371325697", "sentTo": []}
+{"index":{"_id":"4"}}
+{"sessionId": "4","validationStatus": "in-progress","progress": 97,"timestamp": "1801371325797", "sentTo": []}
