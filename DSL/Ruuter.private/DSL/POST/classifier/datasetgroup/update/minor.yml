@@ -119,6 +119,11 @@ return_ok:
   return: ${format_res}
   next: end
 
+return_not_found:
+  status: 400
+  return: "Data Group Not Found"
+  next: end
+
 return_bad_request:
   status: 400
   return: ${format_res}

@@ -128,7 +128,6 @@ class DatasetProcessor:
 
     def get_selected_data_fields(self, dgID:int, cookie:str):
         try:
-            # return ["Subject","Body"]
             data_dict = self.get_validation_data(dgID, cookie)
             validation_rules = data_dict.get("response", {}).get("validationCriteria", {}).get("validationRules", {})
             text_fields = []
@@ -144,7 +143,7 @@ class DatasetProcessor:
         try:
             params = {'dgId': dgID}
             headers = {
-            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+            'cookie': custom_jwt_cookie
             }
             response = requests.get(GET_VALIDATION_SCHEMA, params=params, headers=headers)
             response.raise_for_status()
@@ -198,22 +197,22 @@ class DatasetProcessor:
             return None
         
     def get_page_count(self, dg_id, custom_jwt_cookie):
-        # params = {'dgId': dg_id}
-        # headers = {
-        #     'cookie': f'customJwtCookie={custom_jwt_cookie}'
-        # }
+        params = {'dgId': dg_id}
+        headers = {
+            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+        }
 
-        # try:
-        #     page_count_url = GET_PAGE_COUNT_URL.replace("{dgif}",str(dg_id))
-        #     response = requests.get(page_count_url, headers=headers)
-        #     response.raise_for_status()
-        #     data = response.json()
-        #     page_count = data["numpages"]
-        #     return page_count
         try:
-            folder_path = f'data/dataset/{dg_id}/chunks/'
-            file_count = self.s3_file_counter.count_files_in_folder(folder_path)
-            return file_count
+            page_count_url = GET_PAGE_COUNT_URL.replace("{dgid}",str(dg_id))
+            response = requests.get(page_count_url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            page_count = data["numpages"]
+            return page_count
+        # try:
+        #     folder_path = f'data/dataset/{dg_id}/chunks/'
+        #     file_count = self.s3_file_counter.count_files_in_folder(folder_path)
+        #     return file_count
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
@@ -269,7 +268,7 @@ class DatasetProcessor:
         print(url)
         headers = {
             'Content-Type': 'application/json',
-            'Cookie': f'customJwtCookie={cookie}'
+            'Cookie': cookie
         }
         data = {
             "dgId": dg_id,
