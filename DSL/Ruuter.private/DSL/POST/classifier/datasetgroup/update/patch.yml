@@ -77,8 +77,8 @@ execute_cron_manager:
       cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}
       updateType: 'patch'
-      savedFilePath: null
-      patchPayload: ${update_data_payload}
+      savedFilePath: 'None'
+      patchPayload: ${encodeURIComponent(JSON.stringify(update_data_payload))}
   result: res
   next: assign_success_response
 
