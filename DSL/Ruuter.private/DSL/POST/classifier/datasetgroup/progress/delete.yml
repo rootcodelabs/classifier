@@ -10,7 +10,7 @@ declaration:
 delete_dataset_progress_sessions:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RESQL]/delete-all-dataset-progress-sessions"
+    url: "[#CLASSIFIER_RESQL]/delete-completed-dataset-progress-sessions"
   result: res_sessions
   next: check_status
 
