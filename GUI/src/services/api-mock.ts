@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://d5e7cde0-f9b1-4425-8a16-c5f93f503e2e.mock.pstmn.io',
+  baseURL: 'https://cd16ef7b-5bb2-419b-9785-af03380d0b9d.mock.pstmn.io',
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/x-www-form-urlencoded',
