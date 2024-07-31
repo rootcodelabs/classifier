@@ -3,7 +3,7 @@ import os
 import json
 import urllib.parse
 import requests
-# from data_enrichment.data_enrichment import DataEnrichment
+from data_enrichment.data_enrichment import DataEnrichment
 from constants import *
 
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
@@ -19,7 +19,7 @@ STATUS_UPDATE_URL = os.getenv("STATUS_UPDATE_URL")
 
 class DatasetProcessor:
     def __init__(self):
-        # self.data_enricher = DataEnrichment()
+        self.data_enricher = DataEnrichment()
         pass
 
     def check_and_convert(self, data):
@@ -83,7 +83,7 @@ class DatasetProcessor:
                 enriched_entry = {}
                 for key, value in entry.items():
                     if isinstance(value, str) and (key in selected_fields):
-                        # enriched_value = self.data_enricher.enrich_data(value, num_return_sequences=1, language_id='en')
+                        enriched_value = self.data_enricher.enrich_data(value, num_return_sequences=1, language_id='en')
                         enriched_value = ["enrichupdate"]
                         enriched_entry[key] = enriched_value[0] if enriched_value else value
                     else:
