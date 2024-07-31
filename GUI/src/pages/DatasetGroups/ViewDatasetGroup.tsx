@@ -149,17 +149,17 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const deleteRow = (dataRow) => {
     setDeletedDataRows((prevDeletedDataRows) => [
       ...prevDeletedDataRows,
-      dataRow?.rowID,
+      dataRow?.rowId,
     ]);
     const payload = updatedDataset?.filter((row) => {
-      if (row.rowID !== selectedRow?.rowID) return row;
+      if (row.rowId !== selectedRow?.rowId) return row;
     });
     setUpdatedDataset(payload);
 
     const updatedPayload = {
       dgId,
       updateDataPayload: {
-        deletedDataRows: [...deletedDataRows, dataRow?.rowID],
+        deletedDataRows: [...deletedDataRows, dataRow?.rowId],
         editedData: payload,
       },
     };
@@ -173,7 +173,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
 
   const patchDataUpdate = (dataRow) => {
     const payload = updatedDataset?.map((row) =>
-      row.rowID === selectedRow?.rowID ? dataRow : row
+      row.rowId === selectedRow?.rowId ? dataRow : row
     );
     setUpdatedDataset(payload);
 
@@ -425,36 +425,36 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             </div>
           ),
         });
+      }else if (minorPayload) {
+        open({
+          content:
+            'Any changes you made to the individual data items (patch update) will be discarded after changes are applied',
+          title: 'Confirm minor update',
+          footer: (
+            <div className="flex-grid">
+              <Button appearance="secondary" onClick={close}>Cancel</Button>
+              <Button onClick={() => minorUpdateMutation.mutate(minorPayload)}>
+                Confirm
+              </Button>
+            </div>
+          ),
+        });
+      } else if (patchPayload) {
+        open({
+          content: 'Changed data rows will be updated in the dataset',
+          title: 'Confirm patch update',
+          footer: (
+            <div className="flex-grid">
+              <Button appearance="secondary">Cancel</Button>
+              <Button onClick={() => patchUpdateMutation.mutate(patchPayload)}>
+                Confirm
+              </Button>
+            </div>
+          ),
+        });
       }
     }
-     else if (minorPayload) {
-      open({
-        content:
-          'Any changes you made to the individual data items (patch update) will be discarded after changes are applied',
-        title: 'Confirm minor update',
-        footer: (
-          <div className="flex-grid">
-            <Button appearance="secondary" onClick={close}>Cancel</Button>
-            <Button onClick={() => minorUpdateMutation.mutate(minorPayload)}>
-              Confirm
-            </Button>
-          </div>
-        ),
-      });
-    } else if (patchPayload) {
-      open({
-        content: 'Changed data rows will be updated in the dataset',
-        title: 'Confirm patch update',
-        footer: (
-          <div className="flex-grid">
-            <Button appearance="secondary">Cancel</Button>
-            <Button onClick={() => patchUpdateMutation.mutate(patchPayload)}>
-              Confirm
-            </Button>
-          </div>
-        ),
-      });
-    }
+     
   };
 
   const majorUpdateDatasetGroupMutation = useMutation({
