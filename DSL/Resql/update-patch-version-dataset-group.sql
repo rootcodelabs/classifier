@@ -10,7 +10,7 @@ update_specific AS (
         patch_version = (
             SELECT COALESCE(MAX(patch_version), 0) + 1
             FROM dataset_group_metadata
-            WHERE group_key = :group_key
+            WHERE group_key = :group_key AND major_version = :major_version AND minor_version = :minor_version
         ),
         enable_allowed = false,
         validation_status = 'in-progress'::Validation_Status,
