@@ -47,6 +47,7 @@ import { useDialog } from 'hooks/useDialog';
 import { useForm } from 'react-hook-form';
 import {
   handleDownload,
+  isMajorUpdate,
   reverseTransformClassHierarchy,
   transformClassHierarchy,
   transformObjectToArray,
@@ -64,9 +65,7 @@ type Props = {
 };
 const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
   const { open, close } = useDialog();
-  const { register } = useForm();
   const queryClient = useQueryClient();
 
   const [validationRuleError, setValidationRuleError] = useState(false);
@@ -81,10 +80,17 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [patchUpdateModalOpen, setPatchUpdateModalOpen] = useState(false);
+  const [deleteRowModalOpen, setDeleteRowModalOpen] = useState(false);
   const fileUploadRef = useRef<FileUploadHandle>(null);
   const [fetchEnabled, setFetchEnabled] = useState(true);
   const [file, setFile] = useState('');
   const [selectedRow, setSelectedRow] = useState({});
+  const [isDataChanged, setIsDataChanged] = useState(false);
+  const [bannerMessage, setBannerMessage] = useState('');
+  const [minorPayload, setMinorPayload] = useState("");
+  const [patchPayload, setPatchPayload] = useState("");
+  const [deletedDataRows, setDeletedDataRows] = useState([]);
+  const [updatePriority, setUpdatePriority] = useState('');
 
   const navigate = useNavigate();
 
@@ -99,77 +105,17 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       keepPreviousData: true,
     }
   );
-  //   dgId: 1,
-  //   operationSuccessful: true,
-  //   fields: [
-  //     'rowId',
-  //     'emailAddress',
-  //     'emailBody',
-  //     'emailSendTime',
-  //     'departmentCode',
-  //     'ministry',
-  //     'division',
-  //   ],
-  //   dataPayload: [
-  //     {
-  //       rowId: 1,
-  //       emailAddress: 'thiru.dinesh@rootcodelabs.com',
-  //       emailBody:
-  //         'A generated email body that is interenstingly sophisticated and long enought to fill the screen. This body should also simulate the real life emails recieved by the government authorities in Estonia. Will be very interesting',
-  //       emailSendTime: 'Sun, 07 Jul 2024 08:35:54 GMT',
-  //       departmentCode: '05ABC',
-  //       ministry: 'police and border guard',
-  //       division: 'complaints processsing',
-  //     },
-  //     {
-  //       rowId: 2,
-  //       emailAddress: 'thiru.dinesh@rootcodelabs.com',
-  //       emailBody:
-  //         'A generated email body that is interenstingly sophisticated and long enought to fill the screen. This body should also simulate the real life emails recieved by the government authorities in Estonia. Will be very interesting',
-  //       emailSendTime: 'Sun, 07 Jul 2024 08:35:54 GMT',
-  //       departmentCode: '05ABC',
-  //       ministry: 'police and border guard',
-  //       division: 'complaints processsing',
-  //     },
-  //     {
-  //       rowId: 3,
-  //       emailAddress: 'thiru.dinesh@rootcodelabs.com',
-  //       emailBody:
-  //         'A generated email body that is interenstingly sophisticated and long enought to fill the screen. This body should also simulate the real life emails recieved by the government authorities in Estonia. Will be very interesting',
-  //       emailSendTime: 'Sun, 07 Jul 2024 08:35:54 GMT',
-  //       departmentCode: '05ABC',
-  //       ministry: 'police and border guard',
-  //       division: 'complaints processsing',
-  //     },
-  //     {
-  //       rowId: 4,
-  //       emailAddress: 'thiru.dinesh@rootcodelabs.com',
-  //       emailBody:
-  //         'A generated email body that is interenstingly sophisticated and long enought to fill the screen. This body should also simulate the real life emails recieved by the government authorities in Estonia. Will be very interesting',
-  //       emailSendTime: 'Sun, 07 Jul 2024 08:35:54 GMT',
-  //       departmentCode: '05ABC',
-  //       ministry: 'police and border guard',
-  //       division: 'complaints processsing',
-  //     },
-  //     {
-  //       rowId: 5,
-  //       emailAddress: 'thiru.dinesh@rootcodelabs.com',
-  //       emailBody:
-  //         'A generated email body that is interenstingly sophisticated and long enought to fill the screen. This body should also simulate the real life emails recieved by the government authorities in Estonia. Will be very interesting',
-  //       emailSendTime: 'Sun, 07 Jul 2024 08:35:54 GMT',
-  //       departmentCode: '05ABC',
-  //       ministry: 'police and border guard',
-  //       division: 'complaints processsing',
-  //     },
-  //   ],
-  // };
-  // const isLoading = false;
 
   const { data: metadata, isLoading: isMetadataLoading } = useQuery(
     ['datasets/groups/metadata', dgId],
     () => getMetadata(dgId),
     { enabled: fetchEnabled }
   );
+
+  const [updatedDataset, setUpdatedDataset] = useState(datasets?.dataPayload);
+  useEffect(() => {
+    setUpdatedDataset(datasets?.dataPayload);
+  }, [datasets]);
 
   const [nodes, setNodes] = useState(
     reverseTransformClassHierarchy(
@@ -200,26 +146,58 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     );
   }, [metadata]);
 
-  const patchDataUpdate = (dataset) => {
-    const payload=  datasets?.dataPayload?.map((row) =>
-      row.rowID === selectedRow?.rowID ? dataset : row
-    );
+  const deleteRow = (dataRow) => {
+    setDeletedDataRows((prevDeletedDataRows) => [
+      ...prevDeletedDataRows,
+      dataRow?.rowID,
+    ]);
+    const payload = updatedDataset?.filter((row) => {
+      if (row.rowID !== selectedRow?.rowID) return row;
+    });
+    setUpdatedDataset(payload);
 
     const updatedPayload = {
       dgId,
-      updateDataPayload: payload
+      updateDataPayload: {
+        deletedDataRows: [...deletedDataRows, dataRow?.rowID],
+        editedData: payload,
+      },
     };
-    patchUpdateMutation.mutate(updatedPayload);
+    setPatchPayload(updatedPayload);
+    setDeleteRowModalOpen(false);
+    // setIsDataChanged(true);
+    setBannerMessage(
+      'You have edited individual items in the dataset which are not saved. Please save the changes to apply'
+    );
+  };
 
-    console.log(updatedPayload);
-    
+  const patchDataUpdate = (dataRow) => {
+    const payload = updatedDataset?.map((row) =>
+      row.rowID === selectedRow?.rowID ? dataRow : row
+    );
+    setUpdatedDataset(payload);
+
+    const updatedPayload = {
+      dgId,
+      updateDataPayload: {
+        deletedDataRows,
+        editedData: payload,
+      },
+    };
+    setPatchPayload(updatedPayload);
+    setPatchUpdateModalOpen(false);
+    // setIsDataChanged(true);
+    setBannerMessage(
+      'You have edited individual items in the dataset which are not saved. Please save the changes to apply'
+    );
+
+    // patchUpdateMutation.mutate(updatedPayload);
   };
 
   const patchUpdateMutation = useMutation({
     mutationFn: (data) => patchUpdate(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries(['datasets/groups/data']);
-      setPatchUpdateModalOpen(false);
     },
     onError: () => {
       setPatchUpdateModalOpen(false);
@@ -277,22 +255,10 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const deleteView = (props: any) => (
     <Button
       appearance="text"
-      onClick={() =>
-        open({
-          title: 'Are you sure?',
-          content: (
-            <p>Confirm that you are wish to delete the following record</p>
-          ),
-          footer: (
-            <div className="flex-grid">
-              <Button appearance="secondary" onClick={() => close()}>
-                Cancel
-              </Button>
-              <Button appearance="error">Delete</Button>
-            </div>
-          ),
-        })
-      }
+      onClick={() => {
+        setSelectedRow(props.row.original);
+        setDeleteRowModalOpen(true);
+      }}
     >
       <Icon icon={<MdOutlineDeleteOutline />} />
       {'Delete'}
@@ -344,11 +310,20 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     mutationFn: (data: ImportDataset) =>
       importDataset(data?.dataFile, data?.dgId),
     onSuccess: async (response) => {
-      const payload = {
+      setMinorPayload({
         dgId,
         s3FilePath: response?.saved_file_path,
-      };
-      minorUpdateMutation.mutate(payload);
+      });
+      setBannerMessage(
+        'You have imported new data into the dataset, please save the changes to apply. Any changes you made to the individual data items will be discarded after changes are applied '
+      );
+      // const payload = {
+      //   dgId,
+      //   s3FilePath: response?.saved_file_path,
+      // };
+      // setIsDataChanged(true);
+      setIsImportModalOpen(false);
+      // minorUpdateMutation.mutate(payload);
     },
     onError: () => {
       open({
@@ -406,7 +381,17 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     }
   };
 
-  const datasetGroupMajorUpdate = () => {
+  const handleMajorUpdate = () => {
+    const payload: DatasetGroup = {
+      dgId,
+      validationCriteria: { ...transformValidationRules(validationRules) },
+      ...transformClassHierarchy(nodes),
+    };
+    majorUpdateDatasetGroupMutation.mutate(payload);
+   
+  };
+
+  const datasetGroupUpdate = () => {    
     setNodesError(validateClassHierarchy(nodes));
     setValidationRuleError(validateValidationRules(validationRules));
     if (
@@ -415,12 +400,60 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       !nodesError &&
       !validationRuleError
     ) {
-      const payload: DatasetGroup = {
-        dgId,
-        validationCriteria: { ...transformValidationRules(validationRules) },
-        ...transformClassHierarchy(nodes),
-      };
-      majorUpdateDatasetGroupMutation.mutate(payload);
+      if (
+        isMajorUpdate(
+          {
+            validationRules:
+              metadata?.response?.data?.[0]?.validationCriteria?.validationRules,
+            classHierarchy: metadata?.response?.data?.[0]?.classHierarchy,
+          },
+          {
+            validationRules:
+              transformValidationRules(validationRules)?.validationRules,
+            ...transformClassHierarchy(nodes),
+          }
+        )
+      ) {
+        open({
+          content:
+            'Any files imported or edits made to the existing data will be discarded after changes are applied',
+          title: 'Confirm major update',
+          footer: (
+            <div className="flex-grid">
+              <Button appearance="secondary">Cancel</Button>
+              <Button onClick={() => handleMajorUpdate()}>Confirm</Button>
+            </div>
+          ),
+        });
+      }
+    }
+     else if (minorPayload) {
+      open({
+        content:
+          'Any changes you made to the individual data items (patch update) will be discarded after changes are applied',
+        title: 'Confirm minor update',
+        footer: (
+          <div className="flex-grid">
+            <Button appearance="secondary" onClick={close}>Cancel</Button>
+            <Button onClick={() => minorUpdateMutation.mutate(minorPayload)}>
+              Confirm
+            </Button>
+          </div>
+        ),
+      });
+    } else if (patchPayload) {
+      open({
+        content: 'Changed data rows will be updated in the dataset',
+        title: 'Confirm patch update',
+        footer: (
+          <div className="flex-grid">
+            <Button appearance="secondary">Cancel</Button>
+            <Button onClick={() => patchUpdateMutation.mutate(patchPayload)}>
+              Confirm
+            </Button>
+          </div>
+        ),
+      });
     }
   };
 
@@ -429,6 +462,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     onSuccess: async (response) => {
       await queryClient.invalidateQueries(['datasetgroup/overview']);
       setView('list');
+      close();
     },
     onError: () => {
       open({
@@ -506,46 +540,52 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
                   </div>
                 </div>
               </Card>
-              <Card>
-                <div
-                  style={{
-                    padding: '20px 150px',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                  }}
-                >
-                  {!datasets&& (
-                    <div>
-                      <div style={{ marginBottom: '10px', fontSize: '20px' }}>
-                        No Data Available
+              {bannerMessage && <div className="banner">{bannerMessage}</div>}
+              {(!datasets || (datasets && datasets?.length < 10)) && (
+                <Card>
+                  <div
+                    style={{
+                      padding: '20px 150px',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {!datasets && (
+                      <div>
+                        <div style={{ marginBottom: '10px', fontSize: '20px' }}>
+                          No Data Available
+                        </div>
+                        <p>
+                          You have created the dataset group, but there are no
+                          datasets available to show here. You can upload a
+                          dataset to view it in this space. Once added, you can
+                          edit or delete the data as needed.
+                        </p>
+                        <Button onClick={() => setIsImportModalOpen(true)}>
+                          Import New Data
+                        </Button>
                       </div>
-                      <p>
-                        You have created the dataset group, but there are no
-                        datasets available to show here. You can upload a
-                        dataset to view it in this space. Once added, you can
-                        edit or delete the data as needed.
-                      </p>
-                      <Button  onClick={() => setIsImportModalOpen(true)}>Import New Data</Button>
-                    </div>
-                  )}
-                  {datasets &&
-                    datasets?.length < 10 && (
+                    )}
+                    {datasets && datasets?.length < 10 && (
                       <div>
                         <p>
                           Insufficient examples - at least 10 examples are
                           needed to activate the dataset group.
                         </p>
-                        <Button  onClick={() => setIsImportModalOpen(true)}>Import New Data</Button>
+                        <Button onClick={() => setIsImportModalOpen(true)}>
+                          Import New Data
+                        </Button>
                       </div>
                     )}
-                </div>
-              </Card>
+                  </div>
+                </Card>
+              )}
             </div>
           )}
           <div style={{ marginBottom: '20px' }}>
-            {!isLoading && datasets && (
+            {!isLoading && updatedDataset && (
               <DataTable
-                data={datasets?.dataPayload}
+                data={updatedDataset}
                 columns={dataColumns}
                 pagination={pagination}
                 setPagination={(state: PaginationState) => {
@@ -570,6 +610,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
                   setValidationRules={setValidationRules}
                   validationRuleError={validationRuleError}
                   setValidationRuleError={setValidationRuleError}
+                  setBannerMessage={setBannerMessage}
                 />
               </Card>
 
@@ -580,6 +621,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
                     setNodes={setNodes}
                     nodesError={nodesError}
                     setNodesError={setNodesError}
+                    setBannerMessage={setBannerMessage}
                   />
                 )}
               </Card>
@@ -621,7 +663,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             >
               Delete Dataset
             </Button>
-            <Button onClick={() => datasetGroupMajorUpdate()}>Save</Button>
+            <Button onClick={() => datasetGroupUpdate()}>Save</Button>
           </div>
         </div>
       </div>
@@ -725,6 +767,25 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             onSubmit={patchDataUpdate}
             setPatchUpdateModalOpen={setPatchUpdateModalOpen}
           />
+        </Dialog>
+      )}
+      {deleteRowModalOpen && (
+        <Dialog
+          isOpen={deleteRowModalOpen}
+          onClose={() => setDeleteRowModalOpen(false)}
+          title="Are you sure?"
+          footer={
+            <div className="flex-grid">
+              <Button appearance="secondary" onClick={() => close()}>
+                Cancel
+              </Button>
+              <Button appearance="error" onClick={() => deleteRow(selectedRow)}>
+                Delete
+              </Button>
+            </div>
+          }
+        >
+          Confirm that you are wish to delete the following record
         </Dialog>
       )}
     </div>

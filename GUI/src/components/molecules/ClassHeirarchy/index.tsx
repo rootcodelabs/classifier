@@ -1,6 +1,5 @@
 import React, { FC, PropsWithChildren, useState } from 'react';
 import { MdDeleteOutline } from 'react-icons/md';
-import Card from 'components/Card';
 import { FormInput } from 'components/FormElements';
 import Button from 'components/Button';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +13,8 @@ type ClassHierarchyProps = {
   setNodes: React.Dispatch<React.SetStateAction<Class[] | []>>;
   nodesError?: boolean;
   setNodesError: React.Dispatch<React.SetStateAction<boolean>>;
+  setBannerMessage:React.Dispatch<React.SetStateAction<string>>;
+
 };
 
 const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
@@ -21,6 +22,7 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
   setNodes,
   nodesError,
   setNodesError,
+  setBannerMessage
 }) => {
   const [currentNode, setCurrentNode] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

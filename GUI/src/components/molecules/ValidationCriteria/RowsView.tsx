@@ -1,26 +1,25 @@
-import React, { FC, PropsWithChildren, useCallback } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import React, { FC, PropsWithChildren } from 'react';
 import dataTypes from '../../../config/dataTypesConfig.json';
-import { MdAdd, MdDehaze, MdDelete } from 'react-icons/md';
-import Card from 'components/Card';
+import { MdAdd, MdDelete } from 'react-icons/md';
 import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';
-import Button from 'components/Button';
 import { ValidationRule } from 'types/datasetGroups';
 import { Link } from 'react-router-dom';
 import { isFieldNameExisting } from 'utils/datasetGroupsUtils';
+import { v4 as uuidv4 } from 'uuid';
 
 type ValidationRulesProps = {
   validationRules?: ValidationRule[];
   setValidationRules: React.Dispatch<React.SetStateAction<ValidationRule[] |undefined>>;
   validationRuleError?: boolean;
   setValidationRuleError: React.Dispatch<React.SetStateAction<boolean>>;
+  setBannerMessage:React.Dispatch<React.SetStateAction<string>>;
 };
 const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = ({
   validationRules,
   setValidationRules,
   setValidationRuleError,
   validationRuleError,
+  setBannerMessage
 }) => {
   const setIsDataClass = (id, isDataClass) => {
     const updatedItems = validationRules.map((item) =>

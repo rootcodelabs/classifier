@@ -1,5 +1,6 @@
 import { Class, ValidationRule } from 'types/datasetGroups';
 import { v4 as uuidv4 } from 'uuid';
+import isEqual from 'lodash/isEqual';
 
 export const transformValidationRules = (
   data: ValidationRule[] | undefined
@@ -117,7 +118,7 @@ export const isValidationRulesSatisfied = (data: ValidationRule[]) => {
 
 export const isFieldNameExisting = (dataArray, fieldNameToCheck) => {
   
-  const count = dataArray.reduce((acc, item) => {
+  const count = dataArray?.reduce((acc, item) => {
     return item?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase() ? acc + 1 : acc;
   }, 0);
 
@@ -160,5 +161,10 @@ export const handleDownload = (response,format) =>{
   } catch (error) {
     console.error('Error downloading the file', error);
   }
+}
+
+export const isMajorUpdate = (initialData,updatedData) =>{
+  return !isEqual(initialData, updatedData);
+
 }
 
