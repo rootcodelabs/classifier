@@ -406,7 +406,7 @@ class DatasetProcessor:
                                                     agregated_dataset_operation = self.save_aggregrated_data(dgID, cookie, agregated_dataset)
                                                     if agregated_dataset_operation:
                                                         print("Aggregated dataset for minor update saved successfully")
-                                                        return_data = self.update_preprocess_status(dgID, cookie, True, False, f"/dataset/{dgID}/chunks/", "", True, len(cleaned_data), len(chunked_data))
+                                                        return_data = self.update_preprocess_status(dgID, cookie, True, False, f"/dataset/{dgID}/chunks/", "", True, len(cleaned_data), (len(chunked_data)+page_count))
                                                         print(return_data)  
                                                         return SUCCESSFUL_OPERATION
                                                     else:
