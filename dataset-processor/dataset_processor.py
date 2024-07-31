@@ -5,7 +5,6 @@ import urllib.parse
 import requests
 # from data_enrichment.data_enrichment import DataEnrichment
 from constants import *
-from s3_mock import S3FileCounter
 
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 GET_VALIDATION_SCHEMA = os.getenv("GET_VALIDATION_SCHEMA")
@@ -21,7 +20,7 @@ STATUS_UPDATE_URL = os.getenv("STATUS_UPDATE_URL")
 class DatasetProcessor:
     def __init__(self):
         # self.data_enricher = DataEnrichment()
-        self.s3_file_counter = S3FileCounter()
+        pass
 
     def check_and_convert(self, data):
         print(data)
@@ -211,10 +210,6 @@ class DatasetProcessor:
 
             page_count = data["response"]["data"][0]["numPages"]
             return page_count
-        # try:
-        #     folder_path = f'data/dataset/{dg_id}/chunks/'
-        #     file_count = self.s3_file_counter.count_files_in_folder(folder_path)
-        #     return file_count
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
