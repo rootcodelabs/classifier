@@ -15,8 +15,6 @@ import {
   DataTable,
   Dialog,
   FormRadios,
-  FormSelect,
-  FormTextarea,
   Icon,
   Label,
   Switch,
@@ -24,13 +22,12 @@ import {
 import ClassHierarchy from 'components/molecules/ClassHeirarchy';
 import { createColumnHelper, PaginationState } from '@tanstack/react-table'; // Adjust based on your table library
 import {
-  Dataset,
   DatasetGroup,
   ImportDataset,
   ValidationRule,
 } from 'types/datasetGroups';
 import BackArrowButton from 'assets/BackArrowButton';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ValidationCriteriaRowsView from 'components/molecules/ValidationCriteria/RowsView';
 import { MdOutlineDeleteOutline, MdOutlineEdit } from 'react-icons/md';
 import {
@@ -44,7 +41,6 @@ import {
 } from 'services/datasets';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDialog } from 'hooks/useDialog';
-import { useForm } from 'react-hook-form';
 import {
   handleDownload,
   isMajorUpdate,
@@ -85,10 +81,9 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const [fetchEnabled, setFetchEnabled] = useState(true);
   const [file, setFile] = useState('');
   const [selectedRow, setSelectedRow] = useState({});
-  const [isDataChanged, setIsDataChanged] = useState(false);
   const [bannerMessage, setBannerMessage] = useState('');
-  const [minorPayload, setMinorPayload] = useState("");
-  const [patchPayload, setPatchPayload] = useState("");
+  const [minorPayload, setMinorPayload] = useState('');
+  const [patchPayload, setPatchPayload] = useState('');
   const [deletedDataRows, setDeletedDataRows] = useState([]);
   const [updatePriority, setUpdatePriority] = useState('');
 
@@ -97,6 +92,22 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   useEffect(() => {
     setFetchEnabled(false);
   }, []);
+
+  useEffect(() => {
+    if (updatePriority === 'MAJOR')
+      setBannerMessage(
+        'You have updated key configurations of the dataset schema which are not saved, please save to apply changes.  Any files imported or edits made to the existing data will be discarded after changes are applied'
+      );
+    else if (updatePriority === 'MINOR')
+      setBannerMessage(
+        'You have imported new data into the dataset, please save the changes to apply. Any changes you made to the individual data items will be discarded after changes are applied'
+      );
+    else if (updatePriority === 'PATCH')
+      setBannerMessage(
+        'You have edited individual items in the dataset which are not saved. Please save the changes to apply'
+      );
+    else setBannerMessage('');
+  }, [updatePriority]);
 
   const { data: datasets, isLoading } = useQuery(
     ['datasets/groups/data', pagination, dgId],
@@ -146,6 +157,28 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     );
   }, [metadata]);
 
+  useEffect(() => {
+    if (
+      metadata &&
+      isMajorUpdate(
+        {
+          validationRules:
+            metadata?.response?.data?.[0]?.validationCriteria?.validationRules,
+          classHierarchy: metadata?.response?.data?.[0]?.classHierarchy,
+        },
+        {
+          validationRules:
+            transformValidationRules(validationRules)?.validationRules,
+          ...transformClassHierarchy(nodes),
+        }
+      )
+    ) {
+      setUpdatePriority('MAJOR');
+    } else {
+      setUpdatePriority('');
+    }
+  }, [validationRules, nodes]);
+
   const deleteRow = (dataRow) => {
     setDeletedDataRows((prevDeletedDataRows) => [
       ...prevDeletedDataRows,
@@ -165,10 +198,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     };
     setPatchPayload(updatedPayload);
     setDeleteRowModalOpen(false);
-    // setIsDataChanged(true);
-    setBannerMessage(
-      'You have edited individual items in the dataset which are not saved. Please save the changes to apply'
-    );
+    if (updatePriority !== 'MAJOR' && updatePriority !== 'MINOR')
+      setUpdatePriority('PATCH');
   };
 
   const patchDataUpdate = (dataRow) => {
@@ -187,9 +218,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     setPatchPayload(updatedPayload);
     setPatchUpdateModalOpen(false);
     // setIsDataChanged(true);
-    setBannerMessage(
-      'You have edited individual items in the dataset which are not saved. Please save the changes to apply'
-    );
+    if (updatePriority !== 'MAJOR' && updatePriority !== 'MINOR')
+      setUpdatePriority('PATCH');
 
     // patchUpdateMutation.mutate(updatedPayload);
   };
@@ -198,6 +228,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     mutationFn: (data) => patchUpdate(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries(['datasets/groups/data']);
+      close();
+      setView('list');
     },
     onError: () => {
       setPatchUpdateModalOpen(false);
@@ -314,9 +346,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         dgId,
         s3FilePath: response?.saved_file_path,
       });
-      setBannerMessage(
-        'You have imported new data into the dataset, please save the changes to apply. Any changes you made to the individual data items will be discarded after changes are applied '
-      );
+      if (updatePriority !== 'MAJOR') setUpdatePriority('MINOR');
       // const payload = {
       //   dgId,
       //   s3FilePath: response?.saved_file_path,
@@ -388,10 +418,9 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       ...transformClassHierarchy(nodes),
     };
     majorUpdateDatasetGroupMutation.mutate(payload);
-   
   };
 
-  const datasetGroupUpdate = () => {    
+  const datasetGroupUpdate = () => {
     setNodesError(validateClassHierarchy(nodes));
     setValidationRuleError(validateValidationRules(validationRules));
     if (
@@ -404,7 +433,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         isMajorUpdate(
           {
             validationRules:
-              metadata?.response?.data?.[0]?.validationCriteria?.validationRules,
+              metadata?.response?.data?.[0]?.validationCriteria
+                ?.validationRules,
             classHierarchy: metadata?.response?.data?.[0]?.classHierarchy,
           },
           {
@@ -420,19 +450,23 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
           title: 'Confirm major update',
           footer: (
             <div className="flex-grid">
-              <Button appearance="secondary">Cancel</Button>
+              <Button appearance="secondary" onClick={close}>
+                Cancel
+              </Button>
               <Button onClick={() => handleMajorUpdate()}>Confirm</Button>
             </div>
           ),
         });
-      }else if (minorPayload) {
+      } else if (minorPayload) {
         open({
           content:
             'Any changes you made to the individual data items (patch update) will be discarded after changes are applied',
           title: 'Confirm minor update',
           footer: (
             <div className="flex-grid">
-              <Button appearance="secondary" onClick={close}>Cancel</Button>
+              <Button appearance="secondary" onClick={close}>
+                Cancel
+              </Button>
               <Button onClick={() => minorUpdateMutation.mutate(minorPayload)}>
                 Confirm
               </Button>
@@ -454,7 +488,6 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         });
       }
     }
-     
   };
 
   const majorUpdateDatasetGroupMutation = useMutation({
