@@ -12,14 +12,13 @@ type ValidationRulesProps = {
   setValidationRules: React.Dispatch<React.SetStateAction<ValidationRule[] |undefined>>;
   validationRuleError?: boolean;
   setValidationRuleError: React.Dispatch<React.SetStateAction<boolean>>;
-  setBannerMessage:React.Dispatch<React.SetStateAction<string>>;
 };
 const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = ({
   validationRules,
   setValidationRules,
   setValidationRuleError,
   validationRuleError,
-  setBannerMessage
+  
 }) => {
   const setIsDataClass = (id, isDataClass) => {
     const updatedItems = validationRules.map((item) =>

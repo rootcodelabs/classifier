@@ -36,7 +36,7 @@ const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({dgName,ver
         </div>
       ) : (
         <div>
-          <div className="text-center">Validation In-Progress</div>
+          <div className="text-center">{status}</div>
           <ProgressBar
             value={progress}
             max={100}

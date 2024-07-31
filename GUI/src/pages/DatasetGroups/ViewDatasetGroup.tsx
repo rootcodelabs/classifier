@@ -20,7 +20,7 @@ import {
   Switch,
 } from 'components';
 import ClassHierarchy from 'components/molecules/ClassHeirarchy';
-import { createColumnHelper, PaginationState } from '@tanstack/react-table'; // Adjust based on your table library
+import { createColumnHelper, PaginationState } from '@tanstack/react-table';
 import {
   DatasetGroup,
   ImportDataset,
@@ -217,11 +217,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     };
     setPatchPayload(updatedPayload);
     setPatchUpdateModalOpen(false);
-    // setIsDataChanged(true);
     if (updatePriority !== 'MAJOR' && updatePriority !== 'MINOR')
       setUpdatePriority('PATCH');
-
-    // patchUpdateMutation.mutate(updatedPayload);
   };
 
   const patchUpdateMutation = useMutation({
@@ -347,13 +344,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         s3FilePath: response?.saved_file_path,
       });
       if (updatePriority !== 'MAJOR') setUpdatePriority('MINOR');
-      // const payload = {
-      //   dgId,
-      //   s3FilePath: response?.saved_file_path,
-      // };
-      // setIsDataChanged(true);
+
       setIsImportModalOpen(false);
-      // minorUpdateMutation.mutate(payload);
     },
     onError: () => {
       open({
@@ -643,7 +635,6 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
                   setValidationRules={setValidationRules}
                   validationRuleError={validationRuleError}
                   setValidationRuleError={setValidationRuleError}
-                  setBannerMessage={setBannerMessage}
                 />
               </Card>
 
@@ -654,7 +645,6 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
                     setNodes={setNodes}
                     nodesError={nodesError}
                     setNodesError={setNodesError}
-                    setBannerMessage={setBannerMessage}
                   />
                 )}
               </Card>

@@ -13,8 +13,6 @@ type ClassHierarchyProps = {
   setNodes: React.Dispatch<React.SetStateAction<Class[] | []>>;
   nodesError?: boolean;
   setNodesError: React.Dispatch<React.SetStateAction<boolean>>;
-  setBannerMessage:React.Dispatch<React.SetStateAction<string>>;
-
 };
 
 const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
@@ -22,7 +20,6 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
   setNodes,
   nodesError,
   setNodesError,
-  setBannerMessage
 }) => {
   const [currentNode, setCurrentNode] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,10 +30,9 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
     const handleChange = (e) => {
       setFieldName(e.target.value);
       node.fieldName = e.target.value;
-      if(isClassHierarchyDuplicated(nodes,e.target.value))
-        setNodesError(true)
-      else
-      setNodesError(false)
+      if (isClassHierarchyDuplicated(nodes, e.target.value))
+        setNodesError(true);
+      else setNodesError(false);
     };
 
     return (
@@ -198,7 +194,8 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
         }
         onClose={() => setIsModalOpen(false)}
       >
-        Confirm that you are wish to delete the following record. This will delete the current class and all subclasses of it
+        Confirm that you are wish to delete the following record. This will
+        delete the current class and all subclasses of it
       </Dialog>
     </div>
   );
