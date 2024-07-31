@@ -518,38 +518,68 @@ class DatasetProcessor:
                 
             print(data_payload["deletedDataRows"])
             if (data_payload["deletedDataRows"]!=[]):
-                deleted_rows = data_payload["deletedDataRows"]
-                aggregated_dataset = self.get_dataset(dgID, cookie)
-                updated_dataset = [row for row in aggregated_dataset if row.get('rowID') not in deleted_rows]
-                for idx, row in enumerate(updated_dataset, start=1):
-                    row['rowID'] = idx
-                if updated_dataset is not None:
-                    chunked_data = self.chunk_data(updated_dataset)
-                    if chunked_data is not None:
-                        print("Data chunking successful")
-                        print(chunked_data)
-                        operation_result = self.save_chunked_data(chunked_data, cookie, dgID, 0)
-                save_result_delete = self.save_aggregrated_data(dgID, cookie, updated_dataset)
+                try:
+                    print("Handling deleted data rows")
+                    deleted_rows = data_payload["deletedDataRows"]
+                    aggregated_dataset = self.get_dataset(dgID, cookie)
+                    if aggregated_dataset is not None:
+                        print("Aggregated dataset for delete operation retrieved successfully")
+                        updated_dataset = [row for row in aggregated_dataset if row.get('rowID') not in deleted_rows]
+                        for idx, row in enumerate(updated_dataset, start=1):
+                            row['rowID'] = idx
+                        if updated_dataset is not None:
+                            print("Deleted rows removed and dataset updated successfully")
+                            chunked_data = self.chunk_data(updated_dataset)
+                            if chunked_data is not None:
+                                print("Data chunking after delete operation successful")
+                                print(chunked_data)
+                                operation_result = self.save_chunked_data(chunked_data, cookie, dgID, 0)
+                                if operation_result:
+                                    print("Chunked data after delete operation saved successfully")
+                                    save_result_delete = self.save_aggregrated_data(dgID, cookie, updated_dataset)
+                                    if save_result_delete:
+                                        print("Aggregated dataset after delete operation saved successfully")
+                                    else:
+                                        print("Failed to save aggregated dataset after delete operation")
+                                        return FAILED_TO_SAVE_AGGREGATED_DATA
+                                else:
+                                    print("Failed to save chunked data after delete operation")
+                                    return FAILED_TO_SAVE_CHUNKED_DATA
+                            else:
+                                print("Failed to chunk data after delete operation")
+                                return FAILED_TO_CHUNK_CLEANED_DATA
+                        else:
+                            print("Failed to update dataset after deleting rows")
+                            return FAILED_TO_UPDATE_DATASET
+                    else:
+                        print("Failed to retrieve aggregated dataset for delete operation")
+                        return FAILED_TO_GET_AGGREGATED_DATASET
+                except Exception as e:
+                    print(f"An error occurred while handling deleted data rows: {e}")
+                    return FAILED_TO_HANDLE_DELETED_ROWS
 
-        if data_payload["editedData"]==[] and data_payload["deletedDataRows"]==[]:
-            return SUCCESSFUL_OPERATION
-        elif data_payload["editedData"]!=[] and data_payload["deletedDataRows"]==[]:
-            if save_result_update:
+            if data_payload["editedData"]==[] and data_payload["deletedDataRows"]==[]:
                 return SUCCESSFUL_OPERATION
-            else:
-                return FAILED_TO_SAVE_AGGREGATED_DATA
-        elif data_payload["editedData"]==[] and data_payload["deletedDataRows"]!=[]:
-            if save_result_delete:
-                return_data = self.update_preprocess_status(dgID, cookie, True, False, f"/dataset/{dgID}/chunks/", "", True, len(updated_dataset), len(chunked_data))
-                return SUCCESSFUL_OPERATION
-            else:
-                return FAILED_TO_SAVE_AGGREGATED_DATA
-        elif data_payload["editedData"]!=[] and data_payload["deletedDataRows"]!=[]:
-            if save_result_update and save_result_delete:
-                return_data = self.update_preprocess_status(dgID, cookie, True, False, f"/dataset/{dgID}/chunks/", "", True, len(updated_dataset), len(chunked_data))
-                return SUCCESSFUL_OPERATION
-            else:
-                return FAILED_TO_SAVE_AGGREGATED_DATA
+            elif data_payload["editedData"]!=[] and data_payload["deletedDataRows"]==[]:
+                if save_result_update:
+                    return SUCCESSFUL_OPERATION
+                else:
+                    return FAILED_TO_SAVE_AGGREGATED_DATA
+            elif data_payload["editedData"]==[] and data_payload["deletedDataRows"]!=[]:
+                if save_result_delete:
+                    return_data = self.update_preprocess_status(dgID, cookie, True, False, f"/dataset/{dgID}/chunks/", "", True, len(updated_dataset), len(chunked_data))
+                    print(return_data)
+                    return SUCCESSFUL_OPERATION
+                else:
+                    return FAILED_TO_SAVE_AGGREGATED_DATA
+            elif data_payload["editedData"]!=[] and data_payload["deletedDataRows"]!=[]:
+                if save_result_update and save_result_delete:
+                    return_data = self.update_preprocess_status(dgID, cookie, True, False, f"/dataset/{dgID}/chunks/", "", True, len(updated_dataset), len(chunked_data))
+                    print(return_data)
+                    return SUCCESSFUL_OPERATION
+                else:
+                    return FAILED_TO_SAVE_AGGREGATED_DATA
+
                 
 
 
