@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual, randomBytes } from "crypto";
 
 export function verifySignature(payload, headers, secret) {
   const signature = headers["x-hub-signature"];
@@ -70,3 +70,7 @@ export function findNotExistingStopWords(inputArray, existingArray) {
   return value;
 }
 
+export function getRandomString() {
+  const randomHexString = randomBytes(32).toString("hex");
+  return randomHexString;
+}
