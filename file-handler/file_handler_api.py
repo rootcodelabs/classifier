@@ -98,7 +98,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
             raise HTTPException(status_code=500, detail=upload_failed)
         
         for idx, record in enumerate(converted_data, start=1):
-            record["rowID"] = idx
+            record["rowId"] = idx
         
         json_local_file_path = file_location.replace(YAML_EXT, JSON_EXT).replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         with open(json_local_file_path, 'w') as json_file:
@@ -252,7 +252,7 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
             json_data = json.load(json_file)
 
         # for index, item in enumerate(json_data, start=1):
-        #     item['rowID'] = index
+        #     item['rowId'] = index
 
         backgroundTasks.add_task(os.remove, json_file_path)
 
