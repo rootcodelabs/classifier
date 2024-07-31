@@ -1,5 +1,6 @@
 import { Class, ValidationRule } from 'types/datasetGroups';
 import { v4 as uuidv4 } from 'uuid';
+import isEqual from 'lodash/isEqual';
 
 export const transformValidationRules = (
   data: ValidationRule[] | undefined
@@ -24,13 +25,13 @@ export const transformValidationRules = (
 export const transformClassHierarchy = (data: Class[]) => {
   const transformNode = (node: Class) => {
     return {
-      class: node.fieldName,
-      subclasses: node.children.map(transformNode),
+      class: node?.fieldName,
+      subclasses: node?.children?.map(transformNode),
     };
   };
 
   return {
-    classHierarchy: data.map(transformNode),
+    classHierarchy: data?.map(transformNode),
   };
 };
 
@@ -78,7 +79,7 @@ export const validateClassHierarchy = (data: Class[]) => {
   return false;
 };
 
-export const validateValidationRules = (data: ValidationRule[]|undefined) => {
+export const validateValidationRules = (data: ValidationRule[] | undefined) => {
   for (let item of data) {
     if (item.fieldName === '' || item.dataType === '') {
       return true;
@@ -116,15 +117,16 @@ export const isValidationRulesSatisfied = (data: ValidationRule[]) => {
 };
 
 export const isFieldNameExisting = (dataArray, fieldNameToCheck) => {
-  
-  const count = dataArray.reduce((acc, item) => {
-    return item?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase() ? acc + 1 : acc;
+  const count = dataArray?.reduce((acc, item) => {
+    return item?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase()
+      ? acc + 1
+      : acc;
   }, 0);
 
   return count === 2;
 };
 
-export const countFieldNameOccurrences=(dataArray, fieldNameToCheck)=> {
+export const countFieldNameOccurrences = (dataArray, fieldNameToCheck) => {
   let count = 0;
 
   function countOccurrences(node) {
@@ -133,21 +135,21 @@ export const countFieldNameOccurrences=(dataArray, fieldNameToCheck)=> {
     }
 
     if (node.children) {
-      node.children.forEach(child => countOccurrences(child));
+      node.children.forEach((child) => countOccurrences(child));
     }
   }
 
-  dataArray.forEach(node => countOccurrences(node));
+  dataArray.forEach((node) => countOccurrences(node));
 
   return count;
-}
+};
 
-export const isClassHierarchyDuplicated=(dataArray, fieldNameToCheck)=> {
+export const isClassHierarchyDuplicated = (dataArray, fieldNameToCheck) => {
   const count = countFieldNameOccurrences(dataArray, fieldNameToCheck);
   return count === 2;
-}
+};
 
-export const handleDownload = (response,format) =>{
+export const handleDownload = (response, format) => {
   try {
     // Create a URL for the Blob
     const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -160,5 +162,8 @@ export const handleDownload = (response,format) =>{
   } catch (error) {
     console.error('Error downloading the file', error);
   }
-}
+};
 
+export const isMajorUpdate = (initialData, updatedData) => {
+  return !isEqual(initialData, updatedData);
+};

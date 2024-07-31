@@ -133,3 +133,8 @@ export async function deleteStopWord(stopWordData) {
   });
   return data;
 }
+
+export async function getDatasetGroupsProgress() {
+  const { data } = await apiDev.get('classifier/datasetgroup/progress');
+  return data?.response?.data;
+}

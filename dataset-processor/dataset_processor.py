@@ -155,7 +155,7 @@ class DatasetProcessor:
     def get_dataset(self, dg_id, custom_jwt_cookie):
         params = {'dgId': dg_id}
         headers = {
-            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+            'cookie': custom_jwt_cookie
         }
 
         try:
@@ -169,7 +169,7 @@ class DatasetProcessor:
     def get_dataset_by_location(self, fileLocation, custom_jwt_cookie):
         params = {'saveLocation': fileLocation}
         headers = {
-            'cookie': f'customJwtCookie={custom_jwt_cookie}'
+            'cookie': custom_jwt_cookie
         }
 
         try:

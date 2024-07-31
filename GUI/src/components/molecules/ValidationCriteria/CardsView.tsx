@@ -9,6 +9,7 @@ import Button from 'components/Button';
 import { ValidationRule } from 'types/datasetGroups';
 import { Link } from 'react-router-dom';
 import { isFieldNameExisting } from 'utils/datasetGroupsUtils';
+import { v4 as uuidv4 } from 'uuid';
 
 const ItemTypes = {
   ITEM: 'item',
@@ -143,10 +144,9 @@ const ValidationCriteriaCardsView: FC<
 
   const addNewClass = () => {
     setValidationRuleError(false);
-    const newId = validationRules[validationRules?.length - 1]?.id + 1;
     const updatedItems = [
       ...validationRules,
-      { id: newId, fieldName: '', dataType: '', isDataClass: false },
+      { id: uuidv4(), fieldName: '', dataType: '', isDataClass: false },
     ];
     setValidationRules(updatedItems);
   };

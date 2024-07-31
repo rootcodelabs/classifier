@@ -1,4 +1,6 @@
 @import 'src/styles/tools/color';
+@import 'src/styles/tools/spacing';
+
 
 .search-panel {
   background-color: white;
@@ -26,4 +28,15 @@
   gap: 16px;
   padding: 16px;
   width: 100%;
+}
+
+.banner{
+  background-color: #fff3f3;
+  border: 1px solid #cf0000;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 20px 200px;
+  text-align: center;
+  color: #cf0000;
+
 }
