@@ -9,7 +9,7 @@ declaration:
   allowlist:
     body:
       - field: dgId
-        type: string
+        type: number
         description: "Body field 'dgId'"
       - field: operationType
         type: string
