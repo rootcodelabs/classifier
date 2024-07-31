@@ -51,24 +51,34 @@ if not os.path.exists(CHUNK_UPLOAD_DIRECTORY):
 def get_ruuter_private_url():
     return os.getenv("RUUTER_PRIVATE_URL")
 
-async def authenticate_user(request: Request):
-    cookie = request.cookies.get("customJwtCookie")
-    if not cookie:
-        raise HTTPException(status_code=401, detail="No cookie found in the request")
+async def authenticate_user(cookie: str):
+    try:
+        # cookie = request.cookies.get("customJwtCookie")
+        # cookie = f'customJwtCookie={cookie}'
 
-    url = f"{RUUTER_PRIVATE_URL}/auth/jwt/userinfo"
-    headers = {
-        'cookie': f'customJwtCookie={cookie}'
-    }
+        if not cookie:
+            raise HTTPException(status_code=401, detail="No cookie found in the request")
+        
+        print("@#!@#!@#!2")
+        print(cookie)
 
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+        url = f"{RUUTER_PRIVATE_URL}/auth/jwt/userinfo"
+        headers = {
+            'cookie': cookie
+        }
+
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+    except Exception as e:
+        print(f"Error in file handler authentication : {e}")
 
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
     try:
-        await authenticate_user(request)
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
 
         print(f"Received dgId: {dgId}")
         print(f"Received filename: {dataFile.filename}")
@@ -94,7 +104,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
         with open(json_local_file_path, 'w') as json_file:
             json.dump(converted_data, json_file, indent=4)
 
-        save_location = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
+        save_location = f"/dataset/{dgId}/temp/temp_dataset{JSON_EXT}"
         source_file_path = file_name.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         
         response = s3_ferry.transfer_file(save_location, "S3", source_file_path, "FS")
@@ -113,7 +123,8 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
 
 @app.post("/datasetgroup/data/download")
 async def download_and_convert(request: Request, exportData: ExportFile, backgroundTasks: BackgroundTasks):
-    await authenticate_user(request)
+    cookie = request.cookies.get("customJwtCookie")
+    await authenticate_user(f'customJwtCookie={cookie}')
     dg_id = exportData.dgId
     export_type = exportData.exportType
 
@@ -152,7 +163,8 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
 
 @app.get("/datasetgroup/data/download/json")
 async def download_and_convert(request: Request, dgId: int, background_tasks: BackgroundTasks):
-    await authenticate_user(request)
+    cookie = request.cookies.get("customJwtCookie")
+    await authenticate_user(f'customJwtCookie={cookie}')
 
     saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
     localFileName = f"group_{dgId}_aggregated"
@@ -172,8 +184,8 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
 
 @app.get("/datasetgroup/data/download/json/location")
 async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
-    print(request)
-    await authenticate_user(request)
+    cookie = request.cookies.get("customJwtCookie")
+    await authenticate_user(f'customJwtCookie={cookie}')
 
     print(saveLocation)
 
@@ -194,7 +206,8 @@ async def download_and_convert(request: Request, saveLocation:str, background_ta
 
 @app.post("/datasetgroup/data/import/chunk")
 async def upload_and_copy(request: Request, import_chunks: ImportChunks):
-    await authenticate_user(request)
+    cookie = request.cookies.get("customJwtCookie")
+    await authenticate_user(f'customJwtCookie={cookie}')
 
     dgID = import_chunks.dg_id
     chunks = import_chunks.chunks
@@ -217,29 +230,40 @@ async def upload_and_copy(request: Request, import_chunks: ImportChunks):
 
 @app.get("/datasetgroup/data/download/chunk")
 async def download_and_convert(request: Request, dgId: int, pageId: int, backgroundTasks: BackgroundTasks):
-    await authenticate_user(request)
-    save_location = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
-    local_file_name = f"group_{dgId}_chunk_{pageId}"
+    try:
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
+        print("$#@$@#$@#$@#$")
+        print(request)
+        # cookie = request.cookies.get("cookie")
+        # cookie = f'customJwtCookie={cookie}'
+        # await authenticate_user(cookie)
+        save_location = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
+        local_file_name = f"group_{dgId}_chunk_{pageId}"
 
-    response = s3_ferry.transfer_file(f"{local_file_name}{JSON_EXT}", "FS", save_location, "S3")
-    if response.status_code != 201:
-        raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
+        response = s3_ferry.transfer_file(f"{local_file_name}{JSON_EXT}", "FS", save_location, "S3")
+        if response.status_code != 201:
+            print("S3 Download Failed")
+            return {}
 
-    json_file_path = os.path.join('..', 'shared', f"{local_file_name}{JSON_EXT}")
+        json_file_path = os.path.join('..', 'shared', f"{local_file_name}{JSON_EXT}")
 
-    with open(f"{json_file_path}", 'r') as json_file:
-        json_data = json.load(json_file)
+        with open(f"{json_file_path}", 'r') as json_file:
+            json_data = json.load(json_file)
 
-    # for index, item in enumerate(json_data, start=1):
-    #     item['rowID'] = index
+        # for index, item in enumerate(json_data, start=1):
+        #     item['rowID'] = index
 
-    backgroundTasks.add_task(os.remove, json_file_path)
+        backgroundTasks.add_task(os.remove, json_file_path)
 
-    return json_data
+        return json_data
+    except Exception as e:
+        print(f"Error in download/chunk : {e}")
 
 @app.post("/datasetgroup/data/import/json")
 async def upload_and_copy(request: Request, importData: ImportJsonMajor):
-    await authenticate_user(request)
+    cookie = request.cookies.get("customJwtCookie")
+    await authenticate_user(f'customJwtCookie={cookie}')
 
     fileName = f"{uuid.uuid4()}.{JSON_EXT}"
     fileLocation = os.path.join(UPLOAD_DIRECTORY, fileName)
