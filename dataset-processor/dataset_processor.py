@@ -89,7 +89,7 @@ class DatasetProcessor:
                     else:
                         enriched_entry[key] = value
                 record_count = record_count+1
-                enriched_entry["rowID"] = record_count
+                enriched_entry["rowId"] = record_count
                 enriched_data.append(enriched_entry)
             return enriched_data
         except Exception as e:
@@ -253,7 +253,7 @@ class DatasetProcessor:
             processed_data = []
             for data in structured_data:
                 max_row_id = max_row_id + 1
-                data["rowID"] = max_row_id
+                data["rowId"] = max_row_id
                 processed_data.append(data)
             return processed_data
         except Exception as e:
@@ -310,7 +310,7 @@ class DatasetProcessor:
                     selected_data_fields_to_enrich = self.get_selected_data_fields(dgID, cookie)
                     if selected_data_fields_to_enrich is not None:
                         print("Selected data fields to enrich retrieved successfully")
-                        max_row_id = max(item["rowID"] for item in structured_data)
+                        max_row_id = max(item["rowId"] for item in structured_data)
                         enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
 
                         agregated_dataset = structured_data + enriched_data
@@ -367,7 +367,7 @@ class DatasetProcessor:
         elif updateType == "minor_append_update":
             print("Handling Minor update")
             agregated_dataset = self.get_dataset(dgID, cookie)
-            max_row_id = max(item["rowID"] for item in agregated_dataset)
+            max_row_id = max(item["rowId"] for item in agregated_dataset)
             if agregated_dataset is not None:
                 print("Aggregated dataset retrieved successfully")
                 minor_update_dataset = self.get_dataset_by_location(savedFilePath, cookie)
@@ -381,7 +381,7 @@ class DatasetProcessor:
                         selected_data_fields_to_enrich = self.get_selected_data_fields(dgID, cookie)
                         if selected_data_fields_to_enrich is not None:
                             print("Selected data fields to enrich for minor update retrieved successfully")
-                            max_row_id = max(item["rowID"] for item in structured_data)
+                            max_row_id = max(item["rowId"] for item in structured_data)
                             enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
                             if enriched_data is not None:
                                 print("Minor update data enrichment successful")
@@ -461,8 +461,8 @@ class DatasetProcessor:
                             print(cleaned_patch_payload)
                             chunk_updates = {}
                             for entry in cleaned_patch_payload:
-                                rowID = entry.get("rowId")
-                                chunkNum = (rowID - 1) // 5 + 1
+                                rowId = entry.get("rowId")
+                                chunkNum = (rowId - 1) // 5 + 1
                                 if chunkNum not in chunk_updates:
                                     chunk_updates[chunkNum] = []
                                 chunk_updates[chunkNum].append(entry)
@@ -472,9 +472,9 @@ class DatasetProcessor:
                                 if chunk_data is not None:
                                     print(f"Chunk {chunkNum} downloaded successfully")
                                     for entry in entries:
-                                        rowID = entry.get("rowId")
+                                        rowId = entry.get("rowId")
                                         for idx, chunk_entry in enumerate(chunk_data):
-                                            if chunk_entry.get("rowID") == rowID:
+                                            if chunk_entry.get("rowId") == rowId:
                                                 chunk_data[idx] = entry
                                                 break
                                     chunk_save_operation = self.save_chunked_data([chunk_data], cookie, dgID, chunkNum-1)
@@ -488,10 +488,10 @@ class DatasetProcessor:
                             if agregated_dataset is not None:
                                 print("Aggregated dataset for patch update retrieved successfully")
                                 for entry in cleaned_patch_payload:
-                                    rowID = entry.get("rowId")
+                                    rowId = entry.get("rowId")
                                     for index, item in enumerate(agregated_dataset):
-                                        if item.get("rowID") == rowID:
-                                            entry["rowID"] = rowID
+                                        if item.get("rowId") == rowId:
+                                            entry["rowId"] = rowId
                                             del entry["rowId"]
                                             agregated_dataset[index] = entry
                                             break
@@ -524,9 +524,9 @@ class DatasetProcessor:
                     aggregated_dataset = self.get_dataset(dgID, cookie)
                     if aggregated_dataset is not None:
                         print("Aggregated dataset for delete operation retrieved successfully")
-                        updated_dataset = [row for row in aggregated_dataset if row.get('rowID') not in deleted_rows]
+                        updated_dataset = [row for row in aggregated_dataset if row.get('rowId') not in deleted_rows]
                         for idx, row in enumerate(updated_dataset, start=1):
-                            row['rowID'] = idx
+                            row['rowId'] = idx
                         if updated_dataset is not None:
                             print("Deleted rows removed and dataset updated successfully")
                             chunked_data = self.chunk_data(updated_dataset)
