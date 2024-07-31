@@ -84,7 +84,7 @@ class DatasetProcessor:
                 for key, value in entry.items():
                     if isinstance(value, str) and (key in selected_fields):
                         enriched_value = self.data_enricher.enrich_data(value, num_return_sequences=1, language_id='en')
-                        enriched_value = ["enrichupdate"]
+                        # enriched_value = ["enrichupdate"]
                         enriched_entry[key] = enriched_value[0] if enriched_value else value
                     else:
                         enriched_entry[key] = value
