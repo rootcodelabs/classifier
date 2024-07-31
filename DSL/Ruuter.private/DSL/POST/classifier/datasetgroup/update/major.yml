@@ -28,7 +28,7 @@ extract_request_data:
 check_for_request_data:
   switch:
     - condition: ${validation_criteria !== null && class_hierarchy !=null}
-      next: snapshot_dataset_group
+      next: get_dataset_group
   next: return_incorrect_request
 
 get_dataset_group:
@@ -55,7 +55,7 @@ check_data_exist:
 assign_group_key:
   assign:
     group_key: ${res.response.body[0].groupKey}
-  next: update_old_dataset_group
+  next: snapshot_dataset_group
 
 snapshot_dataset_group:
   call: http.post
