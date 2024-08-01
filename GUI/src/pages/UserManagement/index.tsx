@@ -94,7 +94,7 @@ const UserManagement: FC = () => {
         }
       ),
       columnHelper.accessor('useridcode', {
-        header: t('settings.users.idCode') ?? '',
+        header: t('global.idCode') ?? '',
       }),
       columnHelper.accessor(
         (data: { authorities: ROLES[] }) => {
