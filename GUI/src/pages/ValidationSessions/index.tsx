@@ -22,7 +22,6 @@ const ValidationSessions: FC = () => {
   useEffect(() => {
     if (!progressData) return;
 
-    // Function to update the state with data from each SSE
     const handleUpdate = (sessionId, newData) => {
       setProgresses((prevProgresses) =>
         prevProgresses.map((progress) =>
@@ -31,7 +30,6 @@ const ValidationSessions: FC = () => {
       );
     };
 
-    // Iterate over each element and create an SSE connection for each
     const eventSources = progressData.map((progress) => {
       return sse(`/${progress.id}`, (data) => {
         console.log(`New data for notification ${progress.id}:`, data);
@@ -39,7 +37,6 @@ const ValidationSessions: FC = () => {
       });
     });
 
-    // Clean up all event sources on component unmount
     return () => {
       eventSources.forEach((eventSource) => eventSource.close());
       console.log('SSE connections closed');
