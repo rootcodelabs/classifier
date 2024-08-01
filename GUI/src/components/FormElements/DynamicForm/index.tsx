@@ -5,25 +5,33 @@ import Button from 'components/Button';
 import Track from 'components/Track';
 
 type DynamicFormProps = {
-  formData: { [key: string]: string };
+  formData: { [key: string]: string | number }; // Adjust the type to include numbers
   onSubmit: (data: any) => void;
-  setPatchUpdateModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setPatchUpdateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ formData, onSubmit,setPatchUpdateModalOpen }) => {
+const DynamicForm: React.FC<DynamicFormProps> = ({
+  formData,
+  onSubmit,
+  setPatchUpdateModalOpen,
+}) => {
   const { register, handleSubmit } = useForm();
 
-  const renderInput = (key: string, type: string) => {
-    
+  const renderInput = (key: string) => {
+    const isRowID = key.toLowerCase() === 'rowid';
+    const inputType = isRowID ? 'number' : 'text';
 
     return (
-      <FormInput
-        label=""
-        {...register(key)}
-        type="text"
-        placeholder={key}
-        defaultValue={formData[key]}
-      />
+      <div style={{ display: isRowID ? 'none' : 'block' }}>
+        <label>{key}</label>
+        <FormInput
+          label=""
+          {...register(key)}
+          type={inputType}
+          placeholder={key}
+          defaultValue={isRowID ? (formData[key] as number) : formData[key]}
+        />
+      </div>
     );
   };
 
@@ -31,17 +39,17 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ formData, onSubmit,setPatchUp
     <form onSubmit={handleSubmit(onSubmit)}>
       {Object.keys(formData).map((key) => (
         <div key={key}>
-          {key.toLowerCase() !== 'rowid' && (
-            <div style={{ marginBottom: '15px' }}>
-              <label>{key}</label>
-              {renderInput(key, formData[key])}
-            </div>
-          )}
+          <div style={{ marginBottom: '15px' }}>{renderInput(key)}</div>
         </div>
       ))}
       <Track className="dialog__footer" gap={16} justify="end">
         <div className="flex-grid">
-          <Button appearance="secondary" onClick={()=>setPatchUpdateModalOpen(false)}>Cancel</Button>
+          <Button
+            appearance="secondary"
+            onClick={() => setPatchUpdateModalOpen(false)}
+          >
+            Cancel
+          </Button>
           <Button type="submit">Save</Button>
         </div>
       </Track>

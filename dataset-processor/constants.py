@@ -81,3 +81,15 @@ FAILED_TO_DOWNLOAD_CHUNK = {
     "operation_successful": False,
     "reason": "Failed to download chunk"
 }
+
+FAILED_TO_HANDLE_DELETED_ROWS = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to handle deleted rows"
+}
+
+FAILED_TO_UPDATE_DATASET = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to update dataset after deleting rows"
+}

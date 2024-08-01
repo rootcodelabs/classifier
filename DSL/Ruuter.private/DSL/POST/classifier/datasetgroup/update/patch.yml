@@ -50,6 +50,8 @@ check_data_exist:
 assign_group_key:
   assign:
     group_key: ${res.response.body[0].groupKey}
+    major_version: ${res.response.body[0].majorVersion}
+    minor_version: ${res.response.body[0].minorVersion}
   next: update_old_dataset_group
 
 update_old_dataset_group:
@@ -59,6 +61,8 @@ update_old_dataset_group:
     body:
       id: ${dg_id}
       group_key: ${group_key}
+      major_version: ${major_version}
+      minor_version: ${minor_version}
       last_updated_timestamp: ${new Date().toISOString()}
   result: res
   next: check_old_dataset_status
@@ -77,8 +81,8 @@ execute_cron_manager:
       cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}
       updateType: 'patch'
-      savedFilePath: null
-      patchPayload: ${update_data_payload}
+      savedFilePath: 'None'
+      patchPayload: ${encodeURIComponent(JSON.stringify(update_data_payload))}
   result: res
   next: assign_success_response
 
