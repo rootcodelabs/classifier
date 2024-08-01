@@ -432,22 +432,26 @@ class DatasetProcessor:
                                                 print(f"Page count retrieved successfully: {page_count}")
                                                 print(chunked_data)
                                                 copy_exsisting_files = self.copy_chunked_datafiles(dgId, newDgId, cookie, page_count)
-                                                operation_result = self.save_chunked_data(chunked_data, cookie, newDgId, page_count)
-                                                if operation_result is not None:
-                                                    print("Chunked data for minor update saved successfully")
-                                                    agregated_dataset += cleaned_data
-                                                    agregated_dataset_operation = self.save_aggregrated_data(newDgId, cookie, agregated_dataset)
-                                                    if agregated_dataset_operation:
-                                                        print("Aggregated dataset for minor update saved successfully")
-                                                        return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(agregated_dataset), (len(chunked_data)+page_count))
-                                                        print(return_data)  
-                                                        return SUCCESSFUL_OPERATION
+                                                if copy_exsisting_files is not None:
+                                                    operation_result = self.save_chunked_data(chunked_data, cookie, newDgId, page_count)
+                                                    if operation_result is not None:
+                                                        print("Chunked data for minor update saved successfully")
+                                                        agregated_dataset += cleaned_data
+                                                        agregated_dataset_operation = self.save_aggregrated_data(newDgId, cookie, agregated_dataset)
+                                                        if agregated_dataset_operation:
+                                                            print("Aggregated dataset for minor update saved successfully")
+                                                            return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(agregated_dataset), (len(chunked_data)+page_count))
+                                                            print(return_data)  
+                                                            return SUCCESSFUL_OPERATION
+                                                        else:
+                                                            print("Failed to save aggregated dataset for minor update")
+                                                            return FAILED_TO_SAVE_AGGREGATED_DATA
                                                     else:
-                                                        print("Failed to save aggregated dataset for minor update")
-                                                        return FAILED_TO_SAVE_AGGREGATED_DATA
+                                                        print("Failed to save chunked data for minor update")
+                                                        return FAILED_TO_SAVE_CHUNKED_DATA
                                                 else:
-                                                    print("Failed to save chunked data for minor update")
-                                                    return FAILED_TO_SAVE_CHUNKED_DATA
+                                                    print("Failed to copy existing chunked data for minor update")
+                                                    return FAILED_TO_COPY_CHUNKED_DATA
                                             else:
                                                 print("Failed to get page count")
                                                 return FAILED_TO_GET_PAGE_COUNT
@@ -478,8 +482,6 @@ class DatasetProcessor:
         elif updateType == "patch":
             decoded_string = urllib.parse.unquote(patchPayload)
             data_payload = json.loads(decoded_string)
-            print(data_payload)
-            print("*************")
             if (data_payload["editedData"]!=[]):
                 print("Handling Patch update")
                 stop_words = self.get_stopwords(dgId, cookie)
@@ -535,7 +537,6 @@ class DatasetProcessor:
                                 save_result_update = self.save_aggregrated_data(dgId, cookie, agregated_dataset)
                                 if save_result_update:
                                     print("Aggregated dataset for patch update saved successfully")
-                                    # return SUCCESSFUL_OPERATION
                                 else:
                                     print("Failed to save aggregated dataset for patch update")
                                     return FAILED_TO_SAVE_AGGREGATED_DATA
