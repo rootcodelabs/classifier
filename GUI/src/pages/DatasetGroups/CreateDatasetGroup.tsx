@@ -26,8 +26,8 @@ const CreateDatasetGroup: FC = () => {
   const navigate = useNavigate();
 
   const initialValidationRules = [
-    { id: 1, fieldName: '', dataType: '', isDataClass: false },
-    { id: 2, fieldName: '', dataType: '', isDataClass: true },
+    { id: uuidv4(), fieldName: '', dataType: '', isDataClass: false },
+    { id: uuidv4(), fieldName: '', dataType: '', isDataClass: true },
   ];
 
   const initialClass = [

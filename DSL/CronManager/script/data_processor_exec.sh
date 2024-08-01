@@ -1,20 +1,21 @@
 #!/bin/bash
 
 # Ensure required environment variables are set
-if [ -z "$dgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ]; then
+if [ -z "$dgId" ] || [ -z "$newDgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ]; then
   echo "One or more environment variables are missing."
-  echo "Please set dgId, cookie, updateType, savedFilePath, and patchPayload."
+  echo "Please set dgId, newDgId, cookie, updateType, savedFilePath, and patchPayload."
   exit 1
 fi
 
-# Construct the payload using grep
+# Construct the payload using here document
 payload=$(cat <<EOF
 {
-  "dgID": "$dgId",
-  "cookie": "$cookie",
+  "dgId": "$dgId",
+  "newDgId": "$newDgId",
   "updateType": "$updateType",
   "savedFilePath": "$savedFilePath",
-  "patchPayload": "$patchPayload"
+  "patchPayload": "$patchPayload",
+  "cookie": "$cookie"
 }
 EOF
 )

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Ensure required environment variables are set
-if [ -z "$dgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ]; then
+if [ -z "$dgId" ] || [ -z "$newDgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ]; then
   echo "One or more environment variables are missing."
-  echo "Please set dgId, cookie, updateType, savedFilePath, and patchPayload."
+  echo "Please set dgId, newDgId, cookie, updateType, savedFilePath, and patchPayload."
   exit 1
 fi
 
@@ -11,6 +11,7 @@ fi
 payload=$(cat <<EOF
 {
   "dgId": "$dgId",
+  "newDgId": "$newDgId",
   "updateType": "$updateType",
   "savedFilePath": "$savedFilePath",
   "patchPayload": "$patchPayload",

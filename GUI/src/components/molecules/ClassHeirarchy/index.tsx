@@ -1,6 +1,5 @@
 import React, { FC, PropsWithChildren, useState } from 'react';
 import { MdDeleteOutline } from 'react-icons/md';
-import Card from 'components/Card';
 import { FormInput } from 'components/FormElements';
 import Button from 'components/Button';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,10 +30,9 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
     const handleChange = (e) => {
       setFieldName(e.target.value);
       node.fieldName = e.target.value;
-      if(isClassHierarchyDuplicated(nodes,e.target.value))
-        setNodesError(true)
-      else
-      setNodesError(false)
+      if (isClassHierarchyDuplicated(nodes, e.target.value))
+        setNodesError(true);
+      else setNodesError(false);
     };
 
     return (
@@ -196,7 +194,8 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
         }
         onClose={() => setIsModalOpen(false)}
       >
-        Confirm that you are wish to delete the following record. This will delete the current class and all subclasses of it
+        Confirm that you are wish to delete the following record. This will
+        delete the current class and all subclasses of it
       </Dialog>
     </div>
   );
