@@ -19,7 +19,8 @@ app.add_middleware(
 )
 
 class ProcessHandlerRequest(BaseModel):
-    dgID: int
+    dgId: int
+    newDgId: int
     cookie: str
     updateType: str
     savedFilePath: str
@@ -47,7 +48,7 @@ async def process_handler_endpoint(request: Request):
     await authenticate_user(request)
 
     authCookie = payload["cookie"]
-    result = processor.process_handler(int(payload["dgID"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
+    result = processor.process_handler(int(payload["dgId"]), int(payload["newDgId"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
     if result:
         return result
     else:
@@ -69,6 +70,7 @@ async def forward_request(request: Request, response: Response):
     print(payload)
     payload2 = {}
     payload2["dgId"] = int(payload["dgId"])
+    payload2["newDgId"] = int(payload["newDgId"])
     payload2["updateType"] = payload["updateType"]
     payload2["patchPayload"] = payload["patchPayload"]
     payload2["savedFilePath"] = payload["savedFilePath"]
