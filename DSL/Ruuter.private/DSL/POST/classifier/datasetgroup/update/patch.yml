@@ -60,10 +60,8 @@ update_old_dataset_group:
     url: "[#CLASSIFIER_RESQL]/update-patch-version-dataset-group"
     body:
       id: ${dg_id}
-      group_key: ${group_key}
-      major_version: ${major_version}
-      minor_version: ${minor_version}
       last_updated_timestamp: ${new Date().toISOString()}
+      group_key: ${group_key}
   result: res
   next: check_old_dataset_status
 
@@ -80,6 +78,7 @@ execute_cron_manager:
     query:
       cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}
+      newDgId: 0
       updateType: 'patch'
       savedFilePath: 'None'
       patchPayload: ${encodeURIComponent(JSON.stringify(update_data_payload))}

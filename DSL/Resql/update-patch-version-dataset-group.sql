@@ -7,11 +7,7 @@ WITH update_latest AS (
 update_specific AS (
     UPDATE dataset_group_metadata
     SET
-        patch_version = (
-            SELECT COALESCE(MAX(patch_version), 0) + 1
-            FROM dataset_group_metadata
-            WHERE group_key = :group_key AND major_version = :major_version AND minor_version = :minor_version
-        ),
+        patch_version = patch_version + 1,
         enable_allowed = false,
         validation_status = 'in-progress'::Validation_Status,
         is_enabled = false,
