@@ -4,17 +4,18 @@ import apiMock from './api-mock';
 import { PaginationState } from '@tanstack/react-table';
 import { DatasetGroup, Operation } from 'types/datasetGroups';
 
-export async function getDatasetsOverview(
+export async function getDataModelsOverview(
   pageNum: number,
   modelGroup: string,
   majorVersion: number,
   minorVersion: number,
   patchVersion: number,
   platform: string,
-  sort: string,
   datasetGroup:string,
   trainingStatus:string,
-  deploymentMaturity:string
+  deploymentMaturity:string,
+  sort: string,
+ 
 ) {
   const { data } = await apiMock.get('classifier/datamodel/overview', {
     params: {
@@ -24,10 +25,10 @@ export async function getDatasetsOverview(
       minorVersion,
       patchVersion,
       platform,
-      sortType:sort,
       datasetGroup,
       trainingStatus,
       deploymentMaturity,
+      sortType:sort,
       pageSize:5
     },
   });
@@ -35,7 +36,7 @@ export async function getDatasetsOverview(
 }
 
 export async function getFilterData() {
-  const { data } = await apiDev.get('classifier/datasetgroup/overview/filters');
+  const { data } = await apiMock.get('classifier/datamodel/overview/filters');
   return data;
 }
 

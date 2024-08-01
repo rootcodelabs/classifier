@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, FormInput, FormSelect } from 'components';
 import DatasetGroupCard from 'components/molecules/DatasetGroupCard';
 import Pagination from 'components/molecules/Pagination';
-import { getDatasetsOverview, getFilterData } from 'services/datasets';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,6 +10,7 @@ import {
   formattedArray,
   parseVersionString,
 } from 'utils/commonUtilts';
+import { getDataModelsOverview, getFilterData } from 'services/data-models';
 
 const DataModels: FC = () => {
   const { t } = useTranslation();
@@ -19,41 +19,47 @@ const DataModels: FC = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [id, setId] = useState(0);
   const [enableFetch, setEnableFetch] = useState(true);
-  const [view, setView] = useState("list");
+  const [view, setView] = useState('list');
 
-useEffect(()=>{
-  setEnableFetch(true)
-},[view]);
+  useEffect(() => {
+    setEnableFetch(true);
+  }, [view]);
 
   const [filters, setFilters] = useState({
-    datasetGroupName: 'all',
+    modelName: 'all',
     version: 'x.x.x',
-    validationStatus: 'all',
+    platform: 'all',
+    datasetGroup: 'all',
+    trainingStatus: 'all',
+    maturity: 'all',
     sort: 'asc',
   });
 
-  const {
-    data: datasetGroupsData,
-    isLoading,
-  } = useQuery(
+  const { data: dataModelsData, isLoading } = useQuery(
     [
-      'datasetgroup/overview',
+      'datamodels/overview',
       pageIndex,
-      filters.datasetGroupName,
+      filters.modelName,
       parseVersionString(filters?.version)?.major,
       parseVersionString(filters?.version)?.minor,
       parseVersionString(filters?.version)?.patch,
-      filters.validationStatus,
+      filters.platform,
+      filters.datasetGroup,
+      filters.trainingStatus,
+      filters.maturity,
       filters.sort,
     ],
     () =>
-      getDatasetsOverview(
+      getDataModelsOverview(
         pageIndex,
-        filters.datasetGroupName,
+        filters.modelName,
         parseVersionString(filters?.version)?.major,
         parseVersionString(filters?.version)?.minor,
         parseVersionString(filters?.version)?.patch,
-        filters.validationStatus,
+        filters.platform,
+        filters.datasetGroup,
+        filters.trainingStatus,
+        filters.maturity,
         filters.sort
       ),
     {
@@ -61,10 +67,11 @@ useEffect(()=>{
       enabled: enableFetch,
     }
   );
-  const { data: filterData } = useQuery(['datasets/filters'], () =>
+  const { data: filterData } = useQuery(['datamodels/filters'], () =>
     getFilterData()
   );
-  const pageCount = datasetGroupsData?.response?.data?.[0]?.totalPages || 1;
+  // const pageCount = datasetGroupsData?.response?.data?.[0]?.totalPages || 1;
+  console.log(dataModelsData);
 
   const handleFilterChange = (name: string, value: string) => {
     setEnableFetch(false);
@@ -74,10 +81,9 @@ useEffect(()=>{
     }));
   };
 
-
   return (
     <div>
-     <div className="container">
+      <div className="container">
         <div className="title_container">
           <div className="title">Data Models</div>
           <Button
@@ -85,54 +91,63 @@ useEffect(()=>{
             size="m"
             onClick={() => navigate('/create-model')}
           >
-            Create Dataset Group
+            Create Model
           </Button>
         </div>
         <div>
           <div className="search-panel">
             <FormSelect
               label=""
-              name="sort"
-              placeholder="Model Group"
-              options={formattedArray(filterData?.response?.dgNames) ?? []}
+              name="modelName"
+              placeholder="Model Name"
+              options={formattedArray(filterData?.modelNames) ?? []}
               onSelectionChange={(selection) =>
-                handleFilterChange('datasetGroupName', selection?.value ?? '')
+                handleFilterChange('modelName', selection?.value ?? '')
               }
             />
             <FormSelect
               label=""
-              name="sort"
+              name="version"
               placeholder="Version"
-              options={formattedArray(filterData?.response?.dgVersions) ?? []}
+              options={formattedArray(filterData?.modelVersions) ?? []}
               onSelectionChange={(selection) =>
                 handleFilterChange('version', selection?.value ?? '')
               }
             />
             <FormSelect
               label=""
-              name="sort"
+              name="platform"
               placeholder="Platform"
-              options={formattedArray(filterData?.response?.dgValidationStatuses) ?? []}
+              options={formattedArray(filterData?.deploymentsEnvs) ?? []}
               onSelectionChange={(selection) =>
-                handleFilterChange('validationStatus', selection?.value ?? '')
+                handleFilterChange('platform', selection?.value ?? '')
               }
             />
-             <FormSelect
+            <FormSelect
               label=""
-              name="sort"
+              name="datasetGroup"
               placeholder="Dataset Group"
-              options={formattedArray(filterData?.response?.dgValidationStatuses) ?? []}
+              options={formattedArray(filterData?.datasetGroups) ?? []}
               onSelectionChange={(selection) =>
-                handleFilterChange('validationStatus', selection?.value ?? '')
+                handleFilterChange('datasetGroup', selection?.value ?? '')
               }
             />
-             <FormSelect
+            <FormSelect
               label=""
-              name="sort"
+              name="trainingStatus"
               placeholder="Training Status"
-              options={formattedArray(filterData?.response?.dgValidationStatuses) ?? []}
+              options={formattedArray(filterData?.trainingStatuses) ?? []}
               onSelectionChange={(selection) =>
-                handleFilterChange('validationStatus', selection?.value ?? '')
+                handleFilterChange('trainingStatus', selection?.value ?? '')
+              }
+            />
+            <FormSelect
+              label=""
+              name="maturity"
+              placeholder="Maturity"
+              options={formattedArray(filterData?.maturity) ?? []}
+              onSelectionChange={(selection) =>
+                handleFilterChange('maturity', selection?.value ?? '')
               }
             />
             <FormSelect
@@ -161,7 +176,7 @@ useEffect(()=>{
             style={{ padding: '20px', marginTop: '20px' }}
           >
             {isLoading && <div>Loading...</div>}
-            {datasetGroupsData?.response?.data?.map(
+            {dataModelsData?.data?.map(
               (dataset, index: number) => {
                 return (
                   <DatasetGroupCard
@@ -177,22 +192,20 @@ useEffect(()=>{
                     lastModelTrained={dataset?.lastModelTrained}
                     setId={setId}
                     setView={setView}
-
                   />
                 );
               }
             )}
           </div>
           <Pagination
-            pageCount={pageCount}
+            pageCount={10}
             pageIndex={pageIndex}
             canPreviousPage={pageIndex > 1}
-            canNextPage={pageIndex < pageCount}
+            canNextPage={pageIndex < 10}
             onPageChange={setPageIndex}
           />
         </div>
       </div>
-      
     </div>
   );
 };
