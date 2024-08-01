@@ -1,0 +1,111 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Insert model metadata"
+  method: post
+  accepts: json
+  returns: json
+  namespace: classifier
+  allowlist:
+    body:
+      - field: modelName
+        type: string
+        description: "Body field 'modelName'"
+      - field: datasetGroupName
+        type: string
+        description: "Body field 'datasetGroupName'"
+      - field: dgId
+        type: number
+        description: "Body field 'dgId'"
+      - field: baseModels
+        type: array
+        description: "Body field 'baseModels'"
+      - field: deploymentPlatform
+        type: string
+        description: "Body field 'deploymentPlatform'"
+      - field: maturityLabel
+        type: string
+        description: "Body field 'maturityLabel'"
+    headers:
+      - field: cookie
+        type: string
+        description: "Cookie field"
+
+extract_request_data:
+  assign:
+    model_name: ${incoming.body.modelName}
+    dataset_group_name: ${incoming.body.datasetGroupName}
+    dg_id: ${incoming.body.dgId}
+    base_models: ${incoming.body.baseModels}
+    deployment_platform: ${incoming.body.deploymentPlatform}
+    maturity_label: ${incoming.body.maturityLabel}
+  next: check_for_request_data
+
+check_for_request_data:
+  switch:
+    - condition: ${model_name !== null && dataset_group_name !== null && dg_id !== null && base_models !== null && deployment_platform !== null && maturity_label !== null}
+      next: get_epoch_date
+  next: return_incorrect_request
+
+get_epoch_date:
+  assign:
+    current_epoch: ${Date.now()}
+    random_num: ${Math.floor(Math.random() * 100000)}
+  next: create_model_metadata
+
+create_model_metadata:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/insert-model-metadata"
+    body:
+      model_name: ${model_name}
+      model_group_key: "${random_num+ '_'+current_epoch}"
+      connected_dg_name: ${dataset_group_name}
+      connected_dg_id: ${dg_id}
+      base_models: ${base_models}
+      deployment_env: ${deployment_platform}
+      maturity_label: ${maturity_label}
+      training_status: not trained
+      major_version: 1
+      minor_version: 0
+      latest: true
+      created_timestamp: ${new Date(current_epoch).toISOString()}
+  result: res_model
+  next: check_status
+
+check_status:
+  switch:
+    - condition: ${200 <= res_model.response.statusCodeValue && res_model.response.statusCodeValue < 300}
+      next: assign_success_response
+  next: assign_fail_response
+
+assign_success_response:
+  assign:
+    format_res: {
+      modelId: '${res_model.response.body[0].id}',
+      operationSuccessful: true
+    }
+  next: return_ok
+
+assign_fail_response:
+  assign:
+    format_res: {
+      modelId: '',
+      operationSuccessful: false
+    }
+  next: return_bad_request
+
+return_ok:
+  status: 200
+  return: ${format_res}
+  next: end
+
+return_bad_request:
+  status: 400
+  return: ${format_res}
+  next: end
+
+return_incorrect_request:
+  status: 400
+  return: 'Missing Required Fields'
+  next: end
