@@ -13,9 +13,7 @@ SELECT
     dt.created_timestamp,
     dt.connected_dg_id,
     dt.connected_dg_name,
-    dt.model_s3_location,
-    dt.inference_routes,
-    dt.training_results,
+    jsonb_pretty(dt.training_results) AS training_results,
     CEIL(COUNT(*) OVER() / :page_size::DECIMAL) AS total_pages
 FROM
     models_metadata dt

@@ -51,7 +51,7 @@ extract_data:
     dataset_group: ${incoming.params.datasetGroup}
     training_status: ${incoming.params.trainingStatus}
     deployment_maturity: ${incoming.params.deploymentMaturity}
-  next: get_dataset_meta_data_overview
+  next: get_data_model_meta_data_overview
 
 get_data_model_meta_data_overview:
   call: http.post
@@ -68,6 +68,7 @@ get_data_model_meta_data_overview:
       dataset_group: ${dataset_group}
       training_status: ${training_status}
       deployment_maturity: ${deployment_maturity}
+      sort_type: ${sort_type}
   result: res_model
   next: check_status
 
