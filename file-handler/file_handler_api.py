@@ -42,6 +42,11 @@ class ImportJsonMajor(BaseModel):
     dgId: int
     dataset: list
 
+class CopyPayload(BaseModel):
+    dgId: int
+    newDgId: int
+    fileLocations: list
+
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
@@ -282,3 +287,36 @@ async def upload_and_copy(request: Request, importData: ImportJsonMajor):
         return JSONResponse(status_code=200, content=upload_success)
     else:
         raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+    
+@app.post("/datasetgroup/data/copy")
+async def upload_and_copy(request: Request, copyPayload: CopyPayload):
+    cookie = request.cookies.get("customJwtCookie")
+    await authenticate_user(f'customJwtCookie={cookie}')
+
+    dg_id = copyPayload.dgId
+    new_dg_id = copyPayload.newDgId
+    files = copyPayload.fileLocations
+
+    if len(files)>0:
+        local_storage_location = "temp_copy.json"
+    else:
+        print("Abort copying since sent file list does not have any entry.")
+        upload_success = UPLOAD_SUCCESS.copy()
+        upload_success["saved_file_path"] = ""
+        return JSONResponse(status_code=200, content=upload_success)
+    for file in files:
+        old_location = f"/dataset/{dg_id}/{file}"
+        new_location = f"/dataset/{new_dg_id}/{file}"
+        response = s3_ferry.transfer_file(local_storage_location, "FS", old_location, "S3")
+        response = s3_ferry.transfer_file(new_location, "S3", local_storage_location, "FS")
+
+        if response.status_code == 201:
+            print(f"Copying completed : {file}")
+        else:
+            print(f"Copying failed : {file}")
+            raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+    else:
+        os.remove(local_storage_location)
+        upload_success = UPLOAD_SUCCESS.copy()
+        upload_success["saved_file_path"] = f"/dataset/{new_dg_id}/"
+        return JSONResponse(status_code=200, content=upload_success)

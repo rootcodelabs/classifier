@@ -2,10 +2,10 @@ dataset_processor:
   trigger: off
   type: exec
   command: "../app/scripts/data_processor_exec.sh"
-  allowedEnvs: ["cookie","dgId","updateType","savedFilePath","patchPayload"]
+  allowedEnvs: ["cookie","dgId", "newDgId","updateType","savedFilePath","patchPayload"]
 
 data_validation:
   trigger: off
   type: exec
   command: "../app/scripts/data_validator_exec.sh"
-  allowedEnvs: ["cookie","dgId","updateType","savedFilePath","patchPayload"]
+  allowedEnvs: ["cookie","dgId", "newDgId","updateType","savedFilePath","patchPayload"]

@@ -226,7 +226,8 @@ services:
       - FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json/location
       - FILE_HANDLER_STOPWORDS_URL=http://file-handler:8000/datasetgroup/data/download/json/stopwords
       - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/import/chunk
-      - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/data?groupId=dgID&pageNum=1
+      - FILE_HANDLER_COPY_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/copy
+      - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/data?groupId=dgId&pageNum=1
       - SAVE_JSON_AGGREGRATED_DATA_URL=http://file-handler:8000/datasetgroup/data/import/json
       - DOWNLOAD_CHUNK_URL=http://file-handler:8000/datasetgroup/data/download/chunk
       - STATUS_UPDATE_URL=http://ruuter-private:8088/classifier/datasetgroup/update/preprocess/status
