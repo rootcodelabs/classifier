@@ -315,7 +315,8 @@ async def import_stop_words(request: Request, stopWordsFile: UploadFile = File(.
         await authenticate_user(f'customJwtCookie={cookie}')
 
         file_content = await stopWordsFile.read()
-        words_list = file_content.decode('utf-8').split(',')
+        
+        words_list = [word.strip() for word in file_content.decode('utf-8').split(',')]
 
         url = 'http://localhost:8088/classifier/datasetgroup/update/stop-words'
         headers = {
