@@ -27,6 +27,8 @@ UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
 CHUNK_UPLOAD_DIRECTORY = os.getenv("CHUNK_UPLOAD_DIRECTORY", "/shared/chunks")
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
+IMPORT_STOPWORDS_URL = os.getenv("IMPORT_STOPWORDS_URL")
+DELETE_STOPWORDS_URL = os.getenv("DELETE_STOPWORDS_URL")
 s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
@@ -318,7 +320,7 @@ async def import_stop_words(request: Request, stopWordsFile: UploadFile = File(.
         
         words_list = [word.strip() for word in file_content.decode('utf-8').split(',')]
 
-        url = 'http://localhost:8088/classifier/datasetgroup/update/stop-words'
+        url = IMPORT_STOPWORDS_URL
         headers = {
             'Content-Type': 'application/json',
             'Cookie': f'customJwtCookie={cookie}'
@@ -342,4 +344,44 @@ async def import_stop_words(request: Request, stopWordsFile: UploadFile = File(.
             raise HTTPException(status_code=response.status_code, detail="Failed to update stop words")
     except Exception as e:
         print(f"Error in import/stop-words: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/datasetgroup/data/delete/stop-words")
+async def delete_stop_words(request: Request, stopWordsFile: UploadFile = File(...)):
+    try:
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
+
+        file_content = await stopWordsFile.read()
+        words_list = [word.strip() for word in file_content.decode('utf-8').split(',')]
+
+        url = DELETE_STOPWORDS_URL
+        headers = {
+            'Content-Type': 'application/json',
+            'Cookie': f'customJwtCookie={cookie}'
+        }
+
+        response = requests.post(url, headers=headers, json={"stopWords": words_list})
+
+        if response.status_code == 200:
+            response_data = response.json()
+            if response_data['operationSuccessful']:
+                return response_data
+            elif response_data['nonexistent']:
+                nonexistent_items = response_data['nonexistentItems']
+                new_words_list = [word for word in words_list if word not in nonexistent_items]
+                if new_words_list:
+                    response = requests.post(url, headers=headers, json={"stopWords": new_words_list})
+                    return response.json()
+                else:
+                    return JSONResponse(
+                        status_code=400,
+                        content={
+                            "message": f"The following words are not in the list and cannot be deleted: {', '.join(nonexistent_items)}"
+                        }
+                    )
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to delete stop words")
+    except Exception as e:
+        print(f"Error in delete/stop-words: {e}")
         raise HTTPException(status_code=500, detail=str(e))
