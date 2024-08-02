@@ -23,14 +23,14 @@ const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({dgName,ver
         {isLatest &&(
         <Label type='success'>Latest</Label>
         )}
-         {status==="failed" &&(
+         {status==="Fail" &&(
         <Label type='error'>Failed</Label>
         )}
       </div>
     }
   >
     <div>
-      {status==="failed" ? (
+      {errorMessage? (
         <div className='text-center'>
          {errorMessage}
         </div>
