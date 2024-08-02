@@ -11,6 +11,9 @@ declaration:
       - field: dgId
         type: string
         description: "Body field 'dgId'"
+      - field: newDgId
+        type: string
+        description: "Body field 'newDgId'"
       - field: updateType
         type: string
         description: "Body field 'updateType'"
@@ -30,11 +33,30 @@ declaration:
 extract_request_data:
   assign:
     dg_id: ${incoming.body.dgId}
+    new_dg_id: ${incoming.body.newDgId}
     update_type: ${incoming.body.updateType}
     patch_payload: ${incoming.body.patchPayload}
     save_file_path: ${incoming.body.savedFilePath}
     validation_status: ${incoming.body.validationStatus}
     validation_errors: ${incoming.body.validationErrors}
+  next: check_request_type
+
+check_request_type:
+  switch:
+    - condition: ${update_type == 'minor'}
+      next:  assign_minor_type
+    - condition: ${update_type == 'patch'}
+      next: assign_patch_type
+  next: update_type_not_found
+
+assign_patch_type:
+  assign:
+    active_dg_id: ${incoming.body.dgId}
+  next: update_dataset_group_validation
+
+assign_minor_type:
+  assign:
+    active_dg_id: ${incoming.body.newDgId}
   next: update_dataset_group_validation
 
 update_dataset_group_validation:
@@ -42,7 +64,7 @@ update_dataset_group_validation:
   args:
     url: "[#CLASSIFIER_RESQL]/update-dataset-group-validation-data"
     body:
-      id: ${dg_id}
+      id: ${active_dg_id}
       validation_status: ${validation_status}
       validation_errors: ${JSON.stringify(validation_errors)}
   result: res
@@ -67,6 +89,7 @@ execute_cron_manager:
     query:
       cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}
+      newDgId: ${new_dg_id}
       updateType: ${update_type}
       savedFilePath: ${save_file_path}
       patchPayload: ${patch_payload}
@@ -76,7 +99,7 @@ execute_cron_manager:
 assign_success_response:
   assign:
     format_res: {
-      dgId: '${dg_id}',
+      dgId: '${active_dg_id}',
       operationSuccessful: true,
     }
   next: return_ok
@@ -84,7 +107,7 @@ assign_success_response:
 assign_fail_response:
   assign:
     format_res: {
-      dgId: '${dg_id}',
+      dgId: '${active_dg_id}',
       operationSuccessful: false,
     }
   next: return_bad_request
@@ -92,6 +115,11 @@ assign_fail_response:
 return_ok:
   status: 200
   return: ${format_res}
+  next: end
+
+update_type_not_found:
+  status: 400
+  return: "Update type not found"
   next: end
 
 return_bad_request:

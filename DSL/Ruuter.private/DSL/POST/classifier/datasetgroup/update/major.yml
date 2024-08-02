@@ -55,7 +55,22 @@ check_data_exist:
 assign_group_key:
   assign:
     group_key: ${res.response.body[0].groupKey}
-  next: snapshot_dataset_group
+  next: update_latest_in_old_version
+
+update_latest_in_old_version:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-latest-version-dataset-group"
+    body:
+      group_key: ${group_key}
+  result: res
+  next: check_latest_status
+
+check_latest_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: snapshot_dataset_group
+  next: assign_fail_response
 
 snapshot_dataset_group:
   call: http.post
