@@ -17,6 +17,12 @@ get_stop_words:
 check_status:
   switch:
     - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: check_data_exist
+  next: assign_fail_response
+
+check_data_exist:
+  switch:
+    - condition: ${res.response.body.length>0 && res.response.body[0].stopWordsArray !== null}
       next: assign_success_response
   next: assign_fail_response
 
