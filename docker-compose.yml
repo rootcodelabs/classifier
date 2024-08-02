@@ -226,7 +226,7 @@ services:
       - GET_VALIDATION_SCHEMA=http://ruuter-private:8088/classifier/datasetgroup/schema
       - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json
       - FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json/location
-      - FILE_HANDLER_STOPWORDS_URL=http://file-handler:8000/datasetgroup/data/download/json/stopwords
+      - GET_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/stop-words
       - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/import/chunk
       - FILE_HANDLER_COPY_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/copy
       - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/data?groupId=dgId&pageNum=1
@@ -237,6 +237,7 @@ services:
       - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
       - S3_BUCKET_NAME=esclassifier-test
       - S3_REGION_NAME=eu-west-1
+      - PARAPHRASE_API_URL=http://data-enrichment-api:8005/paraphrase
     ports:
       - "8001:8001"
     networks:
@@ -304,6 +305,17 @@ services:
     volumes:
       - /app/node_modules
       - ./notification-server:/app
+    networks:
+      - bykstack
+
+  data-enrichment-api:
+    container_name: data-enrichment-api
+    image: data-enrichment-api
+    build:
+      context: ./data_enrichment
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
     networks:
       - bykstack
 

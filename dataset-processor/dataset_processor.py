@@ -3,13 +3,12 @@ import os
 import json
 import urllib.parse
 import requests
-# from data_enrichment.data_enrichment import DataEnrichment
 from constants import *
 
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 GET_VALIDATION_SCHEMA = os.getenv("GET_VALIDATION_SCHEMA")
 FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
-FILE_HANDLER_STOPWORDS_URL = os.getenv("FILE_HANDLER_STOPWORDS_URL")
+GET_STOPWORDS_URL = os.getenv("GET_STOPWORDS_URL")
 FILE_HANDLER_IMPORT_CHUNKS_URL = os.getenv("FILE_HANDLER_IMPORT_CHUNKS_URL")
 FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL")
 GET_PAGE_COUNT_URL = os.getenv("GET_PAGE_COUNT_URL")
@@ -17,10 +16,10 @@ SAVE_JSON_AGGREGRATED_DATA_URL = os.getenv("SAVE_JSON_AGGREGRATED_DATA_URL")
 DOWNLOAD_CHUNK_URL = os.getenv("DOWNLOAD_CHUNK_URL")
 STATUS_UPDATE_URL = os.getenv("STATUS_UPDATE_URL")
 FILE_HANDLER_COPY_CHUNKS_URL = os.getenv("FILE_HANDLER_COPY_CHUNKS_URL")
+PARAPHRASE_API_URL = os.getenv("PARAPHRASE_API_URL")
 
 class DatasetProcessor:
     def __init__(self):
-        # self.data_enricher = DataEnrichment()
         pass
 
     def check_and_convert(self, data):
@@ -44,7 +43,7 @@ class DatasetProcessor:
             return True
         return False
 
-    def _is_single_sheet_structure(self,data):
+    def _is_single_sheet_structure(self, data):
         if isinstance(data, list):
             for item in data:
                 if not isinstance(item, dict) or len(item) <= 1:
@@ -52,50 +51,54 @@ class DatasetProcessor:
             return True
         return False
 
-
     def _convert_to_single_sheet_structure(self, data):
         result = []
         for value in data.values():
             result.extend(value)
         return result
 
-    def remove_stop_words(self, data, stop_words):
-        try:
-            stop_words_set = set(stop_words)
-            stop_words_pattern = re.compile(r'\b(' + r'|'.join(re.escape(word) for word in stop_words_set) + r')\b', re.IGNORECASE)
-
-            def clean_text(text):
-                return stop_words_pattern.sub('', text).strip()
-
-            cleaned_data = []
-            for entry in data:
-                cleaned_entry = {key: clean_text(value) if isinstance(value, str) else value for key, value in entry.items()}
-                cleaned_data.append(cleaned_entry)
-
-            return cleaned_data
-        except Exception as e:
-            print(f"Error while removing Stop Words : {e}")
-            return None
-    
     def enrich_data(self, data, selected_fields, record_count):
         try:
             enriched_data = []
             for entry in data:
                 enriched_entry = {}
+                enrich_server = True
                 for key, value in entry.items():
                     if isinstance(value, str) and (key in selected_fields):
-                        # enriched_value = self.data_enricher.enrich_data(value, num_return_sequences=1, language_id='en')
-                        enriched_value = ["enrichupdate"]
-                        enriched_entry[key] = enriched_value[0] if enriched_value else value
+                        enriched_value = self._get_paraphrases(value)
+                        if enriched_value != []:
+                            enriched_entry[key] = enriched_value[0]
+                        else:
+                            enrich_server = False
+                            break
                     else:
                         enriched_entry[key] = value
-                record_count = record_count+1
-                enriched_entry["rowId"] = record_count
-                enriched_data.append(enriched_entry)
+                if enrich_server:
+                    record_count += 1
+                    enriched_entry["rowId"] = record_count
+                    enriched_data.append(enriched_entry)
             return enriched_data
         except Exception as e:
-            print(f"Internal Error occured while data enrichment : {e}")
+            print(f"Internal Error occurred while data enrichment : {e}")
             return None
+
+    def _get_paraphrases(self, text):
+        payload = {
+            "text": text,
+            "num_return_sequences": 1
+        }
+        try:
+            response = requests.post(PARAPHRASE_API_URL, json=payload)
+            if response.status_code == 200:
+                paraphrases = response.json().get("paraphrases", [])
+                return paraphrases
+            else:
+                print(f"Failed to get paraphrases: {response.status_code}, {response.text}")
+                return []
+        except Exception as e:
+            print(f"Error calling paraphrase API: {e}")
+            return []
+
     
     def chunk_data(self, data, chunk_size=5):
         try:
@@ -213,20 +216,40 @@ class DatasetProcessor:
             print(f"An error occurred: {e}")
             return None
         
-    def get_stopwords(self, dg_id, custom_jwt_cookie):
-        # params = {'dgId': dg_id}
-        # headers = {
-        #     'cookie': f'customJwtCookie={custom_jwt_cookie}'
-        # }
+    def get_stopwords(self, custom_jwt_cookie):
+        headers = {
+            'Cookie': f'customJwtCookie={custom_jwt_cookie}'
+        }
 
-        # try:
-        #     response = requests.get(FILE_HANDLER_STOPWORDS_URL, params=params, headers=headers)
-        #     response.raise_for_status()
-        #     return response.json()
         try:
-            return {"is","her","okay"}
+            response = requests.get(self.GET_STOPWORDS_URL, headers=headers)
+            response.raise_for_status()
+            response_data = response.json()
+            if response_data.get("operationSuccessful", False):
+                return response_data.get("stopwords", [])
+            else:
+                return []
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
+            return []
+
+        
+    def remove_stop_words(self, data, stop_words):
+        try:
+            stop_words_set = set(stop_words)
+            stop_words_pattern = re.compile(r'\b(' + r'|'.join(re.escape(word) for word in stop_words_set) + r')\b', re.IGNORECASE)
+
+            def clean_text(text):
+                return stop_words_pattern.sub('', text).strip()
+
+            cleaned_data = []
+            for entry in data:
+                cleaned_entry = {key: clean_text(value) if isinstance(value, str) else value for key, value in entry.items()}
+                cleaned_data.append(cleaned_entry)
+
+            return cleaned_data
+        except Exception as e:
+            print(f"Error while removing Stop Words : {e}")
             return None
         
     def get_page_count(self, dg_id, custom_jwt_cookie):
@@ -349,7 +372,7 @@ class DatasetProcessor:
                         
                         if enriched_data is not None:
                             print("Data enrichment successful")
-                            stop_words = self.get_stopwords(newDgId, cookie)
+                            stop_words = self.get_stopwords(cookie)
                             if stop_words is not None:
                                 print("Stop words retrieved successfully")
                                 print(agregated_dataset)
@@ -417,7 +440,7 @@ class DatasetProcessor:
                             enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
                             if enriched_data is not None:
                                 print("Minor update data enrichment successful")
-                                stop_words = self.get_stopwords(newDgId, cookie)
+                                stop_words = self.get_stopwords(cookie)
                                 if stop_words is not None:
                                     combined_new_dataset = structured_data + enriched_data
                                     print("Stop words for minor update retrieved successfully")
@@ -484,7 +507,7 @@ class DatasetProcessor:
             data_payload = json.loads(decoded_string)
             if (data_payload["editedData"]!=[]):
                 print("Handling Patch update")
-                stop_words = self.get_stopwords(dgId, cookie)
+                stop_words = self.get_stopwords(cookie)
                 if stop_words is not None:
                     print("Stop words for patch update retrieved successfully")
                     cleaned_patch_payload = self.remove_stop_words(data_payload["editedData"], stop_words)

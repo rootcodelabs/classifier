@@ -8,6 +8,8 @@ RUN pip install --no-cache-dir -r enrichment_requirements.txt
 
 COPY . .
 
-EXPOSE 8002
+RUN python download_models.py
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
+EXPOSE 8005
+
+CMD ["uvicorn", "data_enrichment_api:app", "--host", "0.0.0.0", "--port", "8005"]

@@ -3,7 +3,7 @@ from transformers import MarianMTModel, MarianTokenizer
 from typing import Dict, Tuple
 
 class Translator:
-    def __init__(self, config_path: str = "data_enrichment/config_files/translator_config.json"):
+    def __init__(self, config_path: str = "config_files/translator_config.json"):
         with open(config_path, 'r') as file:
             config = json.load(file)
         

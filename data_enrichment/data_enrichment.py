@@ -1,5 +1,5 @@
-from data_enrichment.translator import Translator
-from data_enrichment.paraphraser import Paraphraser
+from translator import Translator
+from paraphraser import Paraphraser
 from langdetect import detect
 from typing import List, Optional
 
@@ -8,7 +8,7 @@ class DataEnrichment:
         self.translator = Translator()
         self.paraphraser = Paraphraser()
 
-    def enrich_data(self, text: str, num_return_sequences: int = None, language_id: Optional[str] = None) -> List[str]:
+    def enrich_data(self, text: str, num_return_sequences: int = 1, language_id: Optional[str] = None) -> List[str]:
         supported_languages = ['en', 'et', 'ru', 'pl', 'fi']
 
         if language_id:

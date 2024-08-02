@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from data_enrichment.data_enrichment import DataEnrichment
+from data_enrichment import DataEnrichment
 from typing import List, Optional
 
 app = FastAPI()
@@ -8,7 +8,7 @@ data_enrichment = DataEnrichment()
 
 class ParaphraseRequest(BaseModel):
     text: str
-    num_return_sequences: Optional[int] = None
+    num_return_sequences: Optional[int] = 1
     language_id: Optional[str] = None
 
 class ParaphraseResponse(BaseModel):
@@ -30,4 +30,4 @@ def paraphrase(request: ParaphraseRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8500)
+    uvicorn.run(app, host="0.0.0.0", port=8005)
