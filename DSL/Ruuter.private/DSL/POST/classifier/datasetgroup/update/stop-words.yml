@@ -33,8 +33,14 @@ get_stop_words:
 check_stop-words_status:
   switch:
     - condition: ${200 <= res_stop_words.response.statusCodeValue && res_stop_words.response.statusCodeValue < 300}
-      next: get_duplicate_stop_words
+      next: check_data_exist
   next: assign_fail_response
+
+check_data_exist:
+  switch:
+    - condition: ${res_stop_words.response.body.length>0 && res_stop_words.response.body[0].stopWordsArray !== null}
+      next: get_duplicate_stop_words
+  next: insert_stop_words
 
 get_duplicate_stop_words:
   call: http.post
