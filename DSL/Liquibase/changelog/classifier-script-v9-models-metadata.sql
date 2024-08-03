@@ -1,7 +1,7 @@
 -- liquibase formatted sql
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset1
-CREATE TYPE Maturity_Label AS ENUM ('development', 'staging', 'production');
+CREATE TYPE Maturity_Label AS ENUM ('development', 'staging', 'production ready');
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset2
 CREATE TYPE Deployment_Env AS ENUM ('jira', 'outlook', 'pinal', 'testing', 'undeployed');
@@ -48,5 +48,5 @@ INSERT INTO model_configurations (base_models, deployment_platforms, maturity_la
 (
     ARRAY['xlnet', 'roberta', 'albert']::Base_Models[],
     ARRAY['jira', 'outlook', 'pinal', 'testing', 'undeployed']::Deployment_Env[],
-    ARRAY['development', 'staging', 'production']::Maturity_Label[]
+    ARRAY['development', 'staging', 'production ready']::Maturity_Label[]
 );
