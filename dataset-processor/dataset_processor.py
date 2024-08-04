@@ -110,7 +110,7 @@ class DatasetProcessor:
     def copy_chunked_datafiles(self, dgId, newDgId, cookie, exsistingChunks=None):
         try:
             headers = {
-                'cookie': f'customJwtCookie={cookie}',
+                'cookie': cookie,
                 'Content-Type': 'application/json'
             }
 
@@ -141,7 +141,7 @@ class DatasetProcessor:
     
     def save_chunked_data(self, chunked_data, cookie, dgId, exsistingChunks=0):
         headers = {
-            'cookie': f'customJwtCookie={cookie}',
+            'cookie': cookie,
             'Content-Type': 'application/json'
         }
 
@@ -218,11 +218,11 @@ class DatasetProcessor:
         
     def get_stopwords(self, custom_jwt_cookie):
         headers = {
-            'Cookie': f'customJwtCookie={custom_jwt_cookie}'
+            'Cookie': custom_jwt_cookie
         }
 
         try:
-            response = requests.get(self.GET_STOPWORDS_URL, headers=headers)
+            response = requests.get(GET_STOPWORDS_URL, headers=headers)
             response.raise_for_status()
             response_data = response.json()
             if response_data.get("operationSuccessful", False):
@@ -271,7 +271,7 @@ class DatasetProcessor:
     
     def save_aggregrated_data(self, dgId, cookie, aggregratedData):
         headers = {
-            'cookie': f'customJwtCookie={cookie}',
+            'cookie': cookie,
             'Content-Type': 'application/json'
         }
 
@@ -291,7 +291,7 @@ class DatasetProcessor:
     def download_chunk(self, dgId, cookie, pageId):
         params = {'dgId': dgId, 'pageId': pageId}
         headers = {
-            'cookie': f'customJwtCookie={cookie}'
+            'cookie': cookie
         }
 
         try:
