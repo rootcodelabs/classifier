@@ -1,0 +1,380 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Description placeholder for 'UPDATE'"
+  method: post
+  accepts: json
+  returns: json
+  namespace: classifier
+  allowlist:
+    body:
+      - field: modelId
+        type: number
+        description: "Body field 'modelId'"
+      - field: connectedDgId
+        type: number
+        description: "Body field 'connectedDgId'"
+      - field: connectedDgName
+        type: string
+        description: "Body field 'connectedDgName'"
+      - field: deploymentEnv
+        type: string
+        description: "Body field 'deploymentEnv'"
+      - field: baseModels
+        type: array
+        description: "Body field 'baseModels'"
+      - field: maturityLabel
+        type: string
+        description: "Body field 'maturityLabel'"
+      - field: updateType
+        type: string
+        description: "Body field 'updateType'"
+    headers:
+      - field: cookie
+        type: string
+        description: "Cookie field"
+
+extract_request_data:
+  assign:
+    model_id: ${incoming.body.modelId}
+    connected_dg_id: ${incoming.body.connectedDgId}
+    connected_dg_name: ${incoming.body.connectedDgName}
+    deployment_env: ${incoming.body.deploymentEnv}
+    base_models: ${incoming.body.baseModels}
+    maturity_label: ${incoming.body.maturityLabel}
+    update_type: ${incoming.body.updateType}
+  next: check_event_type
+
+check_event_type:
+  switch:
+    - condition: ${update_type == 'major'}
+      next: get_data_model_major_data
+    - condition: ${update_type == 'minor'}
+      next: get_data_model_minor_data
+    - condition: ${update_type == 'maturityLabel'}
+      next: check_for_maturity_request_data
+  next: return_type_found
+
+get_data_model_major_data:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-data-model-major-data"
+    body:
+      id: ${model_id}
+  result: res
+  next: check_data_model_major_status
+
+check_data_model_major_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: check_data_model_major_exist
+  next: return_not_found
+
+check_data_model_major_exist:
+  switch:
+    - condition: ${res.response.body.length>0}
+      next: assign_major_data
+  next: return_not_found
+
+assign_major_data:
+  assign:
+    group_key: ${res.response.body[0].modelGroupKey}
+    deployment_env_prev: ${res.response.body[0].deploymentEnv}
+    base_models_prev: ${res.response.body[0].baseModels}
+    maturity_label_prev: ${res.response.body[0].maturityLabel}
+  next: update_latest_in_old_versions
+
+update_latest_in_old_versions:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-latest-version-data-model"
+    body:
+      group_key: ${group_key}
+  result: res
+  next: check_latest_status
+
+check_latest_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: check_event_type_for_latest_version_again
+  next: assign_fail_response
+
+check_event_type_for_latest_version_again:
+  switch:
+    - condition: ${update_type == 'major'}
+      next: snapshot_major_data_model
+    - condition: ${update_type == 'minor'}
+      next: snapshot_minor_data_model
+  next: return_type_found
+
+snapshot_major_data_model:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/snapshot-major-data-model"
+    body:
+      id: ${model_id}
+      group_key: ${group_key}
+      connected_dg_id: ${connected_dg_id}
+      connected_dg_name: ${connected_dg_name}
+      deployment_env: ${deployment_env == null ? deployment_env_prev :deployment_env }
+      base_models: ${base_models == null ? base_models_prev :base_models}
+      maturity_label: ${maturity_label == null ? 'development' :maturity_label}
+  result: res
+  next: check_snapshot_status
+
+check_major_previous_deployment_env:
+  switch:
+    - condition: ${deployment_env == deployment_env_prev && (deployment_env_prev == 'jira' || deployment_env_prev == 'outlook' || deployment_env_prev == 'pinal')}
+      next: update_data_model_deployment_env
+  next: get_major_model_data_by_id
+
+get_data_model_minor_data:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-data-model-minor-data"
+    body:
+      id: ${model_id}
+  result: res
+  next: check_data_model_status
+
+check_data_model_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: check_data_exist
+  next: return_not_found
+
+check_data_exist:
+  switch:
+    - condition: ${res.response.body.length>0}
+      next: assign_minor_day
+  next: return_not_found
+
+assign_minor_day:
+  assign:
+    group_key: ${res.response.body[0].modelGroupKey}
+    major_version: ${res.response.body[0].majorVersion}
+    deployment_env_prev: ${res.response.body[0].deploymentEnv}
+    base_models_prev: ${res.response.body[0].baseModels}
+    maturity_label_prev: ${res.response.body[0].maturityLabel}
+  next: check_minor_data_request_status
+
+check_minor_data_request_status:
+  switch:
+    - condition: ${deployment_env == null && (deployment_env_prev == 'jira' || deployment_env_prev == 'outlook' || deployment_env_prev == 'pinal')}
+      next: assign_previous_deployment_env_and_update_old
+    - condition: ${deployment_env == null && (deployment_env_prev == 'testing' || deployment_env_prev == 'undeployed')}
+      next: assign_previous_deployment_env
+    - condition: ${deployment_env !== null &&  deployment_env == deployment_env_prev && (deployment_env_prev == 'jira' || deployment_env_prev == 'outlook' || deployment_env_prev == 'pinal')}
+      next: assign_new_deployment_env_and_update_old
+    - condition: ${deployment_env !== null &&  deployment_env !== deployment_env_prev}
+      next: assign_new_deployment_env
+  next: assign_fail_response
+
+assign_new_deployment_env:
+  assign:
+    deployment_env_data: ${deployment_env}
+  next: update_latest_in_old_versions
+
+assign_previous_deployment_env_and_update_old:
+  assign:
+    deployment_env_data: ${deployment_env_prev}
+  next: update_data_model_deployment_env
+
+assign_new_deployment_env_and_update_old:
+  assign:
+    deployment_env_data: ${deployment_env}
+  next: update_data_model_deployment_env
+
+assign_previous_deployment_env:
+  assign:
+    deployment_env_data: ${deployment_env_prev}
+  next: update_latest_in_old_versions
+
+update_data_model_deployment_env:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-data-model-deployment-env"
+    body:
+      id: ${model_id}
+      deployment_env: testing
+  result: res
+  next: check_data_model_deployment_env_status
+
+check_data_model_deployment_env_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: check_event_type_again
+  next: assign_fail_response
+
+check_event_type_again:
+  switch:
+    - condition: ${update_type == 'major'}
+      next: get_major_model_data_by_id
+    - condition: ${update_type == 'minor'}
+      next: update_latest_in_old_versions
+  next: return_type_found
+
+get_major_model_data_by_id:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-data-model-basic-metadata-by-id"
+    body:
+      id: ${new_model_id}
+  result: res_model_id
+  next: check_model_status
+
+check_model_status:
+  switch:
+    - condition: ${200 <= res_model_id.response.statusCodeValue && res_model_id.response.statusCodeValue < 300}
+      next: check_model_exist
+  next: assign_fail_response
+
+check_model_exist:
+  switch:
+    - condition: ${res_model_id.response.body.length>0}
+      next: update_dataset_group_connected_model
+  next: return_not_found
+
+update_dataset_group_connected_model:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-dataset-group-connected-models"
+    body:
+      id: ${connected_dg_id}
+      connected_model: ${JSON.stringify(res_model_id.response.body[0])}
+  result: res_dataset
+  next: check_connected_model_updated_status
+
+check_connected_model_updated_status:
+  switch:
+    - condition: ${200 <= res_dataset.response.statusCodeValue && res_dataset.response.statusCodeValue < 300}
+      next: execute_cron_manager
+  next: assign_fail_response
+
+snapshot_minor_data_model:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/snapshot-minor-data-model"
+    body:
+      id: ${model_id}
+      group_key: ${group_key}
+      major_version: ${major_version}
+      deployment_env: ${deployment_env_data}
+      base_models: ${base_models == null ? base_models_prev :base_models}
+      maturity_label: ${maturity_label == null ? maturity_label_prev :maturity_label}
+  result: res
+  next: check_snapshot_status
+
+check_snapshot_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: check_updated_data_exist
+  next: assign_fail_response
+
+check_updated_data_exist:
+  switch:
+    - condition: ${res.response.body.length>0}
+      next: assign_new_model_id
+  next: return_not_found
+
+assign_new_model_id:
+  assign:
+    new_model_id: ${res.response.body[0].id}
+  next: check_event_type_again_again
+
+check_event_type_again_again:
+  switch:
+    - condition: ${update_type == 'major'}
+      next: check_major_previous_deployment_env
+    - condition: ${update_type == 'minor'}
+      next: execute_cron_manager
+  next: return_type_found
+
+execute_cron_manager:
+  call: reflect.mock
+  args:
+    url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_model/model_trainer"
+    query:
+      cookie: ${incoming.headers.cookie}
+      model_id: ${model_id}
+      new_model_id: ${new_model_id}
+      updateType: ${update_type}
+  result: res
+  next: assign_success_response
+
+check_for_maturity_request_data:
+  switch:
+    - condition: ${model_id !== null && maturity_label !== null}
+      next: update_maturity_data_model
+  next: return_incorrect_request
+
+update_maturity_data_model:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-data-model-maturity-label"
+    body:
+      id: ${model_id}
+      maturity_label: ${maturity_label}
+  result: res_update
+  next: check_model_maturity_update_status
+
+check_model_maturity_update_status:
+  switch:
+    - condition: ${200 <= res_update.response.statusCodeValue && res_update.response.statusCodeValue < 300}
+      next: assign_maturity_success_response
+  next: assign_maturity_fail_response
+
+assign_maturity_success_response:
+  assign:
+    format_res: {
+      modelId: '${model_id}',
+      operationSuccessful: true,
+    }
+  next: return_ok
+
+assign_maturity_fail_response:
+  assign:
+    format_res: {
+      modelId: '',
+      operationSuccessful: false,
+    }
+  next: return_bad_request
+
+assign_success_response:
+  assign:
+    format_res: {
+      model_id: '${model_id}',
+      new_model_id: '${new_model_id}',
+      operationSuccessful: true,
+    }
+  next: return_ok
+
+assign_fail_response:
+  assign:
+    format_res: {
+      model_id: '${model_id}',
+      new_model_id: '',
+      operationSuccessful: false,
+    }
+  next: return_bad_request
+
+return_ok:
+  status: 200
+  return: ${format_res}
+  next: end
+
+return_not_found:
+  status: 400
+  return: "Data Group Not Found"
+  next: end
+
+return_type_found:
+  status: 400
+  return: "Update Type Not Found"
+  next: end
+
+return_bad_request:
+  status: 400
+  return: ${format_res}
+  next: end
+
