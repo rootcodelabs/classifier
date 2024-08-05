@@ -1,5 +1,4 @@
 import { FC, useId } from 'react';
-
 import './FormRadios.scss';
 
 type FormRadiosType = {
@@ -11,8 +10,9 @@ type FormRadiosType = {
     value: string;
   }[];
   onChange: (selectedValue: string) => void;
+  selectedValue?: string; // New prop for the selected value
   isStack?: boolean;
-  error?:string
+  error?: string;
 };
 
 const FormRadios: FC<FormRadiosType> = ({
@@ -21,8 +21,9 @@ const FormRadios: FC<FormRadiosType> = ({
   hideLabel,
   items,
   onChange,
+  selectedValue, // Use selectedValue to control the selected radio button
   isStack = false,
-  error
+  error,
 }) => {
   const id = useId();
 
@@ -41,6 +42,7 @@ const FormRadios: FC<FormRadiosType> = ({
                   name={name}
                   id={`${id}-${item.value}`}
                   value={item.value}
+                  checked={selectedValue === item.value} // Check if the radio button should be selected
                   onChange={(event) => {
                     onChange(event.target.value);
                   }}

@@ -1,57 +1,22 @@
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FormCheckboxes, FormInput, FormRadios, FormSelect, Label } from 'components';
-import { DatasetGroup } from 'types/datasetGroups';
-import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createDatasetGroup } from 'services/datasets';
-import { useDialog } from 'hooks/useDialog';
-import { getCreateOptions } from 'services/data-models';
 import { customFormattedArray, formattedArray } from 'utils/commonUtilts';
-import { validateDataModel } from 'utils/dataModelsUtils';
+import { useQuery } from '@tanstack/react-query';
+import { getCreateOptions } from 'services/data-models';
 
 type DataModelFormType = {
   dataModel: any;
-  handleChange:any
- 
+  handleChange: (name: string, value: any) => void;
+  errors: Record<string, string>;
 };
-const DataModelForm: FC<DataModelFormType>  = ({dataModel,handleChange}) => {
-  const { t } = useTranslation();
-  const { open } = useDialog();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('');
-  const navigate = useNavigate();
 
+const DataModelForm: FC<DataModelFormType> = ({ dataModel, handleChange, errors }) => {
+  const { t } = useTranslation();
+  
   const { data: createOptions } = useQuery(['datamodels/create-options'], () =>
     getCreateOptions()
   );
-
-  const [errors, setErrors] = useState({
-    modelName: '',
-    dgName: '',
-    platform: '',
-    baseModels: '',
-    maturity: '',
-  });
-
-  const validateData = () => {
-    
-    setErrors(validateDataModel(dataModel));
-  };
-
-  const createDatasetGroupMutation = useMutation({
-    mutationFn: (data: DatasetGroup) => createDatasetGroup(data),
-    onSuccess: async (response) => {
-      setIsModalOpen(true);
-      setModalType('SUCCESS');
-    },
-    onError: () => {
-      open({
-        title: 'Dataset Group Creation Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
-      });
-    },
-  });
 
   return (
     <div>
@@ -60,70 +25,65 @@ const DataModelForm: FC<DataModelFormType>  = ({dataModel,handleChange}) => {
           <FormInput
             name="modelName"
             label="Model Name"
-            defaultValue={dataModel.modelName}
-            onChange={(e) =>
-              handleChange('modelName', e.target.value)
-            }
-            error={errors.modelName}
-          ></FormInput>
+            value={dataModel.modelName}
+            onChange={(e) => handleChange('modelName', e.target.value)}
+            error={errors?.modelName}
+          />
         </div>
         <div className="grey-card">
           Model Version <Label type="success">V1.0</Label>
         </div>
       </div>
+      
       {createOptions && (
         <div>
           <div className="title-sm">Select Dataset Group</div>
           <div className="grey-card">
             <FormSelect
               name="dgName"
-              options={customFormattedArray(
-                createOptions?.dataset_groups,
-                'group_name'
-              )}
+              options={customFormattedArray(createOptions?.dataset_groups, 'group_name')}
               label=""
-              onSelectionChange={(selection) =>
-                handleChange('dgName', selection.value)
-              }
-              error={errors.dgName}
-            ></FormSelect>
+              onSelectionChange={(selection) => handleChange('dgName', selection.value)}
+              error={errors?.dgName}
+              value={dataModel?.dgName}
+            />
           </div>
-          <div className="title-sm">Select Deployment Platform</div>
+          
+          <div className="title-sm">Select Base Models</div>
           <div className="grey-card flex-grid">
             <FormCheckboxes
               isStack={false}
               items={formattedArray(createOptions?.base_models)}
-              name="dataset"
+              name="baseModels"
               label=""
-              onValuesChange={(values) =>
-                handleChange('baseModels', values?.dataset)
-              }
-              error={errors.baseModels}
-            ></FormCheckboxes>
+              onValuesChange={(values) => handleChange('baseModels', values.baseModels)}
+              error={errors?.baseModels}
+              selectedValues={dataModel?.baseModels}
+            />
           </div>
+          
           <div className="title-sm">Select Deployment Platform</div>
           <div className="grey-card">
             <FormRadios
               items={formattedArray(createOptions?.deployment_platforms)}
               label=""
               name="platform"
-              onChange={(value) =>
-                handleChange('platform', value)
-              }
-              error={errors.platform}
-            ></FormRadios>
+              onChange={(value) => handleChange('platform', value)}
+              error={errors?.platform}
+              selectedValue={dataModel?.platform}
+            />
           </div>
+          
           <div className="title-sm">Select Maturity Label</div>
           <div className="grey-card">
             <FormRadios
               items={formattedArray(createOptions?.maturity_labels)}
               label=""
               name="maturity"
-              onChange={(value) =>
-                handleChange('maturity', value)
-              }
-              error={errors.maturity}
-            ></FormRadios>
+              onChange={(value) => handleChange('maturity', value)}
+              error={errors?.maturity}
+              selectedValue={dataModel?.maturity}
+            />
           </div>
         </div>
       )}

@@ -57,6 +57,7 @@ const CreateDataModel: FC = () => {
   });
 
   const validateData = () => {
+    console.log(dataModel);
     
     setErrors(validateDataModel(dataModel));
   };
