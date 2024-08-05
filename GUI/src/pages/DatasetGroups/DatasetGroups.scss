@@ -38,5 +38,12 @@
   padding: 20px 200px;
   text-align: center;
   color: #cf0000;
+}
 
+.footer-button-group {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
 }

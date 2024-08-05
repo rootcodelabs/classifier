@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useEffect, useState } from 'react';
+import { FC, MouseEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -16,6 +16,9 @@ import { Icon } from 'components';
 import type { MenuItem } from 'types/mainNavigation';
 import './MainNavigation.scss';
 import apiDev from 'services/api-dev';
+import { userManagementEndpoints } from 'utils/endpoints';
+import { integrationQueryKeys } from 'utils/queryKeys';
+import { ROLES } from 'enums/roles';
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -74,99 +77,76 @@ const MainNavigation: FC = () => {
     },
   ];
 
-  const getUserRole = () => {
-    apiDev
-      .get(`/accounts/user-role`)
-      .then((res: any) => {
-        const filteredItems =
-          items.filter((item) => {
-            const role = res?.data?.response[0];
-
-            switch (role) {
-              case 'ROLE_ADMINISTRATOR':
-                return item.id;
-              case 'ROLE_MODEL_TRAINER':
-                return (
-                  item.id !== 'userManagement' && item.id !== 'integration'
-                );
-              case 'ROLE_UNAUTHENTICATED':
-                return null;
-            }
-          }) ?? [];
-        setMenuItems(filteredItems);
-      })
-      .catch((error: any) => console.log(error));
+  const filterItemsByRole = (role: string, items: MenuItem[]) => {
+    return items?.filter((item) => {
+      switch (role) {
+        case ROLES.ROLE_ADMINISTRATOR:
+          return item?.id;
+        case ROLES.ROLE_MODEL_TRAINER:
+          return item?.id !== 'userManagement' && item?.id !== 'integration';
+        case 'ROLE_UNAUTHENTICATED':
+          return false;
+        default:
+          return false;
+      }
+    });
   };
 
-  useEffect(() => {
-    getUserRole();
-  }, []);
-
-  useQuery({
-    queryKey: ['/accounts/user-role', 'prod'],
-    onSuccess: (res: any) => {      
-      const filteredItems =
-          items.filter((item) => {
-            const role = res?.response[0];
-
-            switch (role) {
-              case 'ROLE_ADMINISTRATOR':
-                return item.id;
-              case 'ROLE_MODEL_TRAINER':
-                return (
-                  item.id !== 'userManagement' && item.id !== 'integration'
-                );
-              case 'ROLE_UNAUTHENTICATED':
-                return null;
-            }
-          }) ?? [];
-        setMenuItems(filteredItems);
+  useQuery(integrationQueryKeys.USER_ROLES(), {
+    queryFn: async () => {
+      const res = await apiDev.get(userManagementEndpoints.FETCH_USER_ROLES());
+      return res?.data?.response;
+    },
+    onSuccess: (res) => {
+      const role = res[0];
+      const filteredItems = filterItemsByRole(role, items);
+      setMenuItems(filteredItems);
+    },
+    onError: (error) => {
+      console.error('Error fetching user roles:', error);
     },
   });
-
-
   const location = useLocation();
   const [navCollapsed, setNavCollapsed] = useState(false);
 
   const handleNavToggle = (event: MouseEvent) => {
     const isExpanded =
-      event.currentTarget.getAttribute('aria-expanded') === 'true';
-    event.currentTarget.setAttribute(
+      event?.currentTarget?.getAttribute('aria-expanded') === 'true';
+    event?.currentTarget?.setAttribute(
       'aria-expanded',
       isExpanded ? 'false' : 'true'
     );
   };
 
   const renderMenuTree = (menuItems: MenuItem[]) => {
-    return menuItems.map((menuItem) => (
-      <li key={menuItem.label}>
-        {menuItem.children ? (
+    return menuItems?.map((menuItem) => (
+      <li key={menuItem?.label}>
+        {menuItem?.children ? (
           <div>
             <button
               className={clsx('nav__toggle', {
                 'nav__toggle--icon': !!menuItem.id,
               })}
               aria-expanded={
-                menuItem.path && location.pathname.includes(menuItem.path)
+                menuItem?.path && location?.pathname?.includes(menuItem?.path)
                   ? 'true'
                   : 'false'
               }
               onClick={handleNavToggle}
             >
-              {/* {menuItem.id && ( */}
               <Icon icon={menuItem?.icon} />
-              <span>{menuItem.label}</span>
+              <span>{menuItem?.label}</span>
               <Icon icon={<MdKeyboardArrowDown />} />
             </button>
             <ul className="nav__submenu">
-              {renderMenuTree(menuItem.children)}
+              {renderMenuTree(menuItem?.children)}
             </ul>
           </div>
         ) : (
-          <NavLink to={menuItem.path ?? '#'}>
+          <NavLink to={menuItem?.path ?? '#'}>
             {' '}
             <Icon icon={menuItem?.icon} />
-            {menuItem.label}
+            {menuItem?.label}
           </NavLink>
         )}
       </li>

@@ -16,7 +16,7 @@ import yaml
 import pandas as pd
 from typing import List
 from io import BytesIO, TextIOWrapper
-
+from dataset_deleter import DatasetDeleter
 
 app = FastAPI()
 
@@ -34,6 +34,7 @@ RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
 IMPORT_STOPWORDS_URL = os.getenv("IMPORT_STOPWORDS_URL")
 DELETE_STOPWORDS_URL = os.getenv("DELETE_STOPWORDS_URL")
+DELETE_CONFIRMATION_URL = os.getenv("DELETE_CONFIRMATION_URL")
 s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
@@ -191,7 +192,10 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
 
 @app.get("/datasetgroup/data/download/json/location")
 async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
+    print("$$$")
+    print(request.cookies.get("customJwtCookie"))
     cookie = request.cookies.get("customJwtCookie")
+
     await authenticate_user(f'customJwtCookie={cookie}')
 
     print(saveLocation)
@@ -213,6 +217,9 @@ async def download_and_convert(request: Request, saveLocation:str, background_ta
 
 @app.post("/datasetgroup/data/import/chunk")
 async def upload_and_copy(request: Request, import_chunks: ImportChunks):
+    print("%")
+    print(request.cookies.get("customJwtCookie"))
+    print("$")
     cookie = request.cookies.get("customJwtCookie")
     await authenticate_user(f'customJwtCookie={cookie}')
 
@@ -356,20 +363,8 @@ async def import_stop_words(request: Request, stopWordsFile: UploadFile = File(.
 
         response = requests.post(url, headers=headers, json={"stopWords": words_list})
 
-        if response.status_code == 200:
-            response_data = response.json()
-            if response_data['response']['operationSuccessful']:
-                return response_data
-            elif response_data['response']['duplicate']:
-                duplicate_items = response_data['response']['duplicateItems']
-                new_words_list = [word for word in words_list if word not in duplicate_items]
-                if new_words_list:
-                    response = requests.post(url, headers=headers, json={"stopWords": new_words_list})
-                    return response.json()
-                else:
-                    return response_data
-        else:
-            raise HTTPException(status_code=response.status_code, detail="Failed to update stop words")
+        response_data = response.json()
+        return response_data
     except Exception as e:
         print(f"Error in import/stop-words: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -390,25 +385,46 @@ async def delete_stop_words(request: Request, stopWordsFile: UploadFile = File(.
 
         response = requests.post(url, headers=headers, json={"stopWords": words_list})
 
-        if response.status_code == 200:
-            response_data = response.json()
-            if response_data['response']['operationSuccessful']:
-                return response_data
-            elif response_data['response']['nonexistent']:
-                nonexistent_items = response_data['response']['nonexistentItems']
-                new_words_list = [word for word in words_list if word not in nonexistent_items]
-                if new_words_list:
-                    response = requests.post(url, headers=headers, json={"stopWords": new_words_list})
-                    return response.json()
-                else:
-                    return JSONResponse(
-                        status_code=400,
-                        content={
-                            "message": f"The following words are not in the list and cannot be deleted: {', '.join(nonexistent_items)}"
-                        }
-                    )
-        else:
-            raise HTTPException(status_code=response.status_code, detail="Failed to delete stop words")
+        response_data = response.json()
+        return response_data
     except Exception as e:
         print(f"Error in delete/stop-words: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/datasetgroup/data/delete")
+async def delete_dataset_files(request: Request):
+    try:
+        print("Reach : 1")
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
+
+        payload = await request.json()
+        dgId = int(payload["dgId"])
+
+        deleter = DatasetDeleter(S3_FERRY_URL)
+        print("Reach : 2")
+        success, files_deleted = deleter.delete_dataset_files(dgId, f'customJwtCookie={cookie}')
+        
+        print("Reach : 6")
+        print(success)
+        print(files_deleted)
+
+        if success:
+            headers = {
+                'cookie': f'customJwtCookie={cookie}',
+                'Content-Type': 'application/json'
+            }
+            payload = {"dgId": dgId}
+
+            response = requests.post(DELETE_CONFIRMATION_URL, headers=headers, json=payload)
+            print(f"Reach : 7 {response}")
+            if response.status_code != 200:
+                print(f"Failed to notify deletion endpoint. Status code: {response.status_code}")
+
+            return JSONResponse(status_code=200, content={"message": "Dataset deletion completed successfully.", "files_deleted": files_deleted})
+        else:
+            return JSONResponse(status_code=500, content={"message": "Dataset deletion failed.", "files_deleted": files_deleted})
+    except Exception as e:
+        print(f"Error in delete_dataset_files: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

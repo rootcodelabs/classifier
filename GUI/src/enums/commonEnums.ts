@@ -9,3 +9,10 @@ export enum ButtonAppearanceTypes {
   ERROR = 'error',
   TEXT = 'text',
 }
+
+export enum LabelType {
+  SUCCESS = 'success',
+  ERROR = 'error',
+  INFO = 'info',
+  WARNING = 'warning',
+}

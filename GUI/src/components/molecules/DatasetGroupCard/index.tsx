@@ -6,24 +6,27 @@ import Label from 'components/Label';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { enableDataset } from 'services/datasets';
 import { useDialog } from 'hooks/useDialog';
-import { createSearchParams, URLSearchParamsInit, useNavigate } from 'react-router-dom';
 import { Operation } from 'types/datasetGroups';
-import { AxiosError } from 'axios';
+import { datasetQueryKeys } from 'utils/queryKeys';
+import { DatasetViewEnum, ValidationStatus } from 'enums/datasetEnums';
+import { ButtonAppearanceTypes, LabelType } from 'enums/commonEnums';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from 'utils/commonUtilts';
+import DatasetValidationStatus from '../ValidationStatus/ValidationStatus';
 
 type DatasetGroupCardProps = {
-  datasetGroupId?: number|string|undefined;
+  datasetGroupId: number;
   datasetName?: string;
   version?: string;
   isLatest?: boolean;
   isEnabled?: boolean;
   enableAllowed?: boolean;
-  lastUpdated?: string;
-  lastUsed?: string;
+  lastUpdated?: Date | null;
+  lastUsed?: Date | null;
   validationStatus?: string;
-  lastModelTrained?: string;
-  setId?: React.Dispatch<React.SetStateAction<number>>
-  setView?: React.Dispatch<React.SetStateAction<string>>
-
+  lastModelTrained?: Date | null;
+  setId?: React.Dispatch<React.SetStateAction<number>>;
+  setView?: React.Dispatch<React.SetStateAction<DatasetViewEnum>>;
 };
 
 const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
@@ -32,66 +35,44 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
   version,
   isLatest,
   isEnabled,
-  enableAllowed,
   lastUpdated,
   lastUsed,
   validationStatus,
   lastModelTrained,
   setId,
-  setView
+  setView,
 }) => {
   const queryClient = useQueryClient();
   const { open } = useDialog();
-  
-  const renderValidationStatus = (status:string|undefined) => {
-    if (status === 'success') {
-      return <Label type="success">{'Validation Successful'}</Label>;
-    } else if (status === 'fail') {
-      return <Label type="error">{'Validation Failed'}</Label>;
-    } else if (status === 'unvalidated') {
-      return <Label type="info">{'Not Validated'}</Label>;
-    } else if (status === 'in-progress') {
-      return <Label type="warning">{'Validation In Progress'}</Label>;
-    }
-  };
+  const { t } = useTranslation();
 
   const datasetEnableMutation = useMutation({
-    mutationFn: (data:Operation) => enableDataset(data),
-    onSuccess: async (response) => {
-      await queryClient.invalidateQueries(['datasetgroup/overview', 1]);
+    mutationFn: (data: Operation) => enableDataset(data),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(datasetQueryKeys.DATASET_OVERVIEW(1));
     },
-    onError: (error) => {
+    onError: () => {
       open({
-        title: 'Cannot Enable Dataset Group',
-        content: (
-          <p>
-            The dataset group cannot be enabled until data is added. Please
-            add datasets to this group and try again.
-          </p>
-        ),
+        title: t('datasetGroups.modals.enableDatasetTitle'),
+        content: <p>{t('datasetGroups.modals.enableDatasetDesc')}</p>,
       });
     },
   });
 
   const datasetDisableMutation = useMutation({
-    mutationFn: (data:Operation) => enableDataset(data),
+    mutationFn: (data: Operation) => enableDataset(data),
     onSuccess: async (response) => {
-      await queryClient.invalidateQueries(['datasetgroup/overview', 1]);
+      await queryClient.invalidateQueries(datasetQueryKeys.DATASET_OVERVIEW(1));
       if (response?.operationSuccessful)
         open({
-          title: 'Cannot Enable Dataset Group',
-          content: (
-            <p>
-              The dataset group cannot be enabled until data is added. Please
-              add datasets to this group and try again.
-            </p>
-          ),
+          title: t('datasetGroups.modals.enableDatasetTitle'),
+          content: <p>{t('datasetGroups.modals.enableDatasetDesc')}</p>,
         });
     },
     onError: () => {
       open({
-        title: 'Operation Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.modals.errorTitle'),
+        content: <p>{t('datasetGroups.modals.errorDesc')}</p>,
       });
     },
   });
@@ -113,36 +94,47 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
     <div>
       <div className="dataset-group-card">
         <div className="row switch-row">
-          <div className='text'>{datasetName}</div>
+          <div className="text">{datasetName}</div>
           <Switch
             label=""
             checked={isEnabled}
             onCheckedChange={() => handleCheck()}
           />
         </div>
-        {renderValidationStatus(validationStatus)}
+        <DatasetValidationStatus status={validationStatus} />
         <div className="py-3">
-          <p >
-            {'Last Model Trained:'}
-            {lastModelTrained}
+          <p>
+            {t('datasetGroups.datasetCard.lastModelTrained')}:{' '}
+            {lastModelTrained && formatDate(lastModelTrained, 'D.M.yy-H:m')}
           </p>
-          <p >
-            {'Last Used For Training:'}
-            {lastUsed}
+          <p>
+            {t('datasetGroups.datasetCard.lastUsedForTraining')}:{' '}
+            {lastUsed && formatDate(lastUsed, 'D.M.yy-H:m')}
           </p>
-          <p >
-            {'Last Updated:'}
-            {lastUpdated}
+          <p>
+            {t('datasetGroups.datasetCard.lastUpdate')}:{' '}
+            {lastUpdated && formatDate(lastUpdated, 'D.M.yy-H:m')}
           </p>
         </div>
         <div className="flex">
-          <Label type="success">{version}</Label>
-          {isLatest ? <Label type="success">latest</Label> : null}
+          <Label type={LabelType.SUCCESS}>{version}</Label>
+          {isLatest ? (
+            <Label type={LabelType.SUCCESS}>
+              {t('datasetGroups.datasetCard.latest')}
+            </Label>
+          ) : null}
         </div>
 
         <div className="label-row">
-          <Button appearance="primary" size="s" onClick={()=>{setId(datasetGroupId);setView("individual")}}>
-            Settings
+          <Button
+            appearance={ButtonAppearanceTypes.PRIMARY}
+            size="s"
+            onClick={() => {
+              setId && setId(datasetGroupId);
+              setView && setView(DatasetViewEnum.INDIVIDUAL);
+            }}
+          >
+            {t('datasetGroups.datasetCard.settings')}
           </Button>
         </div>
       </div>
