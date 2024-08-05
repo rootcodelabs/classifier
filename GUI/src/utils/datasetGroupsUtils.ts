@@ -1,4 +1,4 @@
-import { Class, ValidationRule } from 'types/datasetGroups';
+import { Class, TreeNode, ValidationRule, ValidationRuleResponse } from 'types/datasetGroups';
 import { v4 as uuidv4 } from 'uuid';
 import isEqual from 'lodash/isEqual';
 
@@ -11,9 +11,9 @@ export const transformValidationRules = (
   };
 
   data?.forEach((item) => {
-    validationCriteria.fields.push(item.fieldName);
+    validationCriteria?.fields.push(item?.fieldName);
 
-    validationCriteria.validationRules[item.fieldName] = {
+    validationCriteria.validationRules[item?.fieldName] = {
       type: item.dataType.toLowerCase(),
       isDataClass: item.isDataClass,
     };
@@ -35,13 +35,13 @@ export const transformClassHierarchy = (data: Class[]) => {
   };
 };
 
-export const reverseTransformClassHierarchy = (data) => {
-  const traverse = (node, level: number) => {
+export const reverseTransformClassHierarchy = (data: any) => {
+  const traverse = (node: any, level: number) => {
     const flatNode = {
       id: uuidv4(),
-      fieldName: node.class,
+      fieldName: node?.class,
       level,
-      children: node?.subclasses.map((subclass) =>
+      children: node?.subclasses?.map((subclass: any) =>
         traverse(subclass, level + 1)
       ),
     };
@@ -49,10 +49,10 @@ export const reverseTransformClassHierarchy = (data) => {
     return flatNode;
   };
 
-  return data?.map((item) => traverse(item, 0));
+  return data?.map((item: any) => traverse(item, 0));
 };
 
-export const transformObjectToArray = (data) => {
+export const transformObjectToArray = (data: Record<string, ValidationRuleResponse> | undefined) => {
   if (data) {
     const output = Object.entries(data).map(([fieldName, details], index) => ({
       id: index + 1,
@@ -116,7 +116,7 @@ export const isValidationRulesSatisfied = (data: ValidationRule[]) => {
   return false;
 };
 
-export const isFieldNameExisting = (dataArray, fieldNameToCheck) => {
+export const isFieldNameExisting = (dataArray: ValidationRule[] | undefined, fieldNameToCheck: string) => {
   const count = dataArray?.reduce((acc, item) => {
     return item?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase()
       ? acc + 1
@@ -126,10 +126,10 @@ export const isFieldNameExisting = (dataArray, fieldNameToCheck) => {
   return count === 2;
 };
 
-export const countFieldNameOccurrences = (dataArray, fieldNameToCheck) => {
+export const countFieldNameOccurrences = (dataArray:TreeNode[] | undefined, fieldNameToCheck: string) => {
   let count = 0;
 
-  function countOccurrences(node) {
+  function countOccurrences(node: TreeNode) {
     if (node?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase()) {
       count += 1;
     }
@@ -139,20 +139,20 @@ export const countFieldNameOccurrences = (dataArray, fieldNameToCheck) => {
     }
   }
 
-  dataArray.forEach((node) => countOccurrences(node));
+  dataArray && dataArray.forEach((node) => countOccurrences(node));
 
   return count;
 };
 
-export const isClassHierarchyDuplicated = (dataArray, fieldNameToCheck) => {
+export const isClassHierarchyDuplicated = (dataArray: TreeNode[] | undefined, fieldNameToCheck: string) => {
   const count = countFieldNameOccurrences(dataArray, fieldNameToCheck);
   return count === 2;
 };
 
-export const handleDownload = (response, format) => {
+export const handleDownload = (response: any, format: string) => {
   try {
     // Create a URL for the Blob
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const url = window.URL.createObjectURL(new Blob([response]));
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', `export.${format}`); // Specify the file name and extension

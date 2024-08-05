@@ -1,7 +1,7 @@
 import { FC, useCallback, useState } from 'react';
 import './DatasetGroups.scss';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Dialog, FormInput } from 'components';
+import { Button, Card, FormInput } from 'components';
 import { v4 as uuidv4 } from 'uuid';
 import ClassHierarchy from 'components/molecules/ClassHeirarchy';
 import {
@@ -11,18 +11,19 @@ import {
   validateClassHierarchy,
   validateValidationRules,
 } from 'utils/datasetGroupsUtils';
-import { DatasetGroup, ValidationRule } from 'types/datasetGroups';
+import { DatasetGroup, TreeNode, ValidationRule } from 'types/datasetGroups';
 import { useNavigate } from 'react-router-dom';
 import ValidationCriteriaCardsView from 'components/molecules/ValidationCriteria/CardsView';
 import { useMutation } from '@tanstack/react-query';
 import { createDatasetGroup } from 'services/datasets';
 import { useDialog } from 'hooks/useDialog';
+import { CreateDatasetGroupModals } from 'enums/datasetEnums';
+import CreateDatasetGroupModalController from 'components/molecules/CreateDatasetGroupModals/CreateDatasetGroupModal';
+import { ButtonAppearanceTypes } from 'enums/commonEnums';
 
 const CreateDatasetGroup: FC = () => {
   const { t } = useTranslation();
   const { open } = useDialog();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
 
   const initialValidationRules = [
@@ -34,15 +35,17 @@ const CreateDatasetGroup: FC = () => {
     { id: uuidv4(), fieldName: '', level: 0, children: [] },
   ];
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<CreateDatasetGroupModals>(
+    CreateDatasetGroupModals.NULL
+  );
   const [datasetName, setDatasetName] = useState('');
   const [datasetNameError, setDatasetNameError] = useState(false);
-
   const [validationRules, setValidationRules] = useState<ValidationRule[]>(
     initialValidationRules
   );
   const [validationRuleError, setValidationRuleError] = useState(false);
-
-  const [nodes, setNodes] = useState(initialClass);
+  const [nodes, setNodes] = useState<TreeNode[]>(initialClass);
   const [nodesError, setNodesError] = useState(false);
 
   const validateData = useCallback(() => {
@@ -56,7 +59,7 @@ const CreateDatasetGroup: FC = () => {
     ) {
       if (!isValidationRulesSatisfied(validationRules)) {
         setIsModalOpen(true);
-        setModalType('VALIDATION_ERROR');
+        setModalType(CreateDatasetGroupModals.VALIDATION_ERROR);
       } else {
         const payload: DatasetGroup = {
           groupName: datasetName,
@@ -70,14 +73,14 @@ const CreateDatasetGroup: FC = () => {
 
   const createDatasetGroupMutation = useMutation({
     mutationFn: (data: DatasetGroup) => createDatasetGroup(data),
-    onSuccess: async (response) => {
+    onSuccess: async () => {
       setIsModalOpen(true);
-      setModalType('SUCCESS');
+      setModalType(CreateDatasetGroupModals.SUCCESS);
     },
     onError: () => {
       open({
-        title: 'Dataset Group Creation Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.modals.createDatasetUnsuccessTitle'),
+        content: <p>{t('datasetGroups.modals.errorDesc')}</p>,
       });
     },
   });
@@ -86,18 +89,27 @@ const CreateDatasetGroup: FC = () => {
     <div>
       <div className="container">
         <div className="title_container">
-          <div className="title">Create Dataset Group</div>
+          <div className="title">{t('datasetGroups.createDataset.title')}</div>
         </div>
         <div>
-          <Card isHeaderLight={false} header={' Dataset Details'}>
+          <Card
+            isHeaderLight={false}
+            header={t('datasetGroups.createDataset.datasetDetails')}
+          >
             <div>
               <FormInput
-                label="Dataset Name"
-                placeholder="Enter dataset name"
+                label={t('datasetGroups.createDataset.datasetName') ?? ''}
+                placeholder={
+                  t('datasetGroups.createDataset.datasetInputPlaceholder') ?? ''
+                }
                 name="datasetName"
                 onChange={(e) => setDatasetName(e.target.value)}
                 error={
-                  !datasetName && datasetNameError ? 'Enter dataset name' : ''
+                  !datasetName && datasetNameError
+                    ? t(
+                        'datasetGroups.createDataset.datasetInputPlaceholder'
+                      ) ?? ''
+                    : ''
                 }
               />
             </div>
@@ -121,51 +133,13 @@ const CreateDatasetGroup: FC = () => {
             />
           </Card>
         </div>
-        {modalType === 'VALIDATION_ERROR' && (
-          <Dialog
-            isOpen={isModalOpen}
-            title={'Insufficient Columns in Dataset'}
-            footer={
-              <div>
-                <Button
-                  appearance="secondary"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={() => setIsModalOpen(false)}>Add now</Button>
-              </div>
-            }
-            onClose={() => setIsModalOpen(false)}
-          >
-            The dataset must have at least 2 columns. Additionally, there needs
-            to be at least one column designated as a data class and one column
-            that is not a data class. Please adjust your dataset accordingly.
-          </Dialog>
-        )}
-        {modalType === 'SUCCESS' && (
-          <Dialog
-            isOpen={isModalOpen}
-            title={'Dataset Group Created Successfully'}
-            footer={
-              <div className="flex-grid">
-                <Button
-                  appearance="secondary"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={() => navigate('/dataset-groups')}>
-                  Go to Detailed View
-                </Button>
-              </div>
-            }
-            onClose={() => setIsModalOpen(false)}
-          >
-            You have successfully created the dataset group. In the detailed
-            view, you can now see and edit the dataset as needed.
-          </Dialog>
-        )}
+
+        <CreateDatasetGroupModalController
+          modalType={modalType}
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+        />
+        
         <div
           className="flex"
           style={{
@@ -175,12 +149,14 @@ const CreateDatasetGroup: FC = () => {
             marginTop: '25px',
           }}
         >
-          <Button onClick={() => validateData()}>Create Dataset Group</Button>
+          <Button onClick={() => validateData()}>
+            {t('datasetGroups.createDatasetGroupButton')}
+          </Button>
           <Button
-            appearance="secondary"
+            appearance={ButtonAppearanceTypes.SECONDARY}
             onClick={() => navigate('/dataset-groups')}
           >
-            Cancel
+            {t('global.cancel')}
           </Button>
         </div>
       </div>
