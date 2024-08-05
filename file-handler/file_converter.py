@@ -74,10 +74,22 @@ class FileConverter:
     
     def convert_json_to_xlsx(self, jsonData, outputPath):
         try:
-            with pd.ExcelWriter(outputPath) as writer:
-                for sheetName, data in jsonData.items():
-                    df = pd.DataFrame(data)
-                    df.to_excel(writer, sheet_name=sheetName, index=False)
+            if isinstance(jsonData, list):
+                df = pd.DataFrame(jsonData)
+                with pd.ExcelWriter(outputPath) as writer:
+                    df.to_excel(writer, sheet_name='Sheet1', index=False)
+            elif isinstance(jsonData, dict):
+                with pd.ExcelWriter(outputPath) as writer:
+                    for sheetName, data in jsonData.items():
+                        if isinstance(data, list):
+                            df = pd.DataFrame(data)
+                            df.to_excel(writer, sheet_name=sheetName, index=False)
+                        else:
+                            print(f"Error: Expected list of dictionaries for sheet '{sheetName}', but got {type(data)}")
+                            return False
+            else:
+                print(f"Error: Unsupported JSON data format '{type(jsonData)}'")
+                return False
             print(f"JSON data successfully converted to XLSX and saved at '{outputPath}'")
             return True
         except Exception as e:
