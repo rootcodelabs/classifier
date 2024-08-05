@@ -8,6 +8,7 @@ COPY file_handler_api.py .
 COPY file_converter.py .
 COPY constants.py .
 COPY s3_ferry.py .
+COPY dataset_deleter.py .
 
 RUN mkdir -p /shared && chown appuser:appuser /shared && chmod 770 /shared
 RUN chown -R appuser:appuser /app
