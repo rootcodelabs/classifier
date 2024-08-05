@@ -1,16 +1,13 @@
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, FormInput, FormSelect } from 'components';
-import DatasetGroupCard from 'components/molecules/DatasetGroupCard';
+import { Button, FormSelect } from 'components';
 import Pagination from 'components/molecules/Pagination';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import {
-  convertTimestampToDateTime,
-  formattedArray,
-  parseVersionString,
-} from 'utils/commonUtilts';
+import { formattedArray, parseVersionString } from 'utils/commonUtilts';
 import { getDataModelsOverview, getFilterData } from 'services/data-models';
+import DataModelCard from 'components/molecules/DataModelCard';
+import ConfigureDataModel from './ConfigureDataModel';
 
 const DataModels: FC = () => {
   const { t } = useTranslation();
@@ -71,7 +68,6 @@ const DataModels: FC = () => {
     getFilterData()
   );
   // const pageCount = datasetGroupsData?.response?.data?.[0]?.totalPages || 1;
-  console.log(dataModelsData);
 
   const handleFilterChange = (name: string, value: string) => {
     setEnableFetch(false);
@@ -83,13 +79,13 @@ const DataModels: FC = () => {
 
   return (
     <div>
-      <div className="container">
+      {view==="list"&&(<div className="container">
         <div className="title_container">
           <div className="title">Data Models</div>
           <Button
             appearance="primary"
             size="m"
-            onClick={() => navigate('/create-model')}
+            onClick={() => navigate('/create-data-model')}
           >
             Create Model
           </Button>
@@ -179,17 +175,19 @@ const DataModels: FC = () => {
             {dataModelsData?.data?.map(
               (dataset, index: number) => {
                 return (
-                  <DatasetGroupCard
+                  <DataModelCard
                     key={index}
-                    datasetGroupId={dataset?.id}
-                    isEnabled={dataset?.isEnabled}
-                    datasetName={dataset?.groupName}
-                    version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                    modelId={dataset?.modelId}
+                    dataModelName={dataset?.modelName}
+                    datasetGroupName={dataset?.connectedDgName}
+                    version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
                     isLatest={dataset.latest}
-                    lastUpdated={dataset?.lastUpdatedTimestamp}
-                    lastUsed={dataset?.lastTrainedTimestamp}
-                    validationStatus={dataset.validationStatus}
-                    lastModelTrained={dataset?.lastModelTrained}
+                    dgVersion={dataset?.dgVersion}
+                    lastTrained={dataset?.lastTrained}
+                    trainingStatus={dataset.trainingStatus}
+                    platform={dataset?.deploymentPlatform}
+                    maturity={dataset?.deploymentMaturity}
+                    results={dataset?.trainingResults}
                     setId={setId}
                     setView={setView}
                   />
@@ -205,7 +203,11 @@ const DataModels: FC = () => {
             onPageChange={setPageIndex}
           />
         </div>
-      </div>
+      </div>)}
+      {view==="individual" &&(
+      <ConfigureDataModel id={id} />
+      )}
+
     </div>
   );
 };

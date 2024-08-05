@@ -495,6 +495,7 @@ class DatasetProcessor:
                             chunk_updates = {}
                             for entry in cleaned_patch_payload:
                                 rowId = entry.get("rowId")
+                                rowId = int(rowId)
                                 chunkNum = (rowId - 1) // 5 + 1
                                 if chunkNum not in chunk_updates:
                                     chunk_updates[chunkNum] = []
@@ -506,6 +507,7 @@ class DatasetProcessor:
                                     print(f"Chunk {chunkNum} downloaded successfully")
                                     for entry in entries:
                                         rowId = entry.get("rowId")
+                                        rowId = int(rowId)
                                         for idx, chunk_entry in enumerate(chunk_data):
                                             if chunk_entry.get("rowId") == rowId:
                                                 chunk_data[idx] = entry
@@ -522,6 +524,7 @@ class DatasetProcessor:
                                 print("Aggregated dataset for patch update retrieved successfully")
                                 for entry in cleaned_patch_payload:
                                     rowId = entry.get("rowId")
+                                    rowId = int(rowId)
                                     for index, item in enumerate(agregated_dataset):
                                         if item.get("rowId") == rowId:
                                             entry["rowId"] = rowId

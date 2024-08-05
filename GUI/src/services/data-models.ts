@@ -40,10 +40,15 @@ export async function getFilterData() {
   return data;
 }
 
-export async function getMetadata(groupId: string | number | null) {
-  const { data } = await apiDev.get('classifier/datasetgroup/group/metadata', {
+export async function getCreateOptions() {
+  const { data } = await apiMock.get('classifier/datamodel/create/options');
+  return data;
+}
+
+export async function getMetadata(modelId: string | number | null) {
+  const { data } = await apiMock.get('classifier/datamodel/metadata', {
     params: {
-      groupId
+      modelId
     },
   });
   return data;

@@ -6,38 +6,71 @@ type FormCheckboxesType = {
   label: string;
   name: string;
   hideLabel?: boolean;
-  onValuesChange?: (values: Record<string, any>) => void;
+  onValuesChange?: (values: Record<string, string[]>) => void;
   items: {
     label: string;
     value: string;
   }[];
-}
+  isStack?: boolean;
+  error?: string;
+};
 
-const FormCheckboxes: FC<FormCheckboxesType> = ({ label, name, hideLabel, onValuesChange, items }) => {
+const FormCheckboxes: FC<FormCheckboxesType> = ({
+  label,
+  name,
+  hideLabel,
+  onValuesChange,
+  items,
+  isStack = true,
+  error,
+}) => {
   const id = useId();
-  const [selectedValues, setSelectedValues] = useState<Record<string, any>>({});
+  const [selectedValues, setSelectedValues] = useState<
+    Record<string, string[]>
+  >({ [name]: [] });
 
   const handleValuesChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSelectedValues((prevState) => ({
-      ...prevState,
-      [e.target.name]: [e.target.value],
-    }));
-    if (onValuesChange) onValuesChange(selectedValues);
+    const { checked, value } = e.target;
+
+    setSelectedValues((prevState) => {
+      const newValues = checked
+        ? [...prevState[name], value] // Add the checked value to the array
+        : prevState[name].filter((v: string) => v !== value); // Remove the unchecked value from the array
+
+      const updatedValues = { ...prevState, [name]: newValues };
+
+      if (onValuesChange) onValuesChange(updatedValues);
+
+      return updatedValues;
+    });
   };
 
   return (
-    <fieldset className='checkboxes' role='group'>
-      {label && !hideLabel && <label className='checkboxes__label'>{label}</label>}
-      <div className='checkboxes__wrapper'>
-        {items.map((item, index) => (
-          <div key={`${item.value}-${index}`} className='checkboxes__item'>
-            <input type='checkbox' name={name} id={`${id}-${item.value}`} value={item.value}
-                   onChange={handleValuesChange} />
-            <label htmlFor={`${id}-${item.value}`}>{item.label}</label>
+    <div>
+      <div>
+        <fieldset className="checkboxes" role="group">
+          {label && !hideLabel && (
+            <label className="checkboxes__label">{label}</label>
+          )}
+          <div className={isStack ? 'checkboxes__wrapper' : 'checkboxes__row'}>
+            {items.map((item, index) => (
+              <div key={`${item.value}-${index}`} className="checkboxes__item">
+                <input
+                  type="checkbox"
+                  name={name}
+                  id={`${id}-${item.value}`}
+                  value={item.value}
+                  onChange={handleValuesChange}
+                  checked={selectedValues[name].includes(item.value)} // Manage checkbox state
+                />
+                <label htmlFor={`${id}-${item.value}`}>{item.label}</label>
+              </div>
+            ))}
           </div>
-        ))}
+        </fieldset>
       </div>
-    </fieldset>
+      <div>{error && <p className="input__inline_error">{error}</p>}</div>
+    </div>
   );
 };
 
