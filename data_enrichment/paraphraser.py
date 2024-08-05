@@ -3,7 +3,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from typing import List
 
 class Paraphraser:
-    def __init__(self, config_path: str = "data_enrichment/config_files/paraphraser_config.json"):
+    def __init__(self, config_path: str = "config_files/paraphraser_config.json"):
         with open(config_path, 'r') as file:
             config = json.load(file)
         

@@ -12,6 +12,8 @@ class FileConverter:
             return 'yaml'
         elif filePath.endswith('.xlsx'):
             return 'xlsx'
+        elif filePath.endswith('.txt'):
+            return 'txt'
         else:
             return None
     

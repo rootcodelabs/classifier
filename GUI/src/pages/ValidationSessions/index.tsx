@@ -1,48 +1,47 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ProgressBar from 'components/ProgressBar';
-import { Card, Label } from 'components';
 import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
+import sse from 'services/sse-service';
+import { useQuery } from '@tanstack/react-query';
+import { getDatasetGroupsProgress } from 'services/datasets';
 
 const ValidationSessions: FC = () => {
   const { t } = useTranslation();
-  const [progress, setProgress] = useState(40);
+  const [progresses, setProgresses] = useState([]);
 
-  const data = [
+  const { data: progressData } = useQuery(
+    ['datasetgroups/progress'],
+    () => getDatasetGroupsProgress(),
     {
-      dgName: 'Dataset Group Alpha',
-      version: 'V5.3.1',
-      isLatest: true,
-      status: '',
-      errorMessage: '',
-      progress: 30,
-    },
-    {
-      dgName: 'Dataset Group 1',
-      version: 'V5.3.1',
-      isLatest: true,
-      status: '',
-      errorMessage: '',
-      progress: 50,
-    },
-    {
-      dgName: 'Dataset Group 2',
-      version: 'V5.3.1',
-      isLatest: true,
-      status: 'failed',
-      errorMessage:
-        'Validation failed because “complaints” class found in the “department” column does not exist in hierarchy',
-      progress: 30,
-    },
-    {
-      dgName: 'Dataset Group 3',
-      version: 'V5.3.1',
-      isLatest: false,
-      status: '',
-      errorMessage: '',
-      progress: 80,
-    },
-  ];
+      onSuccess: (data) => {
+        setProgresses(data); 
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (!progressData) return;
+
+    const handleUpdate = (sessionId, newData) => {
+      setProgresses((prevProgresses) =>
+        prevProgresses.map((progress) =>
+          progress.id === sessionId ? { ...progress, ...newData } : progress
+        )
+      );
+    };
+
+    const eventSources = progressData.map((progress) => {
+      return sse(`/${progress.id}`, (data) => {
+        console.log(`New data for notification ${progress.id}:`, data);
+        handleUpdate(data.sessionId, data);
+      });
+    });
+
+    return () => {
+      eventSources.forEach((eventSource) => eventSource.close());
+      console.log('SSE connections closed');
+    };
+  }, [progressData]);
 
   return (
     <div>
@@ -50,15 +49,15 @@ const ValidationSessions: FC = () => {
         <div className="title_container">
           <div className="title">Validation Sessions</div>
         </div>
-        {data?.map((session) => {
+        {progresses?.map((session) => {
           return (
             <ValidationSessionCard
-              dgName={session.dgName}
-              version={session.version}
-              isLatest={session.isLatest}
-              status={session.status}
-              errorMessage={session.errorMessage}
-              progress={session.progress}
+              dgName={session.groupName}
+              version={`V${session?.majorVersion}.${session?.minorVersion}.${session?.patchVersion}`}
+              isLatest={session.latest}
+              status={session.validationStatus}
+              errorMessage={session.validationMessage}
+              progress={session.progressPercentage}
             />
           );
         })}

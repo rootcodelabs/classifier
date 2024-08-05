@@ -12,6 +12,11 @@ from constants import (
     S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED, JSON_EXT, YAML_EXT, YML_EXT, XLSX_EXT
 )
 from s3_ferry import S3Ferry
+import yaml
+import pandas as pd
+from typing import List
+from io import BytesIO, TextIOWrapper
+
 
 app = FastAPI()
 
@@ -27,6 +32,8 @@ UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
 CHUNK_UPLOAD_DIRECTORY = os.getenv("CHUNK_UPLOAD_DIRECTORY", "/shared/chunks")
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
+IMPORT_STOPWORDS_URL = os.getenv("IMPORT_STOPWORDS_URL")
+DELETE_STOPWORDS_URL = os.getenv("DELETE_STOPWORDS_URL")
 s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
@@ -58,14 +65,8 @@ def get_ruuter_private_url():
 
 async def authenticate_user(cookie: str):
     try:
-        # cookie = request.cookies.get("customJwtCookie")
-        # cookie = f'customJwtCookie={cookie}'
-
         if not cookie:
             raise HTTPException(status_code=401, detail="No cookie found in the request")
-        
-        print("@#!@#!@#!2")
-        print(cookie)
 
         url = f"{RUUTER_PRIVATE_URL}/auth/jwt/userinfo"
         headers = {
@@ -73,11 +74,12 @@ async def authenticate_user(cookie: str):
         }
 
         response = requests.get(url, headers=headers)
-        
+
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Authentication failed")
     except Exception as e:
         print(f"Error in file handler authentication : {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
 
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
@@ -230,8 +232,6 @@ async def upload_and_copy(request: Request, import_chunks: ImportChunks):
         os.remove(fileLocation)
     else:
         raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
-    # else:
-    #     return True
 
 @app.get("/datasetgroup/data/download/chunk")
 async def download_and_convert(request: Request, dgId: int, pageId: int, backgroundTasks: BackgroundTasks):
@@ -240,9 +240,6 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
         await authenticate_user(f'customJwtCookie={cookie}')
         print("$#@$@#$@#$@#$")
         print(request)
-        # cookie = request.cookies.get("cookie")
-        # cookie = f'customJwtCookie={cookie}'
-        # await authenticate_user(cookie)
         save_location = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
         local_file_name = f"group_{dgId}_chunk_{pageId}"
 
@@ -255,9 +252,6 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
 
         with open(f"{json_file_path}", 'r') as json_file:
             json_data = json.load(json_file)
-
-        # for index, item in enumerate(json_data, start=1):
-        #     item['rowId'] = index
 
         backgroundTasks.add_task(os.remove, json_file_path)
 
@@ -320,3 +314,101 @@ async def upload_and_copy(request: Request, copyPayload: CopyPayload):
         upload_success = UPLOAD_SUCCESS.copy()
         upload_success["saved_file_path"] = f"/dataset/{new_dg_id}/"
         return JSONResponse(status_code=200, content=upload_success)
+
+def extract_stop_words(file: UploadFile) -> List[str]:
+    file_converter = FileConverter()
+    file_type = file_converter._detect_file_type(file.filename)
+    
+    if file_type == 'txt':
+        content = file.file.read().decode('utf-8')
+        return [word.strip() for word in content.split(',')]
+    elif file_type == 'json':
+        content = json.load(file.file)
+        return content if isinstance(content, list) else []
+    elif file_type == 'yaml':
+        content = yaml.safe_load(file.file)
+        return content if isinstance(content, list) else []
+    elif file_type == 'xlsx':
+        content = file.file.read()
+        excel_file = BytesIO(content)
+        data = pd.read_excel(excel_file, sheet_name=None)
+        stop_words = []
+        for sheet in data:
+            stop_words.extend(data[sheet].stack().tolist())
+        return stop_words
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+
+@app.post("/datasetgroup/data/import/stop-words")
+async def import_stop_words(request: Request, stopWordsFile: UploadFile = File(...)):
+    try:
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
+
+        words_list = extract_stop_words(stopWordsFile)
+
+        url = IMPORT_STOPWORDS_URL
+        headers = {
+            'Content-Type': 'application/json',
+            'Cookie': f'customJwtCookie={cookie}'
+        }
+
+        response = requests.post(url, headers=headers, json={"stopWords": words_list})
+
+        if response.status_code == 200:
+            response_data = response.json()
+            if response_data['response']['operationSuccessful']:
+                return response_data
+            elif response_data['response']['duplicate']:
+                duplicate_items = response_data['response']['duplicateItems']
+                new_words_list = [word for word in words_list if word not in duplicate_items]
+                if new_words_list:
+                    response = requests.post(url, headers=headers, json={"stopWords": new_words_list})
+                    return response.json()
+                else:
+                    return response_data
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to update stop words")
+    except Exception as e:
+        print(f"Error in import/stop-words: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/datasetgroup/data/delete/stop-words")
+async def delete_stop_words(request: Request, stopWordsFile: UploadFile = File(...)):
+    try:
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
+
+        words_list = extract_stop_words(stopWordsFile)
+
+        url = DELETE_STOPWORDS_URL
+        headers = {
+            'Content-Type': 'application/json',
+            'Cookie': f'customJwtCookie={cookie}'
+        }
+
+        response = requests.post(url, headers=headers, json={"stopWords": words_list})
+
+        if response.status_code == 200:
+            response_data = response.json()
+            if response_data['response']['operationSuccessful']:
+                return response_data
+            elif response_data['response']['nonexistent']:
+                nonexistent_items = response_data['response']['nonexistentItems']
+                new_words_list = [word for word in words_list if word not in nonexistent_items]
+                if new_words_list:
+                    response = requests.post(url, headers=headers, json={"stopWords": new_words_list})
+                    return response.json()
+                else:
+                    return JSONResponse(
+                        status_code=400,
+                        content={
+                            "message": f"The following words are not in the list and cannot be deleted: {', '.join(nonexistent_items)}"
+                        }
+                    )
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to delete stop words")
+    except Exception as e:
+        print(f"Error in delete/stop-words: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

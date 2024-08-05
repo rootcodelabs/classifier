@@ -76,13 +76,67 @@ create_model_metadata:
 check_status:
   switch:
     - condition: ${200 <= res_model.response.statusCodeValue && res_model.response.statusCodeValue < 300}
-      next: assign_success_response
+      next: assign_model_id
   next: assign_fail_response
+
+assign_model_id:
+  assign:
+    model_id: ${res_model.response.body[0].id}
+  next: get_model_data_by_id
+
+get_model_data_by_id:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-data-model-basic-metadata-by-id"
+    body:
+      id: ${model_id}
+  result: res_model_id
+  next: check_model_status
+
+check_model_status:
+  switch:
+    - condition: ${200 <= res_model_id.response.statusCodeValue && res_model_id.response.statusCodeValue < 300}
+      next: check_model_exist
+  next: assign_fail_response
+
+check_model_exist:
+  switch:
+    - condition: ${res_model_id.response.body.length>0}
+      next: update_dataset_group_connected_model
+  next: return_not_found
+
+update_dataset_group_connected_model:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-dataset-group-connected-models"
+    body:
+      id: ${dg_id}
+      connected_model: ${JSON.stringify(res_model_id.response.body[0])}
+  result: res_dataset
+  next: check_connected_model_updated_status
+
+check_connected_model_updated_status:
+  switch:
+    - condition: ${200 <= res_dataset.response.statusCodeValue && res_dataset.response.statusCodeValue < 300}
+      next: execute_cron_manager
+  next: assign_fail_response
+
+execute_cron_manager:
+  call: reflect.mock
+  args:
+    url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_model/model_trainer"
+    query:
+      cookie: ${incoming.headers.cookie}
+      model_id: ${model_id}
+      new_model_id: ${model_id}
+      updateType: 'major'
+  result: res
+  next: assign_success_response
 
 assign_success_response:
   assign:
     format_res: {
-      modelId: '${res_model.response.body[0].id}',
+      modelId: '${model_id}',
       operationSuccessful: true
     }
   next: return_ok
@@ -108,4 +162,9 @@ return_bad_request:
 return_incorrect_request:
   status: 400
   return: 'Missing Required Fields'
+  next: end
+
+return_not_found:
+  status: 404
+  return: "Model Not Found"
   next: end

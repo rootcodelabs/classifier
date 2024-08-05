@@ -96,7 +96,7 @@ services:
       - REACT_APP_RUUTER_PRIVATE_API_URL=http://localhost:8088
       - REACT_APP_CUSTOMER_SERVICE_LOGIN=http://localhost:3004/et/dev-auth
       # - REACT_APP_NOTIFICATION_NODE_URL=http://localhost:4040
-      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' http://localhost:8086 http://localhost:8088 http://localhost:8085 http://localhost:4040 http://localhost:3001;
+      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' http://localhost:8086 http://localhost:8088 http://localhost:8085 http://localhost:4040 http://localhost:3001 http://localhost:8000;
       - DEBUG_ENABLED=true
       - CHOKIDAR_USEPOLLING=true
       - PORT=3001
@@ -189,6 +189,8 @@ services:
       - UPLOAD_DIRECTORY=/shared
       - RUUTER_PRIVATE_URL=http://ruuter-private:8088
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
+      - IMPORT_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/update/stop-words
+      - DELETE_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/delete/stop-words
     ports:
       - "8000:8000"
     networks:
@@ -224,7 +226,7 @@ services:
       - GET_VALIDATION_SCHEMA=http://ruuter-private:8088/classifier/datasetgroup/schema
       - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json
       - FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json/location
-      - FILE_HANDLER_STOPWORDS_URL=http://file-handler:8000/datasetgroup/data/download/json/stopwords
+      - GET_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/stop-words
       - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/import/chunk
       - FILE_HANDLER_COPY_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/copy
       - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/data?groupId=dgId&pageNum=1
@@ -235,6 +237,7 @@ services:
       - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
       - S3_BUCKET_NAME=esclassifier-test
       - S3_REGION_NAME=eu-west-1
+      - PARAPHRASE_API_URL=http://data-enrichment-api:8005/paraphrase
     ports:
       - "8001:8001"
     networks:
@@ -302,6 +305,17 @@ services:
     volumes:
       - /app/node_modules
       - ./notification-server:/app
+    networks:
+      - bykstack
+
+  data-enrichment-api:
+    container_name: data-enrichment-api
+    image: data-enrichment-api
+    build:
+      context: ./data_enrichment
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
     networks:
       - bykstack
 
