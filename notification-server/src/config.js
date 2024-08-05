@@ -3,6 +3,7 @@ require("dotenv").config();
 module.exports = {
   openSearchConfig: {
     datasetGroupProgress: "dataset_progress_sessions",
+    dataModelProgress: "data_model_progress_sessions",
     ssl: {
       rejectUnauthorized: false,
     },
