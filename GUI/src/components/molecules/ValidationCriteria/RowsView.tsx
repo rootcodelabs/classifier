@@ -20,17 +20,18 @@ const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = 
   validationRuleError,
   
 }) => {
-  const setIsDataClass = (id, isDataClass) => {
-    const updatedItems = validationRules.map((item) =>
-      item.id === id ? { ...item, isDataClass: !isDataClass } : item
+  const setIsDataClass = (id: string | number, isDataClass: boolean) => {
+    const updatedItems = validationRules?.map((item) =>
+      item?.id === id ? { ...item, isDataClass: !isDataClass } : item
     );
-    setValidationRules(updatedItems);
+    updatedItems && setValidationRules(updatedItems);
   };
 
-  const changeName = (id, newValue) => {
+  const changeName = (id: number | string, newValue: string) => {
+    
     setValidationRules((prevData) =>
-      prevData.map((item) =>
-        item.id === id ? { ...item, fieldName: newValue } : item
+      prevData?.map((item) =>
+        item?.id === id ? { ...item, fieldName: newValue } : item
       )
     );
 
@@ -40,9 +41,9 @@ const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = 
     setValidationRuleError(false)
   }
 
-  const changeDataType = (id, value) => {
-    const updatedItems = validationRules.map((item) =>
-      item.id === id ? { ...item, dataType: value } : item
+  const changeDataType = (id: number | string, value: string) => {
+    const updatedItems = validationRules?.map((item) =>
+      item?.id === id ? { ...item, dataType: value } : item
     );
     setValidationRules(updatedItems);
   };
@@ -50,7 +51,7 @@ const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = 
   const addNewClass = () => {
     setValidationRuleError(false)    
     const updatedItems = [
-      ...validationRules,
+      ...validationRules ?? [],
       { id: uuidv4(), fieldName: '', dataType: '', isDataClass: false },
     ];
     
@@ -58,8 +59,8 @@ const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = 
     setValidationRules(updatedItems);
   };
 
-  const deleteItem = (idToDelete) => {
-    const updatedItems = validationRules.filter(
+  const deleteItem = (idToDelete: number | string) => {
+    const updatedItems = validationRules?.filter(
       (item) => item.id !== idToDelete
     );
     setValidationRules(updatedItems);
@@ -93,7 +94,7 @@ const ValidationCriteriaRowsView: FC<PropsWithChildren<ValidationRulesProps>> = 
           options={dataTypes}
           defaultValue={item.dataType}
           onSelectionChange={(selection) =>
-            changeDataType(item.id, selection?.value)
+            changeDataType(item.id, selection?.value ?? "")
           }
           error={
             validationRuleError && !item.dataType

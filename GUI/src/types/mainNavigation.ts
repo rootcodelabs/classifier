@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 export interface MenuItem {
   id?: string;
@@ -6,7 +6,7 @@ export interface MenuItem {
   path: string | null;
   target?: '_blank' | '_self';
   children?: MenuItem[];
-  icon?:ReactNode
+  icon?: ReactNode;
 }
 
 export interface MainNavigation {
