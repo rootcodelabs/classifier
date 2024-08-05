@@ -1,5 +1,5 @@
 #!/bin/bash
-
+echo "Started Shell Script to validator"
 # Ensure required environment variables are set
 if [ -z "$dgId" ] || [ -z "$newDgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ]; then
   echo "One or more environment variables are missing."

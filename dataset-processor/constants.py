@@ -10,6 +10,12 @@ FAILED_TO_SAVE_CHUNKED_DATA = {
     "reason": "Failed to save chunked data into S3"
 }
 
+FAILED_TO_COPY_CHUNKED_DATA = {
+    "operation_status": 500,
+    "operation_successful": False,
+    "reason": "Failed to copy existing chunked data in S3"
+}
+
 FAILED_TO_CHUNK_CLEANED_DATA = {
     "operation_status": 500,
     "operation_successful": False,
