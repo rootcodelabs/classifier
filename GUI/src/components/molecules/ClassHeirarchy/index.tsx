@@ -1,15 +1,15 @@
 import React, { FC, PropsWithChildren, useState } from 'react';
-import { MdDeleteOutline } from 'react-icons/md';
-import { FormInput } from 'components/FormElements';
 import Button from 'components/Button';
 import { v4 as uuidv4 } from 'uuid';
 import './index.css';
 import Dialog from 'components/Dialog';
-import { Class } from 'types/datasetGroups';
-import { isClassHierarchyDuplicated } from 'utils/datasetGroupsUtils';
+import { Class, TreeNode } from 'types/datasetGroups';
+import { useTranslation } from 'react-i18next';
+import { ButtonAppearanceTypes } from 'enums/commonEnums';
+import ClassHeirarchyTreeNode from './TreeNode/ClassHeirarchyTreeNode';
 
 type ClassHierarchyProps = {
-  nodes?: Class[];
+  nodes: TreeNode[];
   setNodes: React.Dispatch<React.SetStateAction<Class[] | []>>;
   nodesError?: boolean;
   setNodesError: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,70 +21,9 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
   nodesError,
   setNodesError,
 }) => {
-  const [currentNode, setCurrentNode] = useState(null);
+  const { t } = useTranslation();
+  const [currentNode, setCurrentNode] = useState<TreeNode | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const TreeNode = ({ node, onAddSubClass, onDelete }) => {
-    const [fieldName, setFieldName] = useState(node.fieldName);
-
-    const handleChange = (e) => {
-      setFieldName(e.target.value);
-      node.fieldName = e.target.value;
-      if (isClassHierarchyDuplicated(nodes, e.target.value))
-        setNodesError(true);
-      else setNodesError(false);
-    };
-
-    return (
-      <div
-        style={{
-          marginLeft: node.level * 20,
-          width: '450px',
-          marginTop: '10px',
-        }}
-      >
-        <div className="class-grid">
-          <div>
-            <FormInput
-              label=""
-              name="className"
-              placeholder="Enter Field Name"
-              value={fieldName}
-              onChange={handleChange}
-              error={
-                nodesError && !fieldName
-                  ? 'Enter a field name'
-                  : fieldName && isClassHierarchyDuplicated(nodes, fieldName)
-                  ? 'Class name already exists'
-                  : ''
-              }
-            />
-          </div>
-          <div
-            style={{ display: 'flex', alignItems: 'center', color: 'blue' }}
-            className="link"
-          >
-            <a onClick={() => onAddSubClass(node.id)}>Add Subclass</a>
-          </div>
-          <div
-            style={{ display: 'flex', alignItems: 'center' }}
-            className="link"
-          >
-            <MdDeleteOutline /> <a onClick={() => onDelete(node.id)}>Delete</a>
-          </div>
-        </div>
-        {node.children &&
-          node.children.map((child) => (
-            <TreeNode
-              key={child.id}
-              node={child}
-              onAddSubClass={onAddSubClass}
-              onDelete={onDelete}
-            />
-          ))}
-      </div>
-    );
-  };
 
   const addMainClass = () => {
     setNodes([
@@ -93,9 +32,9 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
     ]);
   };
 
-  const addSubClass = (parentId) => {
-    const addSubClassRecursive = (nodes) => {
-      return nodes?.map((node) => {
+  const addSubClass = (parentId: number | string) => {
+    const addSubClassRecursive = (nodes: TreeNode[]): TreeNode[] => {
+      return nodes?.map((node: TreeNode) => {
         if (node.id === parentId) {
           const newNode = {
             id: uuidv4(),
@@ -111,43 +50,43 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
         return node;
       });
     };
-    setNodes(addSubClassRecursive(nodes));
+    if (nodes) setNodes(addSubClassRecursive(nodes));
     setNodesError(false);
   };
 
-  const deleteNode = (nodeId) => {
-    const deleteNodeRecursive = (nodes) => {
+  const deleteNode = (nodeId: number | string) => {
+    const deleteNodeRecursive = (nodes: TreeNode[]): TreeNode[] => {
       return nodes
-        .map((node) => {
-          if (node.children.length > 0) {
-            return { ...node, children: deleteNodeRecursive(node.children) };
+        ?.map((node: TreeNode) => {
+          if (node?.children?.length > 0) {
+            return { ...node, children: deleteNodeRecursive(node?.children) };
           }
           return node;
         })
-        .filter((node) => {
-          if (node.id === nodeId) {
-            if (node.children.length > 0 || node.fieldName) {
+        ?.filter((node: TreeNode) => {
+          if (node?.id === nodeId) {
+            if (node?.children?.length > 0 || node?.fieldName) {
               setCurrentNode(node);
               setIsModalOpen(true);
-              return true; // Keep the node for now, until user confirms deletion
+              return true;
             }
           }
           return !(
-            node.id === nodeId &&
-            node.children.length === 0 &&
-            !node.fieldName
+            node?.id === nodeId &&
+            node?.children?.length === 0 &&
+            !node?.fieldName
           );
         });
     };
 
-    setNodes(deleteNodeRecursive(nodes));
+    if (nodes) setNodes(deleteNodeRecursive(nodes));
   };
 
   const confirmDeleteNode = () => {
-    const deleteNodeRecursive = (nodes) => {
-      return nodes?.filter((node) => {
-        if (node.id === currentNode.id) {
-          return false; // Remove this node
+    const deleteNodeRecursive = (nodes: TreeNode[]) => {
+      return nodes?.filter((node: TreeNode) => {
+        if (currentNode && node.id === currentNode.id) {
+          return false;
         }
         if (node.children.length > 0) {
           node.children = deleteNodeRecursive(node.children);
@@ -164,38 +103,44 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
   return (
     <div>
       <div>
-        <Button onClick={addMainClass}>Add Main Class</Button>
+        <Button onClick={addMainClass}>
+          {t('datasetGroups.classHierarchy.addClassButton') ?? ''}
+        </Button>
         <div>
           {nodes?.map((node) => (
-            <TreeNode
+            <ClassHeirarchyTreeNode
               key={node.id}
               node={node}
               onAddSubClass={addSubClass}
               onDelete={deleteNode}
+              nodes={nodes}
+              setNodesError={setNodesError}
             />
           ))}
         </div>
       </div>
       <Dialog
         isOpen={isModalOpen}
-        title={'Are you sure?'}
+        title={t('datasetGroups.modals.deleteClassTitle') ?? ''}
         footer={
           <div>
             <Button
-              appearance="secondary"
+              appearance={ButtonAppearanceTypes.SECONDARY}
               onClick={() => setIsModalOpen(false)}
             >
-              Cancel
+              {t('global.cancel') ?? ''}
             </Button>
-            <Button appearance="error" onClick={() => confirmDeleteNode()}>
-              Delete
+            <Button
+              appearance={ButtonAppearanceTypes.ERROR}
+              onClick={() => confirmDeleteNode()}
+            >
+              {t('global.delete') ?? ''}
             </Button>
           </div>
         }
         onClose={() => setIsModalOpen(false)}
       >
-        Confirm that you are wish to delete the following record. This will
-        delete the current class and all subclasses of it
+        {t('datasetGroups.modals.deleteClaassDesc') ?? ''}
       </Dialog>
     </div>
   );

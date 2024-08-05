@@ -1,19 +1,17 @@
 import { FC, useEffect, useState } from 'react';
 import './DatasetGroups.scss';
 import { useTranslation } from 'react-i18next';
-import { Button, FormInput, FormSelect } from 'components';
+import { Button, FormSelect } from 'components';
 import DatasetGroupCard from 'components/molecules/DatasetGroupCard';
 import Pagination from 'components/molecules/Pagination';
 import { getDatasetsOverview, getFilterData } from 'services/datasets';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import {
-  convertTimestampToDateTime,
-  formattedArray,
-  parseVersionString,
-} from 'utils/commonUtilts';
-import { DatasetGroup } from 'types/datasetGroups';
+import { formattedArray, parseVersionString } from 'utils/commonUtilts';
+import { SingleDatasetType } from 'types/datasetGroups';
 import ViewDatasetGroup from './ViewDatasetGroup';
+import { datasetQueryKeys } from 'utils/queryKeys';
+import { DatasetViewEnum } from 'enums/datasetEnums';
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -22,11 +20,11 @@ const DatasetGroups: FC = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [id, setId] = useState(0);
   const [enableFetch, setEnableFetch] = useState(true);
-  const [view, setView] = useState("list");
+  const [view, setView] = useState<DatasetViewEnum>(DatasetViewEnum.LIST);
 
-useEffect(()=>{
-  setEnableFetch(true)
-},[view]);
+  useEffect(() => {
+    setEnableFetch(true);
+  }, [view]);
 
   const [filters, setFilters] = useState({
     datasetGroupName: 'all',
@@ -35,20 +33,16 @@ useEffect(()=>{
     sort: 'asc',
   });
 
-  const {
-    data: datasetGroupsData,
-    isLoading,
-  } = useQuery(
-    [
-      'datasetgroup/overview',
+  const { data: datasetGroupsData, isLoading } = useQuery(
+    datasetQueryKeys.DATASET_OVERVIEW(
       pageIndex,
       filters.datasetGroupName,
       parseVersionString(filters?.version)?.major,
       parseVersionString(filters?.version)?.minor,
       parseVersionString(filters?.version)?.patch,
       filters.validationStatus,
-      filters.sort,
-    ],
+      filters.sort
+    ),
     () =>
       getDatasetsOverview(
         pageIndex,
@@ -64,8 +58,9 @@ useEffect(()=>{
       enabled: enableFetch,
     }
   );
-  const { data: filterData } = useQuery(['datasets/filters'], () =>
-    getFilterData()
+  const { data: filterData } = useQuery(
+    datasetQueryKeys.DATASET_FILTERS(),
+    () => getFilterData()
   );
   const pageCount = datasetGroupsData?.response?.data?.[0]?.totalPages || 1;
 
@@ -77,108 +72,117 @@ useEffect(()=>{
     }));
   };
 
-
   return (
     <div>
-      {view==="list" &&(<div className="container">
-        <div className="title_container">
-          <div className="title">Dataset Groups</div>
-          <Button
-            appearance="primary"
-            size="m"
-            onClick={() => navigate('/create-dataset-group')}
-          >
-            Create Dataset Group
-          </Button>
-        </div>
-        <div>
-          <div className="search-panel">
-            <FormSelect
-              label=""
-              name="sort"
-              placeholder="Dataset Group Name"
-              options={formattedArray(filterData?.response?.dgNames) ?? []}
-              onSelectionChange={(selection) =>
-                handleFilterChange('datasetGroupName', selection?.value ?? '')
-              }
-            />
-            <FormSelect
-              label=""
-              name="sort"
-              placeholder="Version"
-              options={formattedArray(filterData?.response?.dgVersions) ?? []}
-              onSelectionChange={(selection) =>
-                handleFilterChange('version', selection?.value ?? '')
-              }
-            />
-            <FormSelect
-              label=""
-              name="sort"
-              placeholder="Validation Status"
-              options={formattedArray(filterData?.response?.dgValidationStatuses) ?? []}
-              onSelectionChange={(selection) =>
-                handleFilterChange('validationStatus', selection?.value ?? '')
-              }
-            />
-            <FormSelect
-              label=""
-              name="sort"
-              placeholder="Sort by name (A - Z)"
-              options={[
-                { label: 'A-Z', value: 'asc' },
-                { label: 'Z-A', value: 'desc' },
-              ]}
-              onSelectionChange={(selection) =>
-                handleFilterChange('sort', selection?.value ?? '')
-              }
-            />
-            <Button onClick={() => setEnableFetch(true)}>Search</Button>
+      {view === DatasetViewEnum.LIST && (
+        <div className="container">
+          <div className="title_container">
+            <div className="title">{t('datasetGroups.title')}</div>
             <Button
-              onClick={() => {
-                navigate(0);
-              }}
+              appearance="primary"
+              size="m"
+              onClick={() => navigate('/create-dataset-group')}
             >
-              Reset
+              {t('datasetGroups.createDatasetGroupButton')}
             </Button>
           </div>
-          <div
-            className="bordered-card grid-container"
-            style={{ padding: '20px', marginTop: '20px' }}
-          >
-            {isLoading && <div>Loading...</div>}
-            {datasetGroupsData?.response?.data?.map(
-              (dataset, index: number) => {
-                return (
-                  <DatasetGroupCard
-                    key={index}
-                    datasetGroupId={dataset?.id}
-                    isEnabled={dataset?.isEnabled}
-                    datasetName={dataset?.groupName}
-                    version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
-                    isLatest={dataset.latest}
-                    lastUpdated={dataset?.lastUpdatedTimestamp}
-                    lastUsed={dataset?.lastTrainedTimestamp}
-                    validationStatus={dataset.validationStatus}
-                    lastModelTrained={dataset?.lastModelTrained}
-                    setId={setId}
-                    setView={setView}
-
-                  />
-                );
-              }
-            )}
+          <div>
+            <div className="search-panel">
+              <FormSelect
+                label=""
+                name="sort"
+                placeholder={t('datasetGroups.table.group') ?? ''}
+                options={formattedArray(filterData?.response?.dgNames) ?? []}
+                onSelectionChange={(selection) =>
+                  handleFilterChange('datasetGroupName', selection?.value ?? '')
+                }
+              />
+              <FormSelect
+                label=""
+                name="sort"
+                placeholder={t('datasetGroups.table.version') ?? ''}
+                options={formattedArray(filterData?.response?.dgVersions) ?? []}
+                onSelectionChange={(selection) =>
+                  handleFilterChange('version', selection?.value ?? '')
+                }
+              />
+              <FormSelect
+                label=""
+                name="sort"
+                placeholder={t('datasetGroups.table.validationStatus') ?? ''}
+                options={
+                  formattedArray(filterData?.response?.dgValidationStatuses) ??
+                  []
+                }
+                onSelectionChange={(selection) =>
+                  handleFilterChange('validationStatus', selection?.value ?? '')
+                }
+              />
+              <FormSelect
+                label=""
+                name="sort"
+                placeholder={
+                  t('datasetGroups.table.sortBy', {
+                    sortOrder: filters?.sort === 'asc' ? 'A-Z' : 'Z-A',
+                  }) ?? ''
+                }
+                options={[
+                  { label: 'A-Z', value: 'asc' },
+                  { label: 'Z-A', value: 'desc' },
+                ]}
+                onSelectionChange={(selection) =>
+                  handleFilterChange('sort', selection?.value ?? '')
+                }
+              />
+              <Button onClick={() => setEnableFetch(true)}>
+                {t('global.search')}
+              </Button>
+              <Button
+                onClick={() => {
+                  navigate(0);
+                }}
+              >
+                {t('global.reset')}
+              </Button>
+            </div>
+            <div
+              className="bordered-card grid-container"
+              style={{ padding: '20px', marginTop: '20px' }}
+            >
+              {isLoading && <div>Loading...</div>}
+              {datasetGroupsData?.response?.data?.map(
+                (dataset: SingleDatasetType, index: number) => {
+                  return (
+                    <DatasetGroupCard
+                      key={index}
+                      datasetGroupId={dataset?.id}
+                      isEnabled={dataset?.isEnabled}
+                      datasetName={dataset?.groupName}
+                      version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                      isLatest={dataset.latest}
+                      lastUpdated={dataset?.lastUpdatedTimestamp}
+                      lastUsed={dataset?.lastTrainedTimestamp}
+                      validationStatus={dataset.validationStatus}
+                      lastModelTrained={dataset?.lastModelTrained}
+                      setId={setId}
+                      setView={setView}
+                    />
+                  );
+                }
+              )}
+            </div>
+            <Pagination
+              pageCount={pageCount}
+              pageIndex={pageIndex}
+              canPreviousPage={pageIndex > 1}
+              canNextPage={pageIndex < pageCount}
+              onPageChange={setPageIndex}
+            />
           </div>
-          <Pagination
-            pageCount={pageCount}
-            pageIndex={pageIndex}
-            canPreviousPage={pageIndex > 1}
-            canNextPage={pageIndex < pageCount}
-            onPageChange={setPageIndex}
-          />
         </div>
-      </div>)}
-      {view==="individual" && (
-      <ViewDatasetGroup dgId={id} setView={setView}></ViewDatasetGroup>
+      )}
+      {view === DatasetViewEnum.INDIVIDUAL && (
+        <ViewDatasetGroup dgId={id} setView={setView} />
       )}
     </div>
   );
