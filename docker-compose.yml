@@ -191,6 +191,9 @@ services:
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
       - IMPORT_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/update/stop-words
       - DELETE_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/delete/stop-words
+      - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/page-count?groupId=dgId
+      - DATAGROUP_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datasetgroup/metadata/delete
+      - DATAMODEL_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datamodel/update/datasetgroup
     ports:
       - "8000:8000"
     networks:
