@@ -10,7 +10,10 @@ INSERT INTO models_metadata (
     base_models,
     created_timestamp,
     connected_dg_id,
-    connected_dg_name
+    connected_dg_name,
+    connected_dg_major_version,
+    connected_dg_minor_version,
+    connected_dg_patch_version
 ) VALUES (
     :model_group_key,
     :model_name,
@@ -23,5 +26,8 @@ INSERT INTO models_metadata (
      ARRAY [:base_models]::Base_Models[],
     :created_timestamp::timestamp with time zone,
     :connected_dg_id,
-    :connected_dg_name
+    :connected_dg_name,
+    :connected_dg_major_version,
+    :connected_dg_minor_version,
+    :connected_dg_patch_version
 ) RETURNING id;

@@ -13,6 +13,9 @@ SELECT
     dt.created_timestamp,
     dt.connected_dg_id,
     dt.connected_dg_name,
+    dt.connected_dg_major_version,
+    dt.connected_dg_minor_version,
+    dt.connected_dg_patch_version,
     jsonb_pretty(dt.training_results) AS training_results,
     CEIL(COUNT(*) OVER() / :page_size::DECIMAL) AS total_pages
 FROM
@@ -24,7 +27,7 @@ WHERE
     AND (:deployment_maturity = 'all' OR dt.maturity_label = :deployment_maturity::Maturity_Label)
     AND (:training_status = 'all' OR dt.training_status = :training_status::Training_Status)
     AND (:platform = 'all' OR dt.deployment_env = :platform::Deployment_Env)
-    AND (:dataset_group = 'all' OR dt.connected_dg_name = :dataset_group)
+    AND (:dataset_group = -1 OR dt.connected_dg_id = :dataset_group)
 ORDER BY
     CASE WHEN :sort_type = 'asc' THEN dt.model_name END ASC,
     CASE WHEN :sort_type = 'desc' THEN dt.model_name END DESC

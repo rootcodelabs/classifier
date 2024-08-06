@@ -29,6 +29,10 @@ declaration:
       - field: validationErrors
         type: array
         description: "Body field 'validationErrors'"
+    headers:
+      - field: cookie
+        type: string
+        description: "Cookie field"
 
 extract_request_data:
   assign:
@@ -52,35 +56,87 @@ check_request_type:
 assign_patch_type:
   assign:
     active_dg_id: ${incoming.body.dgId}
-  next: update_dataset_group_validation
+  next: update_patch_dataset_group_validation
 
 assign_minor_type:
   assign:
     active_dg_id: ${incoming.body.newDgId}
-  next: update_dataset_group_validation
+  next: update_minor_dataset_group_validation
 
-update_dataset_group_validation:
+update_minor_dataset_group_validation:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RESQL]/update-dataset-group-validation-data"
+    url: "[#CLASSIFIER_RESQL]/update-minor-dataset-group-validation-data"
     body:
       id: ${active_dg_id}
       validation_status: ${validation_status}
       validation_errors: ${JSON.stringify(validation_errors)}
   result: res
-  next: check_status
+  next: check_minor_status
 
-check_status:
+check_minor_status:
   switch:
     - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
-      next: check_validation_status_type
+      next: check_minor_validation_status_type
   next: assign_fail_response
 
-check_validation_status_type:
+check_minor_validation_status_type:
   switch:
     - condition: ${validation_status === 'success'}
       next: execute_cron_manager
   next: assign_success_response
+
+update_patch_dataset_group_validation:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-patch-dataset-group-validation-data"
+    body:
+      id: ${active_dg_id}
+      validation_errors: ${JSON.stringify(validation_errors)}
+  result: res
+  next: check_patch_status
+
+check_patch_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: check_patch_validation_status_type
+  next: assign_fail_response
+
+check_patch_validation_status_type:
+  switch:
+    - condition: ${validation_status === 'success'}
+      next: update_patch_version_only
+  next: assign_success_response
+
+update_patch_version_only:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-patch-version-only-dataset-group"
+    body:
+      id: ${dg_id}
+  result: res
+  next: check_patch_version_only_status
+
+check_patch_version_only_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: update_patch_version_in_model_metadata
+  next: assign_fail_response
+
+update_patch_version_in_model_metadata:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-data-model-dataset-group-patch-version"
+    body:
+      dg_id: ${dg_id}
+  result: res
+  next: check_patch_version_in_model_metadata_status
+
+check_patch_version_in_model_metadata_status:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: execute_cron_manager
+  next: assign_fail_response
 
 execute_cron_manager:
   call: http.post

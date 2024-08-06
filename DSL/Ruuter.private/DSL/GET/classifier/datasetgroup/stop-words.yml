@@ -24,13 +24,21 @@ check_data_exist:
   switch:
     - condition: ${res.response.body.length>0 && res.response.body[0].stopWordsArray !== null}
       next: assign_success_response
-  next: assign_fail_response
+  next: assign_empty_response
 
 assign_success_response:
   assign:
     format_res: {
       operationSuccessful: true,
       stopWords: '${res.response.body[0].stopWordsArray}'
+    }
+  next: return_ok
+
+assign_empty_response:
+  assign:
+    format_res: {
+      operationSuccessful: true,
+      stopWords: '${[]}'
     }
   next: return_ok
 
