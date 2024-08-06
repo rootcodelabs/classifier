@@ -68,7 +68,7 @@ const CreateDatasetGroupModalController = ({
       {modalType === CreateDatasetGroupModals.SUCCESS && (
         <Dialog
           isOpen={isModalOpen}
-          title={t('datasetGroups.modals.createDatasetUnsuccessTitle')}
+          title={t('datasetGroups.modals.createDatasetSuccessTitle')}
           footer={
             <div className="flex-grid">
               <Button

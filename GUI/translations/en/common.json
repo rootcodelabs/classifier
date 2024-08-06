@@ -276,6 +276,7 @@
     "add": "Add",
     "importModal": {
       "title": "Import stop words",
+      "importButton": "Import",
       "selectionLabel": "Select the option below",
       "addOption": "Import to add",
       "updateOption": "Import to update",
@@ -283,8 +284,10 @@
       "attachements": "Attachments (TXT, XLSX, YAML, JSON)",
       "inprogressTitle": "Import in Progress",
       "inprogressDesc": "The import of stop words is currently in progress. Please wait until the process is complete.",
-      "successTitle": "Data import waas successful",
-      "successDesc": "Your data has been successfully imported."
+      "successTitle": "Data import was successful",
+      "successDesc": "Your data has been successfully imported.",
+      "unsuccessTitle": "Data import was unsuccessful",
+      "unsuccessDesc": "Stopword Import Unsuccessful"
     }
   },
   "validationSessions": {

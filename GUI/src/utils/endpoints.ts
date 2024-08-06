@@ -23,10 +23,15 @@ export const datasetsEndpoints = {
   CREATE_DATASET_GROUP: (): string => `/classifier/datasetgroup/create`,
   IMPORT_DATASETS: (): string => `/datasetgroup/data/import`,
   EXPORT_DATASETS: (): string => `/datasetgroup/data/download`,
-  DATASET_GROUP_PATCH_UPDATE: (): string => `/classifier/datasetgroup/update/patch`,
-  DATASET_GROUP_MINOR_UPDATE: (): string => `/classifier/datasetgroup/update/minor`,
-  DATASET_GROUP_MAJOR_UPDATE: (): string => `/classifier/datasetgroup/update/major`,
+  DATASET_GROUP_PATCH_UPDATE: (): string =>
+    `/classifier/datasetgroup/update/patch`,
+  DATASET_GROUP_MINOR_UPDATE: (): string =>
+    `/classifier/datasetgroup/update/minor`,
+  DATASET_GROUP_MAJOR_UPDATE: (): string =>
+    `/classifier/datasetgroup/update/major`,
   GET_STOP_WORDS: (): string => `/classifier/datasetgroup/stop-words`,
   POST_STOP_WORDS: (): string => `/classifier/datasetgroup/update/stop-words`,
-  DELETE_STOP_WORD: (): string => `/classifier/datasetgroup/delete/stop-words`
+  DELETE_STOP_WORD: (): string => `/classifier/datasetgroup/delete/stop-words`,
+  IMPORT_STOP_WORDS: (): string => `/datasetgroup/data/import/stop-words`,
+  DELETE_STOP_WORDS: (): string => `/datasetgroup/data/delete/stop-words`,
 };

@@ -2,7 +2,14 @@ import { datasetsEndpoints } from 'utils/endpoints';
 import apiDev from './api-dev';
 import apiExternal from './api-external';
 import { PaginationState } from '@tanstack/react-table';
-import { DatasetDetails, DatasetGroup, MetaData, MinorPayLoad, Operation, PatchPayLoad } from 'types/datasetGroups';
+import {
+  DatasetDetails,
+  DatasetGroup,
+  MetaData,
+  MinorPayLoad,
+  Operation,
+  PatchPayLoad,
+} from 'types/datasetGroups';
 
 export async function getDatasetsOverview(
   pageNum: number,
@@ -74,6 +81,7 @@ export async function createDatasetGroup(datasetGroup: DatasetGroup) {
 }
 
 export async function importDataset(file: File, id: string | number) {
+  console.log('fileeee ', file);
   const { data } = await apiExternal.post(datasetsEndpoints.IMPORT_DATASETS(), {
     dataFile: file,
     dgId: id,
@@ -131,14 +139,14 @@ export async function getStopWords() {
   return data?.response?.stopWords;
 }
 
-export async function addStopWord(stopWordData) {
+export async function addStopWord(stopWordData: { stopWords: string[] }) {
   const { data } = await apiDev.post(datasetsEndpoints.POST_STOP_WORDS(), {
     ...stopWordData,
   });
   return data;
 }
 
-export async function deleteStopWord(stopWordData) {
+export async function deleteStopWord(stopWordData: { stopWords: string[] }) {
   const { data } = await apiDev.post(datasetsEndpoints.DELETE_STOP_WORD(), {
     ...stopWordData,
   });
@@ -148,4 +156,24 @@ export async function deleteStopWord(stopWordData) {
 export async function getDatasetGroupsProgress() {
   const { data } = await apiDev.get('classifier/datasetgroup/progress');
   return data?.response?.data;
+}
+
+export async function importStopWords(file: File) {
+  const { data } = await apiExternal.post(
+    datasetsEndpoints.IMPORT_STOP_WORDS(),
+    {
+      stopWordsFile: file,
+    }
+  );
+  return data;
+}
+
+export async function deleteStopWords(file: File) {
+  const { data } = await apiExternal.post(
+    datasetsEndpoints.DELETE_STOP_WORDS(),
+    {
+      stopWordsFile: file,
+    }
+  );
+  return data;
 }
