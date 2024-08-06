@@ -85,7 +85,7 @@ check_validation_status_type:
 execute_cron_manager:
   call: http.post
   args:
-    url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_processing/dataset_processor"
+    url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_processor/dataset_processor"
     query:
       cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}
