@@ -21,6 +21,7 @@ import { userManagementQueryKeys } from 'utils/queryKeys';
 import { userManagementEndpoints } from 'utils/endpoints';
 import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
 import { useDialog } from 'hooks/useDialog';
+import SkeletonTable from 'components/molecules/TableSkeleton/TableSkeleton';
 
 const UserManagement: FC = () => {
   const columnHelper = createColumnHelper<User>();
@@ -189,29 +190,33 @@ const UserManagement: FC = () => {
           </Button>
         </div>
         <div>
-          <DataTable
-            data={users}
-            columns={usersColumns}
-            sortable
-            filterable
-            pagination={pagination}
-            setPagination={(state: PaginationState) => {
-              if (
-                state?.pageIndex === pagination?.pageIndex &&
-                state?.pageSize === pagination?.pageSize
-              )
-                return;
-              setPagination(state);
-              fetchUsers(state, sorting);
-            }}
-            sorting={sorting}
-            setSorting={(state: SortingState) => {
-              setSorting(state);
-              fetchUsers(pagination, state);
-            }}
-            pagesCount={totalPages}
-            isClientSide={false}
-          />
+          {!isLoading && (
+            <DataTable
+              data={users}
+              columns={usersColumns}
+              sortable
+              filterable
+              pagination={pagination}
+              setPagination={(state: PaginationState) => {
+                if (
+                  state?.pageIndex === pagination?.pageIndex &&
+                  state?.pageSize === pagination?.pageSize
+                )
+                  return;
+                setPagination(state);
+                fetchUsers(state, sorting);
+              }}
+              sorting={sorting}
+              setSorting={(state: SortingState) => {
+                setSorting(state);
+                fetchUsers(pagination, state);
+              }}
+              pagesCount={totalPages}
+              isClientSide={false}
+            />
+          )}
+
+          {isLoading && <SkeletonTable rowCount={5} />}
 
           {newUserModal && (
             <UserModal

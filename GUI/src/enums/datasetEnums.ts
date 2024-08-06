@@ -36,3 +36,8 @@ export enum ImportExportDataTypes {
   JSON = 'json',
   YAML = 'yaml',
 }
+
+export enum StopWordImportOptions {
+  ADD = 'add',
+  DELETE = 'delete',
+}

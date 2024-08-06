@@ -15,7 +15,7 @@ declaration:
 extract_request_data:
   assign:
     dg_id: ${incoming.body.dgId}
-    next: check_for_request_data
+  next: check_for_request_data
 
 check_for_request_data:
   switch:

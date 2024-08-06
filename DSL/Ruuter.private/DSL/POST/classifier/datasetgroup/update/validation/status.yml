@@ -9,10 +9,10 @@ declaration:
   allowlist:
     body:
       - field: dgId
-        type: string
+        type: number
         description: "Body field 'dgId'"
       - field: newDgId
-        type: string
+        type: number
         description: "Body field 'newDgId'"
       - field: updateType
         type: string

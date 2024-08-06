@@ -1,14 +1,32 @@
-const { searchNotification } = require("./openSearch");
+const { searchDatasetGroupNotification, searchModelNotification } = require("./openSearch");
 const { serverConfig } = require("./config");
 
-function buildNotificationSearchInterval({
+function buildDatasetGroupNotificationSearchInterval({
   sessionId,
   interval = serverConfig.refreshInterval,
 }) {
   return ({ connectionId, sender }) => {
     const intervalHandle = setInterval(
       () =>
-        searchNotification({
+        searchDatasetGroupNotification({
+          connectionId,
+          sessionId,
+          sender,
+        }),
+      interval
+    );
+    return () => clearInterval(intervalHandle);
+  };
+}
+
+function buildModelNotificationSearchInterval({
+  sessionId,
+  interval = serverConfig.refreshInterval,
+}) {
+  return ({ connectionId, sender }) => {
+    const intervalHandle = setInterval(
+      () =>
+        searchModelNotification({
           connectionId,
           sessionId,
           sender,
@@ -20,5 +38,6 @@ function buildNotificationSearchInterval({
 }
 
 module.exports = {
-  buildNotificationSearchInterval,
+  buildDatasetGroupNotificationSearchInterval,
+  buildModelNotificationSearchInterval,
 };
