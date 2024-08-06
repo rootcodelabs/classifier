@@ -241,6 +241,7 @@ services:
       - S3_BUCKET_NAME=esclassifier-test
       - S3_REGION_NAME=eu-west-1
       - PARAPHRASE_API_URL=http://data-enrichment-api:8005/paraphrase
+      - VALIDATION_CONFIRMATION_URL=http://ruuter-private:8088/classifier/datasetgroup/update/validation/status
     ports:
       - "8001:8001"
     networks:
