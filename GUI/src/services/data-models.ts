@@ -6,7 +6,7 @@ import { DatasetGroup, Operation } from 'types/datasetGroups';
 
 export async function getDataModelsOverview(
   pageNum: number,
-  modelGroup: string,
+  modelName: string,
   majorVersion: number,
   minorVersion: number,
   patchVersion: number,
@@ -17,10 +17,10 @@ export async function getDataModelsOverview(
   sort: string,
  
 ) {
-  const { data } = await apiMock.get('classifier/datamodel/overview', {
+  const { data } = await apiDev.get('classifier/datamodel/overview', {
     params: {
       page: pageNum,
-      modelGroup,
+      modelName,
       majorVersion,
       minorVersion,
       patchVersion,
@@ -32,32 +32,32 @@ export async function getDataModelsOverview(
       pageSize:5
     },
   });
-  return data;
+  return data?.response;
 }
 
 export async function getFilterData() {
-  const { data } = await apiMock.get('classifier/datamodel/overview/filters');
-  return data;
+  const { data } = await apiDev.get('classifier/datamodel/overview/filters');
+  return data?.response;
 }
 
 export async function getCreateOptions() {
-  const { data } = await apiMock.get('classifier/datamodel/create/options');
-  return data;
+  const { data } = await apiDev.get('classifier/datamodel/create/options');
+  return data?.response;
 }
 
 export async function getMetadata(modelId: string | number | null) {
-  const { data } = await apiMock.get('classifier/datamodel/metadata', {
+  const { data } = await apiDev.get('classifier/datamodel/metadata', {
     params: {
       modelId
     },
   });
-  return data;
+  return data?.response?.data[0];
 }
 
-export async function createDatasetGroup(datasetGroup: DatasetGroup) {
+export async function createDataModel(dataModel) {
 
-  const { data } = await apiDev.post('classifier/datasetgroup/create', {
-    ...datasetGroup,
+  const { data } = await apiDev.post('classifier/datamodel/create', {
+    ...dataModel,
   });
   return data;
 }

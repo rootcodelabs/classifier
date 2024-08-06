@@ -53,7 +53,7 @@ const FormCheckboxes: FC<FormCheckboxesType> = ({
             <label className="checkboxes__label">{label}</label>
           )}
           <div className={isStack ? 'checkboxes__wrapper' : 'checkboxes__row'}>
-            {items.map((item, index) => (
+            {items?.map((item, index) => (
               <div key={`${item.value}-${index}`} className="checkboxes__item">
                 <input
                   type="checkbox"

@@ -35,7 +35,7 @@ const FormRadios: FC<FormRadiosType> = ({
             <label className="radios__label">{label}</label>
           )}
           <div className={isStack ? 'radios__stack' : 'radios__wrapper'}>
-            {items.map((item, index) => (
+            {items?.map((item, index) => (
               <div key={`${item.value}-${index}`} className="radios__item">
                 <input
                   type="radio"

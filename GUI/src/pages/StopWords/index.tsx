@@ -120,6 +120,7 @@ const StopWords: FC = () => {
                 label=""
                 onChange={setImportOption}
                 items={importOptions}
+                selectedValue={importOption}
               />
               <div style={{ margin: '20px 0px' }}></div>
               <p>Attachments (TXT, XLSX, YAML, JSON)</p>

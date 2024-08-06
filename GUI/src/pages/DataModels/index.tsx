@@ -141,7 +141,7 @@ const DataModels: FC = () => {
               label=""
               name="maturity"
               placeholder="Maturity"
-              options={formattedArray(filterData?.maturity) ?? []}
+              options={formattedArray(filterData?.maturityLabels) ?? []}
               onSelectionChange={(selection) =>
                 handleFilterChange('maturity', selection?.value ?? '')
               }
@@ -177,7 +177,7 @@ const DataModels: FC = () => {
                 return (
                   <DataModelCard
                     key={index}
-                    modelId={dataset?.modelId}
+                    modelId={dataset?.id}
                     dataModelName={dataset?.modelName}
                     datasetGroupName={dataset?.connectedDgName}
                     version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
@@ -185,8 +185,8 @@ const DataModels: FC = () => {
                     dgVersion={dataset?.dgVersion}
                     lastTrained={dataset?.lastTrained}
                     trainingStatus={dataset.trainingStatus}
-                    platform={dataset?.deploymentPlatform}
-                    maturity={dataset?.deploymentMaturity}
+                    platform={dataset?.deploymentEnv}
+                    maturity={dataset?.maturityLabel}
                     results={dataset?.trainingResults}
                     setId={setId}
                     setView={setView}

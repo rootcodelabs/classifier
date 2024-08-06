@@ -1,9 +1,16 @@
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FormCheckboxes, FormInput, FormRadios, FormSelect, Label } from 'components';
-import { customFormattedArray, formattedArray } from 'utils/commonUtilts';
+import {
+  FormCheckboxes,
+  FormInput,
+  FormRadios,
+  FormSelect,
+  Label,
+} from 'components';
+import { formattedArray } from 'utils/commonUtilts';
 import { useQuery } from '@tanstack/react-query';
 import { getCreateOptions } from 'services/data-models';
+import { customFormattedArray } from 'utils/dataModelsUtils';
 
 type DataModelFormType = {
   dataModel: any;
@@ -11,12 +18,18 @@ type DataModelFormType = {
   errors: Record<string, string>;
 };
 
-const DataModelForm: FC<DataModelFormType> = ({ dataModel, handleChange, errors }) => {
+const DataModelForm: FC<DataModelFormType> = ({
+  dataModel,
+  handleChange,
+  errors,
+}) => {
   const { t } = useTranslation();
-  
+
   const { data: createOptions } = useQuery(['datamodels/create-options'], () =>
     getCreateOptions()
   );
+
+  console.log(createOptions);
 
   return (
     <div>
@@ -31,41 +44,49 @@ const DataModelForm: FC<DataModelFormType> = ({ dataModel, handleChange, errors 
           />
         </div>
         <div className="grey-card">
-          Model Version <Label type="success">V1.0</Label>
+          Model Version <Label type="success">{dataModel?.version}</Label>
         </div>
       </div>
-      
+
       {createOptions && (
         <div>
           <div className="title-sm">Select Dataset Group</div>
           <div className="grey-card">
             <FormSelect
               name="dgName"
-              options={customFormattedArray(createOptions?.dataset_groups, 'group_name')}
+              options={customFormattedArray(
+                createOptions?.datasetGroups,
+                'groupName'
+              )}
               label=""
-              onSelectionChange={(selection) => handleChange('dgName', selection.value)}
+              onSelectionChange={(selection) => {
+                handleChange('dgName', selection?.value?.name);
+                handleChange('dgId', selection?.value?.id);
+              }}
               error={errors?.dgName}
-              value={dataModel?.dgName}
+              defaultValue={ dataModel?.dgName}
             />
           </div>
-          
+
           <div className="title-sm">Select Base Models</div>
           <div className="grey-card flex-grid">
             <FormCheckboxes
               isStack={false}
-              items={formattedArray(createOptions?.base_models)}
+              items={formattedArray(createOptions?.baseModels)}
               name="baseModels"
               label=""
-              onValuesChange={(values) => handleChange('baseModels', values.baseModels)}
+              onValuesChange={(values) =>
+                handleChange('baseModels', values.baseModels)
+              }
               error={errors?.baseModels}
               selectedValues={dataModel?.baseModels}
             />
           </div>
-          
+
           <div className="title-sm">Select Deployment Platform</div>
           <div className="grey-card">
             <FormRadios
-              items={formattedArray(createOptions?.deployment_platforms)}
+              items={formattedArray(createOptions?.deploymentPlatforms)}
               label=""
               name="platform"
               onChange={(value) => handleChange('platform', value)}
@@ -73,11 +94,11 @@ const DataModelForm: FC<DataModelFormType> = ({ dataModel, handleChange, errors 
               selectedValue={dataModel?.platform}
             />
           </div>
-          
+
           <div className="title-sm">Select Maturity Label</div>
           <div className="grey-card">
             <FormRadios
-              items={formattedArray(createOptions?.maturity_labels)}
+              items={formattedArray(createOptions?.maturityLabels)}
               label=""
               name="maturity"
               onChange={(value) => handleChange('maturity', value)}

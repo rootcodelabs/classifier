@@ -50,6 +50,8 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
       return <Label type="info">{'Training In Progress'}</Label>;
     } else if (status === TrainingStatus.UNTRAINABLE) {
       return <Label type="error">{'Untrainable'}</Label>;
+    }else if (status === TrainingStatus.NOT_TRAINED) {
+      return <Label>{'Not Trained'}</Label>;
     }
   };
 
@@ -116,7 +118,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                         </div>
                       }
                     >
-                      <div className="training-results-grid-container">
+                     {results ?( <div className="training-results-grid-container">
                         <div>
                           {results?.classes?.map((c) => {
                             return <div>{c}</div>;
@@ -132,7 +134,8 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                             return <div>{c}</div>;
                           })}
                         </div>
-                      </div>
+                      </div>):(<div className='text-center'>No training results available</div>)}
+
                     </Card>
                   </div>
                 ),

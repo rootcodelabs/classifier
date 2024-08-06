@@ -9,14 +9,6 @@ export const formattedArray = (data: string[]) => {
   }));
 };
 
-export const customFormattedArray = <T extends Record<string, any>>(data: T[], attributeName: keyof T) => {
-  return data?.map((item) => ({
-    label: item[attributeName],
-    value: item[attributeName],
-  }));
-};
-
-
 export const convertTimestampToDateTime = (timestamp: number) => {
   return moment.unix(timestamp).format('YYYY-MM-DD HH:mm:ss');
 };
