@@ -62,31 +62,51 @@ async def forward_request(request: Request, response: Response):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON payload: {str(e)}")
     
-    validator_response = validator.process_request(int(payload["dgId"]), payload["cookie"], payload["updateType"], payload["savedFilePath"])
-    if validator_response["response"]["operationSuccessful"] != True:
-        return False
-    else:
-        headers = {
-                'cookie': payload["cookie"],
-                'Content-Type': 'application/json'
-            }
+    validator_response = validator.process_request(int(payload["dgId"]), payload["cookie"], payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
+    forward_payload = {}
+    forward_payload["dgId"] = int(payload["dgId"])
+    forward_payload["newDgId"] = int(payload["newDgId"])
+    forward_payload["updateType"] = payload["updateType"]
+    forward_payload["patchPayload"] = payload["patchPayload"]
+    forward_payload["savedFilePath"] = payload["savedFilePath"]
 
-        payload2 = {}
-        payload2["dgId"] = int(payload["dgId"])
-        payload2["newDgId"] = int(payload["newDgId"])
-        payload2["updateType"] = payload["updateType"]
-        payload2["patchPayload"] = payload["patchPayload"]
-        payload2["savedFilePath"] = payload["savedFilePath"]
-        payload2["validationStatus"] = "success"
-        payload2["validationErrors"] = []
-        try:
-            forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=payload2, headers=headers)
-            forward_response.raise_for_status()
-            
-            return JSONResponse(content=forward_response.json(), status_code=forward_response.status_code)
-        except requests.HTTPError as e:
-            print(e)
-            raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=500, detail=str(e))
+    headers = {
+        'cookie': payload["cookie"],
+        'Content-Type': 'application/json'
+    }
+    if validator_response["response"]["operationSuccessful"] != True:
+        forward_payload["validationStatus"] = "failed"
+        forward_payload["validationErrors"] = [validator_response["response"]["message"]]
+    else:
+        forward_payload["validationStatus"] = "success"
+        forward_payload["validationErrors"] = []
+
+    try:
+        forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
+        forward_response.raise_for_status()
+        
+        return JSONResponse(content=forward_response.json(), status_code=forward_response.status_code)
+    except requests.HTTPError as e:
+        forward_payload = {}
+        forward_payload["dgId"] = int(payload["dgId"])
+        forward_payload["newDgId"] = int(payload["newDgId"])
+        forward_payload["updateType"] = payload["updateType"]
+        forward_payload["patchPayload"] = payload["patchPayload"]
+        forward_payload["savedFilePath"] = payload["savedFilePath"]
+        forward_payload["validationStatus"] = "failed"
+        forward_payload["validationErrors"] = [e]
+        forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
+        print(e)
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
+    except Exception as e:
+        forward_payload = {}
+        forward_payload["dgId"] = int(payload["dgId"])
+        forward_payload["newDgId"] = int(payload["newDgId"])
+        forward_payload["updateType"] = payload["updateType"]
+        forward_payload["patchPayload"] = payload["patchPayload"]
+        forward_payload["savedFilePath"] = payload["savedFilePath"]
+        forward_payload["validationStatus"] = "failed"
+        forward_payload["validationErrors"] = [e]
+        forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))

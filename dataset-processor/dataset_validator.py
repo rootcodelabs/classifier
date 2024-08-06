@@ -9,13 +9,13 @@ class DatasetValidator:
     def __init__(self):
         pass
 
-    def process_request(self, dgId, cookie, updateType, savedFilePath):
+    def process_request(self, dgId, cookie, updateType, savedFilePath, patchPayload=None):
         print("Process request started")
         print(f"dgId: {dgId}, updateType: {updateType}, savedFilePath: {savedFilePath}")
         if updateType == "minor":
             return self.handle_minor_update(dgId, cookie, savedFilePath)
         elif updateType == "patch":
-            return self.handle_patch_update()
+            return self.handle_patch_update(dgId, cookie, patchPayload)
         else:
             return self.generate_response(False, "Unknown update type")
 
@@ -52,10 +52,6 @@ class DatasetValidator:
         except Exception as e:
             print(f"Internal error: {e}")
             return self.generate_response(False, f"Internal error: {e}")
-
-    def handle_patch_update(self):
-        print("Handling patch update")
-        return self.generate_response(True, "Patch update processed successfully")
 
     def get_dataset_by_location(self, fileLocation, custom_jwt_cookie):
         print("Downloading dataset by location")
@@ -179,6 +175,119 @@ class DatasetValidator:
                 values.add(row.get(col))
         print(f"Data class values extracted: {values}")
         return values
+
+    def handle_patch_update(self, dgId, cookie, patchPayload):
+        print("Handling patch update")
+        min_label_value = 1
+
+        try:
+            validation_criteria, class_hierarchy = self.get_validation_criteria(dgId, cookie)
+            if validation_criteria is None:
+                return self.generate_response(False, "Failed to get validation criteria")
+
+            if patchPayload is None:
+                return self.generate_response(False, "No patch payload provided")
+
+            decoded_patch_payload = urllib.parse.unquote(patchPayload)
+            patch_payload_dict = json.loads(decoded_patch_payload)
+            
+            edited_data = patch_payload_dict.get("editedData", [])
+
+            if edited_data:
+                for row in edited_data:
+                    row_id = row.pop("rowId", None)
+                    if row_id is None:
+                        return self.generate_response(False, "Missing rowId in edited data")
+                    
+                    for key, value in row.items():
+                        if key not in validation_criteria['validationRules']:
+                            return self.generate_response(False, f"Invalid field: {key}")
+
+                        if not self.validate_value(value, validation_criteria['validationRules'][key]['type']):
+                            return self.generate_response(False, f"Validation failed for field type '{key}' in row {row_id}")
+
+                data_class_columns = [field for field, rules in validation_criteria['validationRules'].items() if rules.get('isDataClass', False)]
+                hierarchy_values = self.extract_hierarchy_values(class_hierarchy)
+                for row in edited_data:
+                    for col in data_class_columns:
+                        if row.get(col) and row[col] not in hierarchy_values:
+                            return self.generate_response(False, f"New class '{row[col]}' does not exist in the schema hierarchy")
+
+                aggregated_data = self.get_dataset_by_location(f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json", cookie)
+                if aggregated_data is None:
+                    return self.generate_response(False, "Failed to download aggregated dataset")
+
+                if not self.check_label_counts(aggregated_data, edited_data, data_class_columns, min_label_value):
+                    return self.generate_response(False, "Editing this data will cause the dataset to have insufficient data examples for one or more labels.")
+
+            deleted_data_rows = patch_payload_dict.get("deletedDataRows", [])
+            if deleted_data_rows:
+                if 'aggregated_data' not in locals():
+                    aggregated_data = self.get_dataset_by_location(f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json", cookie)
+                    if aggregated_data is None:
+                        return self.generate_response(False, "Failed to download aggregated dataset")
+
+                if not self.check_label_counts_after_deletion(aggregated_data, deleted_data_rows, data_class_columns, min_label_value):
+                    return self.generate_response(False, "Deleting this data will cause the dataset to have insufficient data examples for one or more labels.")
+
+            return self.generate_response(True, "Patch update processed successfully")
+
+        except Exception as e:
+            print(f"Internal error: {e}")
+            return self.generate_response(False, f"Internal error: {e}")
+
+    def check_label_counts(self, aggregated_data, edited_data, data_class_columns, min_label_value):
+        # Aggregate data class values from edited data
+        edited_values = {col: set() for col in data_class_columns}
+        for row in edited_data:
+            for col in data_class_columns:
+                if col in row:
+                    edited_values[col].add(row[col])
+
+        # Aggregate counts from the existing dataset
+        class_counts = {col: {} for col in data_class_columns}
+        for row in aggregated_data:
+            for col in data_class_columns:
+                value = row.get(col)
+                if value:
+                    class_counts[col][value] = class_counts[col].get(value, 0) + 1
+
+        # Add counts from the edited data
+        for col, values in edited_values.items():
+            for value in values:
+                class_counts[col][value] = class_counts[col].get(value, 0) + 1
+
+        # Check the counts against min_label_value
+        for col, counts in class_counts.items():
+            for value, count in counts.items():
+                if count < min_label_value:
+                    return False
+        return True
+
+    def check_label_counts_after_deletion(self, aggregated_data, deleted_data_rows, data_class_columns, min_label_value):
+        # Aggregate counts from the existing dataset
+        class_counts = {col: {} for col in data_class_columns}
+        for row in aggregated_data:
+            for col in data_class_columns:
+                value = row.get(col)
+                if value:
+                    class_counts[col][value] = class_counts[col].get(value, 0) + 1
+
+        # Subtract counts from the deleted data
+        for row_id in deleted_data_rows:
+            for row in aggregated_data:
+                if row.get('rowId') == row_id:
+                    for col in data_class_columns:
+                        value = row.get(col)
+                        if value:
+                            class_counts[col][value] = class_counts[col].get(value, 0) - 1
+
+        # Check the counts against min_label_value
+        for col, counts in class_counts.items():
+            for value, count in counts.items():
+                if count < min_label_value:
+                    return False
+        return True
 
     def generate_response(self, success, message):
         print(f"Generating response: success={success}, message={message}")
