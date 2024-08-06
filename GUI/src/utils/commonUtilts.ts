@@ -30,3 +30,7 @@ export const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   });
   return itemRank.passed;
 };
+
+export const formatDate = (date: Date, format: string) => {
+  return moment(date).format(format);
+};

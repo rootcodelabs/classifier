@@ -1,35 +1,18 @@
-import {
-  FC,
-  PropsWithChildren,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { FC, PropsWithChildren, useEffect, useRef, useState } from 'react';
 import './DatasetGroups.scss';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Card,
-  DataTable,
-  Dialog,
-  FormRadios,
-  Icon,
-  Label,
-  Switch,
-} from 'components';
-import ClassHierarchy from 'components/molecules/ClassHeirarchy';
-import { createColumnHelper, PaginationState } from '@tanstack/react-table';
+import { Button } from 'components';
+import { PaginationState } from '@tanstack/react-table';
 import {
   DatasetGroup,
+  SelectedRowPayload,
   ImportDataset,
+  MinorPayLoad,
+  PatchPayLoad,
+  TreeNode,
   ValidationRule,
 } from 'types/datasetGroups';
-import BackArrowButton from 'assets/BackArrowButton';
-import { Link, useNavigate } from 'react-router-dom';
-import ValidationCriteriaRowsView from 'components/molecules/ValidationCriteria/RowsView';
-import { MdOutlineDeleteOutline, MdOutlineEdit } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
 import {
   exportDataset,
   getDatasets,
@@ -51,14 +34,23 @@ import {
   validateClassHierarchy,
   validateValidationRules,
 } from 'utils/datasetGroupsUtils';
-import formats from '../../config/formatsConfig.json';
-import FileUpload, { FileUploadHandle } from 'components/FileUpload';
-import DynamicForm from 'components/FormElements/DynamicForm';
+import { datasetQueryKeys } from 'utils/queryKeys';
+import {
+  DatasetViewEnum,
+  UpdatePriority,
+  ViewDatasetGroupModalContexts,
+} from 'enums/datasetEnums';
+import { ButtonAppearanceTypes } from 'enums/commonEnums';
+import ViewDatasetGroupModalController from 'components/molecules/ViewDatasetGroupModalController/ViewDatasetGroupModalController';
+import { FileUploadHandle } from 'components/FileUpload';
+import DatasetDetailedViewTable from 'components/molecules/DatasetDetailedViewTable/DatasetDetailedViewTable';
+import ValidationAndHierarchyCards from 'components/molecules/ValidationAndHierarchyCards/ValidationAndHierarchyCards';
 
 type Props = {
   dgId: number;
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  setView: React.Dispatch<React.SetStateAction<DatasetViewEnum>>;
 };
+
 const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const { t } = useTranslation();
   const { open, close } = useDialog();
@@ -73,19 +65,20 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     pageIndex: 0,
     pageSize: 10,
   });
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [patchUpdateModalOpen, setPatchUpdateModalOpen] = useState(false);
-  const [deleteRowModalOpen, setDeleteRowModalOpen] = useState(false);
   const fileUploadRef = useRef<FileUploadHandle>(null);
   const [fetchEnabled, setFetchEnabled] = useState(true);
-  const [file, setFile] = useState('');
-  const [selectedRow, setSelectedRow] = useState({});
+  const [file, setFile] = useState<File>();
+  const [selectedRow, setSelectedRow] = useState<SelectedRowPayload>();
   const [bannerMessage, setBannerMessage] = useState('');
-  const [minorPayload, setMinorPayload] = useState('');
-  const [patchPayload, setPatchPayload] = useState('');
-  const [deletedDataRows, setDeletedDataRows] = useState([]);
-  const [updatePriority, setUpdatePriority] = useState('');
+  const [minorPayload, setMinorPayload] = useState<MinorPayLoad>();
+  const [patchPayload, setPatchPayload] = useState<PatchPayLoad>();
+  const [deletedDataRows, setDeletedDataRows] = useState<number[]>([]);
+  const [updatePriority, setUpdatePriority] = useState<UpdatePriority>(
+    UpdatePriority.NULL
+  );
+  const [openedModalContext, setOpenedModalContext] =
+    useState<ViewDatasetGroupModalContexts>(ViewDatasetGroupModalContexts.NULL);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -94,23 +87,17 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   }, []);
 
   useEffect(() => {
-    if (updatePriority === 'MAJOR')
-      setBannerMessage(
-        'You have updated key configurations of the dataset schema which are not saved, please save to apply changes.  Any files imported or edits made to the existing data will be discarded after changes are applied'
-      );
-    else if (updatePriority === 'MINOR')
-      setBannerMessage(
-        'You have imported new data into the dataset, please save the changes to apply. Any changes you made to the individual data items will be discarded after changes are applied'
-      );
-    else if (updatePriority === 'PATCH')
-      setBannerMessage(
-        'You have edited individual items in the dataset which are not saved. Please save the changes to apply'
-      );
+    if (updatePriority === UpdatePriority.MAJOR)
+      setBannerMessage(t('datasetGroups.detailedView.majorUpdateBanner') ?? '');
+    else if (updatePriority === UpdatePriority.MINOR)
+      setBannerMessage(t('datasetGroups.detailedView.minorUpdateBanner') ?? '');
+    else if (updatePriority === UpdatePriority.PATCH)
+      setBannerMessage(t('datasetGroups.detailedView.patchUpdateBanner') ?? '');
     else setBannerMessage('');
   }, [updatePriority]);
 
   const { data: datasets, isLoading } = useQuery(
-    ['datasets/groups/data', pagination, dgId],
+    datasetQueryKeys.GET_DATA_SETS(dgId, pagination),
     () => getDatasets(pagination, dgId),
     {
       keepPreviousData: true,
@@ -118,42 +105,31 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   );
 
   const { data: metadata, isLoading: isMetadataLoading } = useQuery(
-    ['datasets/groups/metadata', dgId],
+    datasetQueryKeys.GET_MATA_DATA(dgId),
     () => getMetadata(dgId),
     { enabled: fetchEnabled }
   );
 
   const [updatedDataset, setUpdatedDataset] = useState(datasets?.dataPayload);
+
   useEffect(() => {
     setUpdatedDataset(datasets?.dataPayload);
   }, [datasets]);
 
-  const [nodes, setNodes] = useState(
-    reverseTransformClassHierarchy(
-      metadata?.response?.data?.[0]?.classHierarchy
-    )
+  const [nodes, setNodes] = useState<TreeNode[]>(
+    reverseTransformClassHierarchy(metadata?.[0]?.classHierarchy)
   );
   const [validationRules, setValidationRules] = useState<
     ValidationRule[] | undefined
-  >(
-    transformObjectToArray(
-      metadata?.response?.data?.[0]?.validationCriteria?.validationRules
-    )
-  );
+  >(transformObjectToArray(metadata?.[0]?.validationCriteria?.validationRules));
 
   useEffect(() => {
-    setNodes(
-      reverseTransformClassHierarchy(
-        metadata?.response?.data?.[0]?.classHierarchy
-      )
-    );
+    setNodes(reverseTransformClassHierarchy(metadata?.[0]?.classHierarchy));
   }, [metadata]);
 
   useEffect(() => {
     setValidationRules(
-      transformObjectToArray(
-        metadata?.response?.data?.[0]?.validationCriteria?.validationRules
-      )
+      transformObjectToArray(metadata?.[0]?.validationCriteria?.validationRules)
     );
   }, [metadata]);
 
@@ -162,9 +138,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       metadata &&
       isMajorUpdate(
         {
-          validationRules:
-            metadata?.response?.data?.[0]?.validationCriteria?.validationRules,
-          classHierarchy: metadata?.response?.data?.[0]?.classHierarchy,
+          validationRules: metadata?.[0]?.validationCriteria?.validationRules,
+          classHierarchy: metadata?.[0]?.classHierarchy,
         },
         {
           validationRules:
@@ -173,20 +148,20 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         }
       )
     ) {
-      setUpdatePriority('MAJOR');
+      setUpdatePriority(UpdatePriority.MAJOR);
     } else {
-      setUpdatePriority('');
+      setUpdatePriority(UpdatePriority.NULL);
     }
   }, [validationRules, nodes]);
 
-  const deleteRow = (dataRow) => {
+  const deleteRow = (dataRow: SelectedRowPayload) => {
     setDeletedDataRows((prevDeletedDataRows) => [
       ...prevDeletedDataRows,
       dataRow?.rowId,
     ]);
-    const payload = updatedDataset?.filter((row) => {
-      if (row.rowId !== selectedRow?.rowId) return row;
-    });
+    const payload = updatedDataset?.filter(
+      (row) => row.rowId !== selectedRow?.rowId
+    );
     setUpdatedDataset(payload);
 
     const updatedPayload = {
@@ -197,12 +172,15 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       },
     };
     setPatchPayload(updatedPayload);
-    setDeleteRowModalOpen(false);
-    if (updatePriority !== 'MAJOR' && updatePriority !== 'MINOR')
-      setUpdatePriority('PATCH');
+    handleCloseModals();
+    if (
+      updatePriority !== UpdatePriority.MAJOR &&
+      updatePriority !== UpdatePriority.MINOR
+    )
+      setUpdatePriority(UpdatePriority.PATCH);
   };
 
-  const patchDataUpdate = (dataRow) => {
+  const patchDataUpdate = (dataRow: SelectedRowPayload) => {
     const payload = updatedDataset?.map((row) =>
       row.rowId === selectedRow?.rowId ? dataRow : row
     );
@@ -216,120 +194,71 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       },
     };
     setPatchPayload(updatedPayload);
-    setPatchUpdateModalOpen(false);
-    if (updatePriority !== 'MAJOR' && updatePriority !== 'MINOR')
-      setUpdatePriority('PATCH');
+    handleCloseModals();
+    if (
+      updatePriority !== UpdatePriority.MAJOR &&
+      updatePriority !== UpdatePriority.MINOR
+    )
+      setUpdatePriority(UpdatePriority.PATCH);
   };
 
   const patchUpdateMutation = useMutation({
-    mutationFn: (data) => patchUpdate(data),
+    mutationFn: (data: PatchPayLoad) => patchUpdate(data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries(['datasets/groups/data']);
+      await queryClient.invalidateQueries(datasetQueryKeys.GET_DATA_SETS());
       close();
-      setView('list');
+      setView(DatasetViewEnum.LIST);
     },
     onError: () => {
-      setPatchUpdateModalOpen(false);
+      handleCloseModals();
       open({
-        title: 'Patch Data Update Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.detailedView.patchDataUnsuccessfulTitle') ?? '',
+        content: (
+          <p>
+            {t('datasetGroups.detailedView.patchDataUnsuccessfulDesc') ?? ''}
+          </p>
+        ),
       });
     },
   });
-
-  const generateDynamicColumns = (columnsData, editView, deleteView) => {
-    const columnHelper = createColumnHelper();
-    const dynamicColumns = columnsData?.map((col) => {
-      return columnHelper.accessor(col, {
-        header: col ?? '',
-        id: col,
-      });
-    });
-
-    const staticColumns = [
-      columnHelper.display({
-        id: 'edit',
-        cell: editView,
-        meta: {
-          size: '1%',
-        },
-      }),
-      columnHelper.display({
-        id: 'delete',
-        cell: deleteView,
-        meta: {
-          size: '1%',
-        },
-      }),
-    ];
-    if (dynamicColumns) return [...dynamicColumns, ...staticColumns];
-    else return [];
-  };
-
-  const editView = (props) => {
-    return (
-      <Button
-        appearance="text"
-        onClick={() => {
-          setSelectedRow(props.row.original);
-          setPatchUpdateModalOpen(true);
-        }}
-      >
-        <Icon icon={<MdOutlineEdit />} />
-        {'Edit'}
-      </Button>
-    );
-  };
-
-  const deleteView = (props: any) => (
-    <Button
-      appearance="text"
-      onClick={() => {
-        setSelectedRow(props.row.original);
-        setDeleteRowModalOpen(true);
-      }}
-    >
-      <Icon icon={<MdOutlineDeleteOutline />} />
-      {'Delete'}
-    </Button>
-  );
-
-  const dataColumns = useMemo(
-    () => generateDynamicColumns(datasets?.fields, editView, deleteView),
-    [datasets?.fields]
-  );
 
   const handleExport = () => {
     exportDataMutation.mutate({ dgId, exportType: exportFormat });
   };
 
   const exportDataMutation = useMutation({
-    mutationFn: (data) => exportDataset(data?.dgId, data?.exportType),
+    mutationFn: (data: { dgId: number; exportType: string }) =>
+      exportDataset(data?.dgId, data?.exportType),
     onSuccess: async (response) => {
+      console.log("response export ", response, exportFormat)
       handleDownload(response, exportFormat);
       open({
-        title: 'Data export was successful',
-        content: <p>Your data has been successfully exported.</p>,
+        title: t('datasetGroups.detailedView.exportDataSuccessTitle') ?? '',
+        content: (
+          <p>{t('datasetGroups.detailedView.exportDataSuccessDesc') ?? ''}</p>
+        ),
       });
-      setIsExportModalOpen(false);
+      handleCloseModals();
     },
     onError: () => {
       open({
-        title: 'Dataset Export Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.detailedView.exportDataUnsucessTitle') ?? '',
+        content: (
+          <p>{t('datasetGroups.detailedView.exportDataUnsucessDesc') ?? ''}</p>
+        ),
       });
     },
   });
 
-  const handleFileSelect = (file: File) => {
-    setFile(file);
+  const handleFileSelect = (file: File | null) => {
+    if (file) setFile(file);
   };
 
   const handleImport = () => {
     setImportStatus('STARTED');
     const payload = {
       dgId,
-      dataFile: file,
+      dataFile: file as File,
     };
 
     importDataMutation.mutate(payload);
@@ -343,65 +272,58 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         dgId,
         s3FilePath: response?.saved_file_path,
       });
-      if (updatePriority !== 'MAJOR') setUpdatePriority('MINOR');
+      if (updatePriority !== UpdatePriority.MAJOR)
+        setUpdatePriority(UpdatePriority.MINOR);
 
-      setIsImportModalOpen(false);
+      handleCloseModals();
     },
     onError: () => {
       open({
-        title: 'Dataset Import Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.detailedView.ImportDataUnsucessTitle') ?? '',
+        content: (
+          <p>{t('datasetGroups.detailedView.importDataUnsucessDesc') ?? ''}</p>
+        ),
       });
     },
   });
 
   const minorUpdateMutation = useMutation({
-    mutationFn: (data) => minorUpdate(data),
-    onSuccess: async (response) => {
+    mutationFn: (data: MinorPayLoad) => minorUpdate(data),
+    onSuccess: async () => {
       open({
-        title: 'Dataset uploaded and validation initiated',
+        title: t('datasetGroups.detailedView.validationInitiatedTitle') ?? '',
         content: (
-          <p>
-            The dataset file was successfully uploaded. The validation and
-            preprocessing is now initiated
-          </p>
+          <p>{t('datasetGroups.detailedView.validationInitiatedDesc') ?? ''}</p>
         ),
         footer: (
           <div className="flex-grid">
             <Button
-              appearance="secondary"
+              appearance={ButtonAppearanceTypes.SECONDARY}
               onClick={() => {
                 close();
                 navigate(0);
               }}
             >
-              Cancel
+              {t('global.cancel')}
             </Button>
-            <Button>View Validation Sessions</Button>
+            <Button>
+              {t('datasetGroups.detailedView.viewValidations') ?? ''}
+            </Button>
           </div>
         ),
       });
-      setIsImportModalOpen(false);
+      setIsModalOpen(false);
+      setOpenedModalContext(ViewDatasetGroupModalContexts.NULL);
     },
     onError: () => {
       open({
-        title: 'Dataset Import Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.detailedView.ImportDataUnsucessTitle') ?? '',
+        content: (
+          <p>{t('datasetGroups.detailedView.importDataUnsucessDesc') ?? ''}</p>
+        ),
       });
     },
   });
-
-  const renderValidationStatus = (status: string | undefined) => {
-    if (status === 'success') {
-      return <Label type="success">{'Validation Successful'}</Label>;
-    } else if (status === 'fail') {
-      return <Label type="error">{'Validation Failed'}</Label>;
-    } else if (status === 'unvalidated') {
-      return <Label type="info">{'Not Validated'}</Label>;
-    } else if (status === 'in-progress') {
-      return <Label type="warning">{'Validation In Progress'}</Label>;
-    }
-  };
 
   const handleMajorUpdate = () => {
     const payload: DatasetGroup = {
@@ -413,80 +335,81 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   };
 
   const datasetGroupUpdate = () => {
-    setNodesError(validateClassHierarchy(nodes));
-    setValidationRuleError(validateValidationRules(validationRules));
+    const classHierarchyError = validateClassHierarchy(nodes);
+    const validationRulesError = validateValidationRules(validationRules);
+
+    setNodesError(classHierarchyError);
+    setValidationRuleError(validationRulesError);
+
     if (
-      !validateClassHierarchy(nodes) &&
-      !validateValidationRules(validationRules) &&
-      !nodesError &&
-      !validationRuleError
+      classHierarchyError ||
+      validationRulesError ||
+      nodesError ||
+      validationRuleError
     ) {
-      if (
-        isMajorUpdate(
-          {
-            validationRules:
-              metadata?.response?.data?.[0]?.validationCriteria
-                ?.validationRules,
-            classHierarchy: metadata?.response?.data?.[0]?.classHierarchy,
-          },
-          {
-            validationRules:
-              transformValidationRules(validationRules)?.validationRules,
-            ...transformClassHierarchy(nodes),
-          }
-        )
-      ) {
-        open({
-          content:
-            'Any files imported or edits made to the existing data will be discarded after changes are applied',
-          title: 'Confirm major update',
-          footer: (
-            <div className="flex-grid">
-              <Button appearance="secondary" onClick={close}>
-                Cancel
-              </Button>
-              <Button onClick={() => handleMajorUpdate()}>Confirm</Button>
-            </div>
-          ),
-        });
-      } else if (minorPayload) {
-        open({
-          content:
-            'Any changes you made to the individual data items (patch update) will be discarded after changes are applied',
-          title: 'Confirm minor update',
-          footer: (
-            <div className="flex-grid">
-              <Button appearance="secondary" onClick={close}>
-                Cancel
-              </Button>
-              <Button onClick={() => minorUpdateMutation.mutate(minorPayload)}>
-                Confirm
-              </Button>
-            </div>
-          ),
-        });
-      } else if (patchPayload) {
-        open({
-          content: 'Changed data rows will be updated in the dataset',
-          title: 'Confirm patch update',
-          footer: (
-            <div className="flex-grid">
-              <Button appearance="secondary">Cancel</Button>
-              <Button onClick={() => patchUpdateMutation.mutate(patchPayload)}>
-                Confirm
-              </Button>
-            </div>
-          ),
-        });
+      return;
+    }
+
+    const isMajorUpdateDetected = isMajorUpdate(
+      {
+        validationRules: metadata?.[0]?.validationCriteria?.validationRules,
+        classHierarchy: metadata?.[0]?.classHierarchy,
+      },
+      {
+        validationRules:
+          transformValidationRules(validationRules)?.validationRules,
+        ...transformClassHierarchy(nodes),
       }
+    );
+
+    const openConfirmationModal = (
+      content: string,
+      title: string,
+      onConfirm: () => void
+    ) => {
+      open({
+        content,
+        title,
+        footer: (
+          <div className="flex-grid">
+            <Button
+              appearance={ButtonAppearanceTypes.SECONDARY}
+              onClick={close}
+            >
+              {t('global.cancel')}
+            </Button>
+            <Button onClick={onConfirm}>{t('global.confirm')}</Button>
+          </div>
+        ),
+      });
+    };
+
+    if (isMajorUpdateDetected) {
+      openConfirmationModal(
+        t('datasetGroups.detailedView.confirmMajorUpdatesDesc'),
+        t('datasetGroups.detailedView.confirmMajorUpdatesTitle'),
+        handleMajorUpdate
+      );
+    } else if (minorPayload) {
+      openConfirmationModal(
+        t('datasetGroups.detailedView.confirmMinorUpdatesDesc'),
+        t('datasetGroups.detailedView.confirmMinorUpdatesTitle'),
+        () => minorUpdateMutation.mutate(minorPayload)
+      );
+    } else if (patchPayload) {
+      openConfirmationModal(
+        t('datasetGroups.detailedView.confirmPatchUpdatesDesc'),
+        t('datasetGroups.detailedView.confirmPatchUpdatesTitle'),
+        () => patchUpdateMutation.mutate(patchPayload)
+      );
     }
   };
 
   const majorUpdateDatasetGroupMutation = useMutation({
     mutationFn: (data: DatasetGroup) => majorUpdate(data),
-    onSuccess: async (response) => {
-      await queryClient.invalidateQueries(['datasetgroup/overview']);
-      setView('list');
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(datasetQueryKeys.DATASET_OVERVIEW());
+      setView(DatasetViewEnum.LIST);
       close();
     },
     onError: () => {
@@ -497,320 +420,108 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     },
   });
 
+  const handleOpenModals = (context: ViewDatasetGroupModalContexts) => {
+    setIsModalOpen(true);
+    setOpenedModalContext(context);
+  };
+
+  const handleCloseModals = () => {
+    setIsModalOpen(false);
+    setOpenedModalContext(ViewDatasetGroupModalContexts.NULL);
+  };
+
   return (
     <div>
       <div className="container">
         <div>
-          {metadata && (
-            <div>
-              {' '}
-              <Card
-                isHeaderLight={false}
-                header={
-                  <div className="flex-between">
-                    <div className="flex-grid">
-                      <Link to={''} onClick={() => navigate(0)}>
-                        <BackArrowButton />
-                      </Link>
-                      <div className="title">
-                        {metadata?.response?.data?.[0]?.name}
-                      </div>
-                      {metadata && (
-                        <Label type="success">{`V${metadata?.response?.data?.[0]?.majorVersion}.${metadata?.response?.data?.[0]?.minorVersion}.${metadata?.response?.data?.[0]?.patchVersion}`}</Label>
-                      )}
-                      {metadata?.response?.data?.[0]?.latest ? (
-                        <Label type="success">Latest</Label>
-                      ) : null}
-                      {renderValidationStatus(
-                        metadata?.response?.data?.[0]?.validationStatus
-                      )}
-                    </div>
-                    <Switch
-                      label=""
-                      checked={metadata?.response?.data?.[0]?.isEnabled}
-                    />
-                  </div>
-                }
-              >
-                <div className="flex-between">
-                  <div>
-                    <p>
-                      Connected Models :
-                      {metadata?.response?.data?.[0]?.linkedModels?.map(
-                        (model, index) => {
-                          return index === metadata?.linkedModels?.length - 1
-                            ? ` ${model?.modelName}`
-                            : ` ${model?.modelName}, `;
-                        }
-                      )}
-                    </p>
-                    <p>
-                      Number of items :
-                      {` ${metadata?.response?.data?.[0]?.numSamples}`}
-                    </p>
-                  </div>
-                  <div className="flex-grid">
-                    <Button
-                      appearance="secondary"
-                      onClick={() => setIsExportModalOpen(true)}
-                    >
-                      Export Dataset
-                    </Button>
-                    <Button
-                      appearance="secondary"
-                      onClick={() => setIsImportModalOpen(true)}
-                    >
-                      Import New Data
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-              {bannerMessage && <div className="banner">{bannerMessage}</div>}
-              {(!datasets || (datasets && datasets?.length < 10)) && (
-                <Card>
-                  <div
-                    style={{
-                      padding: '20px 150px',
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {!datasets && (
-                      <div>
-                        <div style={{ marginBottom: '10px', fontSize: '20px' }}>
-                          No Data Available
-                        </div>
-                        <p>
-                          You have created the dataset group, but there are no
-                          datasets available to show here. You can upload a
-                          dataset to view it in this space. Once added, you can
-                          edit or delete the data as needed.
-                        </p>
-                        <Button onClick={() => setIsImportModalOpen(true)}>
-                          Import New Data
-                        </Button>
-                      </div>
-                    )}
-                    {datasets && datasets?.length < 10 && (
-                      <div>
-                        <p>
-                          Insufficient examples - at least 10 examples are
-                          needed to activate the dataset group.
-                        </p>
-                        <Button onClick={() => setIsImportModalOpen(true)}>
-                          Import New Data
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
-          <div style={{ marginBottom: '20px' }}>
-            {!isLoading && updatedDataset && (
-              <DataTable
-                data={updatedDataset}
-                columns={dataColumns}
-                pagination={pagination}
-                setPagination={(state: PaginationState) => {
-                  if (
-                    state.pageIndex === pagination.pageIndex &&
-                    state.pageSize === pagination.pageSize
-                  )
-                    return;
-                  setPagination(state);
-                  getDatasets(state, dgId);
-                }}
-                pagesCount={datasets?.numPages}
-                isClientSide={false}
-              />
-            )}
-          </div>
-          {metadata && (
-            <div>
-              <Card header="Dataset Group Validations" isHeaderLight={false}>
-                <ValidationCriteriaRowsView
-                  validationRules={validationRules}
-                  setValidationRules={setValidationRules}
-                  validationRuleError={validationRuleError}
-                  setValidationRuleError={setValidationRuleError}
-                />
-              </Card>
+          <DatasetDetailedViewTable
+            metadata={metadata ?? []}
+            handleOpenModals={handleOpenModals}
+            bannerMessage={bannerMessage}
+            datasets={datasets}
+            isLoading={isLoading}
+            updatedDataset={updatedDataset}
+            setSelectedRow={setSelectedRow}
+            pagination={pagination}
+            setPagination={setPagination}
+            dgId={dgId}
+          />
 
-              <Card header="Class Hierarchies" isHeaderLight={false}>
-                {!isMetadataLoading && (
-                  <ClassHierarchy
-                    nodes={nodes}
-                    setNodes={setNodes}
-                    nodesError={nodesError}
-                    setNodesError={setNodesError}
-                  />
-                )}
-              </Card>
-            </div>
-          )}
-          <div
-            className="flex"
-            style={{
-              alignItems: 'end',
-              gap: '10px',
-              justifyContent: 'end',
-              marginTop: '25px',
-            }}
-          >
+          <ValidationAndHierarchyCards
+            metadata={metadata}
+            isMetadataLoading={isMetadataLoading}
+            validationRules={validationRules}
+            setValidationRules={setValidationRules}
+            validationRuleError={validationRuleError}
+            setValidationRuleError={setValidationRuleError}
+            nodes={nodes}
+            setNodes={setNodes}
+            nodesError={nodesError}
+            setNodesError={setNodesError}
+          />
+
+          <div className="footer-button-group">
             <Button
-              appearance="error"
+              appearance={ButtonAppearanceTypes.ERROR}
               onClick={() =>
                 open({
-                  title: 'Are you sure?',
+                  title:
+                    t('datasetGroups.detailedView.modals.delete.title') ?? '',
                   content: (
                     <p>
-                      Once you delete the dataset all models connected to this
-                      model will become untrainable. Are you sure you want to
-                      proceed?
+                      {t(
+                        'datasetGroups.detailedView.modals.delete.description'
+                      )}
                     </p>
                   ),
                   footer: (
                     <div className="flex-grid">
-                      <Button appearance="secondary" onClick={() => close()}>
-                        Cancel
+                      <Button
+                        appearance={ButtonAppearanceTypes.SECONDARY}
+                        onClick={() => close()}
+                      >
+                        {t('global.cancel')}
                       </Button>
-                      <Button appearance="error" onClick={() => close()}>
-                        Delete
+                      <Button
+                        appearance={ButtonAppearanceTypes.ERROR}
+                        onClick={() => close()}
+                      >
+                        {t('global.delete')}
                       </Button>
                     </div>
                   ),
                 })
               }
             >
-              Delete Dataset
+              {t('datasetGroups.detailedView.delete') ?? ''}
             </Button>
-            <Button onClick={() => datasetGroupUpdate()}>Save</Button>
+            <Button onClick={() => datasetGroupUpdate()}>
+              {t('global.save') ?? ''}
+            </Button>
           </div>
         </div>
       </div>
-      {isImportModalOpen && (
-        <Dialog
-          isOpen={isImportModalOpen}
-          title={'Import New Data'}
-          footer={
-            <div className="flex-grid">
-              <Button
-                appearance="secondary"
-                onClick={() => {
-                  setImportStatus('ABORTED');
-                  setIsImportModalOpen(false);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleImport}>Import</Button>
-            </div>
-          }
-          onClose={() => {
-            setIsImportModalOpen(false);
-            setImportStatus('ABORTED');
-          }}
-        >
-          <div>
-            <p>Select the file format</p>
-            <div className="flex-grid" style={{ marginBottom: '20px' }}>
-              <FormRadios
-                label=""
-                name="format"
-                items={formats}
-                onChange={setImportFormat}
-              ></FormRadios>
-            </div>
-            <p>Attachments</p>
-            <FileUpload
-              ref={fileUploadRef}
-              onFileSelect={handleFileSelect}
-              accept={importFormat}
-              disabled={!importFormat}
-            />
-            {importStatus === 'STARTED' && (
-              <div style={{ textAlign: 'center', padding: '20px' }}>
-                <div style={{ marginBottom: '10px', fontSize: '18px' }}>
-                  Upload in Progress...
-                </div>
-                <p>
-                  Uploading dataset. Please wait until the upload finishes. If
-                  you cancel midway, the data and progress will be lost.
-                </p>
-              </div>
-            )}
-          </div>
-        </Dialog>
-      )}
-      {isExportModalOpen && (
-        <Dialog
-          isOpen={isExportModalOpen}
-          title={'Export Data'}
-          footer={
-            <div className="flex-grid">
-              <Button
-                appearance="secondary"
-                onClick={() => {
-                  setIsExportModalOpen(false);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button onClick={() => handleExport()}>Export</Button>
-            </div>
-          }
-          onClose={() => {
-            setIsExportModalOpen(false);
-            setImportStatus('ABORTED');
-          }}
-        >
-          <div>
-            <p>Select the file format</p>
-            <div className="flex-grid" style={{ marginBottom: '20px' }}>
-              <FormRadios
-                label=""
-                name="format"
-                items={formats}
-                onChange={setExportFormat}
-              ></FormRadios>
-            </div>
-          </div>
-        </Dialog>
-      )}
-      {patchUpdateModalOpen && (
-        <Dialog
-          title={'Edit'}
-          onClose={() => setPatchUpdateModalOpen(false)}
-          isOpen={patchUpdateModalOpen}
-        >
-          <DynamicForm
-            formData={selectedRow}
-            onSubmit={patchDataUpdate}
-            setPatchUpdateModalOpen={setPatchUpdateModalOpen}
-          />
-        </Dialog>
-      )}
-      {deleteRowModalOpen && (
-        <Dialog
-          isOpen={deleteRowModalOpen}
-          onClose={() => setDeleteRowModalOpen(false)}
-          title="Are you sure?"
-          footer={
-            <div className="flex-grid">
-              <Button appearance="secondary" onClick={() => close()}>
-                Cancel
-              </Button>
-              <Button appearance="error" onClick={() => deleteRow(selectedRow)}>
-                Delete
-              </Button>
-            </div>
-          }
-        >
-          Confirm that you are wish to delete the following record
-        </Dialog>
-      )}
+      <ViewDatasetGroupModalController
+        setImportStatus={setImportStatus}
+        handleFileSelect={handleFileSelect}
+        fileUploadRef={fileUploadRef}
+        handleImport={handleImport}
+        importStatus={importStatus}
+        setImportFormat={setImportFormat}
+        importFormat={importFormat}
+        handleExport={handleExport}
+        setExportFormat={setExportFormat}
+        selectedRow={selectedRow}
+        patchDataUpdate={patchDataUpdate}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        openedModalContext={openedModalContext}
+        setOpenedModalContext={setOpenedModalContext}
+        closeModals={handleCloseModals}
+        deleteRow={deleteRow}
+        file={file}
+        exportFormat={exportFormat}
+      />
     </div>
   );
 };
