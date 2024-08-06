@@ -10,7 +10,12 @@ import { generateDynamicColumns } from 'utils/dataTableUtils';
 import { MdOutlineDeleteOutline, MdOutlineEdit } from 'react-icons/md';
 import { CellContext, ColumnDef, PaginationState } from '@tanstack/react-table';
 import { getDatasets } from 'services/datasets';
-import { DatasetDetails, MetaData, SelectedRowPayload } from 'types/datasetGroups';
+import {
+  DatasetDetails,
+  MetaData,
+  SelectedRowPayload,
+} from 'types/datasetGroups';
+import SkeletonTable from '../TableSkeleton/TableSkeleton';
 
 const DatasetDetailedViewTable = ({
   metadata,
@@ -30,7 +35,9 @@ const DatasetDetailedViewTable = ({
   datasets: DatasetDetails | undefined;
   isLoading: boolean;
   updatedDataset: any;
-  setSelectedRow: React.Dispatch<React.SetStateAction<SelectedRowPayload | undefined>>;
+  setSelectedRow: React.Dispatch<
+    React.SetStateAction<SelectedRowPayload | undefined>
+  >;
   pagination: PaginationState;
   setPagination: React.Dispatch<React.SetStateAction<PaginationState>>;
   dgId: number;
@@ -188,6 +195,7 @@ const DatasetDetailedViewTable = ({
         </div>
       )}
       <div style={{ marginBottom: '20px' }}>
+        {isLoading && <SkeletonTable rowCount={5} />}
         {!isLoading && updatedDataset && (
           <DataTable
             data={updatedDataset}

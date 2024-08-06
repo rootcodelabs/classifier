@@ -49,3 +49,7 @@ export const datasetQueryKeys = {
     );
   },
 };
+
+export const stopWordsQueryKeys = {
+  GET_ALL_STOP_WORDS: () => [`datasetgroups/stopwords`],
+};
