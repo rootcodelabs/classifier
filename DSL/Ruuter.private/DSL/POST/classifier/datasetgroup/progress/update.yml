@@ -20,6 +20,9 @@ declaration:
       - field: progressPercentage
         type: number
         description: "Body field 'progressPercentage'"
+      - field: processComplete
+        type: boolean
+        description: "Body field 'processComplete'"
 
 extract_request_data:
   assign:
@@ -27,6 +30,7 @@ extract_request_data:
     validation_status: ${incoming.body.validationStatus}
     validation_message: ${incoming.body.validationMessage}
     progress_percentage: ${incoming.body.progressPercentage}
+    process_complete: ${incoming.body.processComplete}
   next: check_for_request_data
 
 check_for_request_data:
@@ -64,6 +68,7 @@ update_dataset_progress_session:
       validation_status: ${validation_status}
       progress_percentage: ${progress_percentage}
       validation_message: ${validation_message}
+      process_complete: ${process_complete}
   result: res
   next: check_status
 
