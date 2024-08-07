@@ -76,7 +76,29 @@ get_epoch_date:
   assign:
     current_epoch: ${Date.now()}
     random_num: ${Math.floor(Math.random() * 100000)}
-  next: create_model_metadata
+  next: check_deployment_platform
+
+check_deployment_platform:
+  switch:
+    - condition: ${deployment_platform == 'jira' || deployment_platform == 'outlook' || deployment_platform == 'pinal'}
+      next: update_existing_models_deployment_platform
+  next: assign_fail_response
+
+update_existing_models_deployment_platform:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-models-deployment-platform"
+    body:
+      updating_platform: 'undeployed'
+      existing_platform: ${deployment_platform}
+  result: res_update
+  next: check_deployment_platform__status
+
+check_deployment_platform__status:
+  switch:
+    - condition: ${200 <= res_update.response.statusCodeValue && res_update.response.statusCodeValue < 300}
+      next: create_model_metadata
+  next: assign_fail_response
 
 create_model_metadata:
   call: http.post
