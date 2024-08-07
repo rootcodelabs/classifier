@@ -5,7 +5,6 @@ export const validateDataModel = (dataModel) => {
   const newErrors: any = {};
 
   if (!modelName.trim()) newErrors.modelName = 'Model Name is required';
-  if (!dgName.trim()) newErrors.dgName = 'Dataset Group Name is required';
   if (!platform.trim()) newErrors.platform = 'Platform is required';
   if (baseModels?.length === 0)
     newErrors.baseModels = 'At least one Base Model is required';
@@ -19,11 +18,21 @@ export const customFormattedArray = <T extends Record<string, any>>(
   attributeName: keyof T
 ) => {
   return data?.map((item) => ({
-    label: `${item[attributeName]} (${item?.majorVersion}.${item?.minorVersion}.${item?.patchVersion})`,
+    label: `${item[attributeName]}`,
     value: {
-      name: `${item[attributeName]} (${item?.majorVersion}.${item?.minorVersion}.${item?.patchVersion})`,
-      id: item.dgId,
+      name: `${item[attributeName]}`,
+      id: item.id,
     },
+  }));
+};
+
+export const dgArrayWithVersions = <T extends Record<string, any>>(
+  data: T[],
+  attributeName: keyof T
+) => {
+  return data?.map((item) => ({
+    label: `${item[attributeName]} (${item.majorVersion}.${item.minorVersion}.${item.patchVersion})`,
+    value: item.dgId
   }));
 };
 

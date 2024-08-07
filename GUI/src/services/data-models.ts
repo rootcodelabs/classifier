@@ -9,13 +9,11 @@ export async function getDataModelsOverview(
   modelName: string,
   majorVersion: number,
   minorVersion: number,
-  patchVersion: number,
   platform: string,
-  datasetGroup:string,
-  trainingStatus:string,
-  deploymentMaturity:string,
-  sort: string,
- 
+  datasetGroup: string,
+  trainingStatus: string,
+  deploymentMaturity: string,
+  sort: string
 ) {
   const { data } = await apiDev.get('classifier/datamodel/overview', {
     params: {
@@ -23,13 +21,12 @@ export async function getDataModelsOverview(
       modelName,
       majorVersion,
       minorVersion,
-      patchVersion,
       platform,
       datasetGroup,
       trainingStatus,
       deploymentMaturity,
-      sortType:sort,
-      pageSize:12
+      sortType: sort,
+      pageSize: 12,
     },
   });
   return data?.response;
@@ -48,14 +45,13 @@ export async function getCreateOptions() {
 export async function getMetadata(modelId: string | number | null) {
   const { data } = await apiDev.get('classifier/datamodel/metadata', {
     params: {
-      modelId
+      modelId,
     },
   });
   return data?.response?.data[0];
 }
 
 export async function createDataModel(dataModel) {
-
   const { data } = await apiDev.post('classifier/datamodel/create', {
     ...dataModel,
   });
@@ -63,10 +59,22 @@ export async function createDataModel(dataModel) {
 }
 
 export async function updateDataModel(dataModel) {
-
   const { data } = await apiDev.post('classifier/datamodel/update', {
     ...dataModel,
   });
   return data;
 }
 
+export async function deleteDataModel(modelId : number) {
+  const { data } = await apiDev.post('classifier/datamodel/delete', {
+    modelId
+  });
+  return data;
+}
+
+export async function retrainDataModel(modelId : number) {
+  const { data } = await apiDev.post('classifier/datamodel/re-train', {
+    modelId
+  });
+  return data;
+}

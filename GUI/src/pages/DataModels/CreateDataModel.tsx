@@ -13,7 +13,7 @@ import { createDataModel } from 'services/data-models';
 
 const CreateDataModel: FC = () => {
   const { t } = useTranslation();
-  const { open,close } = useDialog();
+  const { open, close } = useDialog();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
@@ -47,37 +47,56 @@ const CreateDataModel: FC = () => {
     const validationErrors = validateDataModel(dataModel);
     setErrors(validationErrors);
     return Object.keys(validationErrors)?.length === 0;
-
-    
   };
 
-  const handleCreate = ()=>{
-if(validateData()){
-  const payload={
-    modelName: dataModel.modelName,
-    datasetGroupName: dataModel.dgName,
-    dgId: dataModel.dgId,
-    baseModels: dataModel.baseModels,
-    deploymentPlatform: dataModel.platform,
-    maturityLabel:dataModel.maturity
-}
+  const handleCreate = () => {
+    if (validateData()) {
+      const payload = {
+        modelName: dataModel.modelName,
+        dgId: dataModel.dgId,
+        baseModels: dataModel.baseModels,
+        deploymentPlatform: dataModel.platform,
+        maturityLabel: dataModel.maturity,
+      };
 
-createDataModelMutation.mutate(payload);
-}
-  }
+      createDataModelMutation.mutate(payload);
+    }
+  };
   const createDataModelMutation = useMutation({
     mutationFn: (data) => createDataModel(data),
     onSuccess: async (response) => {
       open({
         title: 'Data Model Created and Trained',
-        content: <p>You have successfully created and trained the data model. You can view it on the data model dashboard.</p>,
-        footer:<div className='flex-grid'><Button appearance={ButtonAppearanceTypes.SECONDARY}>Cancel</Button> <Button onClick={()=>{navigate('/data-models');close()}}>View All Data Models</Button></div>
+        content: (
+          <p>
+            You have successfully created and trained the data model. You can
+            view it on the data model dashboard.
+          </p>
+        ),
+        footer: (
+          <div className="flex-grid">
+            <Button appearance={ButtonAppearanceTypes.SECONDARY}>Cancel</Button>{' '}
+            <Button
+              onClick={() => {
+                navigate('/data-models');
+                close();
+              }}
+            >
+              View All Data Models
+            </Button>
+          </div>
+        ),
       });
     },
     onError: () => {
       open({
         title: 'Error Creating Data Model',
-        content: <p>There was an issue creating or training the data model. Please try again. If the problem persists, contact support for assistance.</p>,
+        content: (
+          <p>
+            There was an issue creating or training the data model. Please try
+            again. If the problem persists, contact support for assistance.
+          </p>
+        ),
       });
     },
   });
@@ -97,7 +116,7 @@ createDataModelMutation.mutate(payload);
           errors={errors}
           dataModel={dataModel}
           handleChange={handleDataModelAttributesChange}
-          type='create'
+          type="create"
         />
       </div>
       <div

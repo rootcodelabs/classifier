@@ -49,6 +49,8 @@
     "datasetGroups": "Dataset Groups",
     "validationSessions": "Validation Sessions",
     "dataModels": "Data Models",
+    "models": "Models",
+    "trainingSessions": "Training Sessions",
     "testModel": "Test Model",
     "stopWords": "Stop Words",
     "incomingTexts": "Incoming Texts"

@@ -4,7 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card } from 'components';
 import { useDialog } from 'hooks/useDialog';
 import BackArrowButton from 'assets/BackArrowButton';
-import { getMetadata, updateDataModel } from 'services/data-models';
+import {
+  deleteDataModel,
+  getMetadata,
+  retrainDataModel,
+  updateDataModel,
+} from 'services/data-models';
 import DataModelForm from 'components/molecules/DataModelForm';
 import { getChangedAttributes, validateDataModel } from 'utils/dataModelsUtils';
 import { Platform } from 'enums/dataModelsEnums';
@@ -20,9 +25,8 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
   const [enabled, setEnabled] = useState(true);
   const [initialData, setInitialData] = useState({});
   const [dataModel, setDataModel] = useState({
-    modelId: '',
+    modelId: 0,
     modelName: '',
-    dgName: '',
     dgId: '',
     platform: '',
     baseModels: [],
@@ -40,8 +44,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
         setDataModel({
           modelId: data?.modelId || '',
           modelName: data?.modelName || '',
-          dgName: data?.connectedDgName || '',
-          dgId: data?.modelId || '',
+          dgId: data?.connectedDgId || '',
           platform: data?.deploymentEnv || '',
           baseModels: data?.baseModels || [],
           maturity: data?.maturityLabel || '',
@@ -49,7 +52,6 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
         });
         setInitialData({
           modelName: data?.modelName || '',
-          dgName: data?.connectedDgName || '',
           dgId: data?.modelId || '',
           platform: data?.deploymentEnv || '',
           baseModels: data?.baseModels || [],
@@ -71,7 +73,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
   const handleSave = () => {
     const payload = getChangedAttributes(initialData, dataModel);
     let updateType;
-    if (payload.dgId || payload.dgName) {
+    if (payload.dgId) {
       updateType = 'major';
     } else if (payload.baseModels || payload.platform) {
       updateType = 'minor';
@@ -82,13 +84,11 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
     const updatedPayload = {
       modelId: dataModel.modelId,
       connectedDgId: payload.dgId,
-      connectedDgName: 'Alpha Dataset 24',
       deploymentEnv: payload.platform,
       baseModels: payload.baseModels,
       maturityLabel: payload.maturity,
       updateType,
     };
-
 
     if (updateType) {
       if (
@@ -101,10 +101,23 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
           title: 'Warning: Replace Production Model',
           content:
             'Adding this model to production will replace the current production model. Are you sure you want to proceed?',
-          footer: <div className="flex-grid"><Button appearance={ButtonAppearanceTypes.SECONDARY} onClick={close}>Cancel</Button><Button onClick={()=>updateDataModelMutation.mutate(updatedPayload)}>Proceed</Button></div>,
+          footer: (
+            <div className="flex-grid">
+              <Button
+                appearance={ButtonAppearanceTypes.SECONDARY}
+                onClick={close}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => updateDataModelMutation.mutate(updatedPayload)}
+              >
+                Proceed
+              </Button>
+            </div>
+          ),
         });
       } else {
-        
         updateDataModelMutation.mutate(updatedPayload);
       }
     }
@@ -176,7 +189,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
           <div className="flex-grid">
             <Button
               appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={close}
+              onClick={() => deleteDataModelMutation.mutate(dataModel.modelId)}
             >
               Cancel
             </Button>
@@ -198,13 +211,55 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
             >
               Cancel
             </Button>
-            <Button appearance={ButtonAppearanceTypes.ERROR}>Delete</Button>
+            <Button
+              onClick={() => deleteDataModelMutation.mutate(dataModel.modelId)}
+              appearance={ButtonAppearanceTypes.ERROR}
+            >
+              Delete
+            </Button>
           </div>
         ),
       });
     }
   };
 
+  const deleteDataModelMutation = useMutation({
+    mutationFn: (modelId: number) => deleteDataModel(modelId),
+    onSuccess: async (response) => {
+      close();
+      navigate(0);
+    },
+    onError: () => {
+      open({
+        title: 'Error Deleting Data Model',
+        content: (
+          <p>
+            There was an issue deleting the data model. Please try again. If the
+            problem persists, contact support for assistance.
+          </p>
+        ),
+      });
+    },
+  });
+
+  const retrainDataModelMutation = useMutation({
+    mutationFn: (modelId: number) => retrainDataModel(modelId),
+    onSuccess: async () => {
+      close();
+      navigate(0);
+    },
+    onError: () => {
+      open({
+        title: 'Error Deleting Data Model',
+        content: (
+          <p>
+            There was an issue retraining the data model. Please try again. If the
+            problem persists, contact support for assistance.
+          </p>
+        ),
+      });
+    },
+  });
   return (
     <div>
       <div className="container">
@@ -228,7 +283,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
                 Model updated. Please initiate retraining to continue benefiting
                 from the latest improvements.
               </p>
-              <Button onClick={() => {}}>Retrain</Button>
+              <Button onClick={() => {retrainDataModelMutation.mutate(dataModel.modelId)}}>Retrain</Button>
             </div>
           </div>
         </Card>
@@ -266,7 +321,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
                   >
                     Cancel
                   </Button>
-                  <Button>Retrain</Button>
+                  <Button onClick={()=>retrainDataModelMutation.mutate(dataModel.modelId)}>Retrain</Button>
                 </div>
               ),
             })

@@ -10,7 +10,10 @@ import {
 import { formattedArray } from 'utils/commonUtilts';
 import { useQuery } from '@tanstack/react-query';
 import { getCreateOptions } from 'services/data-models';
-import { customFormattedArray } from 'utils/dataModelsUtils';
+import {
+  customFormattedArray,
+  dgArrayWithVersions,
+} from 'utils/dataModelsUtils';
 
 type DataModelFormType = {
   dataModel: any;
@@ -23,7 +26,7 @@ const DataModelForm: FC<DataModelFormType> = ({
   dataModel,
   handleChange,
   errors,
-  type
+  type,
 }) => {
   const { t } = useTranslation();
 
@@ -31,28 +34,28 @@ const DataModelForm: FC<DataModelFormType> = ({
     getCreateOptions()
   );
 
-  console.log(createOptions);
-
   return (
     <div>
-      {type==="create" ? (<div>
-        <div className="grey-card">
-          <FormInput
-            name="modelName"
-            label="Model Name"
-            value={dataModel.modelName}
-            onChange={(e) => handleChange('modelName', e.target.value)}
-            error={errors?.modelName}
-          />
+      {type === 'create' ? (
+        <div>
+          <div className="grey-card">
+            <FormInput
+              name="modelName"
+              label="Model Name"
+              value={dataModel.modelName}
+              onChange={(e) => handleChange('modelName', e.target.value)}
+              error={errors?.modelName}
+            />
+          </div>
+          <div className="grey-card">
+            Model Version <Label type="success">{dataModel?.version}</Label>
+          </div>
         </div>
-        <div className="grey-card">
-          Model Version <Label type="success">{dataModel?.version}</Label>
-        </div>
-      </div>):(
+      ) : (
         <div className="grey-card flex-grid">
-      <div className='title'>{dataModel.modelName}</div>
-      <Label type="success">{dataModel?.version}</Label>
-      </div>
+          <div className="title">{dataModel.modelName}</div>
+          <Label type="success">{dataModel?.version}</Label>
+        </div>
       )}
 
       {createOptions && (
@@ -61,17 +64,15 @@ const DataModelForm: FC<DataModelFormType> = ({
           <div className="grey-card">
             <FormSelect
               name="dgName"
-              options={customFormattedArray(
+              options={dgArrayWithVersions(
                 createOptions?.datasetGroups,
                 'groupName'
               )}
               label=""
               onSelectionChange={(selection) => {
-                handleChange('dgName', selection?.value?.name);
-                handleChange('dgId', selection?.value?.id);
+                handleChange('dgId', selection?.value);
               }}
-              error={errors?.dgName}
-              defaultValue={ dataModel?.dgName}
+              defaultValue={dataModel?.dgId}
             />
           </div>
 
