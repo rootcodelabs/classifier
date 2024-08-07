@@ -52,3 +52,29 @@
   padding: 20px;
   margin-top: 20px;
 }
+
+.container {
+  min-height: 100vh;
+  padding-bottom: 100px;
+  box-sizing: border-box;
+}
+
+.button-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+  padding: 20px 50px 20px 0px;
+  background-color: #fff;
+  z-index: 10;
+  margin-right: 15px;
+}
+
+.content-wrapper {
+  padding-bottom: 60px;
+}
