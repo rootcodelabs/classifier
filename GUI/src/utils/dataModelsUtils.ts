@@ -1,4 +1,4 @@
-import { DataModel } from "types/dataModels";
+import { DataModel } from 'types/dataModels';
 
 export const validateDataModel = (dataModel) => {
   const { modelName, dgName, platform, baseModels, maturity } = dataModel;
@@ -14,14 +14,23 @@ export const validateDataModel = (dataModel) => {
   return newErrors;
 };
 
-export const customFormattedArray = <T extends Record<string, any>>(data: T[], attributeName: keyof T) => {
+export const customFormattedArray = <T extends Record<string, any>>(
+  data: T[],
+  attributeName: keyof T
+) => {
   return data?.map((item) => ({
-    label: item[attributeName],
-    value: {name:item[attributeName],id:item.dgId},
+    label: `${item[attributeName]} (${item?.majorVersion}.${item?.minorVersion}.${item?.patchVersion})`,
+    value: {
+      name: `${item[attributeName]} (${item?.majorVersion}.${item?.minorVersion}.${item?.patchVersion})`,
+      id: item.dgId,
+    },
   }));
 };
 
-export const getChangedAttributes = (original: DataModel, updated: DataModel): Partial<Record<keyof DataModel, string | null>> => {
+export const getChangedAttributes = (
+  original: DataModel,
+  updated: DataModel
+): Partial<Record<keyof DataModel, string | null>> => {
   const changes: Partial<Record<keyof DataModel, string | null>> = {};
 
   (Object.keys(original) as (keyof DataModel)[]).forEach((key) => {

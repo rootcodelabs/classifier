@@ -29,7 +29,7 @@ export async function getDataModelsOverview(
       trainingStatus,
       deploymentMaturity,
       sortType:sort,
-      pageSize:5
+      pageSize:12
     },
   });
   return data?.response;
@@ -57,6 +57,14 @@ export async function getMetadata(modelId: string | number | null) {
 export async function createDataModel(dataModel) {
 
   const { data } = await apiDev.post('classifier/datamodel/create', {
+    ...dataModel,
+  });
+  return data;
+}
+
+export async function updateDataModel(dataModel) {
+
+  const { data } = await apiDev.post('classifier/datamodel/update', {
     ...dataModel,
   });
   return data;

@@ -1,10 +1,10 @@
 import { FC, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card } from 'components';
 import { useDialog } from 'hooks/useDialog';
 import BackArrowButton from 'assets/BackArrowButton';
-import { getMetadata } from 'services/data-models';
+import { getMetadata, updateDataModel } from 'services/data-models';
 import DataModelForm from 'components/molecules/DataModelForm';
 import { getChangedAttributes, validateDataModel } from 'utils/dataModelsUtils';
 import { Platform } from 'enums/dataModelsEnums';
@@ -68,32 +68,94 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
     }));
   };
 
-  const [errors, setErrors] = useState({
-    modelName: '',
-    dgName: '',
-    platform: '',
-    baseModels: '',
-    maturity: '',
-  });
-
-  const validateData = () => {
-    const validationErrors = validateDataModel(dataModel);
-    setErrors(validationErrors);
-    return Object.keys(validationErrors)?.length === 0;
-  };
-
   const handleSave = () => {
     const payload = getChangedAttributes(initialData, dataModel);
-    
+    let updateType;
+    if (payload.dgId || payload.dgName) {
+      updateType = 'major';
+    } else if (payload.baseModels || payload.platform) {
+      updateType = 'minor';
+    } else if (payload.maturity) {
+      updateType = 'maturityLabel';
+    }
 
-    if (validateData()) {
+    const updatedPayload = {
+      modelId: dataModel.modelId,
+      connectedDgId: payload.dgId,
+      connectedDgName: 'Alpha Dataset 24',
+      deploymentEnv: payload.platform,
+      baseModels: payload.baseModels,
+      maturityLabel: payload.maturity,
+      updateType,
+    };
+
+
+    if (updateType) {
       if (
-        dataModel.dgId !== initialData.dgId ||
-        dataModel.dgName !== initialData.dgName
+        initialData.platform === Platform.UNDEPLOYED &&
+        (dataModel.platform === Platform.JIRA ||
+          dataModel.platform === Platform.OUTLOOK ||
+          dataModel.platform === Platform.PINAL)
       ) {
+        open({
+          title: 'Warning: Replace Production Model',
+          content:
+            'Adding this model to production will replace the current production model. Are you sure you want to proceed?',
+          footer: <div className="flex-grid"><Button appearance={ButtonAppearanceTypes.SECONDARY} onClick={close}>Cancel</Button><Button onClick={()=>updateDataModelMutation.mutate(updatedPayload)}>Proceed</Button></div>,
+        });
+      } else {
+        
+        updateDataModelMutation.mutate(updatedPayload);
       }
     }
   };
+
+  const updateDataModelMutation = useMutation({
+    mutationFn: (data) => updateDataModel(data),
+    onSuccess: async (response) => {
+      open({
+        title: 'Changes Saved Successfully',
+        content: (
+          <p>
+            You have successfully saved the changes. You can view the data model
+            in the "All Data Models" view.
+          </p>
+        ),
+        footer: (
+          <div className="flex-grid">
+            <Button
+              appearance={ButtonAppearanceTypes.SECONDARY}
+              onClick={() => {
+                navigate(0);
+                close();
+              }}
+            >
+              Cancel
+            </Button>{' '}
+            <Button
+              onClick={() => {
+                navigate(0);
+                close();
+              }}
+            >
+              View All Data Models
+            </Button>
+          </div>
+        ),
+      });
+    },
+    onError: () => {
+      open({
+        title: 'Error Updating Data Model',
+        content: (
+          <p>
+            There was an issue updating the data model. Please try again. If the
+            problem persists, contact support for assistance.
+          </p>
+        ),
+      });
+    },
+  });
 
   const handleDelete = () => {
     if (
@@ -174,7 +236,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
         <DataModelForm
           dataModel={dataModel}
           handleChange={handleDataModelAttributesChange}
-          errors={errors}
+          type="configure"
         />
       </div>
       <div
@@ -198,12 +260,13 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
               content: 'Are you sure you want to retrain this model?',
               footer: (
                 <div className="flex-grid">
-                  <Button appearance={ButtonAppearanceTypes.SECONDARY} onClick={close}>
+                  <Button
+                    appearance={ButtonAppearanceTypes.SECONDARY}
+                    onClick={close}
+                  >
                     Cancel
                   </Button>
-                  <Button >
-                    Retrain
-                  </Button>
+                  <Button>Retrain</Button>
                 </div>
               ),
             })

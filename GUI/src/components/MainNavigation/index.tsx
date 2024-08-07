@@ -98,7 +98,9 @@ const MainNavigation: FC = () => {
       return res?.data?.response;
     },
     onSuccess: (res) => {
-      const role = res[0];
+      console.log(res);
+      
+      const role = res?.includes(ROLES.ROLE_ADMINISTRATOR) ? ROLES.ROLE_ADMINISTRATOR :ROLES.ROLE_MODEL_TRAINER
       const filteredItems = filterItemsByRole(role, items);
       setMenuItems(filteredItems);
     },

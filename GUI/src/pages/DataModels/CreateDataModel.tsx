@@ -44,19 +44,27 @@ const CreateDataModel: FC = () => {
   });
 
   const validateData = () => {
-    setErrors(validateDataModel(dataModel));
-    const payload={
-      modelName: dataModel.modelName,
-      datasetGroupName: dataModel.dgName,
-      dgId: dataModel.dgId,
-      baseModels: dataModel.baseModels,
-      deploymentPlatform: dataModel.platform,
-      maturityLabel:dataModel.maturity
-  }
-  
-  createDataModelMutation.mutate(payload);
+    const validationErrors = validateDataModel(dataModel);
+    setErrors(validationErrors);
+    return Object.keys(validationErrors)?.length === 0;
+
+    
   };
 
+  const handleCreate = ()=>{
+if(validateData()){
+  const payload={
+    modelName: dataModel.modelName,
+    datasetGroupName: dataModel.dgName,
+    dgId: dataModel.dgId,
+    baseModels: dataModel.baseModels,
+    deploymentPlatform: dataModel.platform,
+    maturityLabel:dataModel.maturity
+}
+
+createDataModelMutation.mutate(payload);
+}
+  }
   const createDataModelMutation = useMutation({
     mutationFn: (data) => createDataModel(data),
     onSuccess: async (response) => {
@@ -89,6 +97,7 @@ const CreateDataModel: FC = () => {
           errors={errors}
           dataModel={dataModel}
           handleChange={handleDataModelAttributesChange}
+          type='create'
         />
       </div>
       <div
@@ -102,7 +111,7 @@ const CreateDataModel: FC = () => {
           background: 'white',
         }}
       >
-        <Button onClick={() => validateData()}>Create Dataset Group</Button>
+        <Button onClick={() => handleCreate()}>Create Dataset Group</Button>
         <Button appearance="secondary" onClick={() => navigate('/data-models')}>
           Cancel
         </Button>

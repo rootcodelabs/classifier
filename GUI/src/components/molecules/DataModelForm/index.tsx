@@ -15,13 +15,15 @@ import { customFormattedArray } from 'utils/dataModelsUtils';
 type DataModelFormType = {
   dataModel: any;
   handleChange: (name: string, value: any) => void;
-  errors: Record<string, string>;
+  errors?: Record<string, string>;
+  type: string;
 };
 
 const DataModelForm: FC<DataModelFormType> = ({
   dataModel,
   handleChange,
   errors,
+  type
 }) => {
   const { t } = useTranslation();
 
@@ -33,7 +35,7 @@ const DataModelForm: FC<DataModelFormType> = ({
 
   return (
     <div>
-      <div>
+      {type==="create" ? (<div>
         <div className="grey-card">
           <FormInput
             name="modelName"
@@ -46,7 +48,12 @@ const DataModelForm: FC<DataModelFormType> = ({
         <div className="grey-card">
           Model Version <Label type="success">{dataModel?.version}</Label>
         </div>
+      </div>):(
+        <div className="grey-card flex-grid">
+      <div className='title'>{dataModel.modelName}</div>
+      <Label type="success">{dataModel?.version}</Label>
       </div>
+      )}
 
       {createOptions && (
         <div>

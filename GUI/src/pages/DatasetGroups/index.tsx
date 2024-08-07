@@ -146,8 +146,8 @@ const DatasetGroups: FC = () => {
               </Button>
             </div>
             <div
-              className="bordered-card grid-container"
-              style={{ padding: '20px', marginTop: '20px' }}
+              className="grid-container"
+              style={{marginTop: '20px' }}
             >
               {isLoading && <div>Loading...</div>}
               {datasetGroupsData?.response?.data?.map(
