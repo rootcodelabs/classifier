@@ -12,6 +12,9 @@ INSERT INTO models_metadata (
     created_timestamp,
     connected_dg_id,
     connected_dg_name,
+    connected_dg_major_version,
+    connected_dg_minor_version,
+    connected_dg_patch_version,
     model_s3_location,
     inference_routes,
     training_results
@@ -34,6 +37,9 @@ SELECT
     created_timestamp,
     connected_dg_id,
     connected_dg_name,
+    connected_dg_major_version,
+    connected_dg_minor_version,
+    connected_dg_patch_version,
     NULL AS model_s3_location,
     NULL AS inference_routes,
     NULL AS training_results
