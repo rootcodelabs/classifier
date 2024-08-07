@@ -30,7 +30,7 @@ declaration:
         type: string
         description: "Parameter 'platform'"
       - field: datasetGroup
-        type: string
+        type: number
         description: "Parameter 'datasetGroup'"
       - field: trainingStatus
         type: string
@@ -48,7 +48,7 @@ extract_data:
     major_version: ${Number(incoming.params.majorVersion)}
     minor_version: ${Number(incoming.params.minorVersion)}
     platform: ${incoming.params.platform}
-    dataset_group: ${incoming.params.datasetGroup}
+    dataset_group: ${Number(incoming.params.datasetGroup)}
     training_status: ${incoming.params.trainingStatus}
     deployment_maturity: ${incoming.params.deploymentMaturity}
   next: get_data_model_meta_data_overview
