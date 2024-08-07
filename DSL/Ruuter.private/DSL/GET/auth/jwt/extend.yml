@@ -15,7 +15,7 @@ declaration:
 extend_cookie:
   call: http.post
   args:
-    url: "[#CHATBOT_TIM]/jwt/custom-jwt-extend"
+    url: "[#CLASSIFIER_TIM]/jwt/custom-jwt-extend"
     contentType: plaintext
     headers:
       cookie: ${incoming.headers.cookie}
