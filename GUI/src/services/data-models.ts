@@ -10,10 +10,11 @@ export async function getDataModelsOverview(
   majorVersion: number,
   minorVersion: number,
   platform: string,
-  datasetGroup: string,
+  datasetGroup: number,
   trainingStatus: string,
   deploymentMaturity: string,
-  sort: string
+  sort: string,
+  isProductionModel: boolean
 ) {
   const { data } = await apiDev.get('classifier/datamodel/overview', {
     params: {
@@ -27,6 +28,7 @@ export async function getDataModelsOverview(
       deploymentMaturity,
       sortType: sort,
       pageSize: 12,
+      isProductionModel
     },
   });
   return data?.response;

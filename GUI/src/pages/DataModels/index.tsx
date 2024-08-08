@@ -12,6 +12,8 @@ import { INTEGRATION_OPERATIONS } from 'enums/integrationEnums';
 import { Platform } from 'enums/dataModelsEnums';
 import { customFormattedArray } from 'utils/dataModelsUtils';
 import { MdPin, MdPinEnd, MdStar } from 'react-icons/md';
+import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
+import { ButtonAppearanceTypes } from 'enums/commonEnums';
 
 const DataModels: FC = () => {
   const { t } = useTranslation();
@@ -36,7 +38,7 @@ const DataModels: FC = () => {
     sort: 'asc',
   });
 
-  const { data: dataModelsData, isLoading } = useQuery(
+  const { data: dataModelsData, isLoading: isModelDataLoading } = useQuery(
     [
       'datamodels/overview',
       pageIndex,
@@ -49,6 +51,7 @@ const DataModels: FC = () => {
       filters.trainingStatus,
       filters.maturity,
       filters.sort,
+      false,
     ],
     () =>
       getDataModelsOverview(
@@ -60,13 +63,47 @@ const DataModels: FC = () => {
         filters.datasetGroup,
         filters.trainingStatus,
         filters.maturity,
-        filters.sort
+        filters.sort,
+        false
       ),
     {
       keepPreviousData: true,
       enabled: enableFetch,
     }
   );
+  const { data: prodDataModelsData, isLoading: isProdModelDataLoading } =
+    useQuery(
+      [
+        'datamodels/overview',
+        0,
+        'all',
+        -1,
+        -1,
+        'all',
+        -1,
+        'all',
+        'all',
+        'asc',
+        true,
+      ],
+      () =>
+        getDataModelsOverview(
+          1,
+          'all',
+          -1,
+          -1,
+          'all',
+          -1,
+          'all',
+          'all',
+          'asc',
+          true
+        ),
+      {
+        keepPreviousData: true,
+        enabled: enableFetch,
+      }
+    );
   const { data: filterData } = useQuery(['datamodels/filters'], () =>
     getFilterData()
   );
@@ -84,7 +121,7 @@ const DataModels: FC = () => {
     <div>
       {view === 'list' && (
         <div className="container">
-          <div>
+          {!isModelDataLoading && !isProdModelDataLoading ?(<div>
             <div className="featured-content">
               <div className="title_container" style={{ marginTop: '30px' }}>
                 <div className="title">Production Models</div>{' '}
@@ -92,30 +129,25 @@ const DataModels: FC = () => {
               </div>
 
               <div className="grid-container" style={{ margin: '30px 0px' }}>
-                {dataModelsData?.data?.map((dataset, index: number) => {
-                  if (
-                    dataset.deploymentEnv === Platform.JIRA ||
-                    dataset.deploymentEnv === Platform.OUTLOOK ||
-                    dataset.deploymentEnv === Platform.PINAL
-                  )
-                    return (
-                      <DataModelCard
-                        key={index}
-                        modelId={dataset?.id}
-                        dataModelName={dataset?.modelName}
-                        datasetGroupName={dataset?.connectedDgName}
-                        version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
-                        isLatest={dataset.latest}
-                        dgVersion={dataset?.dgVersion}
-                        lastTrained={dataset?.lastTrained}
-                        trainingStatus={dataset.trainingStatus}
-                        platform={dataset?.deploymentEnv}
-                        maturity={dataset?.maturityLabel}
-                        results={dataset?.trainingResults}
-                        setId={setId}
-                        setView={setView}
-                      />
-                    );
+                {prodDataModelsData?.data?.map((dataset, index: number) => {
+                 return (
+                  <DataModelCard
+                    key={index}
+                    modelId={dataset?.id}
+                    dataModelName={dataset?.modelName}
+                    datasetGroupName={dataset?.connectedDgName}
+                    version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
+                    isLatest={dataset.latest}
+                    dgVersion={dataset?.dgVersion}
+                    lastTrained={dataset?.lastTrained}
+                    trainingStatus={dataset.trainingStatus}
+                    platform={dataset?.deploymentEnv}
+                    maturity={dataset?.maturityLabel}
+                    results={dataset?.trainingResults}
+                    setId={setId}
+                    setView={setView}
+                  />
+                );  
                 })}
               </div>
             </div>
@@ -205,7 +237,7 @@ const DataModels: FC = () => {
                   onClick={() => {
                     navigate(0);
                   }}
-                >
+                  appearance={ButtonAppearanceTypes.SECONDARY}               >
                   Reset
                 </Button>
               </div>
@@ -240,7 +272,9 @@ const DataModels: FC = () => {
               canNextPage={pageIndex < 10}
               onPageChange={setPageIndex}
             />
-          </div>
+          </div>):(
+            <CircularSpinner/>
+          )}
         </div>
       )}
       {view === 'individual' && <ConfigureDataModel id={id} />}
