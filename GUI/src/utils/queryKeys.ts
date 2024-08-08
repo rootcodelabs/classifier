@@ -53,3 +53,7 @@ export const datasetQueryKeys = {
 export const stopWordsQueryKeys = {
   GET_ALL_STOP_WORDS: () => [`datasetgroups/stopwords`],
 };
+
+export const authQueryKeys = {
+  USER_DETAILS: () => ['auth/jwt/userinfo', 'prod'],
+};

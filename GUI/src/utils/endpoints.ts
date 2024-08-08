@@ -35,3 +35,8 @@ export const datasetsEndpoints = {
   IMPORT_STOP_WORDS: (): string => `/datasetgroup/data/import/stop-words`,
   DELETE_STOP_WORDS: (): string => `/datasetgroup/data/delete/stop-words`,
 };
+
+export const authEndpoints = {
+  GET_EXTENDED_COOKIE: () :string => `/auth/jwt/extend`,
+  LOGOUT: (): string => `/accounts/logout`
+}

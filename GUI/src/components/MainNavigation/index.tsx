@@ -1,6 +1,11 @@
-import { FC, MouseEvent, useState } from 'react';
+import { FC, MouseEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useLocation } from 'react-router-dom';
+import {
+  NavLink,
+  useLocation,
+  useNavigate,
+  useNavigation,
+} from 'react-router-dom';
 import {
   MdApps,
   MdKeyboardArrowDown,
@@ -23,6 +28,8 @@ import { ROLES } from 'enums/roles';
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+
+  const navigate = useNavigate();
 
   const items = [
     {
@@ -101,6 +108,9 @@ const MainNavigation: FC = () => {
       const role = res[0];
       const filteredItems = filterItemsByRole(role, items);
       setMenuItems(filteredItems);
+      if (role !== ROLES.ROLE_ADMINISTRATOR) {
+        navigate('/dataset-groups');
+      }
     },
     onError: (error) => {
       console.error('Error fetching user roles:', error);
