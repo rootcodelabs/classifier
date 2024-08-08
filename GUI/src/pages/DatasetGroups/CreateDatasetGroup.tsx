@@ -140,16 +140,11 @@ const CreateDatasetGroup: FC = () => {
           setIsModalOpen={setIsModalOpen}
         />
         
-        <div
-          className="flex"
-          style={{
-            alignItems: 'end',
-            gap: '10px',
-            justifyContent: 'end',
-            marginTop: '25px',
-          }}
-        >
-          <Button onClick={() => validateData()}>
+        <div className="button-container">
+          <Button
+            disabled={createDatasetGroupMutation.isLoading}
+            onClick={() => validateData()}
+          >
             {t('datasetGroups.createDatasetGroupButton')}
           </Button>
           <Button

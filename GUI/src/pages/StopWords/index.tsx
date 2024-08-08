@@ -203,7 +203,11 @@ const StopWords: FC = () => {
                 <Button
                   onClick={handleStopWordFileOperations}
                   disabled={
-                    importOption === '' || file === null || file === undefined
+                    importOption === '' ||
+                    file === null ||
+                    file === undefined ||
+                    importStopWordsMutation.isLoading ||
+                    deleteStopWordMutation.isLoading
                   }
                 >
                   {t('stopWords.importModal.importButton') ?? ''}
@@ -219,6 +223,7 @@ const StopWords: FC = () => {
                 label=""
                 onChange={setImportOption}
                 items={importOptions}
+                selectedValue={importOption}
               />
               <div style={{ margin: '20px 0px' }}></div>
               <p>{t('stopWords.importModal.attachements') ?? ''}</p>
