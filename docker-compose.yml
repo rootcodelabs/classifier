@@ -272,17 +272,6 @@ services:
     networks:
       - bykstack
 
-  opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.11.1
-    container_name: opensearch-dashboards
-    environment:
-      - OPENSEARCH_HOSTS=http://opensearch-node:9200
-      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
-    ports:
-      - 5601:5601
-    networks:
-      - bykstack
-
   notifications-node:
     container_name: notifications-node
     build:
