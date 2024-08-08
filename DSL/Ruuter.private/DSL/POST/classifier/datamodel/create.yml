@@ -82,6 +82,8 @@ check_deployment_platform:
   switch:
     - condition: ${deployment_platform == 'jira' || deployment_platform == 'outlook' || deployment_platform == 'pinal'}
       next: update_existing_models_deployment_platform
+    - condition: ${deployment_platform == 'testing' || deployment_platform == 'undeployed'}
+      next: create_model_metadata
   next: assign_fail_response
 
 update_existing_models_deployment_platform:
