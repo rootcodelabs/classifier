@@ -51,6 +51,7 @@ This repo will primarily contain:
   - Redirect URI platform - Web
 - Client ID, Client Secret should be set in constant.ini under OUTLOOK_CLIENT_ID and OUTLOOK_SECRET_KEY
 - Navigate CronManger/config folder and add Client ID, Client Secret values in config.ini file also 
+- Set the value of `CLASSIFIER_RUUTER_PUBLIC_FRONTEND_URL` in constant.ini - Allowing it to be accessed from the internet for validating Outlook subscription.
 
 ### Jira Setup
 

@@ -98,3 +98,24 @@ export function base64Decrypt(cipher, isObject) {
     }
 }
 
+export function base64Encrypt(content) {
+    if (!content) {
+        return {
+            error: true,
+            message: 'Content is missing',
+        }
+    }
+
+    try {
+        return JSON.stringify({
+            error: false,
+            cipher: btoa(typeof content === 'string' ? content : JSON.stringify(content))
+        });
+    } catch (err) {
+        return JSON.stringify({
+            error: true,
+            message: 'Base64 Encryption Failed',
+        });
+    }
+}
+

@@ -16,21 +16,22 @@ base64_encode() {
   echo -n "$1" | base64
 }
 
-# Function to Base64 decode
-base64_decode() {
-  echo -n "$1" | base64 --decode
-}
-
 # Fetch the encrypted refresh token
-encrypted_refresh_token=$(curl -s -X GET "$CLASSIFIER_RESQL/get-outlook-token" | grep -oP '"token":"\K[^"]+')
+response=$(curl -X POST -H "Content-Type: application/json" -d '{"platform":"OUTLOOK"}' "$CLASSIFIER_RESQL/get-token")
+encrypted_refresh_token=$(echo $response | grep -oP '"token":"\K[^"]+')
+
+echo "encrypted_refresh_token: $encrypted_refresh_token"
 
 if [ -z "$encrypted_refresh_token" ]; then
   echo "No encrypted refresh token found"
   exit 1
 fi
 
-# Decrypt the previous refresh token
-decrypted_refresh_token=$(base64_decode "$encrypted_refresh_token")
+responseVal=$(curl -X POST -H "Content-Type: application/json" -d '{"token":"'"$encrypted_refresh_token"'"}' "http://data-mapper:3000/hbs/classifier/return_decrypted_outlook_token")
+decrypted_refresh_token=$(echo "$responseVal" | grep -oP '"content":"\K[^"]+' | sed 's/\\/\\\\/g')
+
+
+echo "decrypted refresh token: $decrypted_refresh_token"
 
 # Request a new access token using the decrypted refresh token
 access_token_response=$(curl -X POST \
@@ -39,14 +40,15 @@ access_token_response=$(curl -X POST \
   https://login.microsoftonline.com/common/oauth2/v2.0/token)
 
 new_refresh_token=$(echo $access_token_response | grep -oP '"refresh_token":"\K[^"]+')
+echo "new_refresh_token: $new_refresh_token"
 
 if [ -z "$new_refresh_token" ]; then
   echo "Failed to get a new refresh token"
   exit 1
 fi
 
-# Encrypt the new refresh token
-encrypted_new_refresh_token=$(base64_encode "$new_refresh_token")
+responseEncrypt=$(curl -X POST -H "Content-Type: application/json" -d '{"token":"'"$new_refresh_token"'"}' "http://data-mapper:3000/hbs/classifier/return_encrypted_outlook_token")
+encrypted_new_refresh_token=$(echo "$responseEncrypt" | grep -oP '"cipher":"\K[^"]+')
 
 # Function to save the new encrypted refresh token
 save_refresh_token() {
@@ -56,9 +58,6 @@ save_refresh_token() {
 
 # Call the function to save the encrypted new refresh token
 save_refresh_token "$encrypted_new_refresh_token"
-
-# Print the new refresh token (decrypted for readability)
-decrypted_new_refresh_token=$(base64_decode "$encrypted_new_refresh_token")
-echo "New refresh token: $decrypted_new_refresh_token"
+echo "Encrypted New refresh token: $encrypted_new_refresh_token"
 
 echo $(date -u +"%Y-%m-%d %H:%M:%S.%3NZ") - $script_name finished
