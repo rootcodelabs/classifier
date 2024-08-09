@@ -12,6 +12,9 @@ import CreateDatasetGroup from 'pages/DatasetGroups/CreateDatasetGroup';
 import ViewDatasetGroup from 'pages/DatasetGroups/ViewDatasetGroup';
 import StopWords from 'pages/StopWords';
 import ValidationSessions from 'pages/ValidationSessions';
+import DataModels from 'pages/DataModels';
+import CreateDataModel from 'pages/DataModels/CreateDataModel';
+import TrainingSessions from 'pages/TrainingSessions';
 
 const App: FC = () => {
 
@@ -35,7 +38,9 @@ const App: FC = () => {
         <Route path="/create-dataset-group" element={<CreateDatasetGroup />} />
         <Route path="/stop-words" element={<StopWords />} />
         <Route path="/validation-sessions" element={<ValidationSessions />} />
-
+        <Route path="/data-models" element={<DataModels />} />
+        <Route path="/create-data-model" element={<CreateDataModel />} />
+        <Route path="/training-sessions" element={<TrainingSessions />} />
 
       </Route>
     </Routes>

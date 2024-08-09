@@ -50,6 +50,17 @@
     }
   }
 
+  &--default {
+    color: get-color(black-coral-7);
+    border-color: get-color(black-coral-7);
+
+    #{$self} {
+      &__icon {
+        border-color: get-color(black-coral-7);
+      }
+    }
+  }
+
   &--success {
     color: get-color(sea-green-10);
     border-color: get-color(sea-green-10);

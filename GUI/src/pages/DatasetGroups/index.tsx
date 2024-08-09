@@ -152,8 +152,8 @@ const DatasetGroups: FC = () => {
               </div>
             )}
             <div
-              className="bordered-card grid-container"
-              style={{ padding: '20px', marginTop: '20px' }}
+              className="grid-container"
+              style={{marginTop: '20px' }}
             >
               {datasetGroupsData?.response?.data?.map(
                 (dataset: SingleDatasetType, index: number) => {
@@ -163,7 +163,7 @@ const DatasetGroups: FC = () => {
                       datasetGroupId={dataset?.id}
                       isEnabled={dataset?.isEnabled}
                       datasetName={dataset?.groupName}
-                      version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                      version={`V${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
                       isLatest={dataset.latest}
                       lastUpdated={dataset?.lastUpdatedTimestamp}
                       lastUsed={dataset?.lastTrainedTimestamp}

@@ -4,17 +4,19 @@ import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
 import sse from 'services/sse-service';
 import { useQuery } from '@tanstack/react-query';
 import { getDatasetGroupsProgress } from 'services/datasets';
+import { getDataModelsProgress } from 'services/data-models';
+import TrainingSessionCard from 'components/molecules/TrainingSessionCard';
 
-const ValidationSessions: FC = () => {
+const TrainingSessions: FC = () => {
   const { t } = useTranslation();
   const [progresses, setProgresses] = useState([]);
 
   const { data: progressData } = useQuery(
-    ['datasetgroups/progress'],
-    () => getDatasetGroupsProgress(),
+    ['datamodels/progress'],
+    () => getDataModelsProgress(),
     {
       onSuccess: (data) => {
-        setProgresses(data); 
+        setProgresses(data);
       },
     }
   );
@@ -31,7 +33,7 @@ const ValidationSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
-      return sse(`/${progress.id}`, 'dataset',(data) => {
+      return sse(`/${progress.id}`, 'model', (data) => {
         console.log(`New data for notification ${progress.id}:`, data);
         handleUpdate(data.sessionId, data);
       });
@@ -51,12 +53,14 @@ const ValidationSessions: FC = () => {
         </div>
         {progresses?.map((session) => {
           return (
-            <ValidationSessionCard
+            <TrainingSessionCard
+              modelName={session.modelName}
+              deployedModel={session.deployedModel}
+              lastTrained={session.lastTrained}
               dgName={session.groupName}
-              version={`V${session?.majorVersion}.${session?.minorVersion}.${session?.patchVersion}`}
+              version={`V${session?.majorVersion}.${session?.minorVersion}`}
               isLatest={session.latest}
-              status={session.validationStatus}
-              errorMessage={session.validationMessage}
+              status={session.trainingStatus}
               progress={session.progressPercentage}
             />
           );
@@ -66,4 +70,4 @@ const ValidationSessions: FC = () => {
   );
 };
 
-export default ValidationSessions;
+export default TrainingSessions;

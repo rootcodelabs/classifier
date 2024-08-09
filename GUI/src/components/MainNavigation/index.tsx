@@ -60,8 +60,18 @@ const MainNavigation: FC = () => {
     {
       id: 'dataModels',
       label: t('menu.dataModels'),
-      path: '/data-models',
+      path: '#',
       icon: <MdApps />,
+      children: [
+        {
+          label: t('menu.models'),
+          path: '/data-models',
+        },
+        {
+          label: t('menu.trainingSessions'),
+          path: 'training-sessions',
+        }
+      ],
     },
     {
       id: 'incomingTexts',
@@ -97,8 +107,8 @@ const MainNavigation: FC = () => {
       const res = await apiDev.get(userManagementEndpoints.FETCH_USER_ROLES());
       return res?.data?.response;
     },
-    onSuccess: (res) => {
-      const role = res[0];
+    onSuccess: (res) => {      
+      const role = res?.includes(ROLES.ROLE_ADMINISTRATOR) ? ROLES.ROLE_ADMINISTRATOR :ROLES.ROLE_MODEL_TRAINER
       const filteredItems = filterItemsByRole(role, items);
       setMenuItems(filteredItems);
     },
