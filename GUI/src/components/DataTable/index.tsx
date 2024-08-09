@@ -233,7 +233,7 @@ const DataTable: FC<DataTableProps> = (
               </button>
             </div>
           )}
-          <div className='data-table__page-size'>
+          {/* <div className='data-table__page-size'>
             <label htmlFor={id}>{t('global.resultCount')}</label>
             <select
               id={id}
@@ -248,7 +248,7 @@ const DataTable: FC<DataTableProps> = (
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
         </div>
       )}
     </div>

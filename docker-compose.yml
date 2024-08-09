@@ -3,7 +3,7 @@ services:
     container_name: ruuter-public
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080
+      - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080,http://localhost:8000
       - application.httpCodesAllowList=200,201,202,400,401,403,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -23,7 +23,7 @@ services:
     container_name: ruuter-private
     image: ruuter
     environment:
-      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8088,http://localhost:3002,http://localhost:3004
+      - application.cors.allowedOrigins=http://localhost:3001,http://localhost:8088,http://localhost:3002,http://localhost:3004,http://localhost:8000
       - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
       - application.internalRequests.allowedIPs=127.0.0.1
       - application.logging.displayRequestContent=true
@@ -91,19 +91,17 @@ services:
   gui:
     container_name: gui
     environment:
-      - NODE_ENV=development
-      # - BASE_URL=http://localhost:8080
-      - REACT_APP_RUUTER_API_URL=https://esclassifier-dev-ruuter.rootcode.software
-      - REACT_APP_RUUTER_PRIVATE_API_URL=https://esclassifier-dev-ruuter-private.rootcode.software
-      - REACT_APP_CUSTOMER_SERVICE_LOGIN=https://login.esclassifier-dev.rootcode.software
-      # - REACT_APP_NOTIFICATION_NODE_URL=http://localhost:4040
-      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' http://localhost:8086 http://localhost:8088 http://localhost:8085 http://localhost:4040 https://admin.dev.buerokratt.ee/chat/menu.json;
+      - NODE_ENV=local
+      - REACT_APP_RUUTER_API_URL=http://localhost:8086
+      - REACT_APP_RUUTER_PRIVATE_API_URL=http://localhost:8088
+      - REACT_APP_CUSTOMER_SERVICE_LOGIN=http://localhost:3004/et/dev-auth
+      - REACT_APP_NOTIFICATION_NODE_URL=http://localhost:4040
+      - REACT_APP_CSP=upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; connect-src 'self' http://localhost:8086 http://localhost:8088 http://localhost:8085 http://localhost:4040 http://localhost:3001 http://localhost:8000;
       - DEBUG_ENABLED=true
       - CHOKIDAR_USEPOLLING=true
       - PORT=3001
       - REACT_APP_SERVICE_ID=conversations,settings,monitoring
       - REACT_APP_ENABLE_HIDDEN_FEATURES=TRUE
-      - REACT_APP_MENU_JSON=[{"id":"conversations","label":{"et":"Vestlused","en":"Conversations"},"path":"/chat","children":[{"label":{"et":"Vastamata","en":"Unanswered"},"path":"/unanswered"},{"label":{"et":"Aktiivsed","en":"Active"},"path":"/active"},{"label":{"et":"Ajalugu","en":"History"},"path":"/history"}]},{"id":"training","label":{"et":"Treening","en":"Training"},"path":"/training","children":[{"label":{"et":"Treening","en":"Training"},"path":"/training","children":[{"label":{"et":"Teemad","en":"Themes"},"path":"/training/intents"},{"label":{"et":"Avalikud teemad","en":"Public themes"},"path":"/training/common-intents"},{"label":{"et":"Teemade järeltreenimine","en":"Post training themes"},"path":"/training/intents-followup-training"},{"label":{"et":"Vastused","en":"Answers"},"path":"/training/responses"},{"label":{"et":"Kasutuslood","en":"User Stories"},"path":"/training/stories"},{"label":{"et":"Konfiguratsioon","en":"Configuration"},"path":"/training/configuration"},{"label":{"et":"Vormid","en":"Forms"},"path":"/training/forms"},{"label":{"et":"Mälukohad","en":"Slots"},"path":"/training/slots"},{"label":{"et":"Automatic Teenused","en":"Automatic Services"},"path":"/auto-services"}]},{"label":{"et":"Ajaloolised vestlused","en":"Historical conversations"},"path":"/history","children":[{"label":{"et":"Ajalugu","en":"History"},"path":"/history/history"},{"label":{"et":"Pöördumised","en":"Appeals"},"path":"/history/appeal"}]},{"label":{"et":"Mudelipank ja analüütika","en":"Modelbank and analytics"},"path":"/analytics","children":[{"label":{"et":"Teemade ülevaade","en":"Overview of topics"},"path":"/analytics/overview"},{"label":{"et":"Mudelite võrdlus","en":"Comparison of models"},"path":"/analytics/models"},{"label":{"et":"Testlood","en":"testTracks"},"path":"/analytics/testcases"}]},{"label":{"et":"Treeni uus mudel","en":"Train new model"},"path":"/train-new-model"}]},{"id":"analytics","label":{"et":"Analüütika","en":"Analytics"},"path":"/analytics","children":[{"label":{"et":"Ülevaade","en":"Overview"},"path":"/overview"},{"label":{"et":"Vestlused","en":"Chats"},"path":"/chats"},{"label":{"et":"Bürokratt","en":"Burokratt"},"path":"/burokratt"},{"label":{"et":"Tagasiside","en":"Feedback"},"path":"/feedback"},{"label":{"et":"Nõustajad","en":"Advisors"},"path":"/advisors"},{"label":{"et":"Avaandmed","en":"Reports"},"path":"/reports"}]},{"id":"services","label":{"et":"Teenused","en":"Services"},"path":"/services","children":[{"label":{"et":"Ülevaade","en":"Overview"},"path":"/overview"},{"label":{"et":"Uus teenus","en":"New Service"},"path":"/newService"},{"label":{"et":"Automatic Teenused","en":"Automatic Services"},"path":"/auto-services"},{"label":{"et":"Probleemsed teenused","en":"Faulty Services"},"path":"/faultyServices"}]},{"id":"settings","label":{"et":"Haldus","en":"Administration"},"path":"/settings","children":[{"label":{"et":"Kasutajad","en":"Users"},"path":"/users"},{"label":{"et":"Vestlusbot","en":"Chatbot"},"path":"/chatbot","children":[{"label":{"et":"Seaded","en":"Settings"},"path":"/chatbot/settings"},{"label":{"et":"Tervitussõnum","en":"Welcome message"},"path":"/chatbot/welcome-message"},{"label":{"et":"Välimus ja käitumine","en":"Appearance and behavior"},"path":"/chatbot/appearance"},{"label":{"et":"Erakorralised teated","en":"Emergency notices"},"path":"/chatbot/emergency-notices"}]},{"label":{"et":"Asutuse tööaeg","en":"Office opening hours"},"path":"/working-time"},{"label":{"et":"Sessiooni pikkus","en":"Session length"},"path":"/session-length"}]},{"id":"monitoring","label":{"et":"Seire","en":"Monitoring"},"path":"/monitoring","children":[{"label":{"et":"Aktiivaeg","en":"Working hours"},"path":"/uptime"}]}]
 
     build:
       context: ./GUI
@@ -136,7 +134,7 @@ services:
       - sqlms.datasources.[0].jdbcUrl=jdbc:postgresql://users_db:5432/classifier #For LocalDb Use
       # sqlms.datasources.[0].jdbcUrl=jdbc:postgresql://171.22.247.13:5433/byk?sslmode=require
       - sqlms.datasources.[0].username=postgres
-      - sqlms.datasources.[0].password=rootcode
+      - sqlms.datasources.[0].password=admin
       - logging.level.org.springframework.boot=INFO
     ports:
       - 8082:8082
@@ -150,7 +148,7 @@ services:
     image: postgres:14.1
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=rootcode
+      - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=classifier
     ports:
       - 5433:5432
@@ -159,6 +157,160 @@ services:
     networks:
       - bykstack
     restart: always
+
+  cron-manager:
+    container_name: cron-manager
+    image: cron-manager
+    volumes:
+      - ./DSL/CronManager/DSL:/DSL
+      - ./DSL/CronManager/script:/app/scripts
+      - ./DSL/CronManager/config:/app/config
+    environment:
+      - server.port=9010
+    ports:
+      - 9010:8080
+    networks:
+      - bykstack
+
+  init:
+    image: busybox
+    command: ["sh", "-c", "chmod -R 777 /shared"]
+    volumes:
+      - shared-volume:/shared
+
+  file-handler:
+    build:
+      context: ./file-handler
+      dockerfile: Dockerfile
+    container_name: file-handler
+    volumes:
+      - shared-volume:/shared
+    environment:
+      - UPLOAD_DIRECTORY=/shared
+      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+      - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
+      - IMPORT_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/update/stop-words
+      - DELETE_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/delete/stop-words
+    ports:
+      - "8000:8000"
+    networks:
+      - bykstack
+    depends_on:
+      - init
+
+  s3-ferry:
+    image: s3-ferry:latest
+    container_name: s3-ferry
+    volumes:
+      - shared-volume:/shared
+    env_file:
+      - config.env
+    environment:
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+    ports:
+      - "3006:3000"
+    depends_on:
+      - file-handler
+      - init
+    networks:
+      - bykstack
+
+  dataset-processor:
+    build:
+      context: ./dataset-processor
+      dockerfile: Dockerfile
+    container_name: dataset-processor
+    environment:
+      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+      - GET_VALIDATION_SCHEMA=http://ruuter-private:8088/classifier/datasetgroup/schema
+      - FILE_HANDLER_DOWNLOAD_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json
+      - FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL=http://file-handler:8000/datasetgroup/data/download/json/location
+      - GET_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/stop-words
+      - FILE_HANDLER_IMPORT_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/import/chunk
+      - FILE_HANDLER_COPY_CHUNKS_URL=http://file-handler:8000/datasetgroup/data/copy
+      - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/data?groupId=dgId&pageNum=1
+      - SAVE_JSON_AGGREGRATED_DATA_URL=http://file-handler:8000/datasetgroup/data/import/json
+      - DOWNLOAD_CHUNK_URL=http://file-handler:8000/datasetgroup/data/download/chunk
+      - STATUS_UPDATE_URL=http://ruuter-private:8088/classifier/datasetgroup/update/preprocess/status
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - S3_BUCKET_NAME=esclassifier-test
+      - S3_REGION_NAME=eu-west-1
+      - PARAPHRASE_API_URL=http://data-enrichment-api:8005/paraphrase
+    ports:
+      - "8001:8001"
+    networks:
+      - bykstack
+    depends_on:
+      - init
+      - s3-ferry
+      - file-handler
+
+  opensearch-node:
+    image: opensearchproject/opensearch:2.11.1
+    container_name: opensearch-node
+    environment:
+      - node.name=opensearch-node
+      - discovery.seed_hosts=opensearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - plugins.security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - bykstack
+
+  notifications-node:
+    container_name: notifications-node
+    build:
+      context: ./notification-server
+      dockerfile: Dockerfile
+    ports:
+      - 4040:4040
+    depends_on:
+      - opensearch-node
+    environment:
+      OPENSEARCH_PROTOCOL: http
+      OPENSEARCH_HOST: opensearch-node
+      OPENSEARCH_PORT: 9200
+      OPENSEARCH_USERNAME: admin
+      OPENSEARCH_PASSWORD: admin
+      PORT: 4040
+      REFRESH_INTERVAL: 1000
+      CORS_WHITELIST_ORIGINS: http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:8080,http://localhost:8088
+      RUUTER_URL: http://ruuter-public:8086
+    volumes:
+      - /app/node_modules
+      - ./notification-server:/app
+    networks:
+      - bykstack
+
+  data-enrichment-api:
+    container_name: data-enrichment-api
+    image: data-enrichment-api
+    build:
+      context: ./data_enrichment
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    networks:
+      - bykstack
+
+volumes:
+  shared-volume:
+  opensearch-data:
 
 networks:
   bykstack:

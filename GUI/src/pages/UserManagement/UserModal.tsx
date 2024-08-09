@@ -11,6 +11,8 @@ import Select from 'react-select';
 import './SettingsUsers.scss';
 import { FC, useMemo } from 'react';
 import { ROLES } from 'enums/roles';
+import { userManagementQueryKeys } from 'utils/queryKeys';
+import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
 
 type UserModalProps = {
   onClose: () => void;
@@ -27,7 +29,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     register,
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isDirty },
   } = useForm<UserDTO>({
     defaultValues: {
       useridcode: user?.useridcode,
@@ -53,9 +55,11 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   const userCreateMutation = useMutation({
     mutationFn: (data: UserDTO) => createUser(data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries(['accounts/users']);
+      await queryClient.invalidateQueries(
+        userManagementQueryKeys.getAllEmployees()
+      );
       toast.open({
-        type: 'success',
+        type: ToastTypes.SUCCESS,
         title: t('global.notification'),
         message: t('toast.success.newUserAdded'),
       });
@@ -63,9 +67,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     },
     onError: (error: AxiosError) => {
       toast.open({
-        type: 'error',
+        type: ToastTypes.ERROR,
         title: t('global.notificationError'),
-        message: error.message,
+        message: error?.message ?? '',
       });
     },
   });
@@ -78,10 +82,12 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
       id: string | number;
       userData: UserDTO;
     }) => editUser(id, userData),
-    onSuccess: async () => {      
-      await queryClient.invalidateQueries(['accounts/users']);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(
+        userManagementQueryKeys.getAllEmployees()
+      );
       toast.open({
-        type: 'success',
+        type: ToastTypes.SUCCESS,
         title: t('global.notification'),
         message: t('toast.success.userUpdated'),
       });
@@ -89,9 +95,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     },
     onError: (error: AxiosError) => {
       toast.open({
-        type: 'error',
+        type: ToastTypes.ERROR,
         title: t('global.notificationError'),
-        message: error.message,
+        message: error?.message ?? '',
       });
     },
   });
@@ -102,7 +108,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     onSuccess: async (data) => {
       if (data.response === 'true') {
         toast.open({
-          type: 'error',
+          type: ToastTypes.SUCCESS,
           title: t('global.notificationError'),
           message: t('settings.users.userExists'),
         });
@@ -112,23 +118,20 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     },
     onError: (error: AxiosError) => {
       toast.open({
-        type: 'error',
+        type: ToastTypes.ERROR,
         title: t('global.notificationError'),
-        message: error.message,
+        message: error?.message,
       });
     },
   });
 
-  const createNewUser = handleSubmit((userData) => {
-    userCreateMutation.mutate(userData);
-  });
+  const createNewUser = handleSubmit((userData) =>
+    userCreateMutation.mutate(userData)
+  );
 
   const handleUserSubmit = handleSubmit((data) => {
-    if (user) {
-      userEditMutation.mutate({ id: user.useridcode, userData: data });
-    } else {
-      checkIfUserExistsMutation.mutate({ userData: data });
-    }
+    if (user) userEditMutation.mutate({ id: user.useridcode, userData: data });
+    else checkIfUserExistsMutation.mutate({ userData: data });
   });
 
   const requiredText = t('settings.users.required') ?? '*';
@@ -136,15 +139,32 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   return (
     <Dialog
       isOpen={isModalOpen}
-      title={user ? t('settings.users.editUser') : t('settings.users.addUser')}
+      title={
+        user
+          ? t('userManagement.addUser.editUserModalTitle')
+          : t('userManagement.addUser.addUserModalTitle')
+      }
       onClose={onClose}
       footer={
-        <>
-          <Button appearance="secondary" onClick={onClose}>
+        <div className="footer-button-wrapper">
+          <Button
+            appearance={ButtonAppearanceTypes.SECONDARY}
+            onClick={onClose}
+          >
             {t('global.cancel')}
           </Button>
-          <Button onClick={handleUserSubmit}>{t('global.confirm')}</Button>
-        </>
+          <Button
+            onClick={handleUserSubmit}
+            disabled={
+              !isValid ||
+              !isDirty ||
+              userEditMutation.isLoading ||
+              checkIfUserExistsMutation.isLoading
+            }
+          >
+            {t('global.confirm')}
+          </Button>
+        </div>
       }
     >
       <Track direction="vertical" gap={16} align="right">
@@ -154,12 +174,10 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           }`.trim()}
           {...register('fullName', { required: requiredText })}
           label={t('userManagement.addUser.name')}
-          placeholder={t('userManagement.addUser.namePlaceholder')??""}
+          placeholder={t('userManagement.addUser.namePlaceholder') ?? ''}
         />
-        {errors.fullName && (
-          <span style={{ color: '#f00', marginTop: '-1rem' }}>
-            {errors.fullName.message}
-          </span>
+        {errors?.fullName && (
+          <span className="error-span">{errors?.fullName?.message}</span>
         )}
 
         <Controller
@@ -190,10 +208,8 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
             </div>
           )}
         />
-        {errors.authorities && (
-          <span style={{ color: '#f00', marginTop: '-1rem' }}>
-            {errors.authorities.message}
-          </span>
+        {errors?.authorities && (
+          <span className="error-span">{errors?.authorities?.message}</span>
         )}
         {!user && (
           <FormInput
@@ -205,20 +221,20 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
               },
             })}
             label={t('userManagement.addUser.personalId')}
-            placeholder={t('userManagement.addUser.personalIdPlaceholder')??""}
-          ></FormInput>
+            placeholder={
+              t('userManagement.addUser.personalIdPlaceholder') ?? ''
+            }
+          />
         )}
 
-        {!user && errors.useridcode && (
-          <span style={{ color: '#f00', marginTop: '-1rem' }}>
-            {errors.useridcode.message}
-          </span>
+        {!user && errors?.useridcode && (
+          <span className="error-span">{errors?.useridcode?.message}</span>
         )}
 
         <FormInput
           {...register('csaTitle')}
           label={t('userManagement.addUser.title')}
-          placeholder={t('userManagement.addUser.titlePlaceholder')??""}
+          placeholder={t('userManagement.addUser.titlePlaceholder') ?? ''}
         />
 
         <FormInput
@@ -231,12 +247,10 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           })}
           label={t('userManagement.addUser.email')}
           type="email"
-          placeholder={t('userManagement.addUser.emailPlaceholder')??""}
+          placeholder={t('userManagement.addUser.emailPlaceholder') ?? ''}
         />
-        {errors.csaEmail && (
-          <span style={{ color: '#f00', marginTop: '-1rem' }}>
-            {errors.csaEmail.message}
-          </span>
+        {errors?.csaEmail && (
+          <span className="error-span">{errors?.csaEmail?.message}</span>
         )}
       </Track>
     </Dialog>

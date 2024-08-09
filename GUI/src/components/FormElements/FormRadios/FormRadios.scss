@@ -18,10 +18,13 @@
 
   &__wrapper {
     display: flex;
-    flex-direction: column;
     gap: 8px;
   }
 
+  &__stack {
+    gap: 8px;
+  }
+  
   &__item {
     input[type=radio] {
       display: none;

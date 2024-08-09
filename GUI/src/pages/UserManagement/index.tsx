@@ -1,11 +1,5 @@
-import { FC, useEffect, useMemo, useState } from 'react';
-import {
-  Button,
-  DataTable,
-  Dialog,
-  Icon,
-} from '../../components';
-import users from '../../config/users.json';
+import { FC, useMemo, useState } from 'react';
+import { Button, DataTable, Icon } from '../../components';
 import {
   PaginationState,
   Row,
@@ -23,16 +17,17 @@ import { useToast } from 'hooks/useToast';
 import { AxiosError } from 'axios';
 import apiDev from 'services/api-dev';
 import UserModal from './UserModal';
-import { ROLES } from 'enums/roles';
+import { userManagementQueryKeys } from 'utils/queryKeys';
+import { userManagementEndpoints } from 'utils/endpoints';
+import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
+import { useDialog } from 'hooks/useDialog';
+import SkeletonTable from 'components/molecules/TableSkeleton/TableSkeleton';
+import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 
 const UserManagement: FC = () => {
   const columnHelper = createColumnHelper<User>();
   const [newUserModal, setNewUserModal] = useState(false);
   const [editableRow, setEditableRow] = useState<User | null>(null);
-  const [deletableRow, setDeletableRow] = useState<string | number | null>(
-    null
-  );
-  const [usersList, setUsersList] = useState<User[] | null>(null);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -42,209 +37,205 @@ const UserManagement: FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const { open, close } = useDialog();
 
-  const fetchUsers = async (pagination: PaginationState, sorting: SortingState) => {
+  const fetchUsers = async (
+    pagination: PaginationState,
+    sorting: SortingState
+  ) => {
     const sort =
-      sorting.length === 0
+      sorting?.length === 0
         ? 'name asc'
-        : sorting[0].id + ' ' + (sorting[0].desc ? 'desc' : 'asc');
-    const { data } = await apiDev.post('accounts/users', {
-      page: pagination.pageIndex + 1,
-      page_size: pagination.pageSize,
+        : sorting[0]?.id +
+          ' ' +
+          (sorting[0]?.desc ? t('global.desc') : t('global.asc'));
+    const { data } = await apiDev.post(userManagementEndpoints.FETCH_USERS(), {
+      page: pagination?.pageIndex + 1,
+      page_size: pagination?.pageSize,
       sorting: sort,
     });
     return data?.response ?? [];
   };
 
   const { data: users, isLoading } = useQuery(
-    ['accounts/users', pagination, sorting],
+    userManagementQueryKeys.getAllEmployees(),
     () => fetchUsers(pagination, sorting)
   );
 
-  const editView = (props: any) => (
-    <Button
-      appearance="text"
-      onClick={() => {
-        setEditableRow(props.row.original);
-      }}
-    >
-      <Icon icon={<MdOutlineEdit />} />
-      {'Edit'}
-    </Button>
+  const ActionButtons: FC<{ row: User }> = ({ row }) => (
+    <div className="action-button-container">
+      <Button
+        appearance={ButtonAppearanceTypes.TEXT}
+        onClick={() => setEditableRow(row)}
+      >
+        <Icon icon={<MdOutlineEdit />} />
+        {t('global.change')}
+      </Button>
+      <Button
+        appearance={ButtonAppearanceTypes.TEXT}
+        onClick={async () => {
+          open({
+            title: t('userManagement.addUser.deleteUserModalTitle') ?? '',
+            content: <p>{t('userManagement.addUser.deleteUserModalDesc')}</p>,
+            footer: (
+              <div>
+                <Button
+                  appearance={ButtonAppearanceTypes.SECONDARY}
+                  onClick={() => {
+                    close();
+                  }}
+                >
+                  {t('global.no')}
+                </Button>
+                <Button
+                  appearance={ButtonAppearanceTypes.ERROR}
+                  onClick={() =>
+                    deleteUserMutation.mutate({ id: row.useridcode })
+                  }
+                >
+                  {t('global.yes')}
+                </Button>
+              </div>
+            ),
+          });
+        }}
+      >
+        <Icon icon={<MdOutlineDeleteOutline />} />
+        {t('global.delete')}
+      </Button>
+    </div>
   );
 
-  const deleteView = (props: any) => (
-    <Button
-      appearance="text"
-      onClick={() => setDeletableRow(props.row.original.useridcode)}
-    >
-      <Icon icon={<MdOutlineDeleteOutline />} />
-      {'Delete'}
-    </Button>
-  );
-
- 
   const usersColumns = useMemo(
     () => [
       columnHelper.accessor(
-        (row) => `${row.firstName ?? ''} ${row.lastName ?? ''}`,
+        (row: User) => `${row?.firstName ?? ''} ${row?.lastName ?? ''}`,
         {
-          id: `name`,
-          header: t('settings.users.name') ?? '',
+          id: 'name',
+          header: t('userManagement.table.fullName') ?? '',
         }
       ),
       columnHelper.accessor('useridcode', {
-        header: t('settings.users.idCode') ?? '',
+        header: t('userManagement.table.personalId') ?? '',
       }),
       columnHelper.accessor(
-        (data: { authorities: ROLES[] }) => {
+        (data: User) => {
           const output: string[] = [];
-          data.authorities?.map?.((role) => {
-            return output.push(t(`roles.${role}`));
-          });
+          data.authorities?.forEach((role) => output.push(t(`roles.${role}`)));
           return output;
         },
         {
-          header: t('settings.users.role') ?? '',
-          cell: (props) => props.getValue().join(', '),
-          filterFn: (row: Row<User>, _, filterValue) => {
-            const rowAuthorities: string[] = [];
-            row.original.authorities.map((role) => {
-              return rowAuthorities.push(t(`roles.${role}`));
-            });
-            const filteredArray = rowAuthorities.filter((word) =>
+          header: t('userManagement.table.role') ?? '',
+          cell: (props) => props.getValue<string[]>().join(', '),
+          filterFn: (row: Row<User>, _, filterValue: string) => {
+            const rowAuthorities = row.original.authorities.map((role) =>
+              t(`roles.${role}`)
+            );
+            return rowAuthorities.some((word) =>
               word.toLowerCase().includes(filterValue.toLowerCase())
             );
-            return filteredArray.length > 0;
           },
         }
       ),
-      columnHelper.accessor('displayName', {
-        header: t('settings.users.displayName') ?? '',
-      }),
-      columnHelper.accessor('csaTitle', {
-        header: t('settings.users.userTitle') ?? '',
-      }),
       columnHelper.accessor('csaEmail', {
-        header: t('settings.users.email') ?? '',
+        header: t('userManagement.table.email') ?? '',
       }),
       columnHelper.display({
-        id: 'edit',
-        cell: editView,
-        meta: {
-          size: '1%',
-        },
-      }),
-      columnHelper.display({
-        id: 'delete',
-        cell: deleteView,
+        id: 'actions',
+        header: t('userManagement.table.actions') ?? '',
+        cell: (props) => <ActionButtons row={props?.row?.original} />,
         meta: {
           size: '1%',
         },
       }),
     ],
-    []
+    [t]
   );
-
 
   const deleteUserMutation = useMutation({
     mutationFn: ({ id }: { id: string | number }) => deleteUser(id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries(['accounts/users']);
+      await queryClient.invalidateQueries(
+        userManagementQueryKeys.getAllEmployees()
+      );
       toast.open({
-        type: 'success',
+        type: ToastTypes.SUCCESS,
         title: t('global.notification'),
         message: t('toast.success.userDeleted'),
       });
-      setDeletableRow(null);
     },
     onError: (error: AxiosError) => {
       toast.open({
-        type: 'error',
+        type: ToastTypes.ERROR,
         title: t('global.notificationError'),
-        message: error.message,
+        message: error?.message ?? '',
       });
     },
   });
 
-  if (isLoading) return <>Loading...</>;
+  if (isLoading) return <CircularSpinner/>;
 
   return (
-    <>
+    <div>
       <div className="container">
         <div className="title_container">
           <div className="title">{t('userManagement.title')}</div>
           <Button
-            appearance="primary"
+            appearance={ButtonAppearanceTypes.PRIMARY}
             size="m"
             onClick={() => {
               setNewUserModal(true);
             }}
           >
-           {t('userManagement.addUserButton')}
+            {t('userManagement.addUserButton')}
           </Button>
         </div>
         <div>
-          <DataTable
-            data={users}
-            columns={usersColumns}
-            sortable
-            filterable
-            pagination={pagination}
-            setPagination={(state: PaginationState) => {
-              if (
-                state.pageIndex === pagination.pageIndex &&
-                state.pageSize === pagination.pageSize
-              )
-                return;
-              setPagination(state);
-              fetchUsers(state, sorting);
-            }}
-            sorting={sorting}
-            setSorting={(state: SortingState) => {
-              setSorting(state);
-              fetchUsers(pagination, state);
-            }}
-            pagesCount={totalPages}
-            isClientSide={false}
-          />
-          {deletableRow !== null && (
-            <Dialog
-              title={t('settings.users.deleteUser')}
-              onClose={() => setDeletableRow(null)}
-              isOpen={true}
-              footer={
-                <>
-                  <Button
-                    appearance="secondary"
-                    onClick={() => setDeletableRow(null)}
-                  >
-                    {t('global.no')}
-                  </Button>
-                  <Button
-                    appearance="error"
-                     onClick={() => deleteUserMutation.mutate({ id: deletableRow })}
-                  >
-                    {t('global.yes')}
-                  </Button>
-                </>
-              }
-            >
-              <p>{t('global.removeValidation')}</p>
-            </Dialog>
+          {!isLoading && (
+            <DataTable
+              data={users}
+              columns={usersColumns}
+              sortable
+              filterable
+              pagination={pagination}
+              setPagination={(state: PaginationState) => {
+                if (
+                  state?.pageIndex === pagination?.pageIndex &&
+                  state?.pageSize === pagination?.pageSize
+                )
+                  return;
+                setPagination(state);
+                fetchUsers(state, sorting);
+              }}
+              sorting={sorting}
+              setSorting={(state: SortingState) => {
+                setSorting(state);
+                fetchUsers(pagination, state);
+              }}
+              pagesCount={totalPages}
+              isClientSide={false}
+            />
           )}
-          {newUserModal && <UserModal isModalOpen={newUserModal} onClose={() => setNewUserModal(false)} />}
+
+          {isLoading && <SkeletonTable rowCount={5} />}
+
+          {newUserModal && (
+            <UserModal
+              isModalOpen={newUserModal}
+              onClose={() => setNewUserModal(false)}
+            />
+          )}
 
           {editableRow && (
             <UserModal
               user={editableRow}
               onClose={() => setEditableRow(null)}
-              isModalOpen={editableRow !==null}
+              isModalOpen={editableRow !== null}
             />
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

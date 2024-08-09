@@ -1,0 +1,9 @@
+.container-wrapper {
+    width: 450px;
+    margin-top: 10px;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+}

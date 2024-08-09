@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual, randomBytes } from "crypto";
 
 export function verifySignature(payload, headers, secret) {
   const signature = headers["x-hub-signature"];
@@ -55,3 +55,67 @@ export function getOutlookExpirationDateTime() {
   const updatedDateISOString = currentDate.toISOString();
   return updatedDateISOString;
 }
+
+export function findDuplicateStopWords(inputArray, existingArray) {
+  const set1 = new Set(existingArray);
+  const duplicates = inputArray.filter((item) => set1.has(item));
+  const value = JSON.stringify(duplicates);
+  return value;
+}
+
+export function findNotExistingStopWords(inputArray, existingArray) {
+  const set1 = new Set(existingArray);
+  const notExisting = inputArray.filter((item) => !set1.has(item));
+  const value = JSON.stringify(notExisting);
+  return value;
+}
+
+export function getRandomString() {
+  const randomHexString = randomBytes(32).toString("hex");
+  return randomHexString;
+}
+
+export function base64Decrypt(cipher, isObject) {
+    if (!cipher) {
+        return JSON.stringify({
+            error: true,
+            message: 'Cipher is missing',
+        });
+    }
+
+    try {
+        const decodedContent = !isObject ? atob(cipher) : JSON.parse(atob(cipher));
+        const cleanedContent = decodedContent.replace(/\r/g, '');
+        return JSON.stringify({
+            error: false,
+            content: cleanedContent
+        });
+    } catch (err) {
+        return JSON.stringify({
+            error: true,
+            message: 'Base64 Decryption Failed',
+        });
+    }
+}
+
+export function base64Encrypt(content) {
+    if (!content) {
+        return {
+            error: true,
+            message: 'Content is missing',
+        }
+    }
+
+    try {
+        return JSON.stringify({
+            error: false,
+            cipher: btoa(typeof content === 'string' ? content : JSON.stringify(content))
+        });
+    } catch (err) {
+        return JSON.stringify({
+            error: true,
+            message: 'Base64 Encryption Failed',
+        });
+    }
+}
+

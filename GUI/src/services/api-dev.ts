@@ -14,7 +14,6 @@ instance.interceptors.response.use(
     return axiosResponse;
   },
   (error: AxiosError) => {
-    console.log(error);
     return Promise.reject(new Error(error.message));
   }
 );
@@ -24,7 +23,6 @@ instance.interceptors.request.use(
     return axiosRequest;
   },
   (error: AxiosError) => {
-    console.log(error);
     if (error.response?.status === 401) {
       // To be added: handle unauthorized requests
     }

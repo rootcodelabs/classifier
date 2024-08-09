@@ -47,6 +47,30 @@ body {
   font-weight: 300;
 }
 
+.title-sm {
+  font-size: 1rem;
+  color: #000;
+  font-weight: 300;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0px;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.flex-grid {
+  display: flex;
+  gap: 10px;
+}
+
+.text-center {
+ text-align: center;
+}
+
 a,
 input,
 select,
@@ -56,12 +80,24 @@ button {
   transition: background-color 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
 
+p {
+margin-bottom: 10px;
+}
+
 a {
-  color: get-color(black-coral-12);
+  color: get-color(sapphire-blue-10);
   text-decoration: none;
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+.link {
+  color: get-color(sapphire-blue-10);
+  &:hover {
+    text-decoration: underline;
+    cursor: pointer;
   }
 }
 

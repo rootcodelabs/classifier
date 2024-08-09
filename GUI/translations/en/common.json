@@ -8,9 +8,6 @@
     "confirm": "Confirm",
     "modifiedAt": "Last modified at",
     "addNew": "Add new",
-    "dependencies": "Dependencies",
-    "language": "Language",
-    "choose": "Choose",
     "search": "Search",
     "notification": "Notification",
     "notificationError": "Error",
@@ -31,7 +28,6 @@
     "name": "Name",
     "idCode": "ID code",
     "status": "Status",
-    "statusChangeQuestion": "Would you like to change your status to \"present\"?",
     "yes": "Yes",
     "no": "No",
     "removeValidation": "Are you sure?",
@@ -39,29 +35,21 @@
     "endDate": "End date",
     "preview": "Preview",
     "logout": "Logout",
-    "anonymous": "Anonymous",
-    "csaStatus": "Customer support status",
-    "present": "Present",
-    "away": "Away",
-    "today": "Today",
-    "forward": "Forward",
-    "chosen": "Chosen",
-    "read": "Read"
-  },
-  "mainMenu": {
-    "menuLabel": "Main navigation",
-    "closeMenu": "Close menu",
-    "openIcon": "Open menu icon",
-    "closeIcon": "Close menu icon"
+    "change": "Change",
+    "loading": "Loading",
+    "asc": "asc",
+    "desc": "desc",
+    "reset": "Reset",
+    "choose": "Choose"
   },
   "menu": {
     "userManagement": "User Management",
     "integration": "Integration",
     "datasets": "Datasets",
     "datasetGroups": "Dataset Groups",
-    "versions": "Versions",
+    "validationSessions": "Validation Sessions",
     "dataModels": "Data Models",
-    "classes": "Classes",
+    "testModel": "Test Model",
     "stopWords": "Stop Words",
     "incomingTexts": "Incoming Texts"
   },
@@ -69,6 +57,10 @@
     "title": "User Management",
     "addUserButton": " Add a user",
     "addUser": {
+      "addUserModalTitle": "Add a new user",
+      "editUserModalTitle": "Edit User",
+      "deleteUserModalTitle": "Are you sure?",
+      "deleteUserModalDesc": "Confirm that you are wish to delete the following record",
       "name": "First and last name",
       "namePlaceholder": "Enter name",
       "role": "Role",
@@ -79,6 +71,13 @@
       "titlePlaceholder": "Enter title",
       "email": "Email",
       "emailPlaceholder": "Enter email"
+    },
+    "table": {
+      "fullName": "Full Name",
+      "personalId": "Personal ID",
+      "role": "Role",
+      "email": "Email",
+      "actions": "Actions"
     }
   },
   "integration": {
@@ -86,6 +85,7 @@
     "jira": "Jira",
     "outlook": "Outlook",
     "pinal": "Pinal",
+    "outlookAndPinal": "Outlook+Pinal",
     "jiraDesc": "Atlassian issue tracking and project management software",
     "outlookDesc": "Personal information manager and email application developed by Microsoft",
     "pinalDesc": "Atlassian issue tracking and project management software",
@@ -94,11 +94,11 @@
     "integrationErrorTitle": "Integration Unsuccessful",
     "integrationErrorDesc": "Failed to connect with {{channel}}. Please check your settings and try again. If the problem persists, contact support for assistance.",
     "integrationSuccessTitle": "Integration Successful",
-    "integrationSuccessDesc": "You have successfully connected with {{channel}}! Your integration is now complete, and you can start working with {{Jira}} seamlessly.",
+    "integrationSuccessDesc": "You have successfully connected with {{channel}}! Your integration is now complete, and you can start working with {{channel}} seamlessly.",
     "confirmationModalTitle": "Are you sure?",
     "disconnectConfirmationModalDesc": "Are you sure you want to disconnect the {{channel}} integration? This action cannot be undone and may affect your workflow and linked issues.",
     "connectConfirmationModalDesc": "Are you sure you want to connect the {{channel}} integration?",
-    "disconnectErrorTitle": "Disconnection Unsuccessful",
+    "disconnectErrorTi/tle": "Disconnection Unsuccessful",
     "disconnectErrorDesc": "Failed to disconnect {{channel}}. Please check your settings and try again. If the problem persists, contact support for assistance.",
     "addUserButton": " Add a user",
     "addUser": {
@@ -118,17 +118,181 @@
     "ROLE_ADMINISTRATOR": "Administrator",
     "ROLE_MODEL_TRAINER": "Model Trainer"
   },
-
   "toast": {
     "success": {
       "updateSuccess": "Updated Successfully",
-      "messageToUserEmail": "Message sent to user email",
-      "chatStatusChanged": "Chat status changed",
-      "chatCommentChanged": "Chat comment changed",
       "copied": "Copied",
       "userDeleted": "User deleted",
       "newUserAdded": "New user added",
       "userUpdated": "User updated"
     }
+  },
+  "datasetGroups": {
+    "title": "Dataset Groups",
+    "createDatasetGroupButton": "Create Dataset Group",
+    "table": {
+      "group": "Dataset Group",
+      "version": "Version",
+      "validationStatus": "Validation Status",
+      "sortBy": "Sort by name ({{sortOrder}})",
+      "email": "Email",
+      "actions": "Actions"
+    },
+    "datasetCard": {
+      "validationFail": "Validation Failed",
+      "validationSuccess": "Validation Successful",
+      "validationInprogress": "Validation in Progress",
+      "notValidated": "Not Validated",
+      "settings": "Settings",
+      "lastModelTrained": "Last Model Trained",
+      "lastUsedForTraining": "Last Used For Training",
+      "lastUpdate": "Last Updated",
+      "latest": "Latest"
+    },
+    "createDataset": {
+      "title": "Create Dataset Group",
+      "datasetDetails": "Dataset Details",
+      "datasetName": "Dataset Name",
+      "datasetInputPlaceholder": "Enter dataset name",
+      "validationCriteria": "Create Validation Criteria",
+      "fieldName": "Field name",
+      "datasetType": "Dataset types",
+      "dataClass": "Data class",
+      "typeText": "Text",
+      "typeNumbers": "Numbers",
+      "typeDateTime": "DateTime",
+      "addClassButton": "Add class",
+      "addNowButton": "Add now"
+    },
+    "classHierarchy": {
+      "title": "Class Hierarchy",
+      "addClassButton":"Add main class",
+      "addSubClass": "Add Subclass",
+      "fieldHint": "Enter a field name",
+      "filedHintIfExists": "Class name already exists"
+    },
+    "modals": {
+      "deleteClassTitle": "Are you sure?",
+      "deleteClaassDesc": "Confirm that you are wish to delete the following record",
+      "columnInsufficientHeader": "Insufficient Columns in Dataset",
+      "columnInsufficientDescription": "The dataset must have at least 2 columns. Additionally, there needs to be at least one column designated as a data class and one column that is not a data class. Please adjust your dataset accordingly.",
+      "createDatasetSuccessTitle": "Dataset Group Created Successfully",
+      "createDatasetUnsuccessTitle": "Dataset Group Creation Unsuccessful",
+      "createDatasetSucceessDesc": "You have successfully created the dataset group. In the detailed view, you can now see and edit the dataset as needed.",
+      "navigateDetailedViewButton": "Go to Detailed View",
+      "enableDatasetTitle": "Cannot Enable Dataset Group",
+      "enableDatasetDesc": "The dataset group cannot be enabled until data is added. Please add datasets to this group and try again.",
+      "errorTitle": "Operation Unsuccessful",
+      "errorDesc": "Something went wrong. Please try again."
+    },
+    "detailedView": {
+      "connectedModels": "Connected Models",
+      "noOfItems": "Number of items",
+      "export": "Export Dataset",
+      "import": "Import Dataset",
+      "unsavedChangesWarning": "You have made changes to the ataset which are not saved. Please save the changes to apply",
+      "insufficientExamplesDesc": "Insufficient examples - at least 10 examples are needed to activate the dataset group",
+      "noData": "No Data Available",
+      "noDataDesc": "You have created the dataset group, but there are no datasets available to show here. You can upload a dataset to view it in this space. Once added, you can edit or delete the data as needed.",
+      "importExamples": "Import Examples",
+      "importNewData": "Import New Data",
+      "majorUpdateBanner": "You have updated key configurations of the dataset schema which are not saved, please save to apply changes.  Any files imported or edits made to the existing data will be discarded after changes are applied",
+      "minorUpdateBanner": "You have imported new data into the dataset, please save the changes to apply. Any changes you made to the individual data items will be discarded after changes are applied",
+      "patchUpdateBanner": "You have edited individual items in the dataset which are not saved. Please save the changes to apply",
+      "confirmMajorUpdatesTitle": "Confirm major update",
+      "confirmMajorUpdatesDesc": "Any files imported or edits made to the existing data will be discarded after changes are applied",
+      "confirmMinorUpdatesTitle": "Confirm minor update",
+      "confirmMinorUpdatesDesc": "Any changes you made to the individual data items (patch update) will be discarded after changes are applied",
+      "confirmPatchUpdatesTitle": "Confirm patch update",
+      "confirmPatchUpdatesDesc": "Changed data rows will be updated in the dataset",
+      "patchDataUnsuccessfulTitle": "Patch Data Update Unsuccessful",
+      "patchDataUnsuccessfulDesc": "Something went wrong. Please try again.",
+      "exportDataSuccessTitle": "Data export was successful",
+      "exportDataSuccessDesc": "Your data has been successfully exported.",
+      "exportDataUnsucessTitle": "Dataset Export Unsuccessful",
+      "exportDataUnsucessDesc": "Something went wrong. Please try again.",
+      "ImportDataUnsucessTitle": "Dataset Import Unsuccessful",
+      "importDataUnsucessDesc": "Something went wrong. Please try again.",
+      "validationInitiatedTitle": "Dataset uploaded and validation initiated",
+      "validationInitiatedDesc": "The dataset file was successfully uploaded. The validation and preprocessing is now initiated",
+      "viewValidations": "View Validation Sessions",
+      "table": {
+        "id": "rowId",
+        "data": "Data",
+        "label": "Label",
+        "actions": "Actions"
+      },
+      "validationsTitle": "Dataset Group Validations",
+      "classHierarchy": "Class Hierarchies",
+      "delete": "Delete Dataset",
+      "modals": {
+        "import": {
+          "title": "Import New Data",
+          "fileFormatlabel": "Select the file format",
+          "attachments": "Attachments",
+          "maxSize": "Maximum file size - 10mb",
+          "browse": "Browse file",
+          "import": "Import",
+          "cancel": "Cancel",
+          "uploadInProgress": "Upload in Progress...",
+          "uploadDesc": "Uploading dataset. Please wait until the upload finishes. If you cancel midwway, the data and progress will be lost.",
+          "invalidFile": "Invalid File Format",
+          "invalidFileDesc": "The uploaded file is not in the correct {{format}} format. Please upload a valid {{format}} file and try again."
+        },
+        "export": {
+          "export": "Export Data",
+          "exportButton": "Export",
+          "fileFormatlabel": "Select the file format",
+          "title": "Data export was successful",
+          "description": "Your data has been successfully exported."
+        },
+        "delete": {
+          "title": "Are you sure?",
+          "description": "Once you delete the dataset all models connected to this model will become untrainable. Are you sure you want to proceed?"
+        },
+        "edit": {
+          "title": "Edit",
+          "data": "Data",
+          "label": "Label",
+          "update": "Update"
+        },
+        "upload": {
+          "title": "Data upload successful",
+          "desc": "The dataset file was successfully uploaded. Please save the changes to initiate data validaiton and preprocessing"
+        },
+        "datasetDelete": {
+          "confirmationTitle": "Are you sure?",
+          "confirmationDesc": "Confirm that you are wish to delete the following dataset",
+          "successTitle": "Success: Dataset Deleted",
+          "successDesc": "You have successfully deleted the dataset. The dataset is no longer available and all related data has been removed."
+        }
+      }
+    }
+  },
+  "stopWords": {
+    "title": "Stop Words",
+    "import": "Import stop words",
+    "stopWordInputHint": "Enter stop word",
+    "add": "Add",
+    "importModal": {
+      "title": "Import stop words",
+      "importButton": "Import",
+      "selectionLabel": "Select the option below",
+      "addOption": "Import to add",
+      "updateOption": "Import to update",
+      "deleteOption": "Import to delete",
+      "attachements": "Attachments (TXT, XLSX, YAML, JSON)",
+      "inprogressTitle": "Import in Progress",
+      "inprogressDesc": "The import of stop words is currently in progress. Please wait until the process is complete.",
+      "successTitle": "Data import was successful",
+      "successDesc": "Your data has been successfully imported.",
+      "unsuccessTitle": "Data import was unsuccessful",
+      "unsuccessDesc": "Stopword Import Unsuccessful"
+    }
+  },
+  "validationSessions": {
+    "title": "Validation Sessions",
+    "inprogress": "Validation in-Progress",
+    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
   }
 }

@@ -26,11 +26,11 @@ const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxType>((
   const uid = useId();
 
   return (
-    <div className='checkbox'>
+    <div className='checkbox'{...rest} >
       {label && !hideLabel && <label className='checkbox__label'>{label}</label>}
       <div className='checkbox__item'>
-        <input ref={ref} type='checkbox' name={name} id={uid} value={item.value} defaultChecked={item.checked} {...rest} />
-        <label htmlFor={uid}>{item.label}</label>
+        <input ref={ref} type='checkbox' name={name} id={uid} value={item.value} defaultChecked={item.checked}{...rest} />
+        <label htmlFor={uid} >{item.label}</label>
       </div>
     </div>
   );
