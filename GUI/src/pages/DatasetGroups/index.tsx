@@ -12,6 +12,7 @@ import { SingleDatasetType } from 'types/datasetGroups';
 import ViewDatasetGroup from './ViewDatasetGroup';
 import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
+import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -145,11 +146,15 @@ const DatasetGroups: FC = () => {
                 {t('global.reset')}
               </Button>
             </div>
+            {isLoading && (
+              <div className='skeleton-container'>
+                <CircularSpinner />
+              </div>
+            )}
             <div
               className="bordered-card grid-container"
               style={{ padding: '20px', marginTop: '20px' }}
             >
-              {isLoading && <div>Loading...</div>}
               {datasetGroupsData?.response?.data?.map(
                 (dataset: SingleDatasetType, index: number) => {
                   return (

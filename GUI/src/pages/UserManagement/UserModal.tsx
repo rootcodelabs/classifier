@@ -29,7 +29,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     register,
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isDirty },
   } = useForm<UserDTO>({
     defaultValues: {
       useridcode: user?.useridcode,
@@ -139,17 +139,31 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   return (
     <Dialog
       isOpen={isModalOpen}
-      title={user ? t('userManagement.addUser.editUserModalTitle') : t('userManagement.addUser.addUserModalTitle')}
+      title={
+        user
+          ? t('userManagement.addUser.editUserModalTitle')
+          : t('userManagement.addUser.addUserModalTitle')
+      }
       onClose={onClose}
       footer={
-        <div>
+        <div className="footer-button-wrapper">
           <Button
             appearance={ButtonAppearanceTypes.SECONDARY}
             onClick={onClose}
           >
             {t('global.cancel')}
           </Button>
-          <Button onClick={handleUserSubmit}>{t('global.confirm')}</Button>
+          <Button
+            onClick={handleUserSubmit}
+            disabled={
+              !isValid ||
+              !isDirty ||
+              userEditMutation.isLoading ||
+              checkIfUserExistsMutation.isLoading
+            }
+          >
+            {t('global.confirm')}
+          </Button>
         </div>
       }
     >

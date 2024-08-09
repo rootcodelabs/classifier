@@ -74,3 +74,48 @@ export function getRandomString() {
   const randomHexString = randomBytes(32).toString("hex");
   return randomHexString;
 }
+
+export function base64Decrypt(cipher, isObject) {
+    if (!cipher) {
+        return JSON.stringify({
+            error: true,
+            message: 'Cipher is missing',
+        });
+    }
+
+    try {
+        const decodedContent = !isObject ? atob(cipher) : JSON.parse(atob(cipher));
+        const cleanedContent = decodedContent.replace(/\r/g, '');
+        return JSON.stringify({
+            error: false,
+            content: cleanedContent
+        });
+    } catch (err) {
+        return JSON.stringify({
+            error: true,
+            message: 'Base64 Decryption Failed',
+        });
+    }
+}
+
+export function base64Encrypt(content) {
+    if (!content) {
+        return {
+            error: true,
+            message: 'Content is missing',
+        }
+    }
+
+    try {
+        return JSON.stringify({
+            error: false,
+            cipher: btoa(typeof content === 'string' ? content : JSON.stringify(content))
+        });
+    } catch (err) {
+        return JSON.stringify({
+            error: true,
+            message: 'Base64 Encryption Failed',
+        });
+    }
+}
+
