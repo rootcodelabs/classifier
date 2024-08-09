@@ -1,14 +1,14 @@
 import { FC, PropsWithChildren } from 'react';
 import Button from 'components/Button';
 import Label from 'components/Label';
-import { useQueryClient } from '@tanstack/react-query';
 import { useDialog } from 'hooks/useDialog';
 import './DataModel.scss';
 import { Maturity, TrainingStatus } from 'enums/dataModelsEnums';
 import Card from 'components/Card';
+import { useTranslation } from 'react-i18next';
 
 type DataModelCardProps = {
-  modelId?:number;
+  modelId:number;
   dataModelName?: string | undefined;
   datasetGroupName?: string;
   version?: string;
@@ -18,12 +18,12 @@ type DataModelCardProps = {
   trainingStatus?: string;
   platform?: string;
   maturity?: string;
-  setId?: React.Dispatch<React.SetStateAction<number>>;
-  setView?: React.Dispatch<React.SetStateAction<string>>;
+  setId: React.Dispatch<React.SetStateAction<number>>;
+  setView: React.Dispatch<React.SetStateAction<string>>;
   results?: any;
 };
 
-const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
+const  DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
   modelId,
   dataModelName,
   datasetGroupName,
@@ -38,32 +38,32 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
   setId,
   setView,
 }) => {
-  const queryClient = useQueryClient();
   const { open,close } = useDialog();
+  const { t } = useTranslation();
 
   const renderTrainingStatus = (status: string | undefined) => {
     if (status === TrainingStatus.RETRAINING_NEEDED) {
-      return <Label type="warning">{'Retraining Needed'}</Label>;
+      return <Label type="warning">{t("dataModels.trainingStatus.retrainingNeeded")??""}</Label>;
     } else if (status === TrainingStatus.TRAINED) {
-      return <Label type="success">{'Trained'}</Label>;
+      return <Label type="success">{t("dataModels.trainingStatus.trained")??""}</Label>;
     } else if (status === TrainingStatus.TRAINING_INPROGRESS) {
-      return <Label type="info">{'Training In Progress'}</Label>;
+      return <Label type="info">{t("dataModels.trainingStatus.trainingInProgress")??""}</Label>;
     } else if (status === TrainingStatus.UNTRAINABLE) {
-      return <Label type="error">{'Untrainable'}</Label>;
+      return <Label type="error">{t("dataModels.trainingStatus.untrainable")??""}</Label>;
     }else if (status === TrainingStatus.NOT_TRAINED) {
-      return <Label>{'Not Trained'}</Label>;
+      return <Label>{t("dataModels.trainingStatus.notTrained")??""}</Label>;
     }
   };
 
   const renderMaturityLabel = (status: string | undefined) => {
     if (status === Maturity.DEVELOPMENT) {
-      return <Label type="warning">{'Development'}</Label>;
+      return <Label type="warning">{t("dataModels.maturity.development")??""}</Label>;
     } else if (status === Maturity.PRODUCTION) {
-      return <Label type="success">{'Production'}</Label>;
+      return <Label type="success">{t("dataModels.maturity.production")??""}</Label>;
     } else if (status === Maturity.STAGING) {
-      return <Label type="info">{'Staging'}</Label>;
+      return <Label type="info">{t("dataModels.maturity.staging")??""}</Label>;
     } else if (status === Maturity.TESTING) {
-      return <Label type="error">{'Testing'}</Label>;
+      return <Label type="error">{t("dataModels.maturity.testing")??""}</Label>;
     }
   };
 

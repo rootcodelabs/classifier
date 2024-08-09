@@ -14,8 +14,8 @@
     "active": "Active",
     "activate": "Activate",
     "deactivate": "Deactivate",
-    "disconnect":"Disconnect",
-    "connect":"Connect",
+    "disconnect": "Disconnect",
+    "connect": "Connect",
     "on": "On",
     "off": "Off",
     "back": "Back",
@@ -168,7 +168,7 @@
     },
     "classHierarchy": {
       "title": "Class Hierarchy",
-      "addClassButton":"Add main class",
+      "addClassButton": "Add main class",
       "addSubClass": "Add Subclass",
       "fieldHint": "Enter a field name",
       "filedHintIfExists": "Class name already exists"
@@ -296,5 +296,32 @@
     "title": "Validation Sessions",
     "inprogress": "Validation in-Progress",
     "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
+  },
+  "dataModels": {
+    "productionModels": "Production Models",
+    "dataModels": "Data Models",
+    "createModel": "Create Model",
+    "filters": {
+      "modelName": "Model Name",
+      "version": "Version",
+      "platform": "Platform",
+      "datasetGroup": "Dataset Group",
+      "trainingStatus": "Training Status",
+      "maturity": "Maturity",
+      "sort": "Sort by name (A - Z)"
+    },
+    "trainingStatus": {
+      "retrainingNeeded": "Retraining Needed",
+      "trained": "Trained",
+      "trainingInProgress": "Training In Progress",
+      "untrainable": "Untrainable",
+      "notTrained": "Not Trained"
+    },
+    "maturity": {
+      "development": "Development",
+      "production": "Production",
+      "staging": "Staging",
+      "testing": "Testing"
+    }
   }
 }

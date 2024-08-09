@@ -10,6 +10,8 @@ export enum Maturity {
   PRODUCTION = 'production ready',
   STAGING = 'staging',
   DEVELOPMENT = 'development',
+  TESTING = 'testing',
+
 }
 
 export enum Platform {
