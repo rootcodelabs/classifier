@@ -1,10 +1,11 @@
 # Classifier
+The classifier is an open-source model training platform in which can integrated with JIRA and Outlook to deploy custom classification models to label emails or JIRA tickets.
 
 # Scope
 
 This repo will primarily contain:
 
-1. Architectural and other documentation;
+1. Architectural and other documentation (under the documentation folder);
 2. Docker Compose file to set up and run Classifier as a fully functional service;
 
 ## Dev setup
@@ -25,7 +26,7 @@ This repo will primarily contain:
 
 ### Refresh Token setup
 
-- Navigate to outlook-consent-app 
+- Navigate to outlook-consent-app folder
 - setup environment variables in .env file
     - NEXT_PUBLIC_CLIENT_ID
     - CLIENT_SECRET
