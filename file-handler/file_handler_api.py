@@ -34,7 +34,8 @@ RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 S3_FERRY_URL = os.getenv("S3_FERRY_URL")
 IMPORT_STOPWORDS_URL = os.getenv("IMPORT_STOPWORDS_URL")
 DELETE_STOPWORDS_URL = os.getenv("DELETE_STOPWORDS_URL")
-DELETE_CONFIRMATION_URL = os.getenv("DELETE_CONFIRMATION_URL")
+DATAGROUP_DELETE_CONFIRMATION_URL = os.getenv("DATAGROUP_DELETE_CONFIRMATION_URL")
+DATAMODEL_DELETE_CONFIRMATION_URL = os.getenv("DATAMODEL_DELETE_CONFIRMATION_URL")
 s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
@@ -394,7 +395,6 @@ async def delete_stop_words(request: Request, stopWordsFile: UploadFile = File(.
 @app.post("/datasetgroup/data/delete")
 async def delete_dataset_files(request: Request):
     try:
-        print("Reach : 1")
         cookie = request.cookies.get("customJwtCookie")
         await authenticate_user(f'customJwtCookie={cookie}')
 
@@ -402,12 +402,7 @@ async def delete_dataset_files(request: Request):
         dgId = int(payload["dgId"])
 
         deleter = DatasetDeleter(S3_FERRY_URL)
-        print("Reach : 2")
         success, files_deleted = deleter.delete_dataset_files(dgId, f'customJwtCookie={cookie}')
-        
-        print("Reach : 6")
-        print(success)
-        print(files_deleted)
 
         if success:
             headers = {
@@ -416,10 +411,13 @@ async def delete_dataset_files(request: Request):
             }
             payload = {"dgId": dgId}
 
-            response = requests.post(DELETE_CONFIRMATION_URL, headers=headers, json=payload)
-            print(f"Reach : 7 {response}")
+            response = requests.post(DATAGROUP_DELETE_CONFIRMATION_URL, headers=headers, json=payload)
             if response.status_code != 200:
                 print(f"Failed to notify deletion endpoint. Status code: {response.status_code}")
+            else:
+                response = requests.post(DATAMODEL_DELETE_CONFIRMATION_URL, headers=headers, json=payload)
+                if response.status_code != 200:
+                    print(f"Failed to notify model dataset deletion endpoint. Status code: {response.status_code}")
 
             return JSONResponse(status_code=200, content={"message": "Dataset deletion completed successfully.", "files_deleted": files_deleted})
         else:

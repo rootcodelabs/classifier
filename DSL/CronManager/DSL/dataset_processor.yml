@@ -3,9 +3,3 @@ dataset_processor:
   type: exec
   command: "../app/scripts/data_processor_exec.sh"
   allowedEnvs: ["cookie","dgId", "newDgId","updateType","savedFilePath","patchPayload"]
-
-data_validation:
-  trigger: off
-  type: exec
-  command: "../app/scripts/data_validator_exec.sh"
-  allowedEnvs: ["cookie","dgId", "newDgId","updateType","savedFilePath","patchPayload"]

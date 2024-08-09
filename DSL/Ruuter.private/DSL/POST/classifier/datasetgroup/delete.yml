@@ -45,9 +45,9 @@ check_dataset_data_exist:
   next: assign_fail_response
 
 execute_cron_manager:
-  call: reflect.mock
+  call: http.post
   args:
-    url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_processing/dataset_deletion"
+    url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_deletion/dataset_deletion"
     query:
       cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}
