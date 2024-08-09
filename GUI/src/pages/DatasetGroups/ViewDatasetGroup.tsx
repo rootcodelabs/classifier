@@ -230,7 +230,6 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     mutationFn: (data: { dgId: number; exportType: string }) =>
       exportDataset(data?.dgId, data?.exportType),
     onSuccess: async (response) => {
-      console.log("response export ", response, exportFormat)
       handleDownload(response, exportFormat);
       open({
         title: t('datasetGroups.detailedView.exportDataSuccessTitle') ?? '',
@@ -433,7 +432,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   return (
     <div>
       <div className="container">
-        <div>
+        <div className="content-wrapper">
           <DatasetDetailedViewTable
             metadata={metadata ?? []}
             handleOpenModals={handleOpenModals}
@@ -460,7 +459,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             setNodesError={setNodesError}
           />
 
-          <div className="footer-button-group">
+          <div className="button-container">
             <Button
               appearance={ButtonAppearanceTypes.ERROR}
               onClick={() =>
@@ -495,7 +494,14 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             >
               {t('datasetGroups.detailedView.delete') ?? ''}
             </Button>
-            <Button onClick={() => datasetGroupUpdate()}>
+            <Button
+              disabled={
+                majorUpdateDatasetGroupMutation.isLoading ||
+                minorUpdateMutation.isLoading ||
+                patchUpdateMutation.isLoading
+              }
+              onClick={() => datasetGroupUpdate()}
+            >
               {t('global.save') ?? ''}
             </Button>
           </div>
