@@ -45,16 +45,6 @@ This repo will primarily contain:
 - To Initialize Open Search run `./deploy-opensearch.sh <URL> <AUTH> <Is Mock Allowed - Default false>`
 - To Use Opensearch locally run `./deploy-opensearch.sh http://localhost:9200 admin:admin true`
 
-### Use external components.
-
-Currently, Header and Main Navigation used as external components, they are defined as dependency in package.json
-
-```
- "@buerokrat-ria/header": "^0.0.1"
- "@buerokrat-ria/menu": "^0.0.1"
- "@buerokrat-ria/styles": "^0.0.1"
-```
-
 ### Outlook Setup
 - Register Application in Azure portal
   -  Supported account types - Supported account types
