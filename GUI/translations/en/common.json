@@ -53,7 +53,7 @@
     "trainingSessions": "Training Sessions",
     "testModel": "Test Model",
     "stopWords": "Stop Words",
-    "incomingTexts": "Incoming Texts"
+    "correctedTexts": "Corrected texts"
   },
   "userManagement": {
     "title": "User Management",
@@ -297,6 +297,23 @@
     "inprogress": "Validation in-Progress",
     "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
   },
+
+  "correctedTexts": {
+    "title": "Corrected Texts",
+    "export": "Export Data",
+    "searchIncomingText": "Search incoming texts",
+    "filterAsc": "Filter by data created - Ascending",
+    "filterDesc": "Filter by data created - Descending",
+    "platform": "Platform",
+    "dateAndTime": "Date & Time",
+    "inferenceTime": "Inference Time",
+    "text": "Text",
+    "predictedHierarchy": "Predicted Class Hierarchy",
+    "predictedConfidenceProbability": "Predicted Classes Average Confidence Probability",
+    "correctedHierarchy": "Corrected Class Hierarchy",
+    "correctedConfidenceProbability": "Corrected Classes Average Confidence Probability"
+  },
+
   "dataModels": {
     "productionModels": "Production Models",
     "dataModels": "Data Models",

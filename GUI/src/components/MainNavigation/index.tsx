@@ -19,6 +19,7 @@ import apiDev from 'services/api-dev';
 import { userManagementEndpoints } from 'utils/endpoints';
 import { integrationQueryKeys } from 'utils/queryKeys';
 import { ROLES } from 'enums/roles';
+import { TbLetterT } from "react-icons/tb";
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -74,10 +75,10 @@ const MainNavigation: FC = () => {
       ],
     },
     {
-      id: 'incomingTexts',
-      label: t('menu.incomingTexts'),
-      path: '/incoming-texts',
-      icon: <MdTextFormat />,
+      id: 'correctedTexts',
+      label: t('menu.correctedTexts'),
+      path: '/corrected-texts',
+      icon: <TbLetterT/>,
     },
     {
       id: 'testModel',
