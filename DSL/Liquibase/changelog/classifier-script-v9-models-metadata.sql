@@ -10,7 +10,7 @@ CREATE TYPE Deployment_Env AS ENUM ('jira', 'outlook', 'pinal', 'testing', 'unde
 CREATE TYPE Training_Status AS ENUM ('not trained', 'training in progress', 'trained', 'retraining needed', 'untrainable');
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset4
-CREATE TYPE Base_Models AS ENUM ('xlnet', 'roberta', 'albert');
+CREATE TYPE Base_Models AS ENUM ('distil-bert', 'roberta', 'bert');
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset5
 CREATE TABLE models_metadata (
@@ -49,7 +49,7 @@ CREATE TABLE model_configurations (
 -- changeset kalsara Magamage:classifier-script-v9-changeset7
 INSERT INTO model_configurations (base_models, deployment_platforms, maturity_labels) VALUES
 (
-    ARRAY['xlnet', 'roberta', 'albert']::Base_Models[],
+    ARRAY['distil-bert', 'roberta', 'bert']::Base_Models[],
     ARRAY['jira', 'outlook', 'pinal', 'testing', 'undeployed']::Deployment_Env[],
     ARRAY['development', 'staging', 'production ready']::Maturity_Label[]
 );
