@@ -14,12 +14,14 @@ import DataModelForm from 'components/molecules/DataModelForm';
 import { getChangedAttributes, validateDataModel } from 'utils/dataModelsUtils';
 import { Platform } from 'enums/dataModelsEnums';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
+import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 
 type ConfigureDataModelType = {
   id: number;
+  availableProdModels?: string[]
 };
 
-const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
+const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels }) => {
   const { open, close } = useDialog();
   const navigate = useNavigate();
   const [enabled, setEnabled] = useState(true);
@@ -34,7 +36,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
     version: '',
   });
 
-  const { data: dataModelData } = useQuery(
+  const { data: dataModelData, isLoading } = useQuery(
     ['datamodels/metadata', id],
     () => getMetadata(id),
 
@@ -52,7 +54,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
         });
         setInitialData({
           modelName: data?.modelName || '',
-          dgId: data?.modelId || '',
+          dgId: data?.connectedDgId || '',
           platform: data?.deploymentEnv || '',
           baseModels: data?.baseModels || [],
           maturity: data?.maturityLabel || '',
@@ -92,10 +94,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
 
     if (updateType) {
       if (
-        initialData.platform === Platform.UNDEPLOYED &&
-        (dataModel.platform === Platform.JIRA ||
-          dataModel.platform === Platform.OUTLOOK ||
-          dataModel.platform === Platform.PINAL)
+       availableProdModels?.includes(dataModel.platform)
       ) {
         open({
           title: 'Warning: Replace Production Model',
@@ -253,8 +252,8 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
         title: 'Error Deleting Data Model',
         content: (
           <p>
-            There was an issue retraining the data model. Please try again. If the
-            problem persists, contact support for assistance.
+            There was an issue retraining the data model. Please try again. If
+            the problem persists, contact support for assistance.
           </p>
         ),
       });
@@ -283,16 +282,26 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
                 Model updated. Please initiate retraining to continue benefiting
                 from the latest improvements.
               </p>
-              <Button onClick={() => {retrainDataModelMutation.mutate(dataModel.modelId)}}>Retrain</Button>
+              <Button
+                onClick={() => {
+                  retrainDataModelMutation.mutate(dataModel.modelId);
+                }}
+              >
+                Retrain
+              </Button>
             </div>
           </div>
         </Card>
 
-        <DataModelForm
-          dataModel={dataModel}
-          handleChange={handleDataModelAttributesChange}
-          type="configure"
-        />
+        {isLoading ? (
+          <CircularSpinner />
+        ) : (
+          <DataModelForm
+            dataModel={dataModel}
+            handleChange={handleDataModelAttributesChange}
+            type="configure"
+          />
+        )}
       </div>
       <div
         className="flex"
@@ -321,7 +330,13 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id }) => {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={()=>retrainDataModelMutation.mutate(dataModel.modelId)}>Retrain</Button>
+                  <Button
+                    onClick={() =>
+                      retrainDataModelMutation.mutate(dataModel.modelId)
+                    }
+                  >
+                    Retrain
+                  </Button>
                 </div>
               ),
             })

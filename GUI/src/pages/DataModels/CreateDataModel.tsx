@@ -3,13 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'components';
 import { Link, useNavigate } from 'react-router-dom';
 import './DataModels.scss';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useDialog } from 'hooks/useDialog';
 import BackArrowButton from 'assets/BackArrowButton';
-import { validateDataModel } from 'utils/dataModelsUtils';
+import { extractedArray, validateDataModel } from 'utils/dataModelsUtils';
 import DataModelForm from 'components/molecules/DataModelForm';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
-import { createDataModel } from 'services/data-models';
+import { createDataModel, getDataModelsOverview } from 'services/data-models';
+import { integrationQueryKeys } from 'utils/queryKeys';
+import { getIntegrationStatus } from 'services/integration';
 
 const CreateDataModel: FC = () => {
   const { t } = useTranslation();
@@ -17,16 +19,56 @@ const CreateDataModel: FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
+  const [availableProdModels, setAvailableProdModels] = useState<string[]>([]);
 
   const [dataModel, setDataModel] = useState({
     modelName: '',
     dgName: '',
-    dgId: '',
+    dgId: 0,
     platform: '',
     baseModels: [],
     maturity: '',
     version: 'V1.0',
   });
+
+  useQuery(
+    [
+      'datamodels/overview',
+      0,
+      'all',
+      -1,
+      -1,
+      'all',
+      -1,
+      'all',
+      'all',
+      'asc',
+      true,
+    ],
+    () =>
+      getDataModelsOverview(
+        1,
+        'all',
+        -1,
+        -1,
+        'all',
+        -1,
+        'all',
+        'all',
+        'asc',
+        true
+      ),
+    {
+      onSuccess:(data)=>{          
+        setAvailableProdModels(extractedArray(data?.data,"deploymentEnv"))
+      },
+    }
+  );
+
+  const { data: integrationStatus } = useQuery(
+    integrationQueryKeys.INTEGRATION_STATUS(),
+    () => getIntegrationStatus()
+  );
 
   const handleDataModelAttributesChange = (name: string, value: string) => {
     setDataModel((prevFilters) => ({
@@ -59,7 +101,38 @@ const CreateDataModel: FC = () => {
         maturityLabel: dataModel.maturity,
       };
 
-      createDataModelMutation.mutate(payload);
+      if (
+        availableProdModels?.includes(dataModel.platform)
+       ) {
+         open({
+           title: 'Warning: Replace Production Model',
+           content:
+             <div>
+             Adding this model to production will replace the current production model. Are you sure you want to proceed?
+             {!integrationStatus[`${dataModel.platform}_connection_status`] && <div className='warning'> {`${dataModel.platform} integration is currently disabled, therefore the model wouldn't recieve any inputs or make any predictions`}</div>}
+
+             </div>,
+           footer: (
+             <div className="flex-grid">
+               <Button
+                 appearance={ButtonAppearanceTypes.SECONDARY}
+                 onClick={close}
+               >
+                 Cancel
+               </Button>
+               <Button
+                 onClick={() => createDataModelMutation.mutate(payload)}
+               >
+                 Proceed
+               </Button>
+             </div>
+           ),
+         });
+       }else{
+        createDataModelMutation.mutate(payload);
+
+       }
+
     }
   };
   const createDataModelMutation = useMutation({

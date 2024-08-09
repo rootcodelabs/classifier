@@ -10,7 +10,7 @@ import DataModelCard from 'components/molecules/DataModelCard';
 import ConfigureDataModel from './ConfigureDataModel';
 import { INTEGRATION_OPERATIONS } from 'enums/integrationEnums';
 import { Platform } from 'enums/dataModelsEnums';
-import { customFormattedArray } from 'utils/dataModelsUtils';
+import { customFormattedArray, extractedArray } from 'utils/dataModelsUtils';
 import { MdPin, MdPinEnd, MdStar } from 'react-icons/md';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
@@ -22,7 +22,10 @@ const DataModels: FC = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [id, setId] = useState(0);
   const [enableFetch, setEnableFetch] = useState(true);
+  const [enableProdModelsFetch, setEnableProdModelsFetch] = useState(true);
+
   const [view, setView] = useState('list');
+  const [availableProdModels, setAvailableProdModels] = useState<string[]>([]);
 
   useEffect(() => {
     setEnableFetch(true);
@@ -100,8 +103,12 @@ const DataModels: FC = () => {
           true
         ),
       {
+        onSuccess:(data)=>{          
+          setAvailableProdModels(extractedArray(data?.data,"deploymentEnv"))
+          setEnableProdModelsFetch(false)
+        },
         keepPreviousData: true,
-        enabled: enableFetch,
+        enabled: enableProdModelsFetch,
       }
     );
   const { data: filterData } = useQuery(['datamodels/filters'], () =>
@@ -165,34 +172,39 @@ const DataModels: FC = () => {
               <div className="search-panel">
                 <FormSelect
                   label=""
-                  name="modelName"
+                  name=""
                   placeholder="Model Name"
                   options={formattedArray(filterData?.modelNames) ?? []}
                   onSelectionChange={(selection) =>
                     handleFilterChange('modelName', selection?.value ?? '')
                   }
+                  defaultValue={filters?.modelName}
                 />
                 <FormSelect
                   label=""
-                  name="version"
+                  name=""
                   placeholder="Version"
                   options={formattedArray(filterData?.modelVersions) ?? []}
                   onSelectionChange={(selection) =>
                     handleFilterChange('version', selection?.value ?? '')
                   }
+                  defaultValue={filters?.version}
+
                 />
                 <FormSelect
                   label=""
-                  name="platform"
+                  name=""
                   placeholder="Platform"
                   options={formattedArray(filterData?.deploymentsEnvs) ?? []}
                   onSelectionChange={(selection) =>
                     handleFilterChange('platform', selection?.value ?? '')
                   }
+                  defaultValue={filters?.platform}
+
                 />
                 <FormSelect
                   label=""
-                  name="datasetGroup"
+                  name=""
                   placeholder="Dataset Group"
                   options={
                     customFormattedArray(filterData?.datasetGroups, 'name') ??
@@ -201,28 +213,34 @@ const DataModels: FC = () => {
                   onSelectionChange={(selection) =>
                     handleFilterChange('datasetGroup', selection?.value?.id)
                   }
+                  defaultValue={filters?.datasetGroup}
+
                 />
                 <FormSelect
                   label=""
-                  name="trainingStatus"
+                  name=""
                   placeholder="Training Status"
                   options={formattedArray(filterData?.trainingStatuses) ?? []}
                   onSelectionChange={(selection) =>
-                    handleFilterChange('trainingStatus', selection?.value ?? '')
+                    handleFilterChange('trainingStatus', selection?.value )
                   }
+                  defaultValue={filters?.trainingStatus}
+
                 />
                 <FormSelect
                   label=""
-                  name="maturity"
+                  name=""
                   placeholder="Maturity"
                   options={formattedArray(filterData?.maturityLabels) ?? []}
                   onSelectionChange={(selection) =>
                     handleFilterChange('maturity', selection?.value ?? '')
                   }
+                  defaultValue={filters?.maturity}
+
                 />
                 <FormSelect
                   label=""
-                  name="sort"
+                  name=""
                   placeholder="Sort by name (A - Z)"
                   options={[
                     { label: 'A-Z', value: 'asc' },
@@ -231,6 +249,8 @@ const DataModels: FC = () => {
                   onSelectionChange={(selection) =>
                     handleFilterChange('sort', selection?.value ?? '')
                   }
+                  defaultValue={filters?.sort}
+
                 />
                 <Button onClick={() => setEnableFetch(true)}>Search</Button>
                 <Button
@@ -277,7 +297,7 @@ const DataModels: FC = () => {
           )}
         </div>
       )}
-      {view === 'individual' && <ConfigureDataModel id={id} />}
+      {view === 'individual' && <ConfigureDataModel id={id} availableProdModels={availableProdModels}/>}
     </div>
   );
 };

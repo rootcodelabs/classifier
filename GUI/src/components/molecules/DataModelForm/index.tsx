@@ -14,6 +14,7 @@ import {
   customFormattedArray,
   dgArrayWithVersions,
 } from 'utils/dataModelsUtils';
+import CircularSpinner from '../CircularSpinner/CircularSpinner';
 
 type DataModelFormType = {
   dataModel: any;
@@ -30,7 +31,7 @@ const DataModelForm: FC<DataModelFormType> = ({
 }) => {
   const { t } = useTranslation();
 
-  const { data: createOptions } = useQuery(['datamodels/create-options'], () =>
+  const { data: createOptions, isLoading } = useQuery(['datamodels/create-options'], () =>
     getCreateOptions()
   );
 
@@ -58,12 +59,12 @@ const DataModelForm: FC<DataModelFormType> = ({
         </div>
       )}
 
-      {createOptions && (
+      {createOptions && !isLoading? (
         <div>
           <div className="title-sm">Select Dataset Group</div>
           <div className="grey-card">
             <FormSelect
-              name="dgName"
+              name="dgId"
               options={dgArrayWithVersions(
                 createOptions?.datasetGroups,
                 'groupName'
@@ -73,6 +74,7 @@ const DataModelForm: FC<DataModelFormType> = ({
                 handleChange('dgId', selection?.value);
               }}
               defaultValue={dataModel?.dgId}
+              error={errors?.dgId}
             />
           </div>
 
@@ -115,7 +117,7 @@ const DataModelForm: FC<DataModelFormType> = ({
             />
           </div>
         </div>
-      )}
+      ):(<CircularSpinner/>)}
     </div>
   );
 };

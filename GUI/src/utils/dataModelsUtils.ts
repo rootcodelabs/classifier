@@ -1,11 +1,13 @@
 import { DataModel } from 'types/dataModels';
 
 export const validateDataModel = (dataModel) => {
-  const { modelName, dgName, platform, baseModels, maturity } = dataModel;
+  const { modelName, dgId, platform, baseModels, maturity } = dataModel;
   const newErrors: any = {};
 
   if (!modelName.trim()) newErrors.modelName = 'Model Name is required';
   if (!platform.trim()) newErrors.platform = 'Platform is required';
+  if (dgId === 0) newErrors.dgId = 'Dataset group is required';
+
   if (baseModels?.length === 0)
     newErrors.baseModels = 'At least one Base Model is required';
   if (!maturity.trim()) newErrors.maturity = 'Maturity is required';
@@ -26,13 +28,20 @@ export const customFormattedArray = <T extends Record<string, any>>(
   }));
 };
 
+export const extractedArray = <T extends Record<string, string>>(
+  data: T[],
+  attributeName: keyof T
+): string[] => {
+  return data?.map((item) => item[attributeName]);
+};
+
 export const dgArrayWithVersions = <T extends Record<string, any>>(
   data: T[],
   attributeName: keyof T
 ) => {
   return data?.map((item) => ({
     label: `${item[attributeName]} (${item.majorVersion}.${item.minorVersion}.${item.patchVersion})`,
-    value: item.dgId
+    value: item.dgId,
   }));
 };
 

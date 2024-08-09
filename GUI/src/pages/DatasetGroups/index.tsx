@@ -163,7 +163,7 @@ const DatasetGroups: FC = () => {
                       datasetGroupId={dataset?.id}
                       isEnabled={dataset?.isEnabled}
                       datasetName={dataset?.groupName}
-                      version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                      version={`V${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
                       isLatest={dataset.latest}
                       lastUpdated={dataset?.lastUpdatedTimestamp}
                       lastUsed={dataset?.lastTrainedTimestamp}

@@ -80,3 +80,8 @@ export async function retrainDataModel(modelId : number) {
   });
   return data;
 }
+
+export async function getDataModelsProgress() {
+  const { data } = await apiDev.get('classifier/datamodel/progress');
+  return data?.response?.data;
+}

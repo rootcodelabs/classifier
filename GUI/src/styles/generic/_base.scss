@@ -57,6 +57,22 @@ body {
   margin: 20px 0px;
 }
 
+.title-m {
+  font-size: 1.3rem;
+  color: #000;
+  font-weight: 300;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0px;
+}
+
+.warning{
+  font-size: 13px;
+  color: rgb(223, 116, 2);
+  margin-top: 20px;
+}
+
 .flex-between {
   display: flex;
   justify-content: space-between;
