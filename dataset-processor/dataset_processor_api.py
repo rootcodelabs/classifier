@@ -75,7 +75,7 @@ async def forward_request(request: Request, response: Response):
         'Content-Type': 'application/json'
     }
     if validator_response["response"]["operationSuccessful"] != True:
-        forward_payload["validationStatus"] = "failed"
+        forward_payload["validationStatus"] = "fail"
         forward_payload["validationErrors"] = [validator_response["response"]["message"]]
     else:
         forward_payload["validationStatus"] = "success"
@@ -93,7 +93,7 @@ async def forward_request(request: Request, response: Response):
         forward_payload["updateType"] = payload["updateType"]
         forward_payload["patchPayload"] = payload["patchPayload"]
         forward_payload["savedFilePath"] = payload["savedFilePath"]
-        forward_payload["validationStatus"] = "failed"
+        forward_payload["validationStatus"] = "fail"
         forward_payload["validationErrors"] = [e]
         forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
         print(e)
@@ -105,7 +105,7 @@ async def forward_request(request: Request, response: Response):
         forward_payload["updateType"] = payload["updateType"]
         forward_payload["patchPayload"] = payload["patchPayload"]
         forward_payload["savedFilePath"] = payload["savedFilePath"]
-        forward_payload["validationStatus"] = "failed"
+        forward_payload["validationStatus"] = "fail"
         forward_payload["validationErrors"] = [e]
         forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
         print(e)
