@@ -4,57 +4,84 @@ import json
 import requests
 import urllib.parse
 import datetime
+from constants import *
 
 class DatasetValidator:
     def __init__(self):
         pass
 
     def process_request(self, dgId, cookie, updateType, savedFilePath, patchPayload=None):
-        print("Process request started")
+        print(MSG_PROCESS_REQUEST_STARTED)
         print(f"dgId: {dgId}, updateType: {updateType}, savedFilePath: {savedFilePath}")
-        if updateType == "minor":
-            return self.handle_minor_update(dgId, cookie, savedFilePath)
-        elif updateType == "patch":
-            return self.handle_patch_update(dgId, cookie, patchPayload)
-        else:
-            return self.generate_response(False, "Unknown update type")
+        metadata = self.get_datagroup_metadata(dgId, cookie)
+        if not metadata:
+            return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"))
 
-    def handle_minor_update(self, dgId, cookie, savedFilePath):
+        session_id = self.create_progress_session(metadata, cookie)
+        print(f"Progress Session ID : {session_id}")
+        if not session_id:
+            return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"))
+
         try:
-            print("Handling minor update")
+            # Initializing dataset processing
+            self.update_progress(cookie, PROGRESS_INITIATING, MSG_INIT_VALIDATION, STATUS_MSG_VALIDATION_INIT, session_id)
+
+            if updateType == "minor":
+                result = self.handle_minor_update(dgId, cookie, savedFilePath, session_id)
+            elif updateType == "patch":
+                result = self.handle_patch_update(dgId, cookie, patchPayload, session_id)
+            else:
+                result = self.generate_response(False, "Unknown update type")
+
+            # Final progress update upon successful completion
+            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_VALIDATION_SUCCESS, STATUS_MSG_SUCCESS, session_id)
+            return result
+        except Exception as e:
+            self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
+            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e))
+
+    def handle_minor_update(self, dgId, cookie, savedFilePath, session_id):
+        try:
+            print(MSG_HANDLING_MINOR_UPDATE)
+            self.update_progress(cookie, 10, MSG_DOWNLOADING_DATASET, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             data = self.get_dataset_by_location(savedFilePath, cookie)
             if data is None:
-                print("Failed to download and load data")
+                self.update_progress(cookie, PROGRESS_FAIL, "Failed to download and load data", STATUS_MSG_FAIL, session_id)
                 return self.generate_response(False, "Failed to download and load data")
             print("Data downloaded and loaded successfully")
 
+            self.update_progress(cookie, 20, MSG_FETCHING_VALIDATION_CRITERIA, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             validation_criteria, class_hierarchy = self.get_validation_criteria(dgId, cookie)
             if validation_criteria is None:
-                print("Failed to get validation criteria")
+                self.update_progress(cookie, PROGRESS_FAIL, "Failed to get validation criteria", STATUS_MSG_FAIL, session_id)
                 return self.generate_response(False, "Failed to get validation criteria")
             print("Validation criteria retrieved successfully")
 
+            self.update_progress(cookie, 30, MSG_VALIDATING_FIELDS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             field_validation_result = self.validate_fields(data, validation_criteria)
             if not field_validation_result['success']:
-                print("Field validation failed")
+                self.update_progress(cookie, PROGRESS_FAIL, field_validation_result['message'], STATUS_MSG_FAIL, session_id)
                 return self.generate_response(False, field_validation_result['message'])
-            print("Field validation successful")
+            print(MSG_VALIDATION_FIELDS_SUCCESS)
 
+            self.update_progress(cookie, 35, MSG_VALIDATING_CLASS_HIERARCHY, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             hierarchy_validation_result = self.validate_class_hierarchy(data, validation_criteria, class_hierarchy)
             if not hierarchy_validation_result['success']:
-                print("Class hierarchy validation failed")
+                self.update_progress(cookie, PROGRESS_FAIL, hierarchy_validation_result['message'], STATUS_MSG_FAIL, session_id)
                 return self.generate_response(False, hierarchy_validation_result['message'])
-            print("Class hierarchy validation successful")
+            print(MSG_CLASS_HIERARCHY_SUCCESS)
 
             print("Minor update processed successfully")
+            self.update_progress(cookie, 40, "Minor update processed successfully", STATUS_MSG_SUCCESS, session_id)
             return self.generate_response(True, "Minor update processed successfully")
 
         except Exception as e:
-            print(f"Internal error: {e}")
-            return self.generate_response(False, f"Internal error: {e}")
+            print(MSG_INTERNAL_ERROR.format(e))
+            self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
+            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e))
 
     def get_dataset_by_location(self, fileLocation, custom_jwt_cookie):
-        print("Downloading dataset by location")
+        print(MSG_DOWNLOADING_DATASET)
         params = {'saveLocation': fileLocation}
         headers = {'cookie': custom_jwt_cookie}
         try:
@@ -63,11 +90,11 @@ class DatasetValidator:
             print("Dataset downloaded successfully")
             return response.json()
         except requests.exceptions.RequestException as e:
-            print(f"Error downloading dataset: {e}")
+            print(MSG_REQUEST_FAILED.format("Dataset download"))
             return None
 
     def get_validation_criteria(self, dgId, cookie):
-        print("Fetching validation criteria")
+        print(MSG_FETCHING_VALIDATION_CRITERIA)
         params = {'dgId': dgId}
         headers = {'cookie': cookie}
         try:
@@ -78,32 +105,32 @@ class DatasetValidator:
             class_hierarchy = response.json().get('response', {}).get('classHierarchy', {})
             return validation_criteria, class_hierarchy
         except requests.exceptions.RequestException as e:
-            print(f"Error fetching validation criteria: {e}")
+            print(MSG_REQUEST_FAILED.format("Validation criteria fetch"))
             return None
 
     def validate_fields(self, data, validation_criteria):
-        print("Validating fields")
+        print(MSG_VALIDATING_FIELDS)
         try:
             fields = validation_criteria.get('fields', [])
             validation_rules = validation_criteria.get('validationRules', {})
 
             for field in fields:
                 if field not in data[0]:
-                    print(f"Missing field: {field}")
-                    return {'success': False, 'message': f"Missing field: {field}"}
+                    print(MSG_MISSING_FIELD.format(field))
+                    return {'success': False, 'message': MSG_MISSING_FIELD.format(field)}
 
             for idx, row in enumerate(data):
                 for field, rules in validation_rules.items():
                     if field in row:
                         value = row[field]
                         if not self.validate_value(value, rules['type']):
-                            print(f"Validation failed for field '{field}' in row {idx + 1}")
-                            return {'success': False, 'message': f"Validation failed for field '{field}' in row {idx + 1}"}
-            print("Fields validation successful")
-            return {'success': True, 'message': "Fields validation successful"}
+                            print(MSG_VALIDATION_FIELD_FAIL.format(field, idx + 1))
+                            return {'success': False, 'message': MSG_VALIDATION_FIELD_FAIL.format(field, idx + 1)}
+            print(MSG_VALIDATION_FIELDS_SUCCESS)
+            return {'success': True, 'message': MSG_VALIDATION_FIELDS_SUCCESS}
         except Exception as e:
-            print(f"Error validating fields: {e}")
-            return {'success': False, 'message': f"Error validating fields: {e}"}
+            print(MSG_INTERNAL_ERROR.format(e))
+            return {'success': False, 'message': MSG_INTERNAL_ERROR.format(e)}
 
     def validate_value(self, value, value_type):
         if value_type == 'email':
@@ -127,7 +154,7 @@ class DatasetValidator:
         return False
 
     def validate_class_hierarchy(self, data, validation_criteria, class_hierarchy):
-        print("Validating class hierarchy")
+        print(MSG_VALIDATING_CLASS_HIERARCHY)
         try:
             data_class_columns = [field for field, rules in validation_criteria.get('validationRules', {}).items() if rules.get('isDataClass', False)]
 
@@ -138,21 +165,20 @@ class DatasetValidator:
             missing_in_data = hierarchy_values - data_values
 
             if missing_in_hierarchy:
-                print(f"Values missing in class hierarchy: {missing_in_hierarchy}")
-                return {'success': False, 'message': f"Values missing in class hierarchy: {missing_in_hierarchy}"}
+                print(MSG_CLASS_HIERARCHY_FAIL.format("class hierarchy", missing_in_hierarchy))
+                return {'success': False, 'message': MSG_CLASS_HIERARCHY_FAIL.format("class hierarchy", missing_in_hierarchy)}
             if missing_in_data:
-                print(f"Values missing in data class columns: {missing_in_data}")
-                return {'success': False, 'message': f"Values missing in data class columns: {missing_in_data}"}
+                print(MSG_CLASS_HIERARCHY_FAIL.format("data class columns", missing_in_data))
+                return {'success': False, 'message': MSG_CLASS_HIERARCHY_FAIL.format("data class columns", missing_in_data)}
 
-            print("Class hierarchy validation successful")
-            return {'success': True, 'message': "Class hierarchy validation successful"}
+            print(MSG_CLASS_HIERARCHY_SUCCESS)
+            return {'success': True, 'message': MSG_CLASS_HIERARCHY_SUCCESS}
         except Exception as e:
-            print(f"Error validating class hierarchy: {e}")
-            return {'success': False, 'message': f"Error validating class hierarchy: {e}"}
+            print(MSG_INTERNAL_ERROR.format(e))
+            return {'success': False, 'message': MSG_INTERNAL_ERROR.format(e)}
 
     def extract_hierarchy_values(self, hierarchy):
-        print("Extracting hierarchy values")
-        print(hierarchy)
+        print(MSG_EXTRACTING_HIERARCHY_VALUES)
         values = set()
 
         def traverse(node):
@@ -168,7 +194,7 @@ class DatasetValidator:
         return values
 
     def extract_data_class_values(self, data, columns):
-        print("Extracting data class values")
+        print(MSG_EXTRACTING_DATA_CLASS_VALUES)
         values = set()
         for row in data:
             for col in columns:
@@ -176,65 +202,86 @@ class DatasetValidator:
         print(f"Data class values extracted: {values}")
         return values
 
-    def handle_patch_update(self, dgId, cookie, patchPayload):
-        print("Handling patch update")
+    def handle_patch_update(self, dgId, cookie, patchPayload, session_id):
+        print(MSG_HANDLING_PATCH_UPDATE)
         min_label_value = 1
 
         try:
+            # Start with a small progress value
+            self.update_progress(cookie, 5, MSG_FETCHING_VALIDATION_CRITERIA, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             validation_criteria, class_hierarchy = self.get_validation_criteria(dgId, cookie)
             if validation_criteria is None:
+                self.update_progress(cookie, PROGRESS_FAIL, "Failed to get validation criteria", STATUS_MSG_FAIL, session_id)
                 return self.generate_response(False, "Failed to get validation criteria")
 
             if patchPayload is None:
+                self.update_progress(cookie, PROGRESS_FAIL, "No patch payload provided", STATUS_MSG_FAIL, session_id)
                 return self.generate_response(False, "No patch payload provided")
 
             decoded_patch_payload = urllib.parse.unquote(patchPayload)
             patch_payload_dict = json.loads(decoded_patch_payload)
-            
+
             edited_data = patch_payload_dict.get("editedData", [])
 
             if edited_data:
+                self.update_progress(cookie, 10, "Processing edited data", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 for row in edited_data:
                     row_id = row.pop("rowId", None)
                     if row_id is None:
+                        self.update_progress(cookie, PROGRESS_FAIL, "Missing rowId in edited data", STATUS_MSG_FAIL, session_id)
                         return self.generate_response(False, "Missing rowId in edited data")
-                    
+
                     for key, value in row.items():
                         if key not in validation_criteria['validationRules']:
+                            self.update_progress(cookie, PROGRESS_FAIL, f"Invalid field: {key}", STATUS_MSG_FAIL, session_id)
                             return self.generate_response(False, f"Invalid field: {key}")
 
                         if not self.validate_value(value, validation_criteria['validationRules'][key]['type']):
+                            self.update_progress(cookie, PROGRESS_FAIL, f"Validation failed for field type '{key}' in row {row_id}", STATUS_MSG_FAIL, session_id)
                             return self.generate_response(False, f"Validation failed for field type '{key}' in row {row_id}")
 
+                self.update_progress(cookie, 20, "Validating data class hierarchy", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 data_class_columns = [field for field, rules in validation_criteria['validationRules'].items() if rules.get('isDataClass', False)]
                 hierarchy_values = self.extract_hierarchy_values(class_hierarchy)
                 for row in edited_data:
                     for col in data_class_columns:
                         if row.get(col) and row[col] not in hierarchy_values:
+                            self.update_progress(cookie, PROGRESS_FAIL, f"New class '{row[col]}' does not exist in the schema hierarchy", STATUS_MSG_FAIL, session_id)
                             return self.generate_response(False, f"New class '{row[col]}' does not exist in the schema hierarchy")
 
+                self.update_progress(cookie, 30, "Downloading aggregated dataset", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 aggregated_data = self.get_dataset_by_location(f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json", cookie)
                 if aggregated_data is None:
+                    self.update_progress(cookie, PROGRESS_FAIL, "Failed to download aggregated dataset", STATUS_MSG_FAIL, session_id)
                     return self.generate_response(False, "Failed to download aggregated dataset")
 
+                self.update_progress(cookie, 35, "Checking label counts for edited data", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 if not self.check_label_counts(aggregated_data, edited_data, data_class_columns, min_label_value):
+                    self.update_progress(cookie, PROGRESS_FAIL, "Editing this data will cause the dataset to have insufficient data examples for one or more labels.", STATUS_MSG_FAIL, session_id)
                     return self.generate_response(False, "Editing this data will cause the dataset to have insufficient data examples for one or more labels.")
 
             deleted_data_rows = patch_payload_dict.get("deletedDataRows", [])
             if deleted_data_rows:
+                self.update_progress(cookie, 40, "Processing deleted data rows", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 if 'aggregated_data' not in locals():
                     aggregated_data = self.get_dataset_by_location(f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json", cookie)
                     if aggregated_data is None:
+                        self.update_progress(cookie, PROGRESS_FAIL, "Failed to download aggregated dataset", STATUS_MSG_FAIL, session_id)
                         return self.generate_response(False, "Failed to download aggregated dataset")
 
+                self.update_progress(cookie, 45, "Checking label counts after deletion", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 if not self.check_label_counts_after_deletion(aggregated_data, deleted_data_rows, data_class_columns, min_label_value):
+                    self.update_progress(cookie, PROGRESS_FAIL, "Deleting this data will cause the dataset to have insufficient data examples for one or more labels.", STATUS_MSG_FAIL, session_id)
                     return self.generate_response(False, "Deleting this data will cause the dataset to have insufficient data examples for one or more labels.")
 
-            return self.generate_response(True, "Patch update processed successfully")
+            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_PATCH_UPDATE_SUCCESS, STATUS_MSG_SUCCESS, session_id)
+            return self.generate_response(True, MSG_PATCH_UPDATE_SUCCESS)
 
         except Exception as e:
-            print(f"Internal error: {e}")
-            return self.generate_response(False, f"Internal error: {e}")
+            print(MSG_INTERNAL_ERROR.format(e))
+            self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
+            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e))
+
 
     def check_label_counts(self, aggregated_data, edited_data, data_class_columns, min_label_value):
         # Aggregate data class values from edited data
@@ -290,10 +337,71 @@ class DatasetValidator:
         return True
 
     def generate_response(self, success, message):
-        print(f"Generating response: success={success}, message={message}")
+        print(MSG_GENERATING_RESPONSE.format(success, message))
         return {
             'response': {
                 'operationSuccessful': success,
                 'message': message
             }
         }
+
+    def get_datagroup_metadata(self, dgId, cookie):
+        url = GET_DATAGROUP_METADATA_URL.replace('dgId', str(dgId))
+        headers = {'Cookie': cookie}
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(MSG_REQUEST_FAILED.format("Metadata fetch"))
+            return None
+
+    def create_progress_session(self, metadata, cookie):
+        print(f"METADATA : >>>>>>>>>> {metadata}")
+        url = CREATE_PROGRESS_SESSION_URL
+        headers = {'Content-Type': 'application/json', 'Cookie': cookie}
+        payload = {
+            'dgId': metadata['response']['data'][0]['dgId'],
+            'groupName': metadata['response']['data'][0]['name'],
+            'majorVersion': metadata['response']['data'][0]['majorVersion'],
+            'minorVersion': metadata['response']['data'][0]['minorVersion'],
+            'patchVersion': metadata['response']['data'][0]['patchVersion'],
+            'latest': metadata['response']['data'][0]['latest']
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            response_data = response.json().get('response', {})
+            session_id = response_data.get('sessionId')
+            return session_id
+        except requests.exceptions.RequestException as e:
+            print(MSG_REQUEST_FAILED.format("Progress session creation"))
+            return None
+
+    def update_progress(self, cookie, progress, message, status, session_id=None):
+
+        if progress == PROGRESS_FAIL:
+            process_complete = True
+        else:
+            process_complete = False
+
+        url = UPDATE_PROGRESS_SESSION_URL
+        headers = {'Content-Type': 'application/json', 'Cookie': cookie}
+        payload = {
+            'sessionId': session_id,
+            'validationStatus': status,
+            'validationMessage': message,
+            'progressPercentage': progress,
+            'processComplete': process_complete
+        }
+        try:
+            print(f"Update Payload : {payload}")
+            response = requests.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            print(f"Response : {response}")
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Progress update error : {e}")
+            print(MSG_REQUEST_FAILED.format("Progress update"))
+            return None
