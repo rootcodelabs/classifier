@@ -160,11 +160,12 @@ services:
 
   cron-manager:
     container_name: cron-manager
-    image: cron-manager
+    image: cron-manager-python
     volumes:
       - ./DSL/CronManager/DSL:/DSL
       - ./DSL/CronManager/script:/app/scripts
       - ./DSL/CronManager/config:/app/config
+      - ./model_trainer:/app/model_trainer
     environment:
       - server.port=9010
     ports:
