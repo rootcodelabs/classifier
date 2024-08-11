@@ -127,6 +127,35 @@ update_latest_in_old_versions:
 check_latest_status:
   switch:
     - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: set_deployment_env
+  next: assign_fail_response
+
+set_deployment_env:
+  assign:
+    deployment_env_data_set: ${deployment_env == null ? deployment_env_prev :deployment_env }
+  next: check_deployment_platform
+
+check_deployment_platform:
+  switch:
+    - condition: ${deployment_env_data_set == 'jira' || deployment_env_data_set == 'outlook'|| deployment_env_data_set == 'pinal' }
+      next: update_existing_models_deployment_platform
+    - condition: ${deployment_env_data_set == 'testing' || deployment_env_data_set == 'undeployed' }
+      next: check_event_type_for_latest_version_again
+  next: return_deployment_type_found
+
+update_existing_models_deployment_platform:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/update-models-deployment-platform"
+    body:
+      updating_platform: 'undeployed'
+      existing_platform: ${deployment_env_data_set}
+  result: res_update
+  next: check_deployment_platform__status
+
+check_deployment_platform__status:
+  switch:
+    - condition: ${200 <= res_update.response.statusCodeValue && res_update.response.statusCodeValue < 300}
       next: check_event_type_for_latest_version_again
   next: assign_fail_response
 
@@ -155,12 +184,6 @@ snapshot_major_data_model:
       maturity_label: ${maturity_label == null ? 'development' :maturity_label}
   result: res
   next: check_snapshot_status
-
-check_major_previous_deployment_env:
-  switch:
-    - condition: ${deployment_env == deployment_env_prev && (deployment_env_prev == 'jira' || deployment_env_prev == 'outlook' || deployment_env_prev == 'pinal')}
-      next: update_data_model_deployment_env
-  next: get_major_model_data_by_id
 
 get_data_model_minor_data:
   call: http.post
@@ -194,13 +217,9 @@ assign_minor_day:
 
 check_minor_data_request_status:
   switch:
-    - condition: ${deployment_env == null && (deployment_env_prev == 'jira' || deployment_env_prev == 'outlook' || deployment_env_prev == 'pinal')}
-      next: assign_previous_deployment_env_and_update_old
-    - condition: ${deployment_env == null && (deployment_env_prev == 'testing' || deployment_env_prev == 'undeployed')}
+    - condition: ${deployment_env == null }
       next: assign_previous_deployment_env
-    - condition: ${deployment_env !== null &&  deployment_env == deployment_env_prev && (deployment_env_prev == 'jira' || deployment_env_prev == 'outlook' || deployment_env_prev == 'pinal')}
-      next: assign_new_deployment_env_and_update_old
-    - condition: ${deployment_env !== null &&  deployment_env !== deployment_env_prev}
+    - condition: ${deployment_env !== null}
       next: assign_new_deployment_env
   next: assign_fail_response
 
@@ -209,44 +228,10 @@ assign_new_deployment_env:
     deployment_env_data: ${deployment_env}
   next: update_latest_in_old_versions
 
-assign_previous_deployment_env_and_update_old:
-  assign:
-    deployment_env_data: ${deployment_env_prev}
-  next: update_data_model_deployment_env
-
-assign_new_deployment_env_and_update_old:
-  assign:
-    deployment_env_data: ${deployment_env}
-  next: update_data_model_deployment_env
-
 assign_previous_deployment_env:
   assign:
     deployment_env_data: ${deployment_env_prev}
   next: update_latest_in_old_versions
-
-update_data_model_deployment_env:
-  call: http.post
-  args:
-    url: "[#CLASSIFIER_RESQL]/update-data-model-deployment-env"
-    body:
-      id: ${model_id}
-      deployment_env: testing
-  result: res
-  next: check_data_model_deployment_env_status
-
-check_data_model_deployment_env_status:
-  switch:
-    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
-      next: check_event_type_again
-  next: assign_fail_response
-
-check_event_type_again:
-  switch:
-    - condition: ${update_type == 'major'}
-      next: get_major_model_data_by_id
-    - condition: ${update_type == 'minor'}
-      next: update_latest_in_old_versions
-  next: return_type_found
 
 get_major_model_data_by_id:
   call: http.post
@@ -314,12 +299,12 @@ check_updated_data_exist:
 assign_new_model_id:
   assign:
     new_model_id: ${res.response.body[0].id}
-  next: check_event_type_again_again
+  next: check_event_type_again
 
-check_event_type_again_again:
+check_event_type_again:
   switch:
     - condition: ${update_type == 'major'}
-      next: check_major_previous_deployment_env
+      next: get_major_model_data_by_id
     - condition: ${update_type == 'minor'}
       next: execute_cron_manager
   next: return_type_found
@@ -405,6 +390,11 @@ return_not_found:
 return_type_found:
   status: 400
   return: "Update Type Not Found"
+  next: end
+
+return_deployment_type_found:
+  status: 400
+  return: "Deployment Platform Type Not Found"
   next: end
 
 return_dataset_group_not_found:

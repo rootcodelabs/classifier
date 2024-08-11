@@ -14,7 +14,7 @@ INSERT INTO models_metadata (
     connected_dg_name,
     connected_dg_major_version,
     connected_dg_minor_version,
-     connected_dg_patch_version,
+    connected_dg_patch_version,
     model_s3_location,
     inference_routes,
     training_results
