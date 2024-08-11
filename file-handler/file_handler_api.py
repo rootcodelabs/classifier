@@ -7,10 +7,7 @@ import uuid
 import requests
 from pydantic import BaseModel
 from file_converter import FileConverter
-from constants import (
-    UPLOAD_FAILED, UPLOAD_SUCCESS, EXPORT_TYPE_ERROR, IMPORT_TYPE_ERROR,
-    S3_UPLOAD_FAILED, S3_DOWNLOAD_FAILED, JSON_EXT, YAML_EXT, YML_EXT, XLSX_EXT
-)
+from constants import *
 from s3_ferry import S3Ferry
 import yaml
 import pandas as pd
@@ -28,14 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
-CHUNK_UPLOAD_DIRECTORY = os.getenv("CHUNK_UPLOAD_DIRECTORY", "/shared/chunks")
-RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
-S3_FERRY_URL = os.getenv("S3_FERRY_URL")
-IMPORT_STOPWORDS_URL = os.getenv("IMPORT_STOPWORDS_URL")
-DELETE_STOPWORDS_URL = os.getenv("DELETE_STOPWORDS_URL")
-DATAGROUP_DELETE_CONFIRMATION_URL = os.getenv("DATAGROUP_DELETE_CONFIRMATION_URL")
-DATAMODEL_DELETE_CONFIRMATION_URL = os.getenv("DATAMODEL_DELETE_CONFIRMATION_URL")
 s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
@@ -147,7 +136,7 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
     if response.status_code != 201:
         raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
-    json_file_path = os.path.join('..', 'shared', f"{local_file_name}{JSON_EXT}")
+    json_file_path = os.path.join(JSON_FILE_DIRECTORY, f"{local_file_name}{JSON_EXT}")
 
     file_converter = FileConverter()
     with open(f"{json_file_path}", 'r') as json_file:
@@ -182,7 +171,7 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
     if response.status_code != 201:
         raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
-    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}{JSON_EXT}")
+    jsonFilePath = os.path.join(JSON_FILE_DIRECTORY, f"{localFileName}{JSON_EXT}")
 
     with open(f"{jsonFilePath}", 'r') as jsonFile:
         jsonData = json.load(jsonFile)
@@ -193,13 +182,8 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
 
 @app.get("/datasetgroup/data/download/json/location")
 async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
-    print("$$$")
-    print(request.cookies.get("customJwtCookie"))
     cookie = request.cookies.get("customJwtCookie")
-
     await authenticate_user(f'customJwtCookie={cookie}')
-
-    print(saveLocation)
 
     localFileName = saveLocation.split("/")[-1]
 
@@ -207,7 +191,7 @@ async def download_and_convert(request: Request, saveLocation:str, background_ta
     if response.status_code != 201:
         raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
-    jsonFilePath = os.path.join('..', 'shared', f"{localFileName}")
+    jsonFilePath = os.path.join(JSON_FILE_DIRECTORY, f"{localFileName}")
 
     with open(f"{jsonFilePath}", 'r') as jsonFile:
         jsonData = json.load(jsonFile)
@@ -218,9 +202,6 @@ async def download_and_convert(request: Request, saveLocation:str, background_ta
 
 @app.post("/datasetgroup/data/import/chunk")
 async def upload_and_copy(request: Request, import_chunks: ImportChunks):
-    print("%")
-    print(request.cookies.get("customJwtCookie"))
-    print("$")
     cookie = request.cookies.get("customJwtCookie")
     await authenticate_user(f'customJwtCookie={cookie}')
 
@@ -229,7 +210,7 @@ async def upload_and_copy(request: Request, import_chunks: ImportChunks):
     exsisting_chunks = import_chunks.exsistingChunks
 
     fileLocation = os.path.join(CHUNK_UPLOAD_DIRECTORY, f"{exsisting_chunks}.json")
-    s3_ferry_view_file_location= os.path.join("/chunks", f"{exsisting_chunks}.json")
+    s3_ferry_view_file_location = os.path.join("/chunks", f"{exsisting_chunks}.json")
     with open(fileLocation, 'w') as jsonFile:
         json.dump(chunks, jsonFile, indent=4)
 
@@ -246,17 +227,15 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
     try:
         cookie = request.cookies.get("customJwtCookie")
         await authenticate_user(f'customJwtCookie={cookie}')
-        print("$#@$@#$@#$@#$")
-        print(request)
+
         save_location = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
         local_file_name = f"group_{dgId}_chunk_{pageId}"
 
         response = s3_ferry.transfer_file(f"{local_file_name}{JSON_EXT}", "FS", save_location, "S3")
         if response.status_code != 201:
-            print("S3 Download Failed")
             return {}
 
-        json_file_path = os.path.join('..', 'shared', f"{local_file_name}{JSON_EXT}")
+        json_file_path = os.path.join(JSON_FILE_DIRECTORY, f"{local_file_name}{JSON_EXT}")
 
         with open(f"{json_file_path}", 'r') as json_file:
             json_data = json.load(json_file)
@@ -300,12 +279,13 @@ async def upload_and_copy(request: Request, copyPayload: CopyPayload):
     files = copyPayload.fileLocations
 
     if len(files)>0:
-        local_storage_location = "temp_copy.json"
+        local_storage_location = TEMP_COPY_FILE
     else:
         print("Abort copying since sent file list does not have any entry.")
         upload_success = UPLOAD_SUCCESS.copy()
         upload_success["saved_file_path"] = ""
         return JSONResponse(status_code=200, content=upload_success)
+
     for file in files:
         old_location = f"/dataset/{dg_id}/{file}"
         new_location = f"/dataset/{new_dg_id}/{file}"
@@ -346,7 +326,6 @@ def extract_stop_words(file: UploadFile) -> List[str]:
         return stop_words
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type")
-
 
 @app.post("/datasetgroup/data/import/stop-words")
 async def import_stop_words(request: Request, stopWordsFile: UploadFile = File(...)):
@@ -425,4 +404,3 @@ async def delete_dataset_files(request: Request):
     except Exception as e:
         print(f"Error in delete_dataset_files: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
