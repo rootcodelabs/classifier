@@ -323,6 +323,16 @@ services:
     networks:
       - bykstack
 
+  anonymizer:
+    build:
+      context: ./anonymizer
+      dockerfile: Dockerfile
+    container_name: anonymizer
+    ports:
+      - "8010:8010"
+    networks:
+      - bykstack
+
 volumes:
   shared-volume:
   opensearch-data:
