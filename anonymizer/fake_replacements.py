@@ -5,8 +5,6 @@ fake = faker.Faker()
 class FakeReplacer:
     @staticmethod
     def replace_entities(text: str, entities: list):
-        print(f"Original text: {text}")
-        print(f"entities: {entities}")
         
         replacements = []
         
@@ -29,10 +27,6 @@ class FakeReplacer:
             replacements.append((start_pos, end_pos, entity_text, entity_type))
             i = j
         
-        print("Replacements to be made:")
-        for start_pos, end_pos, entity_text, entity_type in replacements:
-            print(f"Entity: {entity_text}, Type: {entity_type}, Start: {start_pos}, End: {end_pos}")
-        
         for start_pos, end_pos, entity_text, entity_type in sorted(replacements, reverse=True):
             if entity_type == 'PER':
                 fake_name = fake.name()
@@ -44,5 +38,4 @@ class FakeReplacer:
                 fake_loc = fake.city()
                 text = text[:start_pos] + fake_loc + text[end_pos:]
         
-        print(f"Processed text: {text}")
         return text
