@@ -1,3 +1,3 @@
 SELECT primary_folder_id
-FROM outlook
-WHERE input_id=:inputId;
+FROM "input"
+WHERE input_id=:inputId AND platform='OUTLOOK';

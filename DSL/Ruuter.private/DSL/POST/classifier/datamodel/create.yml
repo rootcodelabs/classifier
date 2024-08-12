@@ -82,6 +82,8 @@ check_deployment_platform:
   switch:
     - condition: ${deployment_platform == 'jira' || deployment_platform == 'outlook' || deployment_platform == 'pinal'}
       next: update_existing_models_deployment_platform
+    - condition: ${deployment_platform == 'testing' || deployment_platform == 'undeployed'}
+      next: create_model_metadata
   next: assign_fail_response
 
 update_existing_models_deployment_platform:
@@ -172,7 +174,7 @@ check_connected_model_updated_status:
   next: assign_fail_response
 
 execute_cron_manager:
-  call: reflect.mock
+  call: http.post
   args:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_model/model_trainer"
     query:

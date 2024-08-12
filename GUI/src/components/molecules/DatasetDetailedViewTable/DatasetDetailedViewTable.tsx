@@ -145,58 +145,59 @@ const DatasetDetailedViewTable = ({
             </div>
           </Card>
           {bannerMessage && <div className="banner">{bannerMessage}</div>}
-          {(!datasets || (datasets && datasets?.numPages < 2)) && (
-            <Card>
-              <div
-                style={{
-                  padding: '20px 150px',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                {(!datasets || datasets?.dataPayload?.length === 0) && (
-                  <div>
-                    <div style={{ marginBottom: '10px', fontSize: '20px' }}>
-                      {t('datasetGroups.detailedView.noData') ?? ''}
+          {(!datasets || (datasets && datasets?.numPages < 2)) &&
+            !isLoading && (
+              <Card>
+                <div
+                  style={{
+                    padding: '20px 150px',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  {(!datasets || datasets?.numPages === 0) && (
+                    <div>
+                      <div style={{ marginBottom: '10px', fontSize: '20px' }}>
+                        {t('datasetGroups.detailedView.noData') ?? ''}
+                      </div>
+                      <p>{t('datasetGroups.detailedView.noDataDesc') ?? ''}</p>
+                      <Button
+                        onClick={() =>
+                          handleOpenModals(
+                            ViewDatasetGroupModalContexts.IMPORT_MODAL
+                          )
+                        }
+                      >
+                        {t('datasetGroups.detailedView.importNewData') ?? ''}
+                      </Button>
                     </div>
-                    <p>{t('datasetGroups.detailedView.noDataDesc') ?? ''}</p>
-                    <Button
-                      onClick={() =>
-                        handleOpenModals(
-                          ViewDatasetGroupModalContexts.IMPORT_MODAL
-                        )
-                      }
-                    >
-                      {t('datasetGroups.detailedView.importNewData') ?? ''}
-                    </Button>
-                  </div>
-                )}
-                {datasets && datasets?.numPages <= 2 && (
-                  <div>
-                    <p>
-                      {t(
-                        'datasetGroups.detailedView.insufficientExamplesDesc'
-                      ) ?? ''}
-                    </p>
-                    <Button
-                      onClick={() =>
-                        handleOpenModals(
-                          ViewDatasetGroupModalContexts.IMPORT_MODAL
-                        )
-                      }
-                    >
-                      {t('datasetGroups.detailedView.importNewData') ?? ''}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
-          )}
+                  )}
+                  {datasets && datasets?.numPages !== 0 && datasets?.numPages <= 2 && (
+                    <div>
+                      <p>
+                        {t(
+                          'datasetGroups.detailedView.insufficientExamplesDesc'
+                        ) ?? ''}
+                      </p>
+                      <Button
+                        onClick={() =>
+                          handleOpenModals(
+                            ViewDatasetGroupModalContexts.IMPORT_MODAL
+                          )
+                        }
+                      >
+                        {t('datasetGroups.detailedView.importNewData') ?? ''}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
         </div>
       )}
       <div style={{ marginBottom: '20px' }}>
         {isLoading && <SkeletonTable rowCount={5} />}
-        {!isLoading && updatedDataset && (
+        {!isLoading && updatedDataset && updatedDataset.length > 0 && (
           <DataTable
             data={updatedDataset}
             columns={dataColumns as ColumnDef<string, string>[]}

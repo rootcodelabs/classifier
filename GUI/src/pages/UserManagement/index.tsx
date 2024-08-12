@@ -22,6 +22,7 @@ import { userManagementEndpoints } from 'utils/endpoints';
 import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
 import { useDialog } from 'hooks/useDialog';
 import SkeletonTable from 'components/molecules/TableSkeleton/TableSkeleton';
+import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 
 const UserManagement: FC = () => {
   const columnHelper = createColumnHelper<User>();
@@ -172,7 +173,7 @@ const UserManagement: FC = () => {
     },
   });
 
-  if (isLoading) return <div> {t('global.loading')}...</div>;
+  if (isLoading) return <CircularSpinner/>;
 
   return (
     <div>
