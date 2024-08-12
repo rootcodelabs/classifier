@@ -12,7 +12,7 @@ declaration:
         type: object
         description: "Body field 'headers'"
       - field: payload
-        type: object
+        type: json
         description: "Body field 'payload'"
       - field: issue_info
         type: string
@@ -78,16 +78,12 @@ check_previous_labels:
   switch:
     - condition: ${res.response.body.length > 0}
       next: assign_previous_labels
-  next: assign_empty
+  next: get_jira_issue_info
 
 assign_previous_labels:
   assign:
-    previous_labels: ${res.response.body[0].correctedLabels}
-  next: validate_issue_labels
-
-assign_empty:
-  assign:
-    previous_labels: ${[]}
+    previous_corrected_labels: ${res.response.body[0].correctedLabels !==null ? JSON.parse(res.response.body[0].correctedLabels.value) :[]}
+    previous_predicted_labels: ${res.response.body[0].predictedLabels !==null ? JSON.parse(res.response.body[0].predictedLabels.value) :[]}
   next: validate_issue_labels
 
 validate_issue_labels:
@@ -98,7 +94,8 @@ validate_issue_labels:
       type: json
     body:
       newLabels: ${issue_info.fields.labels}
-      previousLabels: ${previous_labels}
+      correctedLabels: ${previous_corrected_labels}
+      predictedLabels: ${previous_predicted_labels}
   result: label_response
   next: check_label_mismatch
 
@@ -106,7 +103,7 @@ check_label_mismatch:
   switch:
     - condition: ${label_response.response.body.isMismatch === 'true'}
       next: get_jira_issue_info
-  next: end
+  next: return_data
 
 get_jira_issue_info:
   call: http.post
@@ -122,11 +119,13 @@ get_jira_issue_info:
 send_issue_data:
   call: reflect.mock
   args:
-    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"# need correct url
+    url: "[#CLASSIFIER_ANONYMIZER]/anonymize"
     headers:
       type: json
     body:
-      info: ${extract_info}
+      platform: 'JIRA'
+      key: ${issue_info.key}
+      data: ${extract_info}
     response:
       statusCodeValue: 200
   result: res
@@ -140,6 +139,11 @@ check_response:
 return_ok:
   status: 200
   return: "Jira data send successfully"
+  next: end
+
+return_data:
+  status: 200
+  return: "Not Sent"
   next: end
 
 return_error_found:
