@@ -9,7 +9,11 @@ from s3_ferry import S3Ferry
 from constants import URL_MODEL
 
 class ModelTrainer:
-    def __init__(self, cookie, newModelId, oldModelId = None) -> None:
+    def __init__(self) -> None:
+        
+        cookie = os.environ.get('COOKIE')
+        newModelId = os.environ.get('NEW_MODEL_ID')
+        oldModelId = os.environ.get('OLD_MODEL_ID')
 
         model_url = URL_MODEL
 
@@ -23,8 +27,6 @@ class ModelTrainer:
             print("success")
         else:
             print(f"Failed with status code: {response.status_code}")
-
-
 
     def train(self):
         s3_ferry = S3Ferry()
