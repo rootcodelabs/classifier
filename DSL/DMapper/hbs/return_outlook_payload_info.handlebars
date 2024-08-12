@@ -3,5 +3,18 @@
   "subject": "{{{data.subject}}}",
   "parentFolderId": "{{{data.parentFolderId}}}",
   "categories": "{{{data.categories}}}",
-  "body": "{{{data.body.contentType}}}"
+  "body": "{{{jsEscape data.body.content}}}",
+  "fromEmailAddress": "{{{data.from.emailAddress.address}}}",
+  "attachments": [
+    {{#each data.attachments}}
+      "{{{this.name}}}"
+    {{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  "toEmailAddress": [
+    {{#each data.toRecipients}}
+      "{{{this.emailAddress.address}}}"
+    {{#unless @last}},{{/unless}}
+    {{/each}}
+  ]
 }

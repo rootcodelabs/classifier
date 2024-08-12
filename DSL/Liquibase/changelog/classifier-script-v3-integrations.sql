@@ -32,7 +32,6 @@ CREATE TABLE public."input" (
     average_predicted_classes_probability INT,
     average_corrected_classes_probability INT,
     primary_folder_id TEXT DEFAULT NULL,
-    all_class_predicted_probabilities JSONB,
     platform platform,
     CONSTRAINT input_pkey PRIMARY KEY (id),
     CONSTRAINT input_id_unique UNIQUE (input_id)

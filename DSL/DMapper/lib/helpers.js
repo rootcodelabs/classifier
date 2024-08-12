@@ -32,21 +32,27 @@ export function platformStatus(platform, data) {
   return platformData ? platformData.isConnect : false;
 }
 
-export function isLabelsMismatch(newLabels, previousLabels) {
-  if (
-    Array.isArray(newLabels) &&
-    Array.isArray(previousLabels) &&
-    newLabels.length === previousLabels.length
-  ) {
-    for (let i = 0; i < newLabels.length; i++) {
-      if (newLabels[i] !== previousLabels[i]) {
-        return true;
+export function isLabelsMismatch(newLabels, correctedLabels, predictedLabels) {
+  function check(arr, newLabels) {
+    if (
+      Array.isArray(newLabels) &&
+      Array.isArray(arr) &&
+      newLabels.length === arr.length
+    ) {
+      for (let i = 0; i < newLabels.length; i++) {
+        if (!arr.includes(newLabels[i])) {
+          return true;
+        }
       }
+      return false;
+    } else {
+      return true;
     }
-    return false;
-  } else {
-    return true;
   }
+
+  const val1 = check(correctedLabels, newLabels);
+  const val2 = check(predictedLabels, newLabels);
+  return val1 && val2;
 }
 
 export function getOutlookExpirationDateTime() {
@@ -117,5 +123,9 @@ export function base64Encrypt(content) {
             message: 'Base64 Encryption Failed',
         });
     }
+}
+
+export function jsEscape(str) {
+  return JSON.stringify(str).slice(1, -1)
 }
 
