@@ -37,37 +37,13 @@ get_auth_header:
       username: "[#JIRA_USERNAME]"
       token: "[#JIRA_API_TOKEN]"
   result: auth_header
-  next: get_jira_issue_info
-
-get_jira_issue_info:
-  call: http.get
-  args:
-    url: "[#JIRA_CLOUD_DOMAIN]/rest/api/3/issue/${issue_key}"
-    headers:
-      Authorization: ${auth_header.response.body.val}
-  result: jira_issue_info
-  next: assign_existing_labels
-
-assign_existing_labels:
-  assign:
-    existing_label_list: ${jira_issue_info.response.body.fields.labels}
-  next: merge_labels
-
-merge_labels:
-  call: http.post
-  args:
-    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_label_field_array"
-    headers:
-      type: json
-    body:
-      labels: ${label_list}
-      existing_labels: ${existing_label_list}
-  result: res
   next: set_data
 
 set_data:
   assign:
-    all_labels: ${res.response.body}
+    all_labels: {
+      labels: '${label_list}'
+    }
   next: update_jira_issue
 
 update_jira_issue:
