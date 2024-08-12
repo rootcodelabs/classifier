@@ -40,7 +40,10 @@
     "asc": "asc",
     "desc": "desc",
     "reset": "Reset",
-    "choose": "Choose"
+    "choose": "Choose",
+    "extedSession": "Extend Session",
+    "unAuthorized": "Unauthorized",
+    "unAuthorizedDesc": "You do not have permission to view this page."
   },
   "menu": {
     "userManagement": "User Management",
