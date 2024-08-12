@@ -160,11 +160,12 @@ services:
 
   cron-manager:
     container_name: cron-manager
-    image: cron-manager
+    image: cron-manager-python
     volumes:
       - ./DSL/CronManager/DSL:/DSL
       - ./DSL/CronManager/script:/app/scripts
       - ./DSL/CronManager/config:/app/config
+      - ./model_trainer:/app/model_trainer
     environment:
       - server.port=9010
     ports:
@@ -191,6 +192,9 @@ services:
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
       - IMPORT_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/update/stop-words
       - DELETE_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/delete/stop-words
+      - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/page-count?groupId=dgId
+      - DATAGROUP_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datasetgroup/metadata/delete
+      - DATAMODEL_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datamodel/update/dataset-group
     ports:
       - "8000:8000"
     networks:
@@ -238,6 +242,11 @@ services:
       - S3_BUCKET_NAME=esclassifier-test
       - S3_REGION_NAME=eu-west-1
       - PARAPHRASE_API_URL=http://data-enrichment-api:8005/paraphrase
+      - VALIDATION_CONFIRMATION_URL=http://ruuter-private:8088/classifier/datasetgroup/update/validation/status
+      - GET_DATAGROUP_METADATA_URL=http://ruuter-private:8088/classifier/datasetgroup/group/metadata?groupId=dgId
+      - CREATE_PROGRESS_SESSION_URL=http://ruuter-private:8088/classifier/datasetgroup/progress/create
+      - UPDATE_PROGRESS_SESSION_URL=http://ruuter-private:8088/classifier/datasetgroup/progress/update
+      - GET_PROGRESS_SESSIONS_URL=http://ruuter-private:8088/classifier/datasetgroup/progress
     ports:
       - "8001:8001"
     networks:
@@ -305,6 +314,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8005:8005"
+    networks:
+      - bykstack
+
+  anonymizer:
+    build:
+      context: ./anonymizer
+      dockerfile: Dockerfile
+    container_name: anonymizer
+    ports:
+      - "8010:8010"
     networks:
       - bykstack
 
