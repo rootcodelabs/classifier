@@ -19,7 +19,7 @@ class OutputText(BaseModel):
 ner_processor = NERProcessor()
 html_cleaner = HTMLCleaner()
 
-@app.post("/process_text", response_model=OutputText)
+@app.post("/anonymize", response_model=OutputText)
 async def process_text(input_text: InputText):
     try:
         cleaned_text = html_cleaner.remove_html_tags(input_text.text)
