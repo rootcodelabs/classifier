@@ -33,7 +33,7 @@ const FormInput = forwardRef<HTMLInputElement, InputProps>(
           <input
             className={inputClasses}
             name={name}
-            maxLength={CHAT_INPUT_LENGTH}
+            maxLength={maxLength}
             id={id}
             ref={ref}
             aria-label={hideLabel ? label : undefined}

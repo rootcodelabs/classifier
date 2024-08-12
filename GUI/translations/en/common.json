@@ -59,7 +59,7 @@
     "title": "User Management",
     "addUserButton": " Add a user",
     "addUser": {
-      "addUserModalTitle": "Add a new user",
+      "addUserModalTitle": "Add a New User",
       "editUserModalTitle": "Edit User",
       "deleteUserModalTitle": "Are you sure?",
       "deleteUserModalDesc": "Confirm that you are wish to delete the following record",
@@ -72,14 +72,23 @@
       "title": "Title",
       "titlePlaceholder": "Enter title",
       "email": "Email",
-      "emailPlaceholder": "Enter email"
+      "emailPlaceholder": "Enter email",
+      "nameRequired": "Name is required",
+      "roleRequired": "Role is required",
+      "idCodeRequired": "ID code is required",
+      "titleRequired": "Title is required",
+      "emailRequired": "Email is required",
+      "invalidIdCode": "Invalid ID code",
+      "invalidemail": "Invalid Email",
+      "userExists": "User already exists"
     },
     "table": {
       "fullName": "Full Name",
       "personalId": "Personal ID",
       "role": "Role",
       "email": "Email",
-      "actions": "Actions"
+      "actions": "Actions",
+      "title": "Title"
     }
   },
   "integration": {
