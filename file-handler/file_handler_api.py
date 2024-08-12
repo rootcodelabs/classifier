@@ -102,7 +102,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
         with open(json_local_file_path, 'w') as json_file:
             json.dump(converted_data, json_file, indent=4)
 
-        save_location = f"/dataset/{dgId}/temp/temp_dataset{JSON_EXT}"
+        save_location = TEMP_DATASET_LOCATION.format(dg_id=dgId)
         source_file_path = file_name.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         
         response = s3_ferry.transfer_file(save_location, "S3", source_file_path, "FS")
@@ -129,7 +129,7 @@ async def download_and_convert(request: Request, exportData: ExportFile, backgro
     if export_type not in ["xlsx", "yaml", "json"]:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
-    save_location = f"/dataset/{dg_id}/primary_dataset/dataset_{dg_id}_aggregated{JSON_EXT}"
+    save_location = PRIMARY_DATASET_LOCATION.format(dg_id=dg_id)
     local_file_name = f"group_{dg_id}_aggregated"
 
     response = s3_ferry.transfer_file(f"{local_file_name}{JSON_EXT}", "FS", save_location, "S3")
@@ -164,41 +164,41 @@ async def download_and_convert(request: Request, dgId: int, background_tasks: Ba
     cookie = request.cookies.get("customJwtCookie")
     await authenticate_user(f'customJwtCookie={cookie}')
 
-    saveLocation = f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated{JSON_EXT}"
-    localFileName = f"group_{dgId}_aggregated"
+    save_location = PRIMARY_DATASET_LOCATION.format(dg_id=dgId)
+    local_file_name = f"group_{dgId}_aggregated"
 
-    response = s3_ferry.transfer_file(f"{localFileName}{JSON_EXT}", "FS", saveLocation, "S3")
+    response = s3_ferry.transfer_file(f"{local_file_name}{JSON_EXT}", "FS", save_location, "S3")
     if response.status_code != 201:
         raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
-    jsonFilePath = os.path.join(JSON_FILE_DIRECTORY, f"{localFileName}{JSON_EXT}")
+    json_file_path = os.path.join(JSON_FILE_DIRECTORY, f"{local_file_name}{JSON_EXT}")
 
-    with open(f"{jsonFilePath}", 'r') as jsonFile:
-        jsonData = json.load(jsonFile)
+    with open(f"{json_file_path}", 'r') as json_file:
+        json_data = json.load(json_file)
 
-    background_tasks.add_task(os.remove, jsonFilePath)
+    background_tasks.add_task(os.remove, json_file_path)
 
-    return jsonData
+    return json_data
 
 @app.get("/datasetgroup/data/download/json/location")
 async def download_and_convert(request: Request, saveLocation:str, background_tasks: BackgroundTasks):
     cookie = request.cookies.get("customJwtCookie")
     await authenticate_user(f'customJwtCookie={cookie}')
 
-    localFileName = saveLocation.split("/")[-1]
+    local_file_name = saveLocation.split("/")[-1]
 
-    response = s3_ferry.transfer_file(f"{localFileName}", "FS", saveLocation, "S3")
+    response = s3_ferry.transfer_file(f"{local_file_name}", "FS", saveLocation, "S3")
     if response.status_code != 201:
         raise HTTPException(status_code=500, detail=S3_DOWNLOAD_FAILED)
 
-    jsonFilePath = os.path.join(JSON_FILE_DIRECTORY, f"{localFileName}")
+    json_file_path = os.path.join(JSON_FILE_DIRECTORY, f"{local_file_name}")
 
-    with open(f"{jsonFilePath}", 'r') as jsonFile:
-        jsonData = json.load(jsonFile)
+    with open(f"{json_file_path}", 'r') as json_file:
+        json_data = json.load(json_file)
 
-    background_tasks.add_task(os.remove, jsonFilePath)
+    background_tasks.add_task(os.remove, json_file_path)
 
-    return jsonData
+    return json_data
 
 @app.post("/datasetgroup/data/import/chunk")
 async def upload_and_copy(request: Request, import_chunks: ImportChunks):
@@ -214,7 +214,7 @@ async def upload_and_copy(request: Request, import_chunks: ImportChunks):
     with open(fileLocation, 'w') as jsonFile:
         json.dump(chunks, jsonFile, indent=4)
 
-    saveLocation = f"/dataset/{dgID}/chunks/{exsisting_chunks}{JSON_EXT}"
+    saveLocation = CHUNK_DATASET_LOCATION.format(dg_id=dgID, chunk_id=exsisting_chunks)
 
     response = s3_ferry.transfer_file(saveLocation, "S3", s3_ferry_view_file_location, "FS")
     if response.status_code == 201:
@@ -228,7 +228,7 @@ async def download_and_convert(request: Request, dgId: int, pageId: int, backgro
         cookie = request.cookies.get("customJwtCookie")
         await authenticate_user(f'customJwtCookie={cookie}')
 
-        save_location = f"/dataset/{dgId}/chunks/{pageId}{JSON_EXT}"
+        save_location = CHUNK_DATASET_LOCATION.format(dg_id=dgId, chunk_id=pageId)
         local_file_name = f"group_{dgId}_chunk_{pageId}"
 
         response = s3_ferry.transfer_file(f"{local_file_name}{JSON_EXT}", "FS", save_location, "S3")
@@ -257,7 +257,7 @@ async def upload_and_copy(request: Request, importData: ImportJsonMajor):
     with open(fileLocation, 'w') as jsonFile:
         json.dump(importData.dataset, jsonFile, indent=4)
 
-    saveLocation = f"/dataset/{importData.dgId}/primary_dataset/dataset_{importData.dgId}_aggregated{JSON_EXT}"
+    saveLocation = PRIMARY_DATASET_LOCATION.format(dg_id=importData.dgId)
     sourceFilePath = fileName.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
     
     response = s3_ferry.transfer_file(saveLocation, "S3", sourceFilePath, "FS")
@@ -288,7 +288,7 @@ async def upload_and_copy(request: Request, copyPayload: CopyPayload):
 
     for file in files:
         old_location = f"/dataset/{dg_id}/{file}"
-        new_location = f"/dataset/{new_dg_id}/{file}"
+        new_location = NEW_DATASET_LOCATION.format(new_dg_id=new_dg_id) + file
         response = s3_ferry.transfer_file(local_storage_location, "FS", old_location, "S3")
         response = s3_ferry.transfer_file(new_location, "S3", local_storage_location, "FS")
 
@@ -300,7 +300,7 @@ async def upload_and_copy(request: Request, copyPayload: CopyPayload):
     else:
         os.remove(local_storage_location)
         upload_success = UPLOAD_SUCCESS.copy()
-        upload_success["saved_file_path"] = f"/dataset/{new_dg_id}/"
+        upload_success["saved_file_path"] = NEW_DATASET_LOCATION.format(new_dg_id=new_dg_id)
         return JSONResponse(status_code=200, content=upload_success)
 
 def extract_stop_words(file: UploadFile) -> List[str]:
