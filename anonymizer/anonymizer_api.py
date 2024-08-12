@@ -4,6 +4,7 @@ from language_detection import LanguageDetector
 from ner import NERProcessor
 from text_processing import TextProcessor
 from fake_replacements import FakeReplacer
+from html_cleaner import HTMLCleaner
 
 app = FastAPI()
 
@@ -16,11 +17,13 @@ class OutputText(BaseModel):
     status: bool
 
 ner_processor = NERProcessor()
+html_cleaner = HTMLCleaner()
 
 @app.post("/process_text", response_model=OutputText)
 async def process_text(input_text: InputText):
     try:
-        text_chunks = TextProcessor.split_text(input_text.text, 2000)
+        cleaned_text = html_cleaner.remove_html_tags(input_text.text)
+        text_chunks = TextProcessor.split_text(cleaned_text, 2000)
         processed_chunks = []
 
         for chunk in text_chunks:
