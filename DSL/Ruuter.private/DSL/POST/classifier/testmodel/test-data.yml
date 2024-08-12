@@ -41,9 +41,10 @@ check_for_text_data:
 send_data_to_predict:
   call: reflect.mock
   args:
-    url: "[#CLASSIFIER_RESQL]/get-data-model-by-id"
+    url: "[#CLASSIFIER_ANONYMIZER]/anonymize"
     body:
       id: ${model_id}
+      text: ${text}
   result: res_model
   next: check_data_model_status
 
