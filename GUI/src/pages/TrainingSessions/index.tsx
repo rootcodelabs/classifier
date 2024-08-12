@@ -1,17 +1,17 @@
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
-import sse from 'services/sse-service';
 import { useQuery } from '@tanstack/react-query';
-import { getDatasetGroupsProgress } from 'services/datasets';
-import { getDataModelsProgress } from 'services/data-models';
+import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
 import TrainingSessionCard from 'components/molecules/TrainingSessionCard';
+import sse from 'services/sse-service';
+import { getDataModelsProgress } from 'services/data-models';
+import { SSEEventData, TrainingProgressData } from 'types/dataModels';
 
 const TrainingSessions: FC = () => {
   const { t } = useTranslation();
-  const [progresses, setProgresses] = useState([]);
+  const [progresses, setProgresses] = useState<TrainingProgressData[]>([]);
 
-  const { data: progressData } = useQuery(
+  const { data: progressData } = useQuery<TrainingProgressData[]>(
     ['datamodels/progress'],
     () => getDataModelsProgress(),
     {
@@ -24,7 +24,7 @@ const TrainingSessions: FC = () => {
   useEffect(() => {
     if (!progressData) return;
 
-    const handleUpdate = (sessionId, newData) => {
+    const handleUpdate = (sessionId: string, newData: SSEEventData) => {
       setProgresses((prevProgresses) =>
         prevProgresses.map((progress) =>
           progress.id === sessionId ? { ...progress, ...newData } : progress
@@ -33,7 +33,7 @@ const TrainingSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
-      return sse(`/${progress.id}`, 'model', (data) => {
+      return sse(`/${progress.id}`, 'model', (data: SSEEventData) => {
         console.log(`New data for notification ${progress.id}:`, data);
         handleUpdate(data.sessionId, data);
       });
@@ -49,22 +49,18 @@ const TrainingSessions: FC = () => {
     <div>
       <div className="container">
         <div className="title_container">
-          <div className="title">Validation Sessions</div>
+          <div className="title">{t('trainingSessions.title')}</div>
         </div>
-        {progresses?.map((session) => {
-          return (
-            <TrainingSessionCard
-              modelName={session.modelName}
-              deployedModel={session.deployedModel}
-              lastTrained={session.lastTrained}
-              dgName={session.groupName}
-              version={`V${session?.majorVersion}.${session?.minorVersion}`}
-              isLatest={session.latest}
-              status={session.trainingStatus}
-              progress={session.progressPercentage}
-            />
-          );
-        })}
+        {progresses?.map((session) => (
+          <TrainingSessionCard
+            key={session.id}
+            modelName={session.modelName}
+            version={`V${session?.majorVersion}.${session?.minorVersion}`}
+            isLatest={session.latest}
+            status={session.trainingStatus}
+            progress={session.progressPercentage}
+          />
+        ))}
       </div>
     </div>
   );

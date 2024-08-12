@@ -14,6 +14,13 @@ import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 
+type FilterData = {
+  datasetGroupName: string;
+  version: string;
+  validationStatus: string;
+  sort: 'asc' | 'desc';
+};
+
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -23,16 +30,16 @@ const DatasetGroups: FC = () => {
   const [enableFetch, setEnableFetch] = useState(true);
   const [view, setView] = useState<DatasetViewEnum>(DatasetViewEnum.LIST);
 
-  useEffect(() => {
-    setEnableFetch(true);
-  }, [view]);
-
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterData>({
     datasetGroupName: 'all',
     version: 'x.x.x',
     validationStatus: 'all',
     sort: 'asc',
   });
+
+  useEffect(() => {
+    setEnableFetch(true);
+  }, [view]);
 
   const { data: datasetGroupsData, isLoading } = useQuery(
     datasetQueryKeys.DATASET_OVERVIEW(
@@ -59,10 +66,12 @@ const DatasetGroups: FC = () => {
       enabled: enableFetch,
     }
   );
+
   const { data: filterData } = useQuery(
     datasetQueryKeys.DATASET_FILTERS(),
     () => getFilterData()
   );
+
   const pageCount = datasetGroupsData?.response?.data?.[0]?.totalPages || 1;
 
   const handleFilterChange = (name: string, value: string) => {
@@ -91,7 +100,7 @@ const DatasetGroups: FC = () => {
             <div className="search-panel">
               <FormSelect
                 label=""
-                name="sort"
+                name="datasetGroupName"
                 placeholder={t('datasetGroups.table.group') ?? ''}
                 options={formattedArray(filterData?.response?.dgNames) ?? []}
                 onSelectionChange={(selection) =>
@@ -100,7 +109,7 @@ const DatasetGroups: FC = () => {
               />
               <FormSelect
                 label=""
-                name="sort"
+                name="version"
                 placeholder={t('datasetGroups.table.version') ?? ''}
                 options={formattedArray(filterData?.response?.dgVersions) ?? []}
                 onSelectionChange={(selection) =>
@@ -109,7 +118,7 @@ const DatasetGroups: FC = () => {
               />
               <FormSelect
                 label=""
-                name="sort"
+                name="validationStatus"
                 placeholder={t('datasetGroups.table.validationStatus') ?? ''}
                 options={
                   formattedArray(filterData?.response?.dgValidationStatuses) ??
