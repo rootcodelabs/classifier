@@ -8,22 +8,22 @@ declaration:
   namespace: classifier
   allowlist:
     params:
-      - field: inferenceId
-        type: number
+      - field: inputId
+        type: string
         description: "Parameter 'inferenceId'"
 
 extract_data:
   assign:
-    inference_id: ${Number(incoming.params.inferenceId)}
+    input_id: ${incoming.params.inputId}
     exist: false
   next: get_input_metadata_by_id
 
 get_input_metadata_by_id:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RESQL]/get-basic-input-metadata-by-id"
+    url: "[#CLASSIFIER_RESQL]/get-basic-input-metadata-by-input-id"
     body:
-      id: ${inference_id}
+      input_id: ${input_id}
   result: res_input_id
   next: check_input_metadata_status
 
@@ -42,7 +42,6 @@ check_input_metadata_exist:
 assign_exist_data:
   assign:
     exist : true
-    inference_id: ${Number(incoming.params.inferenceId)}
     value: [{
       inferenceId: '${res_input_id.response.body[0].id}',
       inputId: '${res_input_id.response.body[0].inputId}',
