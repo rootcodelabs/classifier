@@ -1,0 +1,107 @@
+import pandas as pd
+import requests
+from constants import *
+
+
+
+class DataPipeline:
+    
+    def __init__(self, dgId,cookie):
+        print("start __init__ DataPipeline")
+        
+        url_data = URL_DATA
+        url_hierarchy = URL_HIERARCHY
+        
+        cookies = {'customJwtCookie': cookie}
+        response_data = requests.get(url_data, params={'dgId': dgId}, cookies=cookies)
+        if response_data.status_code == 200:
+            print("success data successfully loaded")
+            data = response_data.json()
+            df = pd.DataFrame(data)
+            df = df.drop('rowId', axis=1)
+            self.df = df
+        else:
+            print(f"Failed with status code response_data: {response_data.status_code}")
+            print(response_data.text)
+
+        
+
+        response_hierarchy = requests.get(url_hierarchy, params={'groupId': dgId}, cookies=cookies)
+        
+        if response_hierarchy.status_code == 200:
+            print("success hierarchy successfully loaded")
+            hierarchy = response_hierarchy.json()
+        else:
+            print(f"Failed with status code response_hierarchy: {response_hierarchy.status_code}")
+            print(response_hierarchy.text)
+        
+        self.hierarchy_file  = hierarchy['response']['data'][0]
+    
+    def find_target_column(self,df , filter_list):
+        
+        value_set = set(filter_list)
+        columns_with_exact_or_subset_values = []
+
+        for column in df.columns:
+            unique_values = set(df[column].dropna().unique())
+            if unique_values and unique_values.issubset(value_set):
+                columns_with_exact_or_subset_values.append(column)
+
+        return columns_with_exact_or_subset_values
+    
+    def extract_input_columns(self):
+        
+        validationRules = self.hierarchy_file['validationCriteria']['validationRules']
+
+        input_columns = [key for key, value in validationRules.items() if value['isDataClass'] == False]
+        return input_columns
+    
+    def models_and_filters(self):
+        data = self.hierarchy_file['classHierarchy']
+        models = []
+        filters = []
+        model_num = 1
+
+        if len(data) >= 2:
+            top_level_classes = [node['class'] for node in data]
+            models.append({model_num: top_level_classes})
+            filters.append([top_level_classes])
+            model_num += 1
+
+        def traverse(node, current_filters):
+            nonlocal model_num
+            if node.get('subclasses'):
+                if len(node['subclasses']) >= 2:
+                    class_names = [subclass['class'] for subclass in node['subclasses']]
+                    models.append({node['class']: class_names})
+                    filters.append(current_filters + [[node['class']]] + [class_names])
+                    model_num += 1
+                for subclass in node['subclasses']:
+                    traverse(subclass, current_filters + [[node['class']]])
+
+        for root_node in data:
+            traverse(root_node, [])
+
+        return models, filters
+
+    
+    def filter_dataframe_by_values(self, filters):
+        filtered_df = self.df.copy()
+        for filter_list in filters:
+            filtered_df = filtered_df[filtered_df.apply(lambda row: any(value in row.values for value in filter_list), axis=1)]
+        return filtered_df
+    
+    def create_dataframes(self):
+        dfs = []
+        input_columns = self.extract_input_columns()
+        models, filters = self.models_and_filters()
+        for i in range(len(models)):
+            filtered_df = self.filter_dataframe_by_values(filters[i])
+            target_column = self.find_target_column(filtered_df, filters[i][-1])[0]
+            filtered_df['input'] = filtered_df[input_columns].apply(lambda row: ' '.join(row.dropna().astype(str)), axis=1)
+            filtered_df = filtered_df.rename(columns={target_column: 'target'})
+            filtered_df = filtered_df[['input', 'target']]
+            filtered_df = filtered_df.dropna()
+            dfs.append(filtered_df)
+        
+        return dfs
