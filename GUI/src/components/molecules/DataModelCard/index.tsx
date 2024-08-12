@@ -73,7 +73,7 @@ const  DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
         <p>{dataModelName}</p>
         <div className="flex">
           <Label>{version}</Label>
-          {isLatest ? <Label type="success">latest</Label> : null}
+          {isLatest ? <Label type="success">{t("datasetGroups.datasetCard.latest")??""}</Label> : null}
         </div>
 
         <div className="py-3">

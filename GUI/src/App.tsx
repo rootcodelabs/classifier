@@ -16,6 +16,7 @@ import CorrectedTexts from 'pages/CorrectedTexts';
 import CreateDataModel from 'pages/DataModels/CreateDataModel';
 import TrainingSessions from 'pages/TrainingSessions';
 import DataModels from 'pages/DataModels';
+import TestModel from 'pages/TestModel';
 
 const App: FC = () => {
   useQuery<{
@@ -45,6 +46,8 @@ const App: FC = () => {
         <Route path="/create-data-model" element={<CreateDataModel />} />
         <Route path="/training-sessions" element={<TrainingSessions />} />
         <Route path="/corrected-texts" element={<CorrectedTexts />} />
+        <Route path="/test-model" element={<TestModel />} />
+
       </Route>
     </Routes>
   );
