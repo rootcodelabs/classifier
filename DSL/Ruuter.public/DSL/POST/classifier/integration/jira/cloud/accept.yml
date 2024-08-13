@@ -126,6 +126,8 @@ send_issue_data:
       platform: 'JIRA'
       key: ${issue_info.key}
       data: ${extract_info}
+      parentFolderId: null
+      labels: ${issue_info.fields.labels}
     response:
       statusCodeValue: 200
   result: res
