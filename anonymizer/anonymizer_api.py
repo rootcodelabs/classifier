@@ -1,28 +1,29 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from language_detection import LanguageDetector
 from ner import NERProcessor
 from text_processing import TextProcessor
 from fake_replacements import FakeReplacer
 from html_cleaner import HTMLCleaner
+import os
+import requests
 
 app = FastAPI()
-
-class InputText(BaseModel):
-    text: str
-
-class OutputText(BaseModel):
-    original_text: str
-    processed_text: str
-    status: bool
 
 ner_processor = NERProcessor()
 html_cleaner = HTMLCleaner()
 
-@app.post("/anonymize", response_model=OutputText)
-async def process_text(input_text: InputText):
+JIRA_INFERENCE_ENDPOINT = os.getenv("RUUTER_PRIVATE_URL")
+OUTLOOK_INFERENCE_ENDPOINT = os.getenv("RUUTER_PRIVATE_URL")
+
+@app.post("/anonymize")
+async def process_text(request: Request):
     try:
-        cleaned_text = html_cleaner.remove_html_tags(input_text.text)
+        payload = await request.json()
+
+        data_dict = payload.get("data", {})
+        concatenated_text = " ".join(str(value) for value in data_dict.values())
+
+        cleaned_text = html_cleaner.remove_html_tags(concatenated_text)
         text_chunks = TextProcessor.split_text(cleaned_text, 2000)
         processed_chunks = []
 
@@ -33,17 +34,28 @@ async def process_text(input_text: InputText):
 
         processed_text = TextProcessor.combine_chunks(processed_chunks)
 
-        return OutputText(
-            original_text=input_text.text,
-            processed_text=processed_text,
-            status=True
-        )
+        output_payload = {key: value for key, value in payload.items() if key != "data"}
+        output_payload["input_text"] = processed_text
+        output_payload["status"] = True
+
+        platform = payload.get("platform", "").lower()
+
+        headers = {
+                'Content-Type': 'application/json'
+            }
+
+        if platform == "jira":
+            response = requests.post(JIRA_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
+        elif platform == "outlook":
+            response = requests.post(OUTLOOK_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
+
+        return output_payload
     except Exception as e:
-        return OutputText(
-            original_text=input_text.text,
-            processed_text=str(e),
-            status=False
-        )
+        output_payload = {key: value for key, value in payload.items() if key != "data"}
+        output_payload["input_text"] = e
+        output_payload["status"] = False
+
+        return output_payload
 
 if __name__ == "__main__":
     import uvicorn
