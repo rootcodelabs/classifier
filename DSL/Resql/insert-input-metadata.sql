@@ -5,7 +5,6 @@ INSERT INTO "input" (
     predicted_labels,
     average_predicted_classes_probability,
     platform,
-    all_class_predicted_probabilities,
     primary_folder_id
 )
 VALUES (
@@ -15,7 +14,6 @@ VALUES (
     :predicted_labels::jsonb,
     :average_predicted_classes_probability,
     :platform::platform,
-    :all_class_predicted_probabilities::jsonb,
     :primary_folder_id
 )
 RETURNING id;
