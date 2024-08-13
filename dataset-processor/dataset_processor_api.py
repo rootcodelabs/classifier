@@ -5,10 +5,13 @@ from fastapi.responses import JSONResponse
 from dataset_processor import DatasetProcessor
 import requests
 import os
+from dataset_validator import DatasetValidator
 
 app = FastAPI()
 processor = DatasetProcessor()
+validator = DatasetValidator()
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
+VALIDATION_CONFIRMATION_URL = os.getenv("VALIDATION_CONFIRMATION_URL")
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,9 +45,7 @@ async def authenticate_user(request: Request):
 
 @app.post("/init-dataset-process")
 async def process_handler_endpoint(request: Request):
-    print("in init dataset")
     payload = await request.json()
-    print(payload)
     await authenticate_user(request)
 
     authCookie = payload["cookie"]
@@ -61,39 +62,51 @@ async def forward_request(request: Request, response: Response):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON payload: {str(e)}")
     
+    validator_response = validator.process_request(int(payload["dgId"]), payload["cookie"], payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
+    forward_payload = {}
+    forward_payload["dgId"] = int(payload["dgId"])
+    forward_payload["newDgId"] = int(payload["newDgId"])
+    forward_payload["updateType"] = payload["updateType"]
+    forward_payload["patchPayload"] = payload["patchPayload"]
+    forward_payload["savedFilePath"] = payload["savedFilePath"]
 
     headers = {
-            'cookie': payload["cookie"],
-            'Content-Type': 'application/json'
-        }
-
-    print(payload)
-    payload2 = {}
-    payload2["dgId"] = int(payload["dgId"])
-    payload2["newDgId"] = int(payload["newDgId"])
-    payload2["updateType"] = payload["updateType"]
-    payload2["patchPayload"] = payload["patchPayload"]
-    payload2["savedFilePath"] = payload["savedFilePath"]
-    payload2["validationStatus"] = "success"
-    payload2["validationErrors"] = []
-
-    cookie = payload["cookie"]
-
-    forward_url = "http://ruuter-private:8088/classifier/datasetgroup/update/validation/status"
+        'cookie': payload["cookie"],
+        'Content-Type': 'application/json'
+    }
+    if validator_response["response"]["operationSuccessful"] != True:
+        forward_payload["validationStatus"] = "fail"
+        forward_payload["validationErrors"] = [validator_response["response"]["message"]]
+    else:
+        forward_payload["validationStatus"] = "success"
+        forward_payload["validationErrors"] = []
 
     try:
-        print("8")
-        forward_response = requests.post(forward_url, json=payload2, headers=headers)
-        print(headers)
-        print("9")
+        forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
         forward_response.raise_for_status()
-        print("10")
+        
         return JSONResponse(content=forward_response.json(), status_code=forward_response.status_code)
     except requests.HTTPError as e:
-        print("11")
+        forward_payload = {}
+        forward_payload["dgId"] = int(payload["dgId"])
+        forward_payload["newDgId"] = int(payload["newDgId"])
+        forward_payload["updateType"] = payload["updateType"]
+        forward_payload["patchPayload"] = payload["patchPayload"]
+        forward_payload["savedFilePath"] = payload["savedFilePath"]
+        forward_payload["validationStatus"] = "fail"
+        forward_payload["validationErrors"] = [e]
+        forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
         print(e)
         raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
     except Exception as e:
-        print("12")
+        forward_payload = {}
+        forward_payload["dgId"] = int(payload["dgId"])
+        forward_payload["newDgId"] = int(payload["newDgId"])
+        forward_payload["updateType"] = payload["updateType"]
+        forward_payload["patchPayload"] = payload["patchPayload"]
+        forward_payload["savedFilePath"] = payload["savedFilePath"]
+        forward_payload["validationStatus"] = "fail"
+        forward_payload["validationErrors"] = [e]
+        forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
