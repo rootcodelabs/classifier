@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Header, HTTPException
 from pydantic import BaseModel
 from ner import NERProcessor
 from text_processing import TextProcessor
@@ -6,6 +6,9 @@ from fake_replacements import FakeReplacer
 from html_cleaner import HTMLCleaner
 import os
 import requests
+import hmac
+import hashlib
+import json
 
 app = FastAPI()
 
@@ -56,6 +59,38 @@ async def process_text(request: Request):
         output_payload["status"] = False
 
         return output_payload
+    
+@app.post("/verify_signature")
+async def verify_signature_endpoint(request: Request, x_hub_signature: str = Header(...)):
+    try:
+        payload = await request.json()
+        secret = os.getenv("SHARED_SECRET")  # You should set this environment variable
+        headers = {"x-hub-signature": x_hub_signature}
+        
+        is_valid = verify_signature(payload, headers, secret)
+        
+        if is_valid:
+            return {"status": True}
+        else:
+            return {"status": False}, 401
+    except Exception as e:
+        return {"status": False, "error": str(e)}, 500
+
+def verify_signature(payload: dict, headers: dict, secret: str) -> bool:
+    signature = headers.get("x-hub-signature")
+    if not signature:
+        raise HTTPException(status_code=400, detail="Signature missing")
+
+    shared_secret = secret.encode('utf-8')
+    payload_string = json.dumps(payload).encode('utf-8')
+
+    hmac_obj = hmac.new(shared_secret, payload_string, hashlib.sha256)
+    computed_signature = hmac_obj.hexdigest()
+    computed_signature_prefixed = f"sha256={computed_signature}"
+
+    is_valid = hmac.compare_digest(computed_signature_prefixed, signature)
+
+    return is_valid
 
 if __name__ == "__main__":
     import uvicorn
