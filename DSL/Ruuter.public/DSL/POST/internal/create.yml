@@ -34,6 +34,7 @@ declaration:
 extract_request_data:
   assign:
     input_id: ${incoming.body.inputId}
+    mail_id: ${incoming.body.mailId}
     inference_text: ${incoming.body.inferenceText}
     predicted_labels_org: ${incoming.body.predictedLabels}
     average_predicted_classes_probability: ${incoming.body.averagePredictedClassesProbability}
@@ -100,7 +101,7 @@ outlook_flow:
     headers:
       cookie: ${incoming.headers.cookie}
     body:
-      mailId: ${input_id}
+      mailId: ${mail_id}
       folderId: ${primary_folder_id}
   result: res_label
   next: check_label_status
