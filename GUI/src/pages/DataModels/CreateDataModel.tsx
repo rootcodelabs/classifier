@@ -12,16 +12,15 @@ import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { createDataModel, getDataModelsOverview } from 'services/data-models';
 import { integrationQueryKeys } from 'utils/queryKeys';
 import { getIntegrationStatus } from 'services/integration';
+import { CreateDataModelPayload, DataModel } from 'types/dataModels';
 
 const CreateDataModel: FC = () => {
   const { t } = useTranslation();
   const { open, close } = useDialog();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
   const [availableProdModels, setAvailableProdModels] = useState<string[]>([]);
 
-  const [dataModel, setDataModel] = useState({
+  const [dataModel, setDataModel] = useState<Partial<DataModel>>({
     modelName: '',
     dgName: '',
     dgId: 0,
@@ -94,15 +93,15 @@ const CreateDataModel: FC = () => {
   const handleCreate = () => {
     if (validateData()) {
       const payload = {
-        modelName: dataModel.modelName,
-        dgId: dataModel.dgId,
-        baseModels: dataModel.baseModels,
-        deploymentPlatform: dataModel.platform,
-        maturityLabel: dataModel.maturity,
+        modelName: dataModel.modelName ??"",
+        dgId: dataModel.dgId?? 0,
+        baseModels: dataModel.baseModels?? [""],
+        deploymentPlatform: dataModel.platform ??"",
+        maturityLabel: dataModel.maturity?? "",
       };
 
       if (
-        availableProdModels?.includes(dataModel.platform)
+        availableProdModels?.includes(dataModel.platform??"")
        ) {
          open({
            title: 'Warning: Replace Production Model',
@@ -136,7 +135,7 @@ const CreateDataModel: FC = () => {
     }
   };
   const createDataModelMutation = useMutation({
-    mutationFn: (data) => createDataModel(data),
+    mutationFn: (data:CreateDataModelPayload) => createDataModel(data),
     onSuccess: async (response) => {
       open({
         title: 'Data Model Created and Trained',
@@ -203,7 +202,7 @@ const CreateDataModel: FC = () => {
           background: 'white',
         }}
       >
-        <Button onClick={() => handleCreate()}>Create Dataset Group</Button>
+        <Button onClick={() => handleCreate()}>Create Data Model</Button>
         <Button appearance="secondary" onClick={() => navigate('/data-models')}>
           Cancel
         </Button>

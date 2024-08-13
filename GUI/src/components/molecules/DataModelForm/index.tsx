@@ -12,10 +12,11 @@ import { useQuery } from '@tanstack/react-query';
 import { getCreateOptions } from 'services/data-models';
 import { dgArrayWithVersions } from 'utils/dataModelsUtils';
 import CircularSpinner from '../CircularSpinner/CircularSpinner';
+import { DataModel } from 'types/dataModels';
 
 type DataModelFormType = {
   dataModel: any;
-  handleChange: (name: string, value: any) => void;
+  handleChange: (name: keyof DataModel, value: any) => void;
   errors?: Record<string, string>;
   type: string;
 };

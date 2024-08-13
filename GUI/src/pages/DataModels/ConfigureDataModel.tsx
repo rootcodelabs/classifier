@@ -11,22 +11,33 @@ import {
   updateDataModel,
 } from 'services/data-models';
 import DataModelForm from 'components/molecules/DataModelForm';
-import { getChangedAttributes, validateDataModel } from 'utils/dataModelsUtils';
-import { Platform } from 'enums/dataModelsEnums';
+import { getChangedAttributes } from 'utils/dataModelsUtils';
+import { Platform, UpdateType } from 'enums/dataModelsEnums';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
+import { DataModel, UpdatedDataModelPayload } from 'types/dataModels';
 
 type ConfigureDataModelType = {
   id: number;
-  availableProdModels?: string[]
+  availableProdModels?: string[];
 };
 
-const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels }) => {
+const ConfigureDataModel: FC<ConfigureDataModelType> = ({
+  id,
+  availableProdModels,
+}) => {
   const { open, close } = useDialog();
   const navigate = useNavigate();
-  const [enabled, setEnabled] = useState(true);
-  const [initialData, setInitialData] = useState({});
-  const [dataModel, setDataModel] = useState({
+  const [enabled, setEnabled] = useState<boolean>(true);
+  const [initialData, setInitialData] = useState<Partial<DataModel>>({
+    modelName: '',
+    dgId: '',
+    platform: '',
+    baseModels: [],
+    maturity: '',
+    version: '',
+  });
+  const [dataModel, setDataModel] = useState<DataModel>({
     modelId: 0,
     modelName: '',
     dgId: '',
@@ -36,15 +47,14 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels
     version: '',
   });
 
-  const { data: dataModelData, isLoading } = useQuery(
+  const { isLoading } = useQuery(
     ['datamodels/metadata', id],
     () => getMetadata(id),
-
     {
       enabled,
       onSuccess: (data) => {
         setDataModel({
-          modelId: data?.modelId || '',
+          modelId: data?.modelId || 0,
           modelName: data?.modelName || '',
           dgId: data?.connectedDgId || '',
           platform: data?.deploymentEnv || '',
@@ -54,7 +64,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels
         });
         setInitialData({
           modelName: data?.modelName || '',
-          dgId: data?.connectedDgId || '',
+          dgId: data?.connectedDgId || 0,
           platform: data?.deploymentEnv || '',
           baseModels: data?.baseModels || [],
           maturity: data?.maturityLabel || '',
@@ -65,7 +75,10 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels
     }
   );
 
-  const handleDataModelAttributesChange = (name: string, value: any) => {
+  const handleDataModelAttributesChange = (
+    name: keyof DataModel,
+    value: any
+  ) => {
     setDataModel((prevDataModel) => ({
       ...prevDataModel,
       [name]: value,
@@ -74,28 +87,26 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels
 
   const handleSave = () => {
     const payload = getChangedAttributes(initialData, dataModel);
-    let updateType;
+    let updateType: string | undefined;
     if (payload.dgId) {
-      updateType = 'major';
+      updateType = UpdateType.MAJOR;
     } else if (payload.baseModels || payload.platform) {
-      updateType = 'minor';
+      updateType = UpdateType.MINOR;
     } else if (payload.maturity) {
-      updateType = 'maturityLabel';
+      updateType = UpdateType.MATURITY_LABEL;
     }
 
     const updatedPayload = {
-      modelId: dataModel.modelId,
-      connectedDgId: payload.dgId,
-      deploymentEnv: payload.platform,
-      baseModels: payload.baseModels,
-      maturityLabel: payload.maturity,
-      updateType,
+      modelId: dataModel.modelId?? 0,
+      connectedDgId: payload.dgId ?? 0,
+      deploymentEnv: payload.platform ?? "",
+      baseModels: payload.baseModels ?? [""],
+      maturityLabel: payload.maturity ?? "",
+      updateType:updateType??"",
     };
 
     if (updateType) {
-      if (
-       availableProdModels?.includes(dataModel.platform)
-      ) {
+      if (availableProdModels?.includes(dataModel.platform)) {
         open({
           title: 'Warning: Replace Production Model',
           content:
@@ -123,8 +134,8 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels
   };
 
   const updateDataModelMutation = useMutation({
-    mutationFn: (data) => updateDataModel(data),
-    onSuccess: async (response) => {
+    mutationFn: (data: UpdatedDataModelPayload) => updateDataModel(data),
+    onSuccess: async () => {
       open({
         title: 'Changes Saved Successfully',
         content: (
@@ -188,7 +199,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels
           <div className="flex-grid">
             <Button
               appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={() => deleteDataModelMutation.mutate(dataModel.modelId)}
+              onClick={() => deleteDataModelMutation.mutate(dataModel?.modelId)}
             >
               Cancel
             </Button>
@@ -259,6 +270,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({ id,availableProdModels
       });
     },
   });
+
   return (
     <div>
       <div className="container">

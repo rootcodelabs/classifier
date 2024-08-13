@@ -19,7 +19,7 @@ type DataModelCardProps = {
   platform?: string;
   maturity?: string;
   setId: React.Dispatch<React.SetStateAction<number>>;
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  setView: React.Dispatch<React.SetStateAction<"individual"|"list" >>;
   results?: any;
 };
 
@@ -101,21 +101,21 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
         <p>{dataModelName}</p>
         <div className="flex">
           <Label>{version}</Label>
-          {isLatest ? <Label type="success">latest</Label> : null}
+          {isLatest ? <Label type="success">{t('datasetGroups.datasetCard.latest') ?? ''}</Label> : null}
         </div>
 
         <div className="py-3">
           <p>
-            {'Dataset Group:'}
+          {t('dataModels.dataModelCard.datasetGroup') ?? ''}:
             {datasetGroupName}
           </p>
           <p>
-            {'Dataset Group Version:'}
+          {t('dataModels.dataModelCard.dgVersion') ?? ''}:
             {dgVersion}
           </p>
           <p>
-            {'Last Trained:'}
-            {lastTrained}
+          {t('dataModels.dataModelCard.lastTrained') ?? ''}:            {lastTrained}
+
           </p>
         </div>
         <div className="flex">
@@ -130,21 +130,21 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
             size="s"
             onClick={() => {
               open({
-                title: 'Training Results',
-                footer: <Button onClick={close}>Close</Button>,
+                title: t('dataModels.trainingResults.title') ?? '',
+                footer: <Button onClick={close}>{t('global.close') ?? ''}</Button>,
                 size: 'large',
                 content: (
                   <div>
                     <div className="flex" style={{ margin: '20px 0px' }}>
-                      Best Performing Model -
+                      {t('dataModels.trainingResults.bestPerformingModel') ?? ''} -
                     </div>{' '}
                     <Card
                       isHeaderLight={true}
                       header={
                         <div className="training-results-grid-container">
-                          <div>Classes</div>
-                          <div>Accuracy</div>
-                          <div>F1 Score</div>
+                          <div> {t('dataModels.trainingResults.classes') ?? ''}</div>
+                          <div>{t('dataModels.trainingResults.accuracy') ?? ''}</div>
+                          <div>{t('dataModels.trainingResults.f1Score') ?? ''}</div>
                         </div>
                       }
                     >
@@ -168,7 +168,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                         </div>
                       ) : (
                         <div className="text-center">
-                          No training results available
+                          {t('dataModels.trainingResults.noResults') ?? ''}
                         </div>
                       )}
                     </Card>
@@ -177,7 +177,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
               });
             }}
           >
-            View Results
+             {t('dataModels.trainingResults.viewResults') ?? ''} Results
           </Button>
           <Button
             appearance="primary"
@@ -187,7 +187,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
               setView('individual');
             }}
           >
-            Settings
+            {t('datasetGroups.datasetCard.settings') ?? ''}
           </Button>
         </div>
       </div>

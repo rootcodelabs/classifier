@@ -334,6 +334,30 @@
       "production": "Production",
       "staging": "Staging",
       "testing": "Testing"
+    },
+    "dataModelCard": {
+      "datasetGroup": "Dataset Group",
+      "dgVersion": "Dataset Group Version",
+      "lastTrained": "Last Trained"
+    },
+    "trainingResults": {
+      "title": "Training Results",
+      "bestPerformingModel": "Best Performing Model",
+      "classes": "Classes",
+      "accuracy": "Accuracy",
+      "f1Score": "F1 Score",
+      "noResults": "No training results available",
+      "viewResults": " View Results"
+    },
+    "createDataModel": {
+      "title": "Create Data Model",
+      "replaceTitle": "Warning: Replace Production Model",
+      "replaceDesc": "Adding this model to production will replace the current production model. Are you sure you want to proceed?",
+      "successTitle": "Data Model Created and Trained",
+      "successDesc": " You have successfully created and trained the data model. You can view it on the data model dashboard.",
+      "viewAll": "View All Data Models",
+      "errorTitle": "Error Creating Data Model",
+      "errorDesc": " There was an issue creating or training the data model. Please try again. If the problem persists, contact support for assistance."
     }
   }
 }

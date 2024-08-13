@@ -26,7 +26,7 @@ type FormSelectProps = Partial<ControllerRenderProps> &
     placeholder?: string;
     hideLabel?: boolean;
     direction?: 'down' | 'up';
-    options: FormSelectOption[];
+    options: FormSelectOption[]|[];
     onSelectionChange?: (selection: FormSelectOption | null) => void;
     error?: string;
   };
