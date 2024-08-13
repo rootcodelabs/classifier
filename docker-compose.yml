@@ -1,3 +1,5 @@
+version: '3.7'
+
 services:
   ruuter-public:
     container_name: ruuter-public
@@ -15,7 +17,8 @@ services:
     ports:
       - 8086:8086
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.2
     cpus: "0.5"
     mem_limit: "512M"
 
@@ -37,7 +40,8 @@ services:
     ports:
       - 8088:8088
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.3
     cpus: "0.5"
     mem_limit: "512M"
 
@@ -55,7 +59,8 @@ services:
     ports:
       - 3000:3000
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.4
 
   tim:
     container_name: tim
@@ -67,7 +72,8 @@ services:
     ports:
       - 8085:8085
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.5
     extra_hosts:
       - "host.docker.internal:host-gateway"
     cpus: "0.5"
@@ -86,7 +92,8 @@ services:
     ports:
       - 9876:5432
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.6
 
   gui:
     container_name: gui
@@ -112,7 +119,8 @@ services:
       - /app/node_modules
       - ./GUI:/app
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.7
     cpus: "0.5"
     mem_limit: "1G"
 
@@ -122,7 +130,8 @@ services:
     ports:
       - 3004:3004
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.8
 
   resql:
     container_name: resql
@@ -141,7 +150,8 @@ services:
     volumes:
       - ./DSL/Resql:/workspace/app/templates/classifier
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.9
 
   users_db:
     container_name: users_db
@@ -155,7 +165,8 @@ services:
     volumes:
       - /home/ubuntu/user_db_files:/var/lib/postgresql/data
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.10
     restart: always
 
   cron-manager:
@@ -171,13 +182,17 @@ services:
     ports:
       - 9010:8080
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.11
 
   init:
     image: busybox
     command: ["sh", "-c", "chmod -R 777 /shared"]
     volumes:
       - shared-volume:/shared
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.12
 
   file-handler:
     build:
@@ -198,7 +213,8 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.13
     depends_on:
       - init
 
@@ -218,7 +234,8 @@ services:
       - file-handler
       - init
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.14
 
   dataset-processor:
     build:
@@ -246,7 +263,8 @@ services:
     ports:
       - "8001:8001"
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.15
     depends_on:
       - init
       - s3-ferry
@@ -267,6 +285,9 @@ services:
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
     ports:
       - "8003:8003"
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.7
     depends_on:
       - init
       - s3-ferry
@@ -294,7 +315,8 @@ services:
       - 9200:9200
       - 9600:9600
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.16
 
   notifications-node:
     container_name: notifications-node
@@ -319,7 +341,8 @@ services:
       - /app/node_modules
       - ./notification-server:/app
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.17
 
   data-enrichment-api:
     container_name: data-enrichment-api
@@ -330,7 +353,8 @@ services:
     ports:
       - "8005:8005"
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.18
 
   anonymizer:
     build:
@@ -343,7 +367,8 @@ services:
       - JIRA_INFERENCE_ENDPOINT=http://model-inference:8003/classifier/deployment/jira/inference
       - OUTLOOK_INFERENCE_ENDPOINT=http://model-inference:8003/classifier/deployment/outlook/inference
     networks:
-      - bykstack
+      bykstack:
+        ipv4_address: 172.25.0.19
 
 volumes:
   shared-volume:
@@ -353,5 +378,7 @@ networks:
   bykstack:
     name: bykstack
     driver: bridge
-    driver_opts:
-      com.docker.network.driver.mtu: 1400
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24
+          gateway: 172.25.0.1
