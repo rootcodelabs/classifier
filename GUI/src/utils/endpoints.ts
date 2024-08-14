@@ -43,5 +43,5 @@ export const correctedTextEndpoints = {
     platform: string,
     sortType: string
   ) =>
-    `/classifier/correctedtext?pageNum=${pageNumber}&pageSize=${pageSize}&platform=${platform}&sortType=${sortType}`,
+    `/classifier/inference/corrected-metadata?pageNum=${pageNumber}&pageSize=${pageSize}&platform=${platform}&sortType=${sortType}`,
 };

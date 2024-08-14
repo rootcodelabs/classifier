@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { generateDynamicColumns } from 'utils/dataTableUtils';
+import React, { useEffect, useMemo, useState } from 'react';
 import SkeletonTable from '../TableSkeleton/TableSkeleton';
 import DataTable from 'components/DataTable';
 import {
@@ -7,86 +6,47 @@ import {
   createColumnHelper,
   PaginationState,
 } from '@tanstack/react-table';
-import { CorrectedTextResponseType } from 'types/correctedTextsTypes';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
-import mockDev from '../../../services/api-mock';
-import { correctedTextEndpoints } from 'utils/endpoints';
-import { correctedData } from 'data/mockData';
 import { formatDateTime } from 'utils/commonUtilts';
+import Card from 'components/Card';
+import { InferencePayload } from 'types/correctedTextTypes';
+import './CorrectedTextTable.scss';
 
 const CorrectedTextsTables = ({
-  filters,
-  enableFetch,
+  correctedTextData,
+  totalPages,
+  isLoading,
+  setPagination,
+  pagination,
 }: {
-  filters: {
-    platform: string;
-    sort: string;
-  };
-  enableFetch: boolean;
+  correctedTextData: InferencePayload[];
+  totalPages: number;
+  isLoading: boolean;
+  setPagination: React.Dispatch<React.SetStateAction<PaginationState>>;
+  pagination: PaginationState;
 }) => {
-  console.log(filters);
-  const columnHelper = createColumnHelper<CorrectedTextResponseType>();
-  const [filteredData, setFilteredData] = useState<CorrectedTextResponseType[]>(
-    []
-  );
-  const [loading, setLoading] = useState(false);
+  const columnHelper = createColumnHelper<InferencePayload>();
   const { t } = useTranslation();
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 5,
-  });
-  const [platform, setPlatform] = useState<string>('all');
-  const [sortType, setSortType] = useState<string>('all');
 
-  // const { data, isLoading } = useQuery({
-  //   queryKey: ['correctedText', platform, sortType, pagination.pageIndex],
-  //   queryFn: async () => {
-  //     return await mockDev.get(
-  //       correctedTextEndpoints.GET_CORRECTED_WORDS(
-  //         pagination.pageIndex,
-  //         pagination.pageSize,
-  //         platform,
-  //         sortType
-  //       )
-  //     );
-  //   },
-  //   onSuccess: () => {},
-  // });
   const dataColumns = useMemo(
     () => [
-      columnHelper.accessor('inferenceTime', {
+      columnHelper.accessor('inferenceTimeStamp', {
         header: () => (
-          <div
-            style={{
-              textAlign: 'right',
-              display: 'flex',
-              alignContent: 'center',
-              alignItems: 'center',
-            }}
-          >
+          <div className="inferenceTimeLabel">
             {t('correctedTexts.inferenceTime') ?? ''}
           </div>
         ),
         cell: (props) => (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              fontSize: '14px',
-            }}
-          >
+          <div className="inferenceTimeCell">
             <span>
               {
-                formatDateTime(props?.row?.original?.inferenceTime)
+                formatDateTime(props?.row?.original?.inferenceTimeStamp)
                   .formattedDate
               }
             </span>
             <span>
               {
-                formatDateTime(props?.row?.original?.inferenceTime)
+                formatDateTime(props?.row?.original?.inferenceTimeStamp)
                   .formattedTime
               }
             </span>
@@ -96,22 +56,12 @@ const CorrectedTextsTables = ({
       columnHelper.accessor('platform', {
         header: t('correctedTexts.platform') ?? '',
       }),
-      columnHelper.accessor('inferencedText', {
+      columnHelper.accessor('inferenceText', {
         header: t('correctedTexts.text') ?? '',
       }),
       columnHelper.accessor('predictedLabels', {
         header: () => (
-          <div
-            style={{
-              textAlign: 'center',
-              display: 'flex',
-              alignContent: 'center',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textWrap: 'wrap',
-              width: '100%',
-            }}
-          >
+          <div className="correctedHierarchy">
             <span
               style={{
                 width: '150px',
@@ -122,44 +72,21 @@ const CorrectedTextsTables = ({
           </div>
         ),
         cell: (props) => (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '500px',
-              textWrap: 'wrap',
-            }}
-          >
-            {formatArray(props?.row?.original?.predictedLabels)}
+          <div className="hierarchyLabels">
+            {props?.row?.original?.predictedLabels &&
+              formatArray(props?.row?.original?.predictedLabels)}
           </div>
         ),
       }),
       columnHelper.accessor('averagePredictedClassesProbability', {
         header: () => (
-          <div
-            style={{
-              textAlign: 'center',
-              display: 'flex',
-              alignContent: 'center',
-              alignItems: 'center',
-              width: '200px',
-              textWrap: 'wrap',
-            }}
-          >
+          <div className="probabilityLabels">
             {t('correctedTexts.predictedConfidenceProbability') ?? ''}
           </div>
         ),
         cell: (props) => (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '200px',
-            }}
-          >
-            {props.row.original.averagePredictedClassesProbability}%
+          <div className="probabilityLabels">
+            {props?.row?.original?.averagePredictedClassesProbability}%
           </div>
         ),
         meta: {
@@ -168,17 +95,7 @@ const CorrectedTextsTables = ({
       }),
       columnHelper.accessor('correctedLabels', {
         header: () => (
-          <div
-            style={{
-              textAlign: 'center',
-              display: 'flex',
-              alignContent: 'center',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textWrap: 'wrap',
-              width: '100%',
-            }}
-          >
+          <div className="correctedHierarchy">
             <span
               style={{
                 width: '150px',
@@ -189,44 +106,23 @@ const CorrectedTextsTables = ({
           </div>
         ),
         cell: (props) => (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '500px',
-              textWrap: 'wrap',
-            }}
-          >
-            {formatArray(props?.row?.original?.correctedLabels)}
+          <div className="hierarchyLabels">
+            {props?.row?.original?.correctedLabels &&
+              formatArray(props?.row?.original?.correctedLabels)}
           </div>
         ),
       }),
       columnHelper.accessor('averageCorrectedClassesProbability', {
         header: () => (
-          <div
-            style={{
-              textAlign: 'center',
-              display: 'flex',
-              alignContent: 'center',
-              alignItems: 'center',
-              width: '200px',
-              textWrap: 'wrap',
-            }}
-          >
+          <div className="probabilityLabels">
             {t('correctedTexts.correctedConfidenceProbability') ?? ''}
           </div>
         ),
         cell: (props) => (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '200px',
-            }}
-          >
-            {props.row.original.averageCorrectedClassesProbability}%
+          <div className="probabilityLabels">
+            {props?.row?.original?.averageCorrectedClassesProbability && (
+              <>{props?.row?.original?.averageCorrectedClassesProbability}%</>
+            )}
           </div>
         ),
       }),
@@ -234,97 +130,66 @@ const CorrectedTextsTables = ({
     [t]
   );
 
-  function paginateDataset(data: any[], pageIndex: number, pageSize: number) {
-    const startIndex = pageIndex * pageSize;
-    const endIndex = startIndex + pageSize;
+  const formatArray = (array: string | string[]) => {
+    let formatedArray: string[];
+    if (typeof array === 'string') {
+      try {
+        const cleanedInput = array?.replace(/\s+/g, '');
+        formatedArray = JSON.parse(cleanedInput);
+      } catch (error) {
+        console.error('Error parsing input string:', error);
+        return '';
+      }
+    } else {
+      formatedArray = array;
+    }
 
-    const pageData = data.slice(startIndex, endIndex);
-
-    setFilteredData(pageData);
-  }
-
-  const calculateNumberOfPages = (data: any[], pageSize: number) => {
-    return Math.ceil(data.length / pageSize);
-  };
-
-  const formatArray = (array: string[]) => {
-    return array
-      .map((item, index) => (index === array.length - 1 ? item : item + ' ->'))
+    return formatedArray
+      .map((item, index) =>
+        index === formatedArray?.length - 1 ? item : item + ' ->'
+      )
       .join(' ');
   };
 
-  const filterItems = useCallback(() => {
-    if (!enableFetch) {
-      return;
-    }
-
-    let newData = correctedData;
-
-    if (filters.platform && filters.platform !== 'all') {
-      newData = newData.filter((item) => item.platform === filters.platform);
-    }
-
-    if (filters.sort && filters.sort !== 'all') {
-      newData = newData.sort((a, b) => {
-        if (filters.sort === 'asc') {
-          return a.inferenceTime.localeCompare(b.inferenceTime);
-        } else if (filters.sort === 'desc') {
-          return b.inferenceTime.localeCompare(a.inferenceTime);
-        }
-        return 0;
-      });
-    }
-
-    setFilteredData(newData);
-  }, [filters, enableFetch]);
-
-  useEffect(() => {
-    filterItems();
-  }, [filterItems]);
-
-  useEffect(() => {
-    paginateDataset(correctedData, pagination.pageIndex, pagination.pageSize);
-  }, []);
   return (
     <div>
       <div style={{ marginBottom: '20px', marginTop: '20px' }}>
-        {/* {isLoading && <SkeletonTable rowCount={5} />} */}
-        {/* {!isLoading && (
+        {isLoading && <SkeletonTable rowCount={5} />}
+        {!isLoading && correctedTextData && correctedTextData.length === 0 && (
+          <Card>
+            <div
+              style={{
+                width: '100%',
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {t('datasetGroups.detailedView.noData') ?? ''}
+            </div>
+          </Card>
+        )}
+        {!isLoading && correctedTextData && correctedTextData.length > 0 && (
           <DataTable
-            data={[]}
+            data={correctedTextData ?? []}
             columns={dataColumns as ColumnDef<string, string>[]}
             pagination={pagination}
             setPagination={(state: PaginationState) => {
               if (
-                state?.pageIndex === pagination?.pageIndex &&
-                state?.pageSize === pagination?.pageSize
+                state.pageIndex === pagination.pageIndex &&
+                state.pageSize === pagination.pageSize
               )
                 return;
-              setPagination(state);
+              setPagination({
+                pageIndex: state.pageIndex + 1,
+                pageSize: state.pageSize,
+              });
             }}
-            pagesCount={pagination.pageIndex}
+            pagesCount={totalPages}
             isClientSide={false}
           />
-        )} */}
-
-        <DataTable
-          data={filteredData}
-          columns={dataColumns as ColumnDef<string, string>[]}
-          pagination={pagination}
-          setPagination={(state: PaginationState) => {
-            if (
-              state?.pageIndex === pagination?.pageIndex &&
-              state?.pageSize === pagination?.pageSize
-            )
-              return;
-            setPagination(state);
-          }}
-          pagesCount={calculateNumberOfPages(
-            correctedData,
-            pagination.pageSize
-          )}
-          isClientSide={false}
-        />
+        )}
       </div>
     </div>
   );
