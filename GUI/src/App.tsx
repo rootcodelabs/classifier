@@ -18,6 +18,8 @@ import CreateDataModel from 'pages/DataModels/CreateDataModel';
 import TrainingSessions from 'pages/TrainingSessions';
 import LoadingScreen from 'pages/LoadingScreen/LoadingScreen';
 import Unauthorized from 'pages/Unauthorized/unauthorized';
+import CorrectedTexts from 'pages/CorrectedTexts';
+import TestModel from 'pages/TestModel';
 
 const App: FC = () => {
   const navigate = useNavigate();
@@ -65,13 +67,21 @@ const App: FC = () => {
                 <Route path="/integration" element={<Unauthorized />} />
               </>
             )}
-           <Route path="/dataset-groups" element={<DatasetGroups />} />
-        <Route path="/create-dataset-group" element={<CreateDatasetGroup />} />
-        <Route path="/stop-words" element={<StopWords />} />
-        <Route path="/validation-sessions" element={<ValidationSessions />} />
-        <Route path="/data-models" element={<DataModels />} />
-        <Route path="/create-data-model" element={<CreateDataModel />} />
-        <Route path="/training-sessions" element={<TrainingSessions />} />
+            <Route path="/dataset-groups" element={<DatasetGroups />} />
+            <Route
+              path="/create-dataset-group"
+              element={<CreateDatasetGroup />}
+            />
+            <Route path="/stop-words" element={<StopWords />} />
+            <Route
+              path="/validation-sessions"
+              element={<ValidationSessions />}
+            />{' '}
+            <Route path="/data-models" element={<DataModels />} />
+            <Route path="/create-data-model" element={<CreateDataModel />} />
+            <Route path="/training-sessions" element={<TrainingSessions />} />
+            <Route path="/corrected-texts" element={<CorrectedTexts />} />
+            <Route path="/test-model" element={<TestModel />} />
           </Route>
         </Routes>
       )}
