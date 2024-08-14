@@ -29,6 +29,9 @@ declaration:
       - field: validationErrors
         type: array
         description: "Body field 'validationErrors'"
+      - field: sessionId
+        type: number
+        description: "Body field 'sessionId'"
     headers:
       - field: cookie
         type: string
@@ -43,6 +46,7 @@ extract_request_data:
     save_file_path: ${incoming.body.savedFilePath}
     validation_status: ${incoming.body.validationStatus}
     validation_errors: ${incoming.body.validationErrors}
+    session_id: ${incoming.body.sessionId}
   next: check_request_type
 
 check_request_type:
@@ -149,6 +153,7 @@ execute_cron_manager:
       updateType: ${update_type}
       savedFilePath: ${save_file_path}
       patchPayload: ${patch_payload}
+      sessionId: ${session_id}
   result: res
   next: assign_success_response
 
