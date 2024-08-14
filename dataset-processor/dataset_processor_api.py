@@ -62,7 +62,7 @@ async def forward_request(request: Request, response: Response):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON payload: {str(e)}")
     
-    validator_response = validator.process_request(int(payload["dgId"]), payload["cookie"], payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
+    validator_response = validator.process_request(int(payload["dgId"]), int(payload["newDgId"]), payload["cookie"], payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
     forward_payload = {}
     forward_payload["dgId"] = int(payload["dgId"])
     forward_payload["newDgId"] = int(payload["newDgId"])
