@@ -97,12 +97,12 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     }
 
     const updatedPayload = {
-      modelId: dataModel.modelId?? 0,
-      connectedDgId: payload.dgId ?? 0,
-      deploymentEnv: payload.platform ?? "",
-      baseModels: payload.baseModels ?? [""],
-      maturityLabel: payload.maturity ?? "",
-      updateType:updateType??"",
+      modelId: dataModel.modelId,
+      connectedDgId: payload.dgId,
+      deploymentEnv: payload.platform,
+      baseModels: payload.baseModels,
+      maturityLabel: payload.maturity,
+      updateType:updateType,
     };
 
     if (updateType) {

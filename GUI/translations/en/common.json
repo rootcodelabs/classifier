@@ -43,7 +43,8 @@
     "choose": "Choose",
     "extedSession": "Extend Session",
     "unAuthorized": "Unauthorized",
-    "unAuthorizedDesc": "You do not have permission to view this page."
+    "unAuthorizedDesc": "You do not have permission to view this page.",
+    "close":"Close"
   },
   "menu": {
     "userManagement": "User Management",

@@ -93,11 +93,11 @@ const CreateDataModel: FC = () => {
   const handleCreate = () => {
     if (validateData()) {
       const payload = {
-        modelName: dataModel.modelName ??"",
-        dgId: dataModel.dgId?? 0,
-        baseModels: dataModel.baseModels?? [""],
-        deploymentPlatform: dataModel.platform ??"",
-        maturityLabel: dataModel.maturity?? "",
+        modelName: dataModel.modelName,
+        dgId: dataModel.dgId,
+        baseModels: dataModel.baseModels,
+        deploymentPlatform: dataModel.platform,
+        maturityLabel: dataModel.maturity,
       };
 
       if (
@@ -141,7 +141,7 @@ const CreateDataModel: FC = () => {
         title: 'Data Model Created and Trained',
         content: (
           <p>
-            You have successfully created and trained the data model. You can
+            You have successfully created and started training the data model. You can
             view it on the data model dashboard.
           </p>
         ),
