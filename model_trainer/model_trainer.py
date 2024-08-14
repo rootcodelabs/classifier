@@ -9,7 +9,11 @@ from s3_ferry import S3Ferry
 from constants import URL_MODEL
 
 class ModelTrainer:
-    def __init__(self, cookie, newModelId, oldModelId = None) -> None:
+    def __init__(self) -> None:
+        
+        cookie = os.environ.get('COOKIE')
+        newModelId = os.environ.get('NEW_MODEL_ID')
+        oldModelId = os.environ.get('OLD_MODEL_ID')
 
         model_url = URL_MODEL
 
@@ -23,8 +27,6 @@ class ModelTrainer:
             print("success")
         else:
             print(f"Failed with status code: {response.status_code}")
-
-
 
     def train(self):
         s3_ferry = S3Ferry()
@@ -61,11 +63,11 @@ class ModelTrainer:
         best_label_encoders = label_encoders_list[max_value_index]
         model_name = models_to_train[max_value_index]
         for i, (model, classifier, label_encoder) in enumerate(zip(best_models, best_classifiers, best_label_encoders)):
-            if model_name == 'xlnet':
+            if model_name == 'distil-bert':
                 torch.save(model, f"results/saved_models/last_two_layers_dfs_{i}.pth")
             elif model_name == 'roberta':
                 torch.save(model, f"results/saved_models/last_two_layers_dfs_{i}.pth")
-            elif model_name == 'bert-base-uncased':
+            elif model_name == 'bert':
                 torch.save(model, f"results/saved_models/last_two_layers_dfs_{i}.pth")
 
             torch.save(classifier, f"results/classifiers/classifier_{i}.pth")
