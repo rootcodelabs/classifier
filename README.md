@@ -1,5 +1,5 @@
 # Classifier
-The classifier is an open-source model training platform in which can integrated with JIRA and Outlook to deploy custom classification models to label emails or JIRA tickets.
+The classifier is an open-source model training platform which can be integrated with JIRA and Outlook to deploy custom classification models to classify and label incoming emails or JIRA tickets.
 
 # Scope
 

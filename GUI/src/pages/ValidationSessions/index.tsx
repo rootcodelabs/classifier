@@ -4,17 +4,18 @@ import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
 import sse from 'services/sse-service';
 import { useQuery } from '@tanstack/react-query';
 import { getDatasetGroupsProgress } from 'services/datasets';
+import { ValidationProgressData, SSEEventData } from 'types/datasetGroups';
 
 const ValidationSessions: FC = () => {
   const { t } = useTranslation();
-  const [progresses, setProgresses] = useState([]);
+  const [progresses, setProgresses] = useState<ValidationProgressData[]>([]);
 
-  const { data: progressData } = useQuery(
+  const { data: progressData } = useQuery<ValidationProgressData[]>(
     ['datasetgroups/progress'],
     () => getDatasetGroupsProgress(),
     {
       onSuccess: (data) => {
-        setProgresses(data); 
+        setProgresses(data);
       },
     }
   );
@@ -22,7 +23,7 @@ const ValidationSessions: FC = () => {
   useEffect(() => {
     if (!progressData) return;
 
-    const handleUpdate = (sessionId, newData) => {
+    const handleUpdate = (sessionId: string, newData: SSEEventData) => {
       setProgresses((prevProgresses) =>
         prevProgresses.map((progress) =>
           progress.id === sessionId ? { ...progress, ...newData } : progress
@@ -31,7 +32,7 @@ const ValidationSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
-      return sse(`/${progress.id}`, 'dataset',(data) => {
+      return sse(`/${progress.id}`, 'dataset', (data: SSEEventData) => {
         console.log(`New data for notification ${progress.id}:`, data);
         handleUpdate(data.sessionId, data);
       });
@@ -47,20 +48,19 @@ const ValidationSessions: FC = () => {
     <div>
       <div className="container">
         <div className="title_container">
-          <div className="title">Validation Sessions</div>
+          <div className="title">{t('validationSessions.title')}</div>
         </div>
-        {progresses?.map((session) => {
-          return (
-            <ValidationSessionCard
-              dgName={session.groupName}
-              version={`V${session?.majorVersion}.${session?.minorVersion}.${session?.patchVersion}`}
-              isLatest={session.latest}
-              status={session.validationStatus}
-              errorMessage={session.validationMessage}
-              progress={session.progressPercentage}
-            />
-          );
-        })}
+        {progresses?.map((session) => (
+          <ValidationSessionCard
+            key={session.id}
+            dgName={session.groupName}
+            version={`V${session?.majorVersion}.${session?.minorVersion}.${session?.patchVersion}`}
+            isLatest={session.latest}
+            status={session.validationStatus}
+            errorMessage={session.validationMessage}
+            progress={session.progressPercentage}
+          />
+        ))}
       </div>
     </div>
   );

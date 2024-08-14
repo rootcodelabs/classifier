@@ -1,22 +1,22 @@
 import { DataModel } from 'types/dataModels';
 
-export const validateDataModel = (dataModel) => {
+export const validateDataModel = (dataModel: Partial<DataModel>) => {
   const { modelName, dgId, platform, baseModels, maturity } = dataModel;
   const newErrors: any = {};
 
-  if (!modelName.trim()) newErrors.modelName = 'Model Name is required';
-  if (!platform.trim()) newErrors.platform = 'Platform is required';
+  if (!modelName?.trim()) newErrors.modelName = 'Model Name is required';
+  if (!platform?.trim()) newErrors.platform = 'Platform is required';
   if (dgId === 0) newErrors.dgId = 'Dataset group is required';
 
   if (baseModels?.length === 0)
     newErrors.baseModels = 'At least one Base Model is required';
-  if (!maturity.trim()) newErrors.maturity = 'Maturity is required';
+  if (!maturity?.trim()) newErrors.maturity = 'Maturity is required';
 
   return newErrors;
 };
 
 export const customFormattedArray = <T extends Record<string, any>>(
-  data: T[],
+  data: T[] |undefined,
   attributeName: keyof T
 ) => {
   return data?.map((item) => ({
@@ -46,18 +46,17 @@ export const dgArrayWithVersions = <T extends Record<string, any>>(
 };
 
 export const getChangedAttributes = (
-  original: DataModel,
-  updated: DataModel
+  original: Partial<DataModel>,
+  updated: Partial<DataModel>
 ): Partial<Record<keyof DataModel, string | null>> => {
   const changes: Partial<Record<keyof DataModel, string | null>> = {};
 
   (Object.keys(original) as (keyof DataModel)[]).forEach((key) => {
     if (original[key] !== updated[key]) {
-      changes[key] = updated[key];
-    } else {
-      changes[key] = null;
+      changes[key] = updated[key] as string | null;
     }
   });
 
   return changes;
 };
+

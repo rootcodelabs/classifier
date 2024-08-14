@@ -8,7 +8,7 @@ import Card from 'components/Card';
 import { useTranslation } from 'react-i18next';
 
 type DataModelCardProps = {
-  modelId:number;
+  modelId: number;
   dataModelName?: string | undefined;
   datasetGroupName?: string;
   version?: string;
@@ -19,11 +19,11 @@ type DataModelCardProps = {
   platform?: string;
   maturity?: string;
   setId: React.Dispatch<React.SetStateAction<number>>;
-  setView: React.Dispatch<React.SetStateAction<string>>;
+  setView: React.Dispatch<React.SetStateAction<"individual"|"list" >>;
   results?: any;
 };
 
-const  DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
+const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
   modelId,
   dataModelName,
   datasetGroupName,
@@ -38,32 +38,60 @@ const  DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
   setId,
   setView,
 }) => {
-  const { open,close } = useDialog();
+  const { open, close } = useDialog();
   const { t } = useTranslation();
 
   const renderTrainingStatus = (status: string | undefined) => {
     if (status === TrainingStatus.RETRAINING_NEEDED) {
-      return <Label type="warning">{t("dataModels.trainingStatus.retrainingNeeded")??""}</Label>;
+      return (
+        <Label type="warning">
+          {t('dataModels.trainingStatus.retrainingNeeded') ?? ''}
+        </Label>
+      );
     } else if (status === TrainingStatus.TRAINED) {
-      return <Label type="success">{t("dataModels.trainingStatus.trained")??""}</Label>;
+      return (
+        <Label type="success">
+          {t('dataModels.trainingStatus.trained') ?? ''}
+        </Label>
+      );
     } else if (status === TrainingStatus.TRAINING_INPROGRESS) {
-      return <Label type="info">{t("dataModels.trainingStatus.trainingInProgress")??""}</Label>;
+      return (
+        <Label type="info">
+          {t('dataModels.trainingStatus.trainingInProgress') ?? ''}
+        </Label>
+      );
     } else if (status === TrainingStatus.UNTRAINABLE) {
-      return <Label type="error">{t("dataModels.trainingStatus.untrainable")??""}</Label>;
-    }else if (status === TrainingStatus.NOT_TRAINED) {
-      return <Label>{t("dataModels.trainingStatus.notTrained")??""}</Label>;
+      return (
+        <Label type="error">
+          {t('dataModels.trainingStatus.untrainable') ?? ''}
+        </Label>
+      );
+    } else if (status === TrainingStatus.NOT_TRAINED) {
+      return <Label>{t('dataModels.trainingStatus.notTrained') ?? ''}</Label>;
     }
   };
 
   const renderMaturityLabel = (status: string | undefined) => {
     if (status === Maturity.DEVELOPMENT) {
-      return <Label type="warning">{t("dataModels.maturity.development")??""}</Label>;
+      return (
+        <Label type="warning">
+          {t('dataModels.maturity.development') ?? ''}
+        </Label>
+      );
     } else if (status === Maturity.PRODUCTION) {
-      return <Label type="success">{t("dataModels.maturity.production")??""}</Label>;
+      return (
+        <Label type="success">
+          {t('dataModels.maturity.production') ?? ''}
+        </Label>
+      );
     } else if (status === Maturity.STAGING) {
-      return <Label type="info">{t("dataModels.maturity.staging")??""}</Label>;
+      return (
+        <Label type="info">{t('dataModels.maturity.staging') ?? ''}</Label>
+      );
     } else if (status === Maturity.TESTING) {
-      return <Label type="error">{t("dataModels.maturity.testing")??""}</Label>;
+      return (
+        <Label type="error">{t('dataModels.maturity.testing') ?? ''}</Label>
+      );
     }
   };
 
@@ -73,21 +101,21 @@ const  DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
         <p>{dataModelName}</p>
         <div className="flex">
           <Label>{version}</Label>
-          {isLatest ? <Label type="success">{t("datasetGroups.datasetCard.latest")??""}</Label> : null}
+          {isLatest ? <Label type="success">{t('datasetGroups.datasetCard.latest') ?? ''}</Label> : null}
         </div>
 
         <div className="py-3">
           <p>
-            {'Dataset Group:'}
+          {t('dataModels.dataModelCard.datasetGroup') ?? ''}:
             {datasetGroupName}
           </p>
           <p>
-            {'Dataset Group Version:'}
+          {t('dataModels.dataModelCard.dgVersion') ?? ''}:
             {dgVersion}
           </p>
           <p>
-            {'Last Trained:'}
-            {lastTrained}
+          {t('dataModels.dataModelCard.lastTrained') ?? ''}:            {lastTrained}
+
           </p>
         </div>
         <div className="flex">
@@ -102,47 +130,54 @@ const  DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
             size="s"
             onClick={() => {
               open({
-                title: 'Training Results',
-                footer: <Button onClick={close}>Close</Button>,
+                title: t('dataModels.trainingResults.title') ?? '',
+                footer: <Button onClick={close}>{t('global.close') ?? ''}</Button>,
                 size: 'large',
                 content: (
                   <div>
-                    <div className="flex" style={{margin:"20px 0px"}}>Best Performing Model -</div>{' '}
+                    <div className="flex" style={{ margin: '20px 0px' }}>
+                      {t('dataModels.trainingResults.bestPerformingModel') ?? ''} -
+                    </div>{' '}
                     <Card
                       isHeaderLight={true}
                       header={
                         <div className="training-results-grid-container">
-                          <div>Classes</div>
-                          <div>Accuracy</div>
-                          <div>F1 Score</div>
+                          <div> {t('dataModels.trainingResults.classes') ?? ''}</div>
+                          <div>{t('dataModels.trainingResults.accuracy') ?? ''}</div>
+                          <div>{t('dataModels.trainingResults.f1Score') ?? ''}</div>
                         </div>
                       }
                     >
-                     {results ?( <div className="training-results-grid-container">
-                        <div>
-                          {results?.classes?.map((c) => {
-                            return <div>{c}</div>;
-                          })}
+                      {results ? (
+                        <div className="training-results-grid-container">
+                          <div>
+                            {results?.classes?.map((c: string) => {
+                              return <div>{c}</div>;
+                            })}
+                          </div>
+                          <div>
+                            {results?.accuracy?.map((c: string) => {
+                              return <div>{c}</div>;
+                            })}
+                          </div>
+                          <div>
+                            {results?.f1_score?.map((c: string) => {
+                              return <div>{c}</div>;
+                            })}
+                          </div>
                         </div>
-                        <div>
-                          {results?.accuracy?.map((c) => {
-                            return <div>{c}</div>;
-                          })}
+                      ) : (
+                        <div className="text-center">
+                          {t('dataModels.trainingResults.noResults') ?? ''}
                         </div>
-                        <div>
-                          {results?.f1_score?.map((c) => {
-                            return <div>{c}</div>;
-                          })}
-                        </div>
-                      </div>):(<div className='text-center'>No training results available</div>)}
-
+                      )}
                     </Card>
                   </div>
                 ),
               });
             }}
           >
-            View Results
+             {t('dataModels.trainingResults.viewResults') ?? ''} Results
           </Button>
           <Button
             appearance="primary"
@@ -152,7 +187,7 @@ const  DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
               setView('individual');
             }}
           >
-            Settings
+            {t('datasetGroups.datasetCard.settings') ?? ''}
           </Button>
         </div>
       </div>

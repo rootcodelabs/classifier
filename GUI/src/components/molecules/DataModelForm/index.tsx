@@ -10,15 +10,13 @@ import {
 import { formattedArray } from 'utils/commonUtilts';
 import { useQuery } from '@tanstack/react-query';
 import { getCreateOptions } from 'services/data-models';
-import {
-  customFormattedArray,
-  dgArrayWithVersions,
-} from 'utils/dataModelsUtils';
+import { dgArrayWithVersions } from 'utils/dataModelsUtils';
 import CircularSpinner from '../CircularSpinner/CircularSpinner';
+import { DataModel } from 'types/dataModels';
 
 type DataModelFormType = {
   dataModel: any;
-  handleChange: (name: string, value: any) => void;
+  handleChange: (name: keyof DataModel, value: any) => void;
   errors?: Record<string, string>;
   type: string;
 };
@@ -31,8 +29,9 @@ const DataModelForm: FC<DataModelFormType> = ({
 }) => {
   const { t } = useTranslation();
 
-  const { data: createOptions, isLoading } = useQuery(['datamodels/create-options'], () =>
-    getCreateOptions()
+  const { data: createOptions, isLoading } = useQuery(
+    ['datamodels/create-options'],
+    () => getCreateOptions()
   );
 
   return (
@@ -59,7 +58,7 @@ const DataModelForm: FC<DataModelFormType> = ({
         </div>
       )}
 
-      {createOptions && !isLoading? (
+      {createOptions && !isLoading ? (
         <div>
           <div className="title-sm">Select Dataset Group</div>
           <div className="grey-card">
@@ -117,7 +116,9 @@ const DataModelForm: FC<DataModelFormType> = ({
             />
           </div>
         </div>
-      ):(<CircularSpinner/>)}
+      ) : (
+        <CircularSpinner />
+      )}
     </div>
   );
 };

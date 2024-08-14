@@ -14,6 +14,11 @@ import { Icon } from 'components';
 import './FormSelect.scss';
 import { ControllerRenderProps } from 'react-hook-form';
 
+type FormSelectOption = {
+  label: string;
+  value: string | { name: string; id: string };
+};
+
 type FormSelectProps = Partial<ControllerRenderProps> &
   SelectHTMLAttributes<HTMLSelectElement> & {
     label: ReactNode;
@@ -21,26 +26,13 @@ type FormSelectProps = Partial<ControllerRenderProps> &
     placeholder?: string;
     hideLabel?: boolean;
     direction?: 'down' | 'up';
-    options:
-      | {
-          label: string;
-          value: string;
-        }[]
-      | {
-          label: string;
-          value: { name: string; id: string };
-        }[];
-    onSelectionChange?: (
-      selection: { label: string; value: string } |{
-        label: string;
-        value: { name: string; id: string };
-      }| null
-    ) => void;
+    options: FormSelectOption[]|[];
+    onSelectionChange?: (selection: FormSelectOption | null) => void;
     error?: string;
   };
 
-const itemToString = (item: { label: string; value: string } | null) => {
-  return item ? item.value : '';
+const itemToString = (item: FormSelectOption | null) => {
+  return item ? item.value.toString() : '';
 };
 
 const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
@@ -62,11 +54,11 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
     const id = useId();
     const { t } = useTranslation();
     const defaultSelected =
-      options?.find((o) => o.value === defaultValue) || options?.find((o) => o.value?.name === defaultValue) ||null;
-    const [selectedItem, setSelectedItem] = useState<{
-      label: string;
-      value: string;
-    } | null>(defaultSelected);
+      options?.find((o) => o.value === defaultValue) || 
+      options?.find((o) => typeof o.value !== 'string' && o.value?.name === defaultValue) ||
+      null;
+    const [selectedItem, setSelectedItem] = useState<FormSelectOption | null>(defaultSelected);
+
     const {
       isOpen,
       getToggleButtonProps,

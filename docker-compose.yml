@@ -5,7 +5,7 @@ services:
     environment:
       - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080,http://localhost:8000
       - application.httpCodesAllowList=200,201,202,400,401,403,500
-      - application.internalRequests.allowedIPs=127.0.0.1
+      - application.internalRequests.allowedIPs=127.0.0.1,172.25.0.7
       - application.logging.displayRequestContent=true
       - application.logging.displayResponseContent=true
       - server.port=8086
@@ -160,11 +160,12 @@ services:
 
   cron-manager:
     container_name: cron-manager
-    image: cron-manager
+    image: cron-manager-python
     volumes:
       - ./DSL/CronManager/DSL:/DSL
       - ./DSL/CronManager/script:/app/scripts
       - ./DSL/CronManager/config:/app/config
+      - ./model_trainer:/app/model_trainer
     environment:
       - server.port=9010
     ports:
@@ -191,6 +192,9 @@ services:
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
       - IMPORT_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/update/stop-words
       - DELETE_STOPWORDS_URL=http://ruuter-private:8088/classifier/datasetgroup/delete/stop-words
+      - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/page-count?groupId=dgId
+      - DATAGROUP_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datasetgroup/metadata/delete
+      - DATAMODEL_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datamodel/update/dataset-group
     ports:
       - "8000:8000"
     networks:
@@ -233,11 +237,12 @@ services:
       - SAVE_JSON_AGGREGRATED_DATA_URL=http://file-handler:8000/datasetgroup/data/import/json
       - DOWNLOAD_CHUNK_URL=http://file-handler:8000/datasetgroup/data/download/chunk
       - STATUS_UPDATE_URL=http://ruuter-private:8088/classifier/datasetgroup/update/preprocess/status
-      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
-      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
-      - S3_BUCKET_NAME=esclassifier-test
-      - S3_REGION_NAME=eu-west-1
       - PARAPHRASE_API_URL=http://data-enrichment-api:8005/paraphrase
+      - VALIDATION_CONFIRMATION_URL=http://ruuter-private:8088/classifier/datasetgroup/update/validation/status
+      - GET_DATAGROUP_METADATA_URL=http://ruuter-private:8088/classifier/datasetgroup/group/metadata?groupId=dgId
+      - CREATE_PROGRESS_SESSION_URL=http://ruuter-private:8088/classifier/datasetgroup/progress/create
+      - UPDATE_PROGRESS_SESSION_URL=http://ruuter-private:8088/classifier/datasetgroup/progress/update
+      - GET_PROGRESS_SESSIONS_URL=http://ruuter-private:8088/classifier/datasetgroup/progress
     ports:
       - "8001:8001"
     networks:
@@ -246,6 +251,25 @@ services:
       - init
       - s3-ferry
       - file-handler
+
+  model-inference:
+    build:
+      context: ./model_inference
+      dockerfile: Dockerfile
+    container_name: model-inference
+    volumes:
+      - shared-volume:/shared
+    environment:
+      - UPLOAD_DIRECTORY=/shared
+      - JIRA_MODEL_DOWNLOAD_DIRECTORY=/shared/models/jira
+      - OUTLOOK_MODEL_DOWNLOAD_DIRECTORY=/shared/models/outlook
+      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+      - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
+    ports:
+      - "8003:8003"
+    depends_on:
+      - init
+      - s3-ferry
 
   opensearch-node:
     image: opensearchproject/opensearch:2.11.1
@@ -308,6 +332,19 @@ services:
     networks:
       - bykstack
 
+  anonymizer:
+    build:
+      context: ./anonymizer
+      dockerfile: Dockerfile
+    container_name: anonymizer
+    ports:
+      - "8010:8010"
+    environment:
+      - JIRA_INFERENCE_ENDPOINT=http://model-inference:8003/classifier/deployment/jira/inference
+      - OUTLOOK_INFERENCE_ENDPOINT=http://model-inference:8003/classifier/deployment/outlook/inference
+    networks:
+      - bykstack
+
 volumes:
   shared-volume:
   opensearch-data:
@@ -316,5 +353,9 @@ networks:
   bykstack:
     name: bykstack
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+          gateway: 172.25.0.1
     driver_opts:
       com.docker.network.driver.mtu: 1400

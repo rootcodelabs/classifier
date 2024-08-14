@@ -5,9 +5,6 @@ import { Card, Label } from 'components';
 
 type TrainingSessionCardProps = {
   modelName: string;
-  dgName: string;
-  deployedModel: string;
-  lastTrained: string;
   isLatest: boolean;
   version: string;
   status?: string;
@@ -18,10 +15,7 @@ type TrainingSessionCardProps = {
 };
 
 const TrainingSessionCard: React.FC<TrainingSessionCardProps> = ({
-  dgName,
   modelName,
-  deployedModel,
-  lastTrained,
   version,
   isLatest,
   status,
@@ -36,12 +30,8 @@ const TrainingSessionCard: React.FC<TrainingSessionCardProps> = ({
     <Card
       header={
         <div>
-          <div className="title-m"> {modelName} </div>
-          <p className="flex">Dataset Group : {dgName} </p>
-          <p className="flex">Deployed Model : {deployedModel} </p>
-          <p className="flex">Last Trained : {lastTrained} </p>
-
           <div className="flex-grid">
+          <div> {modelName} </div>
             {isLatest && <Label type="success">Latest</Label>}
             <Label type="success">{version}</Label>
             {platform && <Label type="success">{platform}</Label>}{' '}

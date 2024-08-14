@@ -87,18 +87,12 @@ const MainNavigation: FC = () => {
     },
   ];
 
-  const filterItemsByRole = (role: string, items: MenuItem[]) => {
+  const filterItemsByRole = (role: string[], items: MenuItem[]) => {
     return items?.filter((item) => {
-      switch (role) {
-        case ROLES.ROLE_ADMINISTRATOR:
-          return item?.id;
-        case ROLES.ROLE_MODEL_TRAINER:
-          return item?.id !== 'userManagement' && item?.id !== 'integration';
-        case 'ROLE_UNAUTHENTICATED':
-          return false;
-        default:
-          return false;
-      }
+      if (role.includes(ROLES.ROLE_ADMINISTRATOR)) return item?.id;
+      else if (role.includes(ROLES.ROLE_MODEL_TRAINER))
+        return item?.id !== 'userManagement' && item?.id !== 'integration';
+      else return false;
     });
   };
 
@@ -107,9 +101,9 @@ const MainNavigation: FC = () => {
       const res = await apiDev.get(userManagementEndpoints.FETCH_USER_ROLES());
       return res?.data?.response;
     },
-    onSuccess: (res) => {      
-      const role = res?.includes(ROLES.ROLE_ADMINISTRATOR) ? ROLES.ROLE_ADMINISTRATOR :ROLES.ROLE_MODEL_TRAINER
-      const filteredItems = filterItemsByRole(role, items);
+    onSuccess: (res) => {
+      const roles = res;
+      const filteredItems = filterItemsByRole(roles, items);
       setMenuItems(filteredItems);
     },
     onError: (error) => {

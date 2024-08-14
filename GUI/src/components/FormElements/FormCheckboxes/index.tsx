@@ -10,7 +10,7 @@ type FormCheckboxesType = {
   items: {
     label: string;
     value: string;
-  }[];
+  }[] |undefined;
   isStack?: boolean;
   error?: string;
   selectedValues?: string[]; // New prop for selected values

@@ -11,7 +11,6 @@ export enum Maturity {
   STAGING = 'staging',
   DEVELOPMENT = 'development',
   TESTING = 'testing',
-
 }
 
 export enum Platform {
@@ -19,5 +18,10 @@ export enum Platform {
   OUTLOOK = 'outlook',
   PINAL = 'pinal',
   UNDEPLOYED = 'undeployed',
+}
 
+export enum UpdateType {
+  MAJOR = 'major',
+  MINOR = 'minor',
+  MATURITY_LABEL = 'maturityLabel',
 }
