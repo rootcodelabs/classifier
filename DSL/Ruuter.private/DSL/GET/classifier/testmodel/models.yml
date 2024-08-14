@@ -11,8 +11,6 @@ get_test_data_models:
   call: http.post
   args:
     url: "[#CLASSIFIER_RESQL]/get-test-data-models"
-    body:
-      id: ${model_id}
   result: res_model
   next: check_status
 
