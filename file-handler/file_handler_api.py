@@ -14,6 +14,7 @@ import pandas as pd
 from typing import List
 from io import BytesIO, TextIOWrapper
 from dataset_deleter import DatasetDeleter
+from dataset_deleter import ModelDeleter
 from datetime import datetime
 
 app = FastAPI()
@@ -442,3 +443,23 @@ async def download_and_convert(request: Request, exportData: ExportCorrectedData
     backgroundTasks.add_task(os.remove, output_file)
 
     return FileResponse(output_file, filename=os.path.basename(output_file))
+
+@app.post("/datamodel/model/delete")
+async def delete_datamodels(request: Request):
+    try:
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
+
+        payload = await request.json()
+        model_id = int(payload["modelId"])
+
+        deleter = ModelDeleter(S3_FERRY_URL)
+        success = deleter.delete_model_files(model_id)
+
+        if success:
+            return JSONResponse(status_code=200, content={"message": "Data model deletion completed successfully."})
+        else:
+            return JSONResponse(status_code=500, content={"message": "Data model deletion failed."})
+    except Exception as e:
+        print(f"Error in delete_datamodel_files: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
