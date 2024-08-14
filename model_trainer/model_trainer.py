@@ -63,11 +63,11 @@ class ModelTrainer:
         best_label_encoders = label_encoders_list[max_value_index]
         model_name = models_to_train[max_value_index]
         for i, (model, classifier, label_encoder) in enumerate(zip(best_models, best_classifiers, best_label_encoders)):
-            if model_name == 'xlnet':
+            if model_name == 'distil-bert':
                 torch.save(model, f"results/saved_models/last_two_layers_dfs_{i}.pth")
             elif model_name == 'roberta':
                 torch.save(model, f"results/saved_models/last_two_layers_dfs_{i}.pth")
-            elif model_name == 'bert-base-uncased':
+            elif model_name == 'bert':
                 torch.save(model, f"results/saved_models/last_two_layers_dfs_{i}.pth")
 
             torch.save(classifier, f"results/classifiers/classifier_{i}.pth")
