@@ -39,8 +39,8 @@ export function isLabelsMismatch(newLabels, correctedLabels, predictedLabels) {
       Array.isArray(arr) &&
       newLabels.length === arr.length
     ) {
-      for (let i = 0; i < newLabels.length; i++) {
-        if (!arr.includes(newLabels[i])) {
+      for (let label of newLabels) {
+        if (!arr.includes(label)) {
           return true;
         }
       }

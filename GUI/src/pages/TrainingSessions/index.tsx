@@ -1,18 +1,19 @@
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
-import sse from 'services/sse-service';
 import { useQuery } from '@tanstack/react-query';
-import { getDatasetGroupsProgress } from 'services/datasets';
-import { ValidationProgressData, SSEEventData } from 'types/datasetGroups';
+import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
+import TrainingSessionCard from 'components/molecules/TrainingSessionCard';
+import sse from 'services/sse-service';
+import { getDataModelsProgress } from 'services/data-models';
+import { SSEEventData, TrainingProgressData } from 'types/dataModels';
 
-const ValidationSessions: FC = () => {
+const TrainingSessions: FC = () => {
   const { t } = useTranslation();
-  const [progresses, setProgresses] = useState<ValidationProgressData[]>([]);
+  const [progresses, setProgresses] = useState<TrainingProgressData[]>([]);
 
-  const { data: progressData } = useQuery<ValidationProgressData[]>(
-    ['datasetgroups/progress'],
-    () => getDatasetGroupsProgress(),
+  const { data: progressData } = useQuery<TrainingProgressData[]>(
+    ['datamodels/progress'],
+    () => getDataModelsProgress(),
     {
       onSuccess: (data) => {
         setProgresses(data);
@@ -32,7 +33,7 @@ const ValidationSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
-      return sse(`/${progress.id}`, 'dataset', (data: SSEEventData) => {
+      return sse(`/${progress.id}`, 'model', (data: SSEEventData) => {
         console.log(`New data for notification ${progress.id}:`, data);
         handleUpdate(data.sessionId, data);
       });
@@ -48,16 +49,15 @@ const ValidationSessions: FC = () => {
     <div>
       <div className="container">
         <div className="title_container">
-          <div className="title">{t('validationSessions.title')}</div>
+          <div className="title">{t('trainingSessions.title')}</div>
         </div>
         {progresses?.map((session) => (
-          <ValidationSessionCard
+          <TrainingSessionCard
             key={session.id}
-            dgName={session.groupName}
-            version={`V${session?.majorVersion}.${session?.minorVersion}.${session?.patchVersion}`}
+            modelName={session.modelName}
+            version={`V${session?.majorVersion}.${session?.minorVersion}`}
             isLatest={session.latest}
-            status={session.validationStatus}
-            errorMessage={session.validationMessage}
+            status={session.trainingStatus}
             progress={session.progressPercentage}
           />
         ))}
@@ -66,4 +66,4 @@ const ValidationSessions: FC = () => {
   );
 };
 
-export default ValidationSessions;
+export default TrainingSessions;

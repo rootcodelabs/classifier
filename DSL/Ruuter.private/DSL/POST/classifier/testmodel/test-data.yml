@@ -22,7 +22,7 @@ declaration:
 extract_request_data:
   assign:
     model_id: ${incoming.body.modelId}
-    text: ${incoming.headers.text}
+    text: ${incoming.body.text}
     cookie: ${incoming.headers.cookie}
     next: check_for_request_data
 
@@ -57,7 +57,7 @@ check_data_model_exist:
   switch:
     - condition: ${res_model.response.body.length>0}
       next: send_data_to_predict
-  next: assign_fail_response
+  next: return_model_not_found
 
 send_data_to_predict:
   call: reflect.mock
@@ -81,7 +81,7 @@ assign_success_response:
   assign:
     format_res: {
       modelId: '${model_id}',
-      data: '${res_model.response.body}',
+      data: '${res_predict.response.body}',
       operationSuccessful: true,
     }
   next: return_ok
@@ -103,6 +103,11 @@ return_ok:
 return_incorrect_request:
   status: 400
   return: 'Missing Required Fields'
+  next: end
+
+return_model_not_found:
+  status: 404
+  return: 'Model Not Found'
   next: end
 
 return_empty_request:
