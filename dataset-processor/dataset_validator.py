@@ -10,17 +10,29 @@ class DatasetValidator:
     def __init__(self):
         pass
 
-    def process_request(self, dgId, cookie, updateType, savedFilePath, patchPayload=None):
+    def process_request(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload=None):
         print(MSG_PROCESS_REQUEST_STARTED)
         print(f"dgId: {dgId}, updateType: {updateType}, savedFilePath: {savedFilePath}")
-        metadata = self.get_datagroup_metadata(dgId, cookie)
-        if not metadata:
-            return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"))
 
-        session_id = self.create_progress_session(metadata, cookie)
-        print(f"Progress Session ID : {session_id}")
-        if not session_id:
-            return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"))
+        if updateType == "minor":
+            metadata = self.get_datagroup_metadata(newDgId, cookie)
+            if not metadata:
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"))
+            session_id = self.create_progress_session(metadata, cookie)
+            print(f"Progress Session ID : {session_id}")
+            if not session_id:
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"))
+        elif updateType == "patch":
+            metadata = self.get_datagroup_metadata(dgId, cookie)
+            if not metadata:
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"))
+
+            session_id = self.create_progress_session(metadata, cookie)
+            print(f"Progress Session ID : {session_id}")
+            if not session_id:
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"))
+        else:
+            return self.generate_response(False, "Unknown update type")
 
         try:
             # Initializing dataset processing
@@ -353,6 +365,7 @@ class DatasetValidator:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
+            print(e)
             print(MSG_REQUEST_FAILED.format("Metadata fetch"))
             return None
 

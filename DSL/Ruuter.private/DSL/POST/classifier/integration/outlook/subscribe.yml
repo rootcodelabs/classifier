@@ -87,7 +87,7 @@ subscribe_outlook:
     body:
       changeType: "created,updated"
       notificationUrl: "[#CLASSIFIER_RUUTER_PUBLIC_FRONTEND_URL]/classifier/integration/outlook/accept"
-      resource: "me/mailFolders('inbox')/messages"
+      resource: "me/messages"
       expirationDateTime: ${expiration_date_time}
       clientState: "secretClientValue"
   result: res_subscribe

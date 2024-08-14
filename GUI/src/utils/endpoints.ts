@@ -35,3 +35,13 @@ export const datasetsEndpoints = {
   IMPORT_STOP_WORDS: (): string => `/datasetgroup/data/import/stop-words`,
   DELETE_STOP_WORDS: (): string => `/datasetgroup/data/delete/stop-words`,
 };
+
+export const correctedTextEndpoints = {
+  GET_CORRECTED_WORDS: (
+    pageNumber: number,
+    pageSize: number,
+    platform: string,
+    sortType: string
+  ) =>
+    `/classifier/inference/corrected-metadata?pageNum=${pageNumber}&pageSize=${pageSize}&platform=${platform}&sortType=${sortType}`,
+};

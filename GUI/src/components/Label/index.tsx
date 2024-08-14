@@ -6,13 +6,13 @@ import { Tooltip } from 'components';
 import './Label.scss';
 
 type LabelProps = {
-  type?: 'warning' | 'error' | 'info' | 'success';
+  type?: 'warning' | 'error' | 'info' | 'success' | 'default';
   tooltip?: ReactNode;
 }
 
 const Label = forwardRef<HTMLSpanElement, PropsWithChildren<LabelProps>>((
   {
-    type = 'info',
+    type = 'default',
     tooltip,
     children,
   }, ref,

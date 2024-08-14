@@ -101,6 +101,7 @@ const ViewDatasetGroupModalController = ({
                   name="format"
                   items={formats}
                   onChange={setImportFormat}
+                  selectedValue={importFormat}
                 ></FormRadios>
               </div>
               <p>{t('datasetGroups.detailedView.modals.import.attachments')}</p>
@@ -164,6 +165,7 @@ const ViewDatasetGroupModalController = ({
                   name="format"
                   items={formats}
                   onChange={setExportFormat}
+                  selectedValue={exportFormat}
                 ></FormRadios>
               </div>
             </div>

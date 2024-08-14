@@ -1,0 +1,39 @@
+.correctedHierarchy {
+    text-align: center;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    text-wrap: wrap;
+    width: 100%;
+}
+
+.hierarchyLabels {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 500px;
+    text-wrap: wrap;
+}
+
+.probabilityLabels {
+    text-align: center;
+    display: flex;
+    align-content: center;
+    width: 200px;
+    text-wrap: wrap;
+}
+
+.inferenceTimeLabel {
+    text-align: right;
+    display: flex;
+    align-content: center;
+    align-items: center;
+}
+
+.inferenceTimeCell {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    flex-direction: column;
+}

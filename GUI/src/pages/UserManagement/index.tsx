@@ -57,10 +57,13 @@ const UserManagement: FC = () => {
     return data?.response ?? [];
   };
 
-  const { data: users, isLoading } = useQuery(
-    userManagementQueryKeys.getAllEmployees(),
-    () => fetchUsers(pagination, sorting)
-  );
+  const { data: users, isLoading } = useQuery({
+    queryKey: userManagementQueryKeys.getAllEmployees(),
+    queryFn: () => fetchUsers(pagination, sorting),
+    onSuccess: (data) => {
+      setTotalPages( data[0]?.totalPages)
+    }
+  });
 
   const ActionButtons: FC<{ row: User }> = ({ row }) => (
     <div className="action-button-container">
@@ -78,14 +81,14 @@ const UserManagement: FC = () => {
             title: t('userManagement.addUser.deleteUserModalTitle') ?? '',
             content: <p>{t('userManagement.addUser.deleteUserModalDesc')}</p>,
             footer: (
-              <div>
+              <div className="button-wrapper">
                 <Button
                   appearance={ButtonAppearanceTypes.SECONDARY}
                   onClick={() => {
                     close();
                   }}
                 >
-                  {t('global.no')}
+                  {t('global.cancel')}
                 </Button>
                 <Button
                   appearance={ButtonAppearanceTypes.ERROR}
@@ -93,7 +96,7 @@ const UserManagement: FC = () => {
                     deleteUserMutation.mutate({ id: row.useridcode })
                   }
                 >
-                  {t('global.yes')}
+                  {t('global.confirm')}
                 </Button>
               </div>
             ),
@@ -117,6 +120,9 @@ const UserManagement: FC = () => {
       ),
       columnHelper.accessor('useridcode', {
         header: t('userManagement.table.personalId') ?? '',
+      }),
+      columnHelper.accessor('csaTitle', {
+        header: t('userManagement.table.title') ?? '',
       }),
       columnHelper.accessor(
         (data: User) => {
@@ -142,7 +148,11 @@ const UserManagement: FC = () => {
       }),
       columnHelper.display({
         id: 'actions',
-        header: t('userManagement.table.actions') ?? '',
+        header: () => (
+          <div className="table-header">
+            {t('userManagement.table.actions') ?? ''}
+          </div>
+        ),
         cell: (props) => <ActionButtons row={props?.row?.original} />,
         meta: {
           size: '1%',
@@ -155,6 +165,7 @@ const UserManagement: FC = () => {
   const deleteUserMutation = useMutation({
     mutationFn: ({ id }: { id: string | number }) => deleteUser(id),
     onSuccess: async () => {
+      close();
       await queryClient.invalidateQueries(
         userManagementQueryKeys.getAllEmployees()
       );
@@ -173,8 +184,9 @@ const UserManagement: FC = () => {
     },
   });
 
-  if (isLoading) return <CircularSpinner/>;
+  if (isLoading) return <CircularSpinner />;
 
+  console.log('users ', users);
   return (
     <div>
       <div className="container">

@@ -1,6 +1,9 @@
 {
-  "jiraId": "{{data.key}}",
-  "summary": "{{data.fields.summary}}",
-  "labels": "{{data.fields.labels}}",
-  "projectId": "{{data.fields.project.key}}"
+  "title": "{{data.fields.summary}}",
+  "description": "{{data.fields.description}}",
+  "attachments": [
+    {{#each data.fields.attachment}}
+      "{{this.filename}}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  ]
 }

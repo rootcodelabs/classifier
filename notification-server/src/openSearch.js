@@ -17,7 +17,8 @@ async function searchDatasetGroupNotification({ sessionId, connectionId, sender 
             must_not: { match: { sentTo: connectionId } },
           },
         },
-        sort: { timestamp: { order: "asc" } },
+         sort: { timestamp: { order: "desc" } },
+         size: 1,
       },
     });
 
@@ -49,7 +50,8 @@ async function searchModelNotification({ sessionId, connectionId, sender }) {
             must_not: { match: { sentTo: connectionId } },
           },
         },
-        sort: { timestamp: { order: "asc" } },
+        sort: { timestamp: { order: "desc" } },
+        size: 1,
       },
     });
 
