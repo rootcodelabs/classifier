@@ -380,7 +380,5 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.25.0.0/16
+        - subnet: 172.25.0.0/24
           gateway: 172.25.0.1
-    driver_opts:
-      com.docker.network.driver.mtu: 1400
