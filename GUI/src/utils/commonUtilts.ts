@@ -40,3 +40,21 @@ export const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 export const formatDate = (date: Date, format: string) => {
   return moment(date).format(format);
 };
+
+export const formatDateTime = (date: string) => {
+  const format = 'DD-MM-YYYY-HH:mm:ss';
+
+  // Parse the date string using moment
+  const momentDate = moment(date, format);
+
+  // Format the date as MM/DD/YYYY
+  const formattedDate = momentDate.format('M/D/YYYY');
+
+  // Format the time as h.mm A (AM/PM)
+  const formattedTime = momentDate.format('h.mm A');
+
+  return {
+    formattedDate,
+    formattedTime,
+  };
+};
