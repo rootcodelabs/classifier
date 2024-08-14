@@ -339,20 +339,25 @@ class DatasetProcessor:
             return None
         
     def process_handler(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload):
-        session_id = self.get_session_id(dgId, cookie)
-        if not session_id:
-            return self.generate_response(False, MSG_FAIL)
         
         print(MSG_PROCESS_HANDLER_STARTED.format(updateType))
         page_count = self.get_page_count(dgId, cookie)
         print(MSG_PAGE_COUNT.format(page_count))
         
         if updateType == "minor" and page_count > 0:
+            session_id = self.get_session_id(newDgId, cookie)
+            if not session_id:
+                return self.generate_response(False, MSG_FAIL)
             updateType = "minor_append_update"
         elif updateType == "patch":
-            pass
+            session_id = self.get_session_id(dgId, cookie)
+            if not session_id:
+                return self.generate_response(False, MSG_FAIL)
         else:
             updateType = "minor_initial_update"
+            session_id = self.get_session_id(newDgId, cookie)
+            if not session_id:
+                return self.generate_response(False, MSG_FAIL)
         
         if updateType == "minor_initial_update":
             result = self.handle_minor_initial_update(dgId, newDgId, cookie, savedFilePath, session_id)
@@ -557,6 +562,8 @@ class DatasetProcessor:
             response = requests.get(GET_PROGRESS_SESSIONS_URL, headers=headers)
             response.raise_for_status()
             sessions = response.json().get("response", {}).get("data", [])
+            print("Sessions")
+            print(sessions)
             for session in sessions:
                 if session['dgId'] == dgId:
                     return session['id']
