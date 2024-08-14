@@ -2,12 +2,18 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import { FilterFn } from '@tanstack/react-table';
 import moment from 'moment';
 
-export const formattedArray = (data: string[]) => {
+type FormattedOption = {
+  label: string;
+  value: string;
+};
+
+export const formattedArray = (data: string[]|undefined): FormattedOption[]|undefined => {
   return data?.map((name) => ({
     label: name,
     value: name,
   }));
 };
+
 
 export const convertTimestampToDateTime = (timestamp: number) => {
   return moment.unix(timestamp).format('YYYY-MM-DD HH:mm:ss');

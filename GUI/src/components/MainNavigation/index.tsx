@@ -60,8 +60,18 @@ const MainNavigation: FC = () => {
     {
       id: 'dataModels',
       label: t('menu.dataModels'),
-      path: '/data-models',
+      path: '#',
       icon: <MdApps />,
+      children: [
+        {
+          label: t('menu.models'),
+          path: '/data-models',
+        },
+        {
+          label: t('menu.trainingSessions'),
+          path: 'training-sessions',
+        }
+      ],
     },
     {
       id: 'incomingTexts',
@@ -77,18 +87,12 @@ const MainNavigation: FC = () => {
     },
   ];
 
-  const filterItemsByRole = (role: string, items: MenuItem[]) => {
+  const filterItemsByRole = (role: string[], items: MenuItem[]) => {
     return items?.filter((item) => {
-      switch (role) {
-        case ROLES.ROLE_ADMINISTRATOR:
-          return item?.id;
-        case ROLES.ROLE_MODEL_TRAINER:
-          return item?.id !== 'userManagement' && item?.id !== 'integration';
-        case 'ROLE_UNAUTHENTICATED':
-          return false;
-        default:
-          return false;
-      }
+      if (role.includes(ROLES.ROLE_ADMINISTRATOR)) return item?.id;
+      else if (role.includes(ROLES.ROLE_MODEL_TRAINER))
+        return item?.id !== 'userManagement' && item?.id !== 'integration';
+      else return false;
     });
   };
 
@@ -98,8 +102,8 @@ const MainNavigation: FC = () => {
       return res?.data?.response;
     },
     onSuccess: (res) => {
-      const role = res[0];
-      const filteredItems = filterItemsByRole(role, items);
+      const roles = res;
+      const filteredItems = filterItemsByRole(roles, items);
       setMenuItems(filteredItems);
     },
     onError: (error) => {
