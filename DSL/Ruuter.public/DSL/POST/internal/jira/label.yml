@@ -10,7 +10,7 @@ declaration:
     body:
       - field: issueKey
         type: string
-        description: "Body field 'issueId'"
+        description: "Body field 'issueKey'"
       - field: labels
         type: array
         description: "Body field 'labels'"
