@@ -15,7 +15,7 @@ export const integrationsEndPoints = {
 
 export const datasetsEndpoints = {
   GET_OVERVIEW: (): string => '/classifier/datasetgroup/overview',
-  GET_DATASET_OVERVIEW_BY_FILTERS: (): string =>
+  GET_DATASET_FILTERS: (): string =>
     '/classifier/datasetgroup/overview/filters',
   ENABLE_DATASET: (): string => `/classifier/datasetgroup/update/status`,
   GET_DATASETS: (): string => `/classifier/datasetgroup/group/data`,
@@ -44,4 +44,17 @@ export const correctedTextEndpoints = {
     sortType: string
   ) =>
     `/classifier/inference/corrected-metadata?pageNum=${pageNumber}&pageSize=${pageSize}&platform=${platform}&sortType=${sortType}`,
+};
+
+export const dataModelsEndpoints = {
+  GET_OVERVIEW: (): string => '/classifier/datamodel/overview',
+  GET_DATAMODELS_FILTERS: (): string =>
+    '/classifier/datamodel/overview/filters',
+  GET_METADATA: (): string => `/classifier/datamodel/metadata`,
+  GET_CREATE_OPTIONS: (): string => `classifier/datamodel/create/options`,
+  CREATE_DATA_MODEL: (): string => `classifier/datamodel/create`,
+  UPDATE_DATA_MODEL: (): string => `classifier/datamodel/update`,
+  DELETE_DATA_MODEL: (): string => `classifier/datamodel/delete`,
+  RETRAIN_DATA_MODEL: (): string => `classifier/datamodel/retrain`,
+  GET_DATA_MODEL_PROGRESS: (): string => `classifier/datamodel/progress`,
 };

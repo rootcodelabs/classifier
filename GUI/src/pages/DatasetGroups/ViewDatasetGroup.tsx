@@ -105,7 +105,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   );
 
   const { data: metadata, isLoading: isMetadataLoading } = useQuery(
-    datasetQueryKeys.GET_MATA_DATA(dgId),
+    datasetQueryKeys.GET_META_DATA(dgId),
     () => getMetadata(dgId),
     { enabled: fetchEnabled }
   );

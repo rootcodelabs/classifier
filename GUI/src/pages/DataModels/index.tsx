@@ -12,6 +12,7 @@ import { customFormattedArray, extractedArray } from 'utils/dataModelsUtils';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { DataModelResponse, FilterData, Filters } from 'types/dataModels';
+import { dataModelsQueryKeys } from 'utils/queryKeys';
 
 const DataModels: FC = () => {
   const { t } = useTranslation();
@@ -41,20 +42,18 @@ const DataModels: FC = () => {
   });
 
   const { data: dataModelsData, isLoading: isModelDataLoading } = useQuery(
-    [
-      'datamodels/overview',
+    dataModelsQueryKeys.DATA_MODELS_OVERVIEW(
       pageIndex,
       filters.modelName,
       parseVersionString(filters.version)?.major,
       parseVersionString(filters.version)?.minor,
-      parseVersionString(filters.version)?.patch,
       filters.platform,
       filters.datasetGroup,
       filters.trainingStatus,
       filters.maturity,
       filters.sort,
-      false,
-    ],
+      false
+    ),
     () =>
       getDataModelsOverview(
         pageIndex,
@@ -76,8 +75,7 @@ const DataModels: FC = () => {
 
   const { data: prodDataModelsData, isLoading: isProdModelDataLoading } =
     useQuery(
-      [
-        'datamodels/overview',
+      dataModelsQueryKeys.DATA_MODELS_OVERVIEW(
         0,
         'all',
         -1,
@@ -87,8 +85,8 @@ const DataModels: FC = () => {
         'all',
         'all',
         'asc',
-        true,
-      ],
+        true
+      ),
       () =>
         getDataModelsOverview(
           1,
@@ -113,7 +111,7 @@ const DataModels: FC = () => {
     );
 
   const { data: filterData } = useQuery<FilterData>(
-    ['datamodels/filters'],
+    dataModelsQueryKeys.DATA_MODEL_FILTERS(),
     () => getFilterData()
   );
 
