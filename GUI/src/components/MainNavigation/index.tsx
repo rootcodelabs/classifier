@@ -7,8 +7,7 @@ import {
   MdOutlineDataset,
   MdPeople,
   MdSettings,
-  MdSettingsBackupRestore,
-  MdTextFormat,
+  MdSettingsBackupRestore
 } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -19,6 +18,7 @@ import apiDev from 'services/api-dev';
 import { userManagementEndpoints } from 'utils/endpoints';
 import { integrationQueryKeys } from 'utils/queryKeys';
 import { ROLES } from 'enums/roles';
+import { TbLetterT } from "react-icons/tb";
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -74,10 +74,10 @@ const MainNavigation: FC = () => {
       ],
     },
     {
-      id: 'incomingTexts',
-      label: t('menu.incomingTexts'),
-      path: '/incoming-texts',
-      icon: <MdTextFormat />,
+      id: 'correctedTexts',
+      label: t('menu.correctedTexts'),
+      path: '/corrected-texts',
+      icon: <TbLetterT/>,
     },
     {
       id: 'testModel',

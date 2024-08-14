@@ -85,7 +85,7 @@ class TrainingPipeline:
             
             
             
-            if self.model_name == 'xlnet':
+            if self.model_name == 'distil-bert':
                 model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',num_labels=len(label_encoder.classes_), force_download=True)
                 tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased', force_download=True)
 
@@ -110,7 +110,7 @@ class TrainingPipeline:
                 for param in model.classifier.parameters():
                     param.requires_grad = True
         
-            elif self.model_name == 'albert':
+            elif self.model_name == 'bert':
                 model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(label_encoder.classes_), force_download=True)
                 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', force_download=True) 
                 
@@ -149,11 +149,11 @@ class TrainingPipeline:
             )
             
             trainer.train()
-            if self.model_name == 'xlnet':
+            if self.model_name == 'distil-bert':
                 models.append(model.distilbert.transformer.layer[-2:].state_dict())
             elif self.model_name == 'roberta':
                 models.append(model.roberta.encoder.layer[-2:].state_dict())
-            elif self.model_name == 'albert':
+            elif self.model_name == 'bert':
                 models.append(model.base_model.encoder.layer[-2:].state_dict())
             
           

@@ -1,4 +1,4 @@
-from transformers import XLMRobertaTokenizer, XLMRobertaForSequenceClassification, XLNetForSequenceClassification, XLNetTokenizer, BertForSequenceClassification, BertTokenizer
+from transformers import XLMRobertaTokenizer, XLMRobertaForSequenceClassification,Trainer, TrainingArguments, DistilBertTokenizer, DistilBertForSequenceClassification, BertForSequenceClassification, BertTokenizer
 import pickle
 import torch
 import os
@@ -8,15 +8,15 @@ class InferencePipeline:
     
     def __init__(self, hierarchy_path, model_name, path_models_folder,path_label_encoder, path_classification_folder, models):
         
-        if model_name == 'xlnet-base-cased':
-            self.base_model = XLNetForSequenceClassification.from_pretrained('xlnet-base-cased')
-            self.tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
+        if model_name == 'distil-bert':
+            self.base_model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased')
+            self.tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
         
-        elif model_name == 'xlm-roberta-base':
+        elif model_name == 'roberta':
             self.base_model = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base')
             self.tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base')
         
-        elif model_name == 'bert-base-uncased':
+        elif model_name == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
             self.base_model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
 
@@ -69,14 +69,14 @@ class InferencePipeline:
             label_encoder = self.label_encoder_dict[model_num]
             num_labels = len(label_encoder.classes_)
             
-            if self.model_name == 'xlnet-base-cased':
-                self.base_model.classifier = XLNetForSequenceClassification.from_pretrained('xlnet-base-cased',  num_labels=num_labels).classifier
-                
-            elif self.model_name == 'xlm-roberta-base':
+            if self.model_name == 'distil-bert':
+                self.base_model.classifier = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',  num_labels=num_labels).classifier
+                self.base_model.distilbert.transformer.layer[-2:].load_state_dict(self.models_dict[model_num])
+            elif self.model_name == 'roberta':
                 self.base_model.classifier = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base', num_labels=num_labels).classifier
                 self.base_model.roberta.encoder.layer[-2:].load_state_dict(self.models_dict[model_num])
                 
-            elif self.model_name == 'bert-base-uncased':
+            elif self.model_name == 'bert':
                 self.base_model.classifier = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=num_labels).classifier
                 self.base_model.base_model.encoder.layer[-2:].load_state_dict(self.models_dict[model_num])
                 
