@@ -377,5 +377,10 @@
       "errorTitle": "Error Creating Data Model",
       "errorDesc": " There was an issue creating or training the data model. Please try again. If the problem persists, contact support for assistance."
     }
+  },
+  "trainingSessions": {
+    "title": "Training Sessions",
+    "inprogress": "Validation in-Progress",
+    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
   }
 }
