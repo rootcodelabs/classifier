@@ -32,19 +32,19 @@ get_webhook_data:
 verify_jira_signature:
   call: http.post
   args:
-    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/verify_signature"
+    url: "[#CLASSIFIER_ANONYMIZER]/verify_signature"
     headers:
-      type: json
+      Content-Type: "application/json"
+      x-hub-signature: ${headers['x-hub-signature']}
     body:
       payload: ${payload}
-      headers: ${headers}
       secret: "[#JIRA_WEBHOOK_SECRET]"
   result: valid_data
   next: assign_verification
 
 assign_verification:
   assign:
-    is_valid: true #${valid_data.response.body.valid}
+    is_valid: ${valid_data.response.body.status}
   next: validate_url_signature
 
 validate_url_signature:
