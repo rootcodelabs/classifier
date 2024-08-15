@@ -1,63 +1,142 @@
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button, FormSelect, FormTextarea } from 'components';
-import { FC } from 'react';
+import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
+import { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdClass } from 'react-icons/md';
+import apiDev from 'services/api-dev';
+import {
+  ClassifyTestModalPayloadType,
+  ClassifyTestModalResponseType,
+  TestModalDropdownSelectionType,
+  TestModelType,
+} from 'types/testModelTypes';
+import { formatClassHierarchyArray } from 'utils/commonUtilts';
+import { testModelsEnpoinnts } from 'utils/endpoints';
+import { testModelsQueryKeys } from 'utils/queryKeys';
 import { formatPredictions } from 'utils/testModelUtil';
+import './testModelStyles.scss';
 
 const TestModel: FC = () => {
   const { t } = useTranslation();
-const testResults={
-    predictedClasses:["Police","Special Agency","External","Reports","Annual Report"],
-    averageConfidence:89.8,
-    predictedProbabilities: [98,82,91,90,88]
-}
+
+  const [modelOptions, setModelOptions] = useState<
+    TestModalDropdownSelectionType[]
+  >([]);
+
+  const [testModel, setTestModel] = useState<ClassifyTestModalPayloadType>({
+    modelId: null,
+    text: '',
+  });
+  const { isLoading } = useQuery({
+    queryKey: testModelsQueryKeys.GET_TEST_MODELS(),
+    queryFn: async () => {
+      const response = await apiDev.get(testModelsEnpoinnts.GET_MODELS());
+      return response?.data?.response?.data ?? ([] as TestModelType[]);
+    },
+    onSuccess: (data: TestModelType[]) => {
+      if (data && data.length > 0) {
+        setModelOptions(
+          data?.map((options) => ({
+            label: options.modelName,
+            value: options.modelId,
+          }))
+        );
+      }
+    },
+  });
+
+  const {
+    data: classifyData,
+    isLoading: classifyLoading,
+    mutate,
+  } = useMutation({
+    mutationFn: async (data: ClassifyTestModalPayloadType) => {
+      const response = await apiDev.post(
+        testModelsEnpoinnts.CLASSIFY_TEST_MODELS(),
+        data
+      );
+      return response?.data?.response?.data as ClassifyTestModalResponseType;
+    },
+  });
+
+  const handleChange = (key: string, value: string | number) => {
+    setTestModel((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   return (
     <div>
-      <div className="container">
-        <div className="title_container">
-          <div className="title">Test Model</div>
-        </div>
-        <div className="grey-card">
-          <FormSelect label={'Model'} name="" options={[]} placeholder='Choose model'/>
-        </div>
+      {isLoading ? (
+        <CircularSpinner />
+      ) : (
+        <div className="container">
+          <div className="title_container">
+            <div className="title">{t('testModels.title')}</div>
+          </div>
+          <div className="grey-card">
+            <FormSelect
+              label={t('testModels.selectionLabel')}
+              name="modelId"
+              options={modelOptions as []}
+              placeholder={t('testModels.placeholder') ?? ''}
+              onSelectionChange={(selection) => {
+                handleChange('modelId', selection?.value as string);
+              }}
+            />
+          </div>
 
-        <div style={{ marginTop: '30px' }}>
-          <p>Enter Text</p>
-          <FormTextarea label="" name="" maxLength={1000} showMaxLength={true} />
-        </div>
-        <div style={{ textAlign: 'right', marginTop: '20px' }}>
-          <Button>Classify</Button>
-        </div>
+          <div className="testModalformTextArea">
+            <p>{t('testModels.classifyTextLabel')}</p>
+            <FormTextarea
+              label=""
+              name=""
+              maxLength={1000}
+              onChange={(e) => handleChange('text', e.target.value)}
+              showMaxLength={true}
+            />
+          </div>
+          <div className="testModalClassifyButton">
+            <Button
+              disabled={testModel.text === ''}
+              onClick={() => mutate(testModel)}
+            >
+              {t('testModels.classify')}
+            </Button>
+          </div>
 
-        <div style={{ marginTop: '20px' }}>
-          <div className="blue-card">
-            <div className="flex">
-              <b>{`Predicted Class Hierarchy : `}</b>
-              <p>
-                {
-                  'Police -> Special Agency -> External -> Reports -> Annual Report'
-                }
-              </p>
+          {!classifyLoading && classifyData && (
+            <div style={{ marginTop: '20px' }}>
+              <div className="blue-card">
+                <div className="flex">
+                  <b>{t('testModels.predictedHierarchy')}</b>
+                  <p>
+                    {classifyData?.predictedClasses &&
+                      formatClassHierarchyArray(classifyData?.predictedClasses)}
+                  </p>
+                </div>
+              </div>
+              <div className="blue-card">
+                <div className="flex">
+                  <b>{t('testModels.averageConfidence')}</b>
+                  <p>{classifyData?.averageConfidence ?? ''}</p>
+                </div>
+              </div>
+              <div className="blue-card">
+                <div>
+                  <b>{t('testModels.classProbabilities')}</b>
+                  <ul className="testModalList">
+                    {formatPredictions(classifyData)?.map((prediction) => {
+                      return <li>{prediction}</li>;
+                    })}
+                  </ul>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="blue-card">
-            <div className="flex">
-              <b>{`Average Confidence : `}</b>
-              <p>{'62%'}</p>
-            </div>
-          </div>
-          <div className="blue-card">
-            <div>
-              <b>{`Class Probabilities : `}</b>
-              <ul style={{listStyle:'disc', marginLeft:'30px'}}>
-              {formatPredictions(testResults)?.map((prediction)=>{
-                return(<li>{prediction}</li>)
-              })}
-              </ul>
-            </div>
-          </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

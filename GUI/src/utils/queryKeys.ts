@@ -93,3 +93,7 @@ export const dataModelsQueryKeys = {
     );
   }
 };
+
+export const testModelsQueryKeys = {
+  GET_TEST_MODELS: () => ['testModels']
+}

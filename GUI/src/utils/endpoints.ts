@@ -58,3 +58,8 @@ export const dataModelsEndpoints = {
   RETRAIN_DATA_MODEL: (): string => `classifier/datamodel/retrain`,
   GET_DATA_MODEL_PROGRESS: (): string => `classifier/datamodel/progress`,
 };
+
+export const testModelsEnpoinnts = {
+  GET_MODELS: (): string => `/classifier/testmodel/models`,
+  CLASSIFY_TEST_MODELS: (): string => `/classifier/testmodel/test-data`,
+};

@@ -382,5 +382,15 @@
     "title": "Training Sessions",
     "inprogress": "Validation in-Progress",
     "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
-  }
+  },
+  "testModels": {
+    "title": "Test Model",
+    "selectionLabel": "Model",
+    "placeholder": "Choose model",
+    "classifyTextLabel": "Enter Text",
+    "classify": "Classify",
+    "predictedHierarchy": "Predicted Class Hierarchy : ",
+    "averageConfidence": "Average Confidence : ",
+    "classProbabilities": "Class Probabilities : "
+  },
 }
