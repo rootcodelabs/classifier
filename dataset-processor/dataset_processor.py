@@ -338,27 +338,17 @@ class DatasetProcessor:
             print(f"An error occurred: {e}")
             return None
         
-    def process_handler(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload):
+    def process_handler(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload, sessionId):
         
         print(MSG_PROCESS_HANDLER_STARTED.format(updateType))
         page_count = self.get_page_count(dgId, cookie)
         print(MSG_PAGE_COUNT.format(page_count))
-        
-        if updateType == "minor" and page_count > 0:
-            session_id = self.get_session_id(newDgId, cookie)
-            if not session_id:
+
+        if sessionId >= 0:
+            session_id = sessionId
+        if not session_id:
                 return self.generate_response(False, MSG_FAIL)
-            updateType = "minor_append_update"
-        elif updateType == "patch":
-            session_id = self.get_session_id(dgId, cookie)
-            if not session_id:
-                return self.generate_response(False, MSG_FAIL)
-        else:
-            updateType = "minor_initial_update"
-            session_id = self.get_session_id(newDgId, cookie)
-            if not session_id:
-                return self.generate_response(False, MSG_FAIL)
-        
+
         if updateType == "minor_initial_update":
             result = self.handle_minor_initial_update(dgId, newDgId, cookie, savedFilePath, session_id)
         elif updateType == "minor_append_update":

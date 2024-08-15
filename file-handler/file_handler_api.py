@@ -14,6 +14,8 @@ import pandas as pd
 from typing import List
 from io import BytesIO, TextIOWrapper
 from dataset_deleter import DatasetDeleter
+from dataset_deleter import ModelDeleter
+from datetime import datetime
 
 app = FastAPI()
 
@@ -29,6 +31,10 @@ s3_ferry = S3Ferry(S3_FERRY_URL)
 
 class ExportFile(BaseModel):
     dgId: int
+    exportType: str
+
+class ExportCorrectedDataFile(BaseModel):
+    platform: str
     exportType: str
 
 class ImportChunks(BaseModel):
@@ -403,4 +409,57 @@ async def delete_dataset_files(request: Request):
             return JSONResponse(status_code=500, content={"message": "Dataset deletion failed.", "files_deleted": files_deleted})
     except Exception as e:
         print(f"Error in delete_dataset_files: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/datamodel/data/corrected/download")
+async def download_and_convert(request: Request, exportData: ExportCorrectedDataFile, backgroundTasks: BackgroundTasks):
+    cookie = request.cookies.get("customJwtCookie")
+    await authenticate_user(f'customJwtCookie={cookie}')
+    platform = exportData.platform
+    export_type = exportData.exportType
+
+    if export_type not in ["xlsx", "yaml", "json"]:
+        raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
+
+    # get json payload by calling to Ruuter
+    json_data = {}
+    now = datetime.now()
+    formatted_time_date = now.strftime("%Y%m%d_%H%M%S")
+    result_string = f"corrected_text_{formatted_time_date}"
+    
+    file_converter = FileConverter()
+    
+    if export_type == "xlsx":
+        output_file = f"{result_string}{XLSX_EXT}"
+        file_converter.convert_json_to_xlsx(json_data, output_file)
+    elif export_type == "yaml":
+        output_file = f"{result_string}{YAML_EXT}"
+        file_converter.convert_json_to_yaml(json_data, output_file)
+    elif export_type == "json":
+        output_file = f"{result_string}{JSON_EXT}"
+    else:
+        raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
+
+    backgroundTasks.add_task(os.remove, output_file)
+
+    return FileResponse(output_file, filename=os.path.basename(output_file))
+
+@app.post("/datamodel/model/delete")
+async def delete_datamodels(request: Request):
+    try:
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
+
+        payload = await request.json()
+        model_id = int(payload["modelId"])
+
+        deleter = ModelDeleter(S3_FERRY_URL)
+        success = deleter.delete_model_files(model_id)
+
+        if success:
+            return JSONResponse(status_code=200, content={"message": "Data model deletion completed successfully."})
+        else:
+            return JSONResponse(status_code=500, content={"message": "Data model deletion failed."})
+    except Exception as e:
+        print(f"Error in delete_datamodel_files: {e}")
         raise HTTPException(status_code=500, detail=str(e))

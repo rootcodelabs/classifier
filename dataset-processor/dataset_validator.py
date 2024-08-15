@@ -17,22 +17,22 @@ class DatasetValidator:
         if updateType == "minor":
             metadata = self.get_datagroup_metadata(newDgId, cookie)
             if not metadata:
-                return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"))
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"), None)
             session_id = self.create_progress_session(metadata, cookie)
             print(f"Progress Session ID : {session_id}")
             if not session_id:
-                return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"))
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"), None)
         elif updateType == "patch":
             metadata = self.get_datagroup_metadata(dgId, cookie)
             if not metadata:
-                return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"))
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"), None)
 
             session_id = self.create_progress_session(metadata, cookie)
             print(f"Progress Session ID : {session_id}")
             if not session_id:
-                return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"))
+                return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"), None)
         else:
-            return self.generate_response(False, "Unknown update type")
+            return self.generate_response(False, "Unknown update type", None)
 
         try:
             # Initializing dataset processing
@@ -43,14 +43,14 @@ class DatasetValidator:
             elif updateType == "patch":
                 result = self.handle_patch_update(dgId, cookie, patchPayload, session_id)
             else:
-                result = self.generate_response(False, "Unknown update type")
+                result = self.generate_response(False, "Unknown update type", None)
 
             # Final progress update upon successful completion
-            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_VALIDATION_SUCCESS, STATUS_MSG_SUCCESS, session_id)
+            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_VALIDATION_SUCCESS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             return result
         except Exception as e:
             self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
-            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e))
+            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e), None)
 
     def handle_minor_update(self, dgId, cookie, savedFilePath, session_id):
         try:
@@ -59,38 +59,38 @@ class DatasetValidator:
             data = self.get_dataset_by_location(savedFilePath, cookie)
             if data is None:
                 self.update_progress(cookie, PROGRESS_FAIL, "Failed to download and load data", STATUS_MSG_FAIL, session_id)
-                return self.generate_response(False, "Failed to download and load data")
+                return self.generate_response(False, "Failed to download and load data", None)
             print("Data downloaded and loaded successfully")
 
             self.update_progress(cookie, 20, MSG_FETCHING_VALIDATION_CRITERIA, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             validation_criteria, class_hierarchy = self.get_validation_criteria(dgId, cookie)
             if validation_criteria is None:
                 self.update_progress(cookie, PROGRESS_FAIL, "Failed to get validation criteria", STATUS_MSG_FAIL, session_id)
-                return self.generate_response(False, "Failed to get validation criteria")
+                return self.generate_response(False, "Failed to get validation criteria", None)
             print("Validation criteria retrieved successfully")
 
             self.update_progress(cookie, 30, MSG_VALIDATING_FIELDS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             field_validation_result = self.validate_fields(data, validation_criteria)
             if not field_validation_result['success']:
                 self.update_progress(cookie, PROGRESS_FAIL, field_validation_result['message'], STATUS_MSG_FAIL, session_id)
-                return self.generate_response(False, field_validation_result['message'])
+                return self.generate_response(False, field_validation_result['message'], None)
             print(MSG_VALIDATION_FIELDS_SUCCESS)
 
             self.update_progress(cookie, 35, MSG_VALIDATING_CLASS_HIERARCHY, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             hierarchy_validation_result = self.validate_class_hierarchy(data, validation_criteria, class_hierarchy)
             if not hierarchy_validation_result['success']:
                 self.update_progress(cookie, PROGRESS_FAIL, hierarchy_validation_result['message'], STATUS_MSG_FAIL, session_id)
-                return self.generate_response(False, hierarchy_validation_result['message'])
+                return self.generate_response(False, hierarchy_validation_result['message'], None)
             print(MSG_CLASS_HIERARCHY_SUCCESS)
 
             print("Minor update processed successfully")
-            self.update_progress(cookie, 40, "Minor update processed successfully", STATUS_MSG_SUCCESS, session_id)
-            return self.generate_response(True, "Minor update processed successfully")
+            self.update_progress(cookie, 40, "Minor update processed successfully", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
+            return self.generate_response(True, "Minor update processed successfully", session_id)
 
         except Exception as e:
             print(MSG_INTERNAL_ERROR.format(e))
             self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
-            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e))
+            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e), None)
 
     def get_dataset_by_location(self, fileLocation, custom_jwt_cookie):
         print(MSG_DOWNLOADING_DATASET)
@@ -224,11 +224,11 @@ class DatasetValidator:
             validation_criteria, class_hierarchy = self.get_validation_criteria(dgId, cookie)
             if validation_criteria is None:
                 self.update_progress(cookie, PROGRESS_FAIL, "Failed to get validation criteria", STATUS_MSG_FAIL, session_id)
-                return self.generate_response(False, "Failed to get validation criteria")
+                return self.generate_response(False, "Failed to get validation criteria", None)
 
             if patchPayload is None:
                 self.update_progress(cookie, PROGRESS_FAIL, "No patch payload provided", STATUS_MSG_FAIL, session_id)
-                return self.generate_response(False, "No patch payload provided")
+                return self.generate_response(False, "No patch payload provided", None)
 
             decoded_patch_payload = urllib.parse.unquote(patchPayload)
             patch_payload_dict = json.loads(decoded_patch_payload)
@@ -241,16 +241,16 @@ class DatasetValidator:
                     row_id = row.pop("rowId", None)
                     if row_id is None:
                         self.update_progress(cookie, PROGRESS_FAIL, "Missing rowId in edited data", STATUS_MSG_FAIL, session_id)
-                        return self.generate_response(False, "Missing rowId in edited data")
+                        return self.generate_response(False, "Missing rowId in edited data", None)
 
                     for key, value in row.items():
                         if key not in validation_criteria['validationRules']:
                             self.update_progress(cookie, PROGRESS_FAIL, f"Invalid field: {key}", STATUS_MSG_FAIL, session_id)
-                            return self.generate_response(False, f"Invalid field: {key}")
+                            return self.generate_response(False, f"Invalid field: {key}", None)
 
                         if not self.validate_value(value, validation_criteria['validationRules'][key]['type']):
                             self.update_progress(cookie, PROGRESS_FAIL, f"Validation failed for field type '{key}' in row {row_id}", STATUS_MSG_FAIL, session_id)
-                            return self.generate_response(False, f"Validation failed for field type '{key}' in row {row_id}")
+                            return self.generate_response(False, f"Validation failed for field type '{key}' in row {row_id}", None)
 
                 self.update_progress(cookie, 20, "Validating data class hierarchy", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 data_class_columns = [field for field, rules in validation_criteria['validationRules'].items() if rules.get('isDataClass', False)]
@@ -259,18 +259,18 @@ class DatasetValidator:
                     for col in data_class_columns:
                         if row.get(col) and row[col] not in hierarchy_values:
                             self.update_progress(cookie, PROGRESS_FAIL, f"New class '{row[col]}' does not exist in the schema hierarchy", STATUS_MSG_FAIL, session_id)
-                            return self.generate_response(False, f"New class '{row[col]}' does not exist in the schema hierarchy")
+                            return self.generate_response(False, f"New class '{row[col]}' does not exist in the schema hierarchy", None)
 
                 self.update_progress(cookie, 30, "Downloading aggregated dataset", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 aggregated_data = self.get_dataset_by_location(f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json", cookie)
                 if aggregated_data is None:
                     self.update_progress(cookie, PROGRESS_FAIL, "Failed to download aggregated dataset", STATUS_MSG_FAIL, session_id)
-                    return self.generate_response(False, "Failed to download aggregated dataset")
+                    return self.generate_response(False, "Failed to download aggregated dataset", None)
 
                 self.update_progress(cookie, 35, "Checking label counts for edited data", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 if not self.check_label_counts(aggregated_data, edited_data, data_class_columns, min_label_value):
                     self.update_progress(cookie, PROGRESS_FAIL, "Editing this data will cause the dataset to have insufficient data examples for one or more labels.", STATUS_MSG_FAIL, session_id)
-                    return self.generate_response(False, "Editing this data will cause the dataset to have insufficient data examples for one or more labels.")
+                    return self.generate_response(False, "Editing this data will cause the dataset to have insufficient data examples for one or more labels.", None)
 
             deleted_data_rows = patch_payload_dict.get("deletedDataRows", [])
             if deleted_data_rows:
@@ -279,20 +279,20 @@ class DatasetValidator:
                     aggregated_data = self.get_dataset_by_location(f"/dataset/{dgId}/primary_dataset/dataset_{dgId}_aggregated.json", cookie)
                     if aggregated_data is None:
                         self.update_progress(cookie, PROGRESS_FAIL, "Failed to download aggregated dataset", STATUS_MSG_FAIL, session_id)
-                        return self.generate_response(False, "Failed to download aggregated dataset")
+                        return self.generate_response(False, "Failed to download aggregated dataset", None)
 
                 self.update_progress(cookie, 45, "Checking label counts after deletion", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 if not self.check_label_counts_after_deletion(aggregated_data, deleted_data_rows, data_class_columns, min_label_value):
                     self.update_progress(cookie, PROGRESS_FAIL, "Deleting this data will cause the dataset to have insufficient data examples for one or more labels.", STATUS_MSG_FAIL, session_id)
-                    return self.generate_response(False, "Deleting this data will cause the dataset to have insufficient data examples for one or more labels.")
+                    return self.generate_response(False, "Deleting this data will cause the dataset to have insufficient data examples for one or more labels.", None)
 
-            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_PATCH_UPDATE_SUCCESS, STATUS_MSG_SUCCESS, session_id)
-            return self.generate_response(True, MSG_PATCH_UPDATE_SUCCESS)
+            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_PATCH_UPDATE_SUCCESS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
+            return self.generate_response(True, MSG_PATCH_UPDATE_SUCCESS, session_id)
 
         except Exception as e:
             print(MSG_INTERNAL_ERROR.format(e))
             self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
-            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e))
+            return self.generate_response(False, MSG_INTERNAL_ERROR.format(e), None)
 
 
     def check_label_counts(self, aggregated_data, edited_data, data_class_columns, min_label_value):
@@ -348,12 +348,13 @@ class DatasetValidator:
                     return False
         return True
 
-    def generate_response(self, success, message):
+    def generate_response(self, success, message, session_id):
         print(MSG_GENERATING_RESPONSE.format(success, message))
         return {
             'response': {
                 'operationSuccessful': success,
-                'message': message
+                'message': message,
+                'sessionId': session_id
             }
         }
 

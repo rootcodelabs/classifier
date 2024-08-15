@@ -49,7 +49,7 @@ async def process_handler_endpoint(request: Request):
     await authenticate_user(request)
 
     authCookie = payload["cookie"]
-    result = processor.process_handler(int(payload["dgId"]), int(payload["newDgId"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
+    result = processor.process_handler(int(payload["dgId"]), int(payload["newDgId"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"], payload["sessionId"])
     if result:
         return result
     else:
@@ -69,6 +69,7 @@ async def forward_request(request: Request, response: Response):
     forward_payload["updateType"] = payload["updateType"]
     forward_payload["patchPayload"] = payload["patchPayload"]
     forward_payload["savedFilePath"] = payload["savedFilePath"]
+    forward_payload["sessionId"] = validator_response["sessionId"] if validator_response["sessionId"] is not None else 0
 
     headers = {
         'cookie': payload["cookie"],
