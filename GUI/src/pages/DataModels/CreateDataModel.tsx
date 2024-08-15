@@ -10,7 +10,7 @@ import { extractedArray, validateDataModel } from 'utils/dataModelsUtils';
 import DataModelForm from 'components/molecules/DataModelForm';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { createDataModel, getDataModelsOverview } from 'services/data-models';
-import { integrationQueryKeys } from 'utils/queryKeys';
+import { dataModelsQueryKeys, integrationQueryKeys } from 'utils/queryKeys';
 import { getIntegrationStatus } from 'services/integration';
 import { CreateDataModelPayload, DataModel } from 'types/dataModels';
 
@@ -31,8 +31,7 @@ const CreateDataModel: FC = () => {
   });
 
   useQuery(
-    [
-      'datamodels/overview',
+    dataModelsQueryKeys.DATA_MODELS_OVERVIEW(
       0,
       'all',
       -1,
@@ -42,8 +41,8 @@ const CreateDataModel: FC = () => {
       'all',
       'all',
       'asc',
-      true,
-    ],
+      true
+    ),
     () =>
       getDataModelsOverview(
         1,

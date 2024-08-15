@@ -27,19 +27,19 @@ export type SSEEventData = {
 
 export type UpdatedDataModelPayload = {
   modelId: number;
-  connectedDgId: number | string;
-  deploymentEnv: string; 
-  baseModels: string[] |string;
-  maturityLabel: string;
-  updateType: string;    
+    connectedDgId: string | null | undefined;
+    deploymentEnv: string | null | undefined;
+    baseModels: string | null | undefined;
+    maturityLabel: string | null | undefined;
+    updateType: string | undefined;
 };
 
 export type CreateDataModelPayload={
-  modelName: string;
-  dgId: string | number;
-  baseModels: string[];
-  deploymentPlatform: string;
-  maturityLabel: string;
+  modelName: string | undefined;
+    dgId: string | number | undefined;
+    baseModels: string[] | undefined;
+    deploymentPlatform: string | undefined;
+    maturityLabel: string | undefined;
 }
 
 export type FilterData = {

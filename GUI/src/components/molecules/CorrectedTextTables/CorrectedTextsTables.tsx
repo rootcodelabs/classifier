@@ -7,12 +7,12 @@ import {
   PaginationState,
 } from '@tanstack/react-table';
 import { useTranslation } from 'react-i18next';
-import { formatDateTime } from 'utils/commonUtilts';
+import { formatClassHierarchyArray, formatDateTime } from 'utils/commonUtilts';
 import Card from 'components/Card';
 import { InferencePayload } from 'types/correctedTextTypes';
 import './CorrectedTextTable.scss';
 
-const CorrectedTextsTables = ({
+const CorrectedTextsTable = ({
   correctedTextData,
   totalPages,
   isLoading,
@@ -74,7 +74,7 @@ const CorrectedTextsTables = ({
         cell: (props) => (
           <div className="hierarchyLabels">
             {props?.row?.original?.predictedLabels &&
-              formatArray(props?.row?.original?.predictedLabels)}
+              formatClassHierarchyArray(props?.row?.original?.predictedLabels)}
           </div>
         ),
       }),
@@ -108,7 +108,7 @@ const CorrectedTextsTables = ({
         cell: (props) => (
           <div className="hierarchyLabels">
             {props?.row?.original?.correctedLabels &&
-              formatArray(props?.row?.original?.correctedLabels)}
+              formatClassHierarchyArray(props?.row?.original?.correctedLabels)}
           </div>
         ),
       }),
@@ -129,27 +129,6 @@ const CorrectedTextsTables = ({
     ],
     [t]
   );
-
-  const formatArray = (array: string | string[]) => {
-    let formatedArray: string[];
-    if (typeof array === 'string') {
-      try {
-        const cleanedInput = array?.replace(/\s+/g, '');
-        formatedArray = JSON.parse(cleanedInput);
-      } catch (error) {
-        console.error('Error parsing input string:', error);
-        return '';
-      }
-    } else {
-      formatedArray = array;
-    }
-
-    return formatedArray
-      .map((item, index) =>
-        index === formatedArray?.length - 1 ? item : item + ' ->'
-      )
-      .join(' ');
-  };
 
   return (
     <div>
@@ -195,4 +174,4 @@ const CorrectedTextsTables = ({
   );
 };
 
-export default CorrectedTextsTables;
+export default CorrectedTextsTable;

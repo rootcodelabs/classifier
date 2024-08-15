@@ -45,7 +45,7 @@ export async function enableDataset(enableData: Operation) {
 
 export async function getFilterData() {
   const { data } = await apiDev.get(
-    datasetsEndpoints.GET_DATASET_OVERVIEW_BY_FILTERS()
+    datasetsEndpoints.GET_DATASET_FILTERS()
   );
   return data;
 }

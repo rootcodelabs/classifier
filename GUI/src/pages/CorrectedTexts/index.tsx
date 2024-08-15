@@ -9,6 +9,7 @@ import { correctedTextEndpoints } from 'utils/endpoints';
 import apiDev from '../../services/api-dev';
 import { InferencePayload } from 'types/correctedTextTypes';
 import { PaginationState } from '@tanstack/react-table';
+import CorrectedTextsTable from 'components/molecules/CorrectedTextTables/CorrectedTextsTables';
 
 const CorrectedTexts: FC = () => {
   const { t } = useTranslation();
@@ -135,7 +136,7 @@ const CorrectedTexts: FC = () => {
           </Button>
         </div>
 
-        <CorrectedTextsTables
+        <CorrectedTextsTable
           correctedTextData={correctedTextData ?? []}
           totalPages={totalPages}
           isLoading={isLoading}

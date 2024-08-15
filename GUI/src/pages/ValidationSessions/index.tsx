@@ -10,7 +10,7 @@ const ValidationSessions: FC = () => {
   const { t } = useTranslation();
   const [progresses, setProgresses] = useState<ValidationProgressData[]>([]);
 
-  const { data: progressData } = useQuery<ValidationProgressData[]>(
+  const { data: progressData,refetch } = useQuery<ValidationProgressData[]>(
     ['datasetgroups/progress'],
     () => getDatasetGroupsProgress(),
     {
@@ -32,17 +32,18 @@ const ValidationSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
+      if(progress.validationStatus !=="Success" && progress.progressPercentage!==100)
       return sse(`/${progress.id}`, 'dataset', (data: SSEEventData) => {
         console.log(`New data for notification ${progress.id}:`, data);
         handleUpdate(data.sessionId, data);
       });
     });
-
+    // refetch();
     return () => {
-      eventSources.forEach((eventSource) => eventSource.close());
+      eventSources.forEach((eventSource) => eventSource?.close());
       console.log('SSE connections closed');
     };
-  }, [progressData]);
+  }, [progressData,refetch]);
 
   return (
     <div>
@@ -57,7 +58,7 @@ const ValidationSessions: FC = () => {
             version={`V${session?.majorVersion}.${session?.minorVersion}.${session?.patchVersion}`}
             isLatest={session.latest}
             status={session.validationStatus}
-            errorMessage={session.validationMessage}
+            validationMessage={session.validationMessage}
             progress={session.progressPercentage}
           />
         ))}
