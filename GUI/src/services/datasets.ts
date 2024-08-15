@@ -81,7 +81,6 @@ export async function createDatasetGroup(datasetGroup: DatasetGroup) {
 }
 
 export async function importDataset(file: File, id: string | number) {
-  console.log('fileeee ', file);
   const { data } = await apiExternal.post(datasetsEndpoints.IMPORT_DATASETS(), {
     dataFile: file,
     dgId: id,

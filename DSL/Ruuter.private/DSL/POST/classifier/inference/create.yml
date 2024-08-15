@@ -23,9 +23,6 @@ declaration:
       - field: platform
         type: string
         description: "Body field 'platform'"
-      - field: allClassPredictedProbabilities
-        type: json
-        description: "Body field 'allClassPredictedProbabilities'"
       - field: primaryFolderId
         type: string
         description: "Body field 'primaryFolderId'"
@@ -41,13 +38,12 @@ extract_request_data:
     predicted_labels_org: ${incoming.body.predictedLabels}
     average_predicted_classes_probability: ${incoming.body.averagePredictedClassesProbability}
     platform: ${incoming.body.platform}
-    all_class_predicted_probabilities: ${incoming.body.allClassPredictedProbabilities}
     primary_folder_id: ${incoming.body.primaryFolderId}
   next: check_for_request_data
 
 check_for_request_data:
   switch:
-    - condition: ${input_id !== null || inference_text !== null || predicted_labels_org !== null || average_predicted_classes_probability !== null || platform !== null || all_class_predicted_probabilities !== null}
+    - condition: ${input_id !== null || inference_text !== null || predicted_labels_org !== null || average_predicted_classes_probability !== null || platform !== null}
       next: check_platform_data
   next: return_incorrect_request
 
@@ -79,7 +75,6 @@ create_input_metadata:
       predicted_labels: ${JSON.stringify(predicted_labels_org)}
       average_predicted_classes_probability: ${average_predicted_classes_probability}
       platform: ${platform}
-      all_class_predicted_probabilities: ${JSON.stringify(all_class_predicted_probabilities)}
       primary_folder_id: ${platform !== 'OUTLOOK' ? '' :primary_folder_id}
   result: res_input
   next: check_status

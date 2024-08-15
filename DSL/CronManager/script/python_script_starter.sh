@@ -1,8 +1,8 @@
 #!/bin/bash
 
 VENV_DIR="/home/cronmanager/clsenv"
-REQUIREMENTS="model_trainer/requirements.txt"
-PYTHON_SCRIPT="model_trainer/model_handler.py"
+REQUIREMENTS="model_trainer/model_upload_requirements.txt"
+PYTHON_SCRIPT="model_trainer/model_trainer.py"
 
 is_package_installed() {
     package=$1
