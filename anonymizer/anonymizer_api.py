@@ -9,6 +9,10 @@ import requests
 import hmac
 import hashlib
 import json
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi.responses import StreamingResponse
+import pandas as pd
+import io
 
 app = FastAPI()
 
@@ -91,6 +95,43 @@ def verify_signature(payload: dict, headers: dict, secret: str) -> bool:
     is_valid = hmac.compare_digest(computed_signature_prefixed, signature)
 
     return is_valid
+
+async def anonymize_file(file: UploadFile = File(...), columns: str = Form(...)):
+    try:
+        contents = await file.read()
+        df = pd.read_excel(io.BytesIO(contents))
+        
+        columns_to_anonymize = columns.split(",")
+
+        concatenated_text = " ".join(" ".join(str(val) for val in df[col].values) for col in columns_to_anonymize)
+
+        cleaned_text = html_cleaner.remove_html_tags(concatenated_text)
+        text_chunks = TextProcessor.split_text(cleaned_text, 2000)
+        processed_chunks = []
+
+        for chunk in text_chunks:
+            entities = ner_processor.identify_entities(chunk)
+            processed_chunk = FakeReplacer.replace_entities(chunk, entities)
+            processed_chunks.append(processed_chunk)
+
+        processed_text = TextProcessor.combine_chunks(processed_chunks)
+        anonymized_values = processed_text.split(" ")
+
+        for col in columns_to_anonymize:
+            df[col] = anonymized_values[:len(df[col])]
+            anonymized_values = anonymized_values[len(df[col]):]
+
+        output = io.BytesIO()
+        df.to_excel(output, index=False)
+        output.seek(0)
+
+        return StreamingResponse(output, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={
+            "Content-Disposition": f"attachment; filename=anonymized_{file.filename}"
+        })
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

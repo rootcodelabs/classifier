@@ -1,9 +1,9 @@
 #!/bin/bash
 echo "Started Shell Script to process"
 # Ensure required environment variables are set
-if [ -z "$dgId" ] || [ -z "$newDgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ]; then
+if [ -z "$dgId" ] || [ -z "$newDgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ] || [ -z "$sessionId" ]; then
   echo "One or more environment variables are missing."
-  echo "Please set dgId, newDgId, cookie, updateType, savedFilePath, and patchPayload."
+  echo "Please set dgId, newDgId, cookie, updateType, savedFilePath, patchPayload, and sessionId."
   exit 1
 fi
 
@@ -16,6 +16,7 @@ payload=$(cat <<EOF
   "savedFilePath": "$savedFilePath",
   "patchPayload": "$patchPayload",
   "cookie": "$cookie"
+  "sessionId": "$sessionId"
 }
 EOF
 )

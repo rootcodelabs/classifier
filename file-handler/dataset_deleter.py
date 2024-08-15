@@ -2,6 +2,7 @@ import os
 import json
 import requests
 from s3_ferry import S3Ferry
+import zipfile
 
 GET_PAGE_COUNT_URL = os.getenv("GET_PAGE_COUNT_URL")
 UPLOAD_DIRECTORY = os.getenv("UPLOAD_DIRECTORY", "/shared")
@@ -62,3 +63,25 @@ class DatasetDeleter:
         os.remove(empty_json_path)
         print(f"Dataset Deletion Final  : {all_files_deleted} / {success_count}")
         return all_files_deleted, success_count
+    
+class ModelDeleter:
+    def __init__(self, s3_ferry_url):
+        self.s3_ferry = S3Ferry(s3_ferry_url)
+
+    def delete_model_files(self, model_id):
+        file_location = f"/models/{model_id}/{model_id}.zip"
+
+        empty_zip_path = os.path.join('..', 'shared', "empty.zip")
+        with open(empty_zip_path, 'w') as empty_file:
+            json.dump({}, empty_file)
+
+        empty_zip_path_local = "empty.zip"
+
+        response = self.s3_ferry.transfer_file(file_location, "S3", empty_zip_path_local, "FS")
+        os.remove(empty_zip_path)
+        if response.status_code == 201:
+            return True
+        else:
+            print(response.status_code)
+            print(f"Failed to transfer file to {file_location}")
+            return False

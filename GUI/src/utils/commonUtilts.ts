@@ -58,3 +58,24 @@ export const formatDateTime = (date: string) => {
     formattedTime,
   };
 };
+
+export const formatClassHierarchyArray = (array: string | string[]) => {
+  let formatedArray: string[];
+  if (typeof array === 'string') {
+    try {
+      const cleanedInput = array?.replace(/\s+/g, '');
+      formatedArray = JSON.parse(cleanedInput);
+    } catch (error) {
+      console.error('Error parsing input string:', error);
+      return '';
+    }
+  } else {
+    formatedArray = array;
+  }
+
+  return formatedArray
+    .map((item, index) =>
+      index === formatedArray?.length - 1 ? item : item + ' ->'
+    )
+    .join(' ');
+};

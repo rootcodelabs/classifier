@@ -45,11 +45,14 @@ async def authenticate_user(request: Request):
 
 @app.post("/init-dataset-process")
 async def process_handler_endpoint(request: Request):
+    print("STAGE 1")
     payload = await request.json()
+    print("STAGE 1.1")
     await authenticate_user(request)
-
+    print("STAGE 2")
     authCookie = payload["cookie"]
-    result = processor.process_handler(int(payload["dgId"]), int(payload["newDgId"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
+    result = processor.process_handler(int(payload["dgId"]), int(payload["newDgId"]), authCookie, payload["updateType"], payload["savedFilePath"], payload["patchPayload"], payload["sessionId"])
+    print("STAGE 3")
     if result:
         return result
     else:
@@ -64,11 +67,17 @@ async def forward_request(request: Request, response: Response):
     
     validator_response = validator.process_request(int(payload["dgId"]), int(payload["newDgId"]), payload["cookie"], payload["updateType"], payload["savedFilePath"], payload["patchPayload"])
     forward_payload = {}
+    print("@@@@")
+    print(payload)
+    print("------")
+    print(validator_response)
+    print("@@@@")
     forward_payload["dgId"] = int(payload["dgId"])
     forward_payload["newDgId"] = int(payload["newDgId"])
     forward_payload["updateType"] = payload["updateType"]
     forward_payload["patchPayload"] = payload["patchPayload"]
     forward_payload["savedFilePath"] = payload["savedFilePath"]
+    forward_payload["sessionId"] = validator_response['response']["sessionId"] if validator_response['response']["sessionId"] is not None else 0
 
     headers = {
         'cookie': payload["cookie"],
@@ -82,6 +91,9 @@ async def forward_request(request: Request, response: Response):
         forward_payload["validationErrors"] = []
 
     try:
+        print("#####")
+        print(forward_payload)
+        print("#####")
         forward_response = requests.post(VALIDATION_CONFIRMATION_URL, json=forward_payload, headers=headers)
         forward_response.raise_for_status()
         

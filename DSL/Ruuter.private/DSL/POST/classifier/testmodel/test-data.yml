@@ -68,6 +68,9 @@ send_data_to_predict:
       text: ${text}
     response:
       statusCodeValue: 200
+      predictedClasses: [ "Police","Special Agency","External","Reports","Annual Report" ]
+      averageConfidence: 89.8
+      predictedProbabilities: [ 98,82,91,90,88 ]
   result: res_predict
   next: check_data_predict_status
 

@@ -38,7 +38,7 @@ export const datasetQueryKeys = {
       sort,
     ].filter((val) => val !== undefined);
   },
-  GET_MATA_DATA: function (dgId?: number) {
+  GET_META_DATA: function (dgId?: number) {
     return ['datasets/groups/metadata', `${dgId}`].filter(
       (val) => val !== undefined
     );
@@ -57,3 +57,43 @@ export const stopWordsQueryKeys = {
 export const authQueryKeys = {
   USER_DETAILS: () => ['auth/jwt/userinfo', 'prod'],
 };
+
+export const dataModelsQueryKeys = {
+  DATA_MODEL_FILTERS: (): string[] => ['datamodels/filters'],
+  DATA_MODELS_OVERVIEW: function (
+    pageIndex?: number,
+    modelName?: string,
+    versionMajor?: number,
+    versionMinor?: number,
+    platform?: string,
+    datasetGroup?: number,
+    trainingStatus?:string,
+    maturity?:string,
+    sort?:string,
+    isProduction?:boolean
+
+  ) {
+    return [
+      'datamodels/overview',
+      pageIndex,
+      modelName,
+      versionMajor,
+      versionMinor,
+      platform,
+      datasetGroup,
+      trainingStatus,
+      maturity,
+      sort,
+      isProduction
+    ].filter((val) => val !== undefined);
+  },
+  GET_META_DATA: function (modelId?: number) {
+    return ['datamodels/metadata', `${modelId}`].filter(
+      (val) => val !== undefined
+    );
+  }
+};
+
+export const testModelsQueryKeys = {
+  GET_TEST_MODELS: () => ['testModels']
+}
