@@ -314,6 +314,7 @@ class DatasetProcessor:
         
     def update_preprocess_status(self,dg_id, cookie, processed_data_available, raw_data_available, preprocess_data_location, raw_data_location, enable_allowed, num_samples, num_pages):
         url = STATUS_UPDATE_URL
+        
         print(url)
         headers = {
             'Content-Type': 'application/json',
@@ -331,6 +332,7 @@ class DatasetProcessor:
         }
 
         try:
+            print(data)
             response = requests.post(url, json=data, headers=headers)
             response.raise_for_status()
             return response.json()
@@ -339,15 +341,21 @@ class DatasetProcessor:
             return None
         
     def process_handler(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload, sessionId):
+        print("IN DATASET PROCESSOR PROCESS_HANDLER")
         
         print(MSG_PROCESS_HANDLER_STARTED.format(updateType))
         page_count = self.get_page_count(dgId, cookie)
         print(MSG_PAGE_COUNT.format(page_count))
 
-        if sessionId >= 0:
+        if int(sessionId) >= 0:
             session_id = sessionId
         if not session_id:
                 return self.generate_response(False, MSG_FAIL)
+        
+        if page_count > 0 and updateType == 'minor':
+            updateType = "minor_append_update"
+        elif page_count <= 0 and updateType == 'minor':
+            updateType = "minor_initial_update"
 
         if updateType == "minor_initial_update":
             result = self.handle_minor_initial_update(dgId, newDgId, cookie, savedFilePath, session_id)
@@ -355,6 +363,8 @@ class DatasetProcessor:
             result = self.handle_minor_append_update(dgId, newDgId, cookie, savedFilePath, session_id)
         elif updateType == "patch":
             result = self.handle_patch_update(dgId, cookie, patchPayload, session_id)
+        else:
+            print(f"Update TYPE {updateType}")
         
         self.update_progress(cookie, PROGRESS_SUCCESS if result['response']['operationSuccessful'] else PROGRESS_FAIL, MSG_SUCCESS if result['response']['operationSuccessful'] else MSG_FAIL, STATUS_MSG_SUCCESS if result['response']['operationSuccessful'] else STATUS_MSG_FAIL, session_id)
         return result
@@ -559,10 +569,12 @@ class DatasetProcessor:
                     return session['id']
             return None
         except requests.exceptions.RequestException as e:
+            print(e)
             print(MSG_FAIL)
             return None
 
     def update_progress(self, cookie, progress, message, status, session_id):
+
         if progress == PROGRESS_SUCCESS or progress == PROGRESS_FAIL:
             process_complete = True
         else:
@@ -571,17 +583,19 @@ class DatasetProcessor:
         url = UPDATE_PROGRESS_SESSION_URL
         headers = {'Content-Type': 'application/json', 'Cookie': cookie}
         payload = {
-            'sessionId': session_id,
+            'sessionId': int(session_id),
             'validationStatus': status,
             'validationMessage': message,
             'progressPercentage': progress,
             'processComplete': process_complete
         }
         try:
+            print(f"Progress Update > {payload}")
             response = requests.post(url, json=payload, headers=headers)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
+            print(e)
             print(MSG_FAIL)
             return None
 
@@ -604,6 +618,7 @@ class DatasetProcessor:
                 chunk_updates[chunk_num].append(entry)
             return chunk_updates
         except Exception as e:
+            print(e)
             print(MSG_FAIL)
             return None
 
@@ -613,5 +628,6 @@ class DatasetProcessor:
                 row['rowId'] = idx
             return dataset
         except Exception as e:
+            print(e)
             print(MSG_FAIL)
             return None
