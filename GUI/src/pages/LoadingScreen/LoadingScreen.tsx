@@ -1,10 +1,11 @@
 import { FC } from 'react';
+import './LoadingScreen.scss'
 
 const LoadingScreen: FC = () => {
   return (
     <div>
-      <h1>Loading...</h1>
-    </div>
+<div className="loader"></div>
+</div>
   );
 };
 
