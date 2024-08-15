@@ -161,10 +161,8 @@ rearrange_mail_payload:
   result: outlook_body
   next: send_outlook_data
 
-#check the mail id is an existing id and check categories from mail and db are same
-#if different or new send to AI model
 send_outlook_data:
-  call: reflect.mock
+  call: http.post
   args:
     url: "[#CLASSIFIER_ANONYMIZER]/anonymize"
     headers:

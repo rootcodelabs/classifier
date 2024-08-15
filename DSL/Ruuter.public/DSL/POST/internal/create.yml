@@ -11,6 +11,9 @@ declaration:
       - field: inputId
         type: string
         description: "Body field 'inputId'"
+      - field: mailId
+        type: string
+        description: "Body field 'mailId'"
       - field: inferenceText
         type: string
         description: "Body field 'inferenceText'"
@@ -26,10 +29,6 @@ declaration:
       - field: primaryFolderId
         type: string
         description: "Body field 'primaryFolderId'"
-    headers:
-      - field: cookie
-        type: string
-        description: "Cookie field"
 
 extract_request_data:
   assign:
@@ -97,9 +96,7 @@ check_input_type:
 outlook_flow:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/label"
-    headers:
-      cookie: ${incoming.headers.cookie}
+    url: "[#CLASSIFIER_RUUTER_PUBLIC_INTERNAL]/internal/outlook/label"
     body:
       mailId: ${mail_id}
       folderId: ${primary_folder_id}
@@ -109,9 +106,7 @@ outlook_flow:
 jira_flow:
   call: http.post
   args:
-    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/jira/cloud/label"
-    headers:
-      cookie: ${incoming.headers.cookie}
+    url: "[#CLASSIFIER_RUUTER_PUBLIC_INTERNAL]/internal/jira/label"
     body:
       issueKey: ${input_id}
       labels: ${predicted_labels_org}
