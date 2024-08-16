@@ -2,9 +2,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const verifySignature = require("./src/verifySignature.js");
 const axios = require("axios");
+const helmet = require("helmet");
 
 const app = express();
 app.use(bodyParser.json());
+app.use(helmet.hidePoweredBy());
 
 app.post("/webhook", async (req, res) => {
   const isValid = verifySignature(req.body, req.headers);
