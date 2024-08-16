@@ -48,7 +48,8 @@ const DataModelForm: FC<DataModelFormType> = ({
             />
           </div>
           <div className="grey-card">
-            Model Version <Label type="success">{dataModel?.version}</Label>
+            {t('dataModels.dataModelForm.modelVersion')}{' '}
+            <Label type="success">{dataModel?.version}</Label>
           </div>
         </div>
       ) : (
@@ -58,9 +59,11 @@ const DataModelForm: FC<DataModelFormType> = ({
         </div>
       )}
 
-      {createOptions && !isLoading ? (
+      {dataModel && createOptions && !isLoading ? (
         <div>
-          <div className="title-sm">Select Dataset Group</div>
+          <div className="title-sm">
+            {t('dataModels.dataModelForm.datasetGroup')}{' '}
+          </div>
           <div className="grey-card">
             <FormSelect
               name="dgId"
@@ -77,7 +80,9 @@ const DataModelForm: FC<DataModelFormType> = ({
             />
           </div>
 
-          <div className="title-sm">Select Base Models</div>
+          <div className="title-sm">
+            {t('dataModels.dataModelForm.baseModels')}{' '}
+          </div>
           <div className="grey-card flex-grid">
             <FormCheckboxes
               isStack={false}
@@ -92,7 +97,9 @@ const DataModelForm: FC<DataModelFormType> = ({
             />
           </div>
 
-          <div className="title-sm">Select Deployment Platform</div>
+          <div className="title-sm">
+            {t('dataModels.dataModelForm.deploymentPlatform')}{' '}
+          </div>
           <div className="grey-card">
             <FormRadios
               items={formattedArray(createOptions?.deploymentPlatforms)}
@@ -104,7 +111,9 @@ const DataModelForm: FC<DataModelFormType> = ({
             />
           </div>
 
-          <div className="title-sm">Select Maturity Label</div>
+          <div className="title-sm">
+            {t('dataModels.dataModelForm.maturityLabel')}{' '}
+          </div>
           <div className="grey-card">
             <FormRadios
               items={formattedArray(createOptions?.maturityLabels)}

@@ -375,8 +375,37 @@
       "successDesc": " You have successfully created and trained the data model. You can view it on the data model dashboard.",
       "viewAll": "View All Data Models",
       "errorTitle": "Error Creating Data Model",
-      "errorDesc": " There was an issue creating or training the data model. Please try again. If the problem persists, contact support for assistance."
-    }
+      "errorDesc": " There was an issue creating or training the data model. Please try again. If the problem persists, contact support for assistance.",
+      "replaceWarning": "{{platform}} integration is currently disabled, therefore the model wouldn't recieve any inputs or make any predictions"
+    },
+    "configureDataModel": {
+      "saveChangesTitile": "Changes Saved Successfully",
+      "saveChangesDesc": "You have successfully saved the changes. You can view the data model in the \"All Data Models\" view.",
+      "updateErrorTitile": "Error Updating Data Model",
+      "updateErrorDesc": "There was an issue updating the data model. Please try again. If the problem persists, contact support for assistance.",
+      "deleteErrorTitle": "Cannot Delete Model",
+      "deleteErrorDesc": "The model cannot be deleted because it is currently in production. Please escalate another model to production before proceeding to delete this model.",
+      "deleteConfirmation": "Are you sure?",
+      "deleteConfirmationDesc": "Confirm that you are wish to delete the following data model",
+      "deleteModalErrorTitle": "Error Deleting Data Model",
+      "deleteModalErrorDesc": "There was an issue deleting the data model. Please try again. If the problem persists, contact support for assistance.",
+      "retrainDataModalErrorTitle": "Error retraining data model",
+      "retrainDataModalErrorDesc":"There was an issue retraining the data model. Please try again. If the problem persists, contact support for assistance." ,
+      "title": "Configure Data Model",
+      "retrainCard": "Model updated. Please initiate retraining to continue benefiting from the latest improvements.",
+      "retrain": "Retrain",
+      "deleteModal": "Delete Model",
+      "confirmRetrain": "Confirm Retrain Model",
+      "confirmRetrainDesc": "Are you sure you want to retrain this model?",
+      "save": "Save Changes"
+    },
+    "dataModelForm": {
+      "modelVersion": "Model Version",
+      "datasetGroup": "Select Dataset Group",
+      "baseModels": "Select Base Models",
+      "deploymentPlatform": "Select Deployment Platform",
+      "maturityLabel": "Select Maturity Label"
+      }
   },
   "trainingSessions": {
     "title": "Training Sessions",
