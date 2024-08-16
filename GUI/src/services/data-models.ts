@@ -1,8 +1,6 @@
+import { CreateDataModelPayload, UpdatedDataModelPayload } from 'types/dataModels';
 import apiDev from './api-dev';
-import apiExternal from './api-external';
-import apiMock from './api-mock';
-import { PaginationState } from '@tanstack/react-table';
-import { DatasetGroup, Operation } from 'types/datasetGroups';
+import { dataModelsEndpoints } from 'utils/endpoints';
 
 export async function getDataModelsOverview(
   pageNum: number,
@@ -16,7 +14,7 @@ export async function getDataModelsOverview(
   sort: string,
   isProductionModel: boolean
 ) {
-  const { data } = await apiDev.get('classifier/datamodel/overview', {
+  const { data } = await apiDev.get(dataModelsEndpoints.GET_OVERVIEW(), {
     params: {
       page: pageNum,
       modelName,
@@ -35,17 +33,17 @@ export async function getDataModelsOverview(
 }
 
 export async function getFilterData() {
-  const { data } = await apiDev.get('classifier/datamodel/overview/filters');
+  const { data } = await apiDev.get(dataModelsEndpoints.GET_DATAMODELS_FILTERS());
   return data?.response;
 }
 
 export async function getCreateOptions() {
-  const { data } = await apiDev.get('classifier/datamodel/create/options');
+  const { data } = await apiDev.get(dataModelsEndpoints.GET_CREATE_OPTIONS());
   return data?.response;
 }
 
 export async function getMetadata(modelId: string | number | null) {
-  const { data } = await apiDev.get('classifier/datamodel/metadata', {
+  const { data } = await apiDev.get(dataModelsEndpoints.GET_METADATA(), {
     params: {
       modelId,
     },
@@ -53,35 +51,35 @@ export async function getMetadata(modelId: string | number | null) {
   return data?.response?.data[0];
 }
 
-export async function createDataModel(dataModel) {
-  const { data } = await apiDev.post('classifier/datamodel/create', {
+export async function createDataModel(dataModel:CreateDataModelPayload) {
+  const { data } = await apiDev.post(dataModelsEndpoints.CREATE_DATA_MODEL(), {
     ...dataModel,
   });
   return data;
 }
 
-export async function updateDataModel(dataModel) {
-  const { data } = await apiDev.post('classifier/datamodel/update', {
+export async function updateDataModel(dataModel:UpdatedDataModelPayload) {
+  const { data } = await apiDev.post(dataModelsEndpoints.UPDATE_DATA_MODEL(), {
     ...dataModel,
   });
   return data;
 }
 
 export async function deleteDataModel(modelId : number) {
-  const { data } = await apiDev.post('classifier/datamodel/delete', {
+  const { data } = await apiDev.post(dataModelsEndpoints.DELETE_DATA_MODEL(), {
     modelId
   });
   return data;
 }
 
 export async function retrainDataModel(modelId : number) {
-  const { data } = await apiDev.post('classifier/datamodel/re-train', {
+  const { data } = await apiDev.post(dataModelsEndpoints.RETRAIN_DATA_MODEL(), {
     modelId
   });
   return data;
 }
 
 export async function getDataModelsProgress() {
-  const { data } = await apiDev.get('classifier/datamodel/progress');
+  const { data } = await apiDev.get(dataModelsEndpoints.GET_DATA_MODEL_PROGRESS());
   return data?.response?.data;
 }

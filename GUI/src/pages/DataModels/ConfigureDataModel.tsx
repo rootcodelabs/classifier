@@ -16,6 +16,7 @@ import { Platform, UpdateType } from 'enums/dataModelsEnums';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import { DataModel, UpdatedDataModelPayload } from 'types/dataModels';
+import { dataModelsQueryKeys } from 'utils/queryKeys';
 
 type ConfigureDataModelType = {
   id: number;
@@ -48,7 +49,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   });
 
   const { isLoading } = useQuery(
-    ['datamodels/metadata', id],
+    dataModelsQueryKeys.GET_META_DATA(id),
     () => getMetadata(id),
     {
       enabled,

@@ -8,11 +8,11 @@ type ValidationSessionCardProps = {
     version:string;
     isLatest:boolean;
     status?:string;
-    errorMessage?: string;
+    validationMessage?: string;
     progress: number;
   };
   
-const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({dgName,version,isLatest,status,errorMessage,progress}) => {
+const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({dgName,version,isLatest,status,validationMessage,progress}) => {
   const { t } = useTranslation();
 
   return (
@@ -30,9 +30,9 @@ const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({dgName,ver
     }
   >
     <div>
-      {errorMessage? (
-        <div className='text-center'>
-         {errorMessage}
+      {(status==="Fail" || status==="Success") && progress===100 ? (
+        <div className={`text-center ${status==="Fail"?'error':''}`}>
+         {validationMessage}
         </div>
       ) : (
         <div>
@@ -42,6 +42,9 @@ const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({dgName,ver
             max={100}
             label={`${progress}%`}
           />
+           <div className='text-center'>
+         {validationMessage}
+        </div>
         </div>
       )}
     </div>

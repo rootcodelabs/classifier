@@ -6,7 +6,7 @@ import torch
 import pickle
 import shutil
 from s3_ferry import S3Ferry
-from constants import URL_MODEL
+from constants import URL_MODEL, URL_DEPLOY
 
 class ModelTrainer:
     def __init__(self) -> None:
@@ -88,7 +88,7 @@ class ModelTrainer:
         
         DeploymentPlatform = self.model_details['response']['data'][0]['deploymentEnv']
 
-        url = f"http://localhost:8088/classifier/datamodel/deployment/{DeploymentPlatform}/update"
+        deploy_url = URL_DEPLOY.format(deployment_platform = DeploymentPlatform)
 
     
         if self.oldModelId is not None:
@@ -108,4 +108,4 @@ class ModelTrainer:
                 "bestModelName":model_name
             }
 
-        response = requests.post(url, json=payload)
+        response = requests.post(deploy_url, json=payload)
