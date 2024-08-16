@@ -381,6 +381,7 @@ services:
       - "3008:3008"
     environment:
       JIRA_WEBHOOK_SECRET: value
+      RUUTER_PUBLIC_JIRA_URL: http://ruuter-public:8086/internal/jira/accept
     networks:
       bykstack:
         ipv4_address: 172.25.0.21

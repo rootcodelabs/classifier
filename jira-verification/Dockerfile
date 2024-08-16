@@ -1,13 +1,12 @@
-# Base image
-FROM node:16-alpine
+FROM node:22.0.0-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json /app/
 
-RUN npm install --production
+RUN npm install
 
-COPY . .
+COPY . /app/
 
 EXPOSE 3008
 

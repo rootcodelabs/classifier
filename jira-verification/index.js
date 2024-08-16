@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const verifySignature = require("./verifySignature.js");
+const verifySignature = require("./src/verifySignature.js");
 const axios = require("axios");
 
 const app = express();
@@ -10,9 +10,12 @@ app.post("/webhook", async (req, res) => {
   const isValid = verifySignature(req.body, req.headers);
   if (isValid) {
     try {
-      const response = await axios.post("http://ruuter-public:8086/internal/jira/accept", {
-        payload: req.body,
-      });
+      const response = await axios.post(
+        process.env.RUUTER_PUBLIC_JIRA_URL,
+        {
+          payload: req.body,
+        }
+      );
 
       console.log("Response from helper URL:", response.data);
       return res.status(200).send("Webhook processed and forwarded");
