@@ -17,6 +17,7 @@ import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import { DataModel, UpdatedDataModelPayload } from 'types/dataModels';
 import { dataModelsQueryKeys } from 'utils/queryKeys';
+import { useTranslation } from 'react-i18next';
 
 type ConfigureDataModelType = {
   id: number;
@@ -27,6 +28,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   id,
   availableProdModels,
 }) => {
+  const { t } = useTranslation();
   const { open, close } = useDialog();
   const navigate = useNavigate();
   const [enabled, setEnabled] = useState<boolean>(true);
@@ -103,27 +105,26 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
       deploymentEnv: payload.platform,
       baseModels: payload.baseModels,
       maturityLabel: payload.maturity,
-      updateType:updateType,
+      updateType: updateType,
     };
 
     if (updateType) {
       if (availableProdModels?.includes(dataModel.platform)) {
         open({
-          title: 'Warning: Replace Production Model',
-          content:
-            'Adding this model to production will replace the current production model. Are you sure you want to proceed?',
+          title: t('dataModels.createDataModel.replaceTitle'),
+          content: t('dataModels.createDataModel.replaceDesc'),
           footer: (
             <div className="flex-grid">
               <Button
                 appearance={ButtonAppearanceTypes.SECONDARY}
                 onClick={close}
               >
-                Cancel
+                {t('global.cancel')}
               </Button>
               <Button
                 onClick={() => updateDataModelMutation.mutate(updatedPayload)}
               >
-                Proceed
+                {t('global.proceed')}
               </Button>
             </div>
           ),
@@ -138,13 +139,8 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     mutationFn: (data: UpdatedDataModelPayload) => updateDataModel(data),
     onSuccess: async () => {
       open({
-        title: 'Changes Saved Successfully',
-        content: (
-          <p>
-            You have successfully saved the changes. You can view the data model
-            in the "All Data Models" view.
-          </p>
-        ),
+        title: t('dataModels.configureDataModel.saveChangesTitile'),
+        content: <p>{t('dataModels.configureDataModel.saveChangesDesc')}</p>,
         footer: (
           <div className="flex-grid">
             <Button
@@ -154,7 +150,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
                 close();
               }}
             >
-              Cancel
+              {t('global.cancel')}
             </Button>{' '}
             <Button
               onClick={() => {
@@ -162,7 +158,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
                 close();
               }}
             >
-              View All Data Models
+              {t('dataModels.createDataModel.viewAll')}
             </Button>
           </div>
         ),
@@ -170,13 +166,8 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     },
     onError: () => {
       open({
-        title: 'Error Updating Data Model',
-        content: (
-          <p>
-            There was an issue updating the data model. Please try again. If the
-            problem persists, contact support for assistance.
-          </p>
-        ),
+        title: t('dataModels.configureDataModel.updateErrorTitile'),
+        content: <p>{t('dataModels.configureDataModel.updateErrorDesc')}</p>,
       });
     },
   });
@@ -188,31 +179,27 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
       dataModel.platform === Platform.PINAL
     ) {
       open({
-        title: 'Cannot Delete Model',
-        content: (
-          <p>
-            The model cannot be deleted because it is currently in production.
-            Please escalate another model to production before proceeding to
-            delete this model.
-          </p>
-        ),
+        title: t('dataModels.configureDataModel.deleteErrorTitle'),
+        content: <p>{t('dataModels.configureDataModel.deleteErrorDesc')}</p>,
         footer: (
           <div className="flex-grid">
             <Button
               appearance={ButtonAppearanceTypes.SECONDARY}
               onClick={() => deleteDataModelMutation.mutate(dataModel?.modelId)}
             >
-              Cancel
+              {t('global.cancel')}
             </Button>
-            <Button appearance={ButtonAppearanceTypes.ERROR}>Delete</Button>
+            <Button appearance={ButtonAppearanceTypes.ERROR}>
+              {t('global.delete')}
+            </Button>
           </div>
         ),
       });
     } else {
       open({
-        title: 'Are you sure?',
+        title: t('dataModels.configureDataModel.deleteConfirmation'),
         content: (
-          <p>Confirm that you are wish to delete the following data model</p>
+          <p>{t('dataModels.configureDataModel.deleteConfirmationDesc')}</p>
         ),
         footer: (
           <div className="flex-grid">
@@ -220,13 +207,13 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
               appearance={ButtonAppearanceTypes.SECONDARY}
               onClick={close}
             >
-              Cancel
+              {t('global.cancel')}
             </Button>
             <Button
               onClick={() => deleteDataModelMutation.mutate(dataModel.modelId)}
               appearance={ButtonAppearanceTypes.ERROR}
             >
-              Delete
+              {t('global.delete')}
             </Button>
           </div>
         ),
@@ -242,12 +229,9 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     },
     onError: () => {
       open({
-        title: 'Error Deleting Data Model',
+        title: t('dataModels.configureDataModel.deleteModalErrorTitle'),
         content: (
-          <p>
-            There was an issue deleting the data model. Please try again. If the
-            problem persists, contact support for assistance.
-          </p>
+          <p>{t('dataModels.configureDataModel.deleteModalErrorDesc')}</p>
         ),
       });
     },
@@ -261,12 +245,9 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     },
     onError: () => {
       open({
-        title: 'Error Deleting Data Model',
+        title: t('dataModels.configureDataModel.retrainDataModalErrorTitle'),
         content: (
-          <p>
-            There was an issue retraining the data model. Please try again. If
-            the problem persists, contact support for assistance.
-          </p>
+          <p>{t('dataModels.configureDataModel.retrainDataModalErrorDesc')}</p>
         ),
       });
     },
@@ -279,7 +260,9 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
           <Link to={''} onClick={() => navigate(0)}>
             <BackArrowButton />
           </Link>
-          <div className="title">Configure Data Model</div>
+          <div className="title">
+            {t('dataModels.configureDataModel.title')}
+          </div>
         </div>
 
         <Card>
@@ -291,16 +274,13 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
             }}
           >
             <div>
-              <p>
-                Model updated. Please initiate retraining to continue benefiting
-                from the latest improvements.
-              </p>
+              <p>{t('dataModels.configureDataModel.retrainCard')}</p>
               <Button
                 onClick={() => {
                   retrainDataModelMutation.mutate(dataModel.modelId);
                 }}
               >
-                Retrain
+                {t('dataModels.configureDataModel.retrain')}
               </Button>
             </div>
           </div>
@@ -328,36 +308,38 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
         }}
       >
         <Button appearance="error" onClick={() => handleDelete()}>
-          Delete Model
+          {t('dataModels.configureDataModel.deleteModal')}
         </Button>
         <Button
           onClick={() =>
             open({
-              title: 'Confirm Retrain Model',
-              content: 'Are you sure you want to retrain this model?',
+              title: t('dataModels.configureDataModel.confirmRetrain'),
+              content: t('dataModels.configureDataModel.confirmRetrainDesc'),
               footer: (
                 <div className="flex-grid">
                   <Button
                     appearance={ButtonAppearanceTypes.SECONDARY}
                     onClick={close}
                   >
-                    Cancel
+                    {t('global.cancel')}
                   </Button>
                   <Button
                     onClick={() =>
                       retrainDataModelMutation.mutate(dataModel.modelId)
                     }
                   >
-                    Retrain
+                    {t('dataModels.configureDataModel.retrain')}
                   </Button>
                 </div>
               ),
             })
           }
         >
-          Retrain
+          {t('dataModels.configureDataModel.retrain')}
         </Button>
-        <Button onClick={handleSave}>Save Changes</Button>
+        <Button onClick={handleSave}>
+          {t('dataModels.configureDataModel.save')}
+        </Button>
       </div>
     </div>
   );

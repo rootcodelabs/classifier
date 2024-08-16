@@ -57,8 +57,8 @@ const CreateDataModel: FC = () => {
         true
       ),
     {
-      onSuccess:(data)=>{          
-        setAvailableProdModels(extractedArray(data?.data,"deploymentEnv"))
+      onSuccess: (data) => {
+        setAvailableProdModels(extractedArray(data?.data, 'deploymentEnv'));
       },
     }
   );
@@ -99,61 +99,60 @@ const CreateDataModel: FC = () => {
         maturityLabel: dataModel.maturity,
       };
 
-      if (
-        availableProdModels?.includes(dataModel.platform??"")
-       ) {
-         open({
-           title: 'Warning: Replace Production Model',
-           content:
-             <div>
-             Adding this model to production will replace the current production model. Are you sure you want to proceed?
-             {!integrationStatus[`${dataModel.platform}_connection_status`] && <div className='warning'> {`${dataModel.platform} integration is currently disabled, therefore the model wouldn't recieve any inputs or make any predictions`}</div>}
-
-             </div>,
-           footer: (
-             <div className="flex-grid">
-               <Button
-                 appearance={ButtonAppearanceTypes.SECONDARY}
-                 onClick={close}
-               >
-                 Cancel
-               </Button>
-               <Button
-                 onClick={() => createDataModelMutation.mutate(payload)}
-               >
-                 Proceed
-               </Button>
-             </div>
-           ),
-         });
-       }else{
+      if (availableProdModels?.includes(dataModel.platform ?? '')) {
+        open({
+          title: t('dataModels.createDataModel.replaceTitle'),
+          content: (
+            <div>
+              {t('dataModels.createDataModel.replaceDesc')}
+              {!integrationStatus[
+                `${dataModel.platform}_connection_status`
+              ] && (
+                <div className="warning">
+                  {t('dataModels.createDataModel.replaceWarning', {
+                    platform: dataModel.platform,
+                  })}
+                </div>
+              )}
+            </div>
+          ),
+          footer: (
+            <div className="flex-grid">
+              <Button
+                appearance={ButtonAppearanceTypes.SECONDARY}
+                onClick={close}
+              >
+                {t('global.cancel')}
+              </Button>
+              <Button onClick={() => createDataModelMutation.mutate(payload)}>
+                {t('global.proceed')}
+              </Button>
+            </div>
+          ),
+        });
+      } else {
         createDataModelMutation.mutate(payload);
-
-       }
-
+      }
     }
   };
   const createDataModelMutation = useMutation({
-    mutationFn: (data:CreateDataModelPayload) => createDataModel(data),
+    mutationFn: (data: CreateDataModelPayload) => createDataModel(data),
     onSuccess: async (response) => {
       open({
-        title: 'Data Model Created and Trained',
-        content: (
-          <p>
-            You have successfully created and started training the data model. You can
-            view it on the data model dashboard.
-          </p>
-        ),
+        title: t('dataModels.createDataModel.successTitle'),
+        content: <p>{t('dataModels.createDataModel.successDesc')}</p>,
         footer: (
           <div className="flex-grid">
-            <Button appearance={ButtonAppearanceTypes.SECONDARY}>Cancel</Button>{' '}
+            <Button appearance={ButtonAppearanceTypes.SECONDARY}>
+              {t('global.cancel')}
+            </Button>{' '}
             <Button
               onClick={() => {
                 navigate('/data-models');
                 close();
               }}
             >
-              View All Data Models
+              {t('dataModels.createDataModel.viewAll')}
             </Button>
           </div>
         ),
@@ -161,13 +160,8 @@ const CreateDataModel: FC = () => {
     },
     onError: () => {
       open({
-        title: 'Error Creating Data Model',
-        content: (
-          <p>
-            There was an issue creating or training the data model. Please try
-            again. If the problem persists, contact support for assistance.
-          </p>
-        ),
+        title: t('dataModels.createDataModel.errorTitle'),
+        content: <p>{t('dataModels.createDataModel.errorDesc')}</p>,
       });
     },
   });
@@ -180,7 +174,7 @@ const CreateDataModel: FC = () => {
             <Link to={'/data-models'}>
               <BackArrowButton />
             </Link>
-            <div className="title">Create Data Model</div>
+            <div className="title">{t('dataModels.createDataModel.title')}</div>
           </div>
         </div>
         <DataModelForm
@@ -201,9 +195,11 @@ const CreateDataModel: FC = () => {
           background: 'white',
         }}
       >
-        <Button onClick={() => handleCreate()}>Create Data Model</Button>
+        <Button onClick={() => handleCreate()}>
+          {t('dataModels.createDataModel.title')}
+        </Button>
         <Button appearance="secondary" onClick={() => navigate('/data-models')}>
-          Cancel
+          {t('global.cancel')}
         </Button>
       </div>
     </div>
