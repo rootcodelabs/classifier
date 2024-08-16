@@ -11,7 +11,8 @@ function verifySignature(payload, headers) {
     console.log("Received signature: " + signature);
     console.log("payload------------: " + payload);
 
-    const SHARED_SECRET = 'f5EPbhg7u31ooo0YryeX'; // Replace with your actual shared secret
+    const SHARED_SECRET = process.env.JIRA_WEBHOOK_SECRET; // Replace with your actual shared secret
+    console.log("SHARED_SECRET------------: " + SHARED_SECRET);
     const hmac = createHmac('sha256', Buffer.from(SHARED_SECRET, 'utf8'));
 
     const payloadString = JSON.stringify(payload);

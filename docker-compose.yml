@@ -379,6 +379,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3008:3008"
+    environment:
+      JIRA_WEBHOOK_SECRET: value
     networks:
       bykstack:
         ipv4_address: 172.25.0.21
