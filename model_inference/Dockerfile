@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY constants.py .
 COPY inference_wrapper.py .
 COPY model_inference_api.py .
+COPY model_inference.py .
 COPY s3_ferry.py .
 COPY utils.py .
 
