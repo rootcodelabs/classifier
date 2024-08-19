@@ -399,3 +399,11 @@ FodyWeavers.xsd
 
 /tim-db
 /data
+
+.env
+.sonarlint
+.vscode
+.DS_Store
+DSL/Liquibase/data/update_refresh_token.sql
+model_trainer/results
+protected_configs/
