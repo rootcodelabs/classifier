@@ -8,8 +8,6 @@ logger.add(sink=TRAINING_LOGS_PATH)
 class DataPipeline:
     
     def __init__(self, dg_id,cookie):
-
-
         
         logger.info(f"DOWNLOADING DATASET WITH DGID - {dg_id}")
         
