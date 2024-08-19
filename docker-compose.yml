@@ -164,8 +164,7 @@ services:
     ports:
       - 5433:5432
     volumes:
-      # - /home/ubuntu/user_db_files:/var/lib/postgresql/data
-      - ~/est_classifier/user_db_files:/var/lib/postgresql/data #For Mac Users
+      - ~/buerokratt_classifier/db_files:/var/lib/postgresql/data
 
     networks:
       bykstack:
