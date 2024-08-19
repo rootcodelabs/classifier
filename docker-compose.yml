@@ -7,7 +7,7 @@ services:
     environment:
       - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080,http://localhost:8000
       - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
-      - application.internalRequests.allowedIPs=127.0.0.1,172.25.0.7
+      - application.internalRequests.allowedIPs=127.0.0.1,172.25.0.7,172.25.0.21
       - application.logging.displayRequestContent=true
       - application.incomingRequests.allowedMethodTypes=POST,GET,PUT
       - application.logging.displayResponseContent=true
@@ -164,7 +164,8 @@ services:
     ports:
       - 5433:5432
     volumes:
-      - /home/ubuntu/user_db_files:/var/lib/postgresql/data
+      - ~/buerokratt_classifier/db_files:/var/lib/postgresql/data
+
     networks:
       bykstack:
         ipv4_address: 172.25.0.10
@@ -231,9 +232,6 @@ services:
       - shared-volume:/shared
     env_file:
       - config.env
-    environment:
-      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
-      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
     ports:
       - "3006:3000"
     depends_on:
@@ -375,6 +373,21 @@ services:
     networks:
       bykstack:
         ipv4_address: 172.25.0.19
+
+  jira-verification:
+    container_name: jira-verification
+    image: jira-verification
+    build:
+      context: ./jira-verification
+      dockerfile: Dockerfile
+    ports:
+      - "3008:3008"
+    environment:
+      JIRA_WEBHOOK_SECRET: value
+      RUUTER_PUBLIC_JIRA_URL: http://ruuter-public:8086/internal/jira/accept
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.21
 
 volumes:
   shared-volume:

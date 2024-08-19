@@ -30,11 +30,15 @@ check_for_request_data:
 get_token_info:
   call: http.get
   args:
-    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/token"
-    headers:
-      cookie: ${incoming.headers.cookie}
+    url: "[#CLASSIFIER_RUUTER_PUBLIC_INTERNAL]/internal/outlook/token"
   result: res
-  next: assign_access_token
+  next: check_access_token
+
+check_access_token:
+  switch:
+    - condition: ${200 <= res.response.statusCodeValue && res.response.statusCodeValue < 300}
+      next: assign_access_token
+  next: return_access_token_not_found
 
 assign_access_token:
   assign:
@@ -111,4 +115,9 @@ return_bad_request:
 return_incorrect_request:
   status: 400
   return: 'missing labels'
+  next: end
+
+return_access_token_not_found:
+  status: 404
+  return: "Access Token Not Found"
   next: end

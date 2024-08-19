@@ -2,7 +2,7 @@ declaration:
   call: declare
   version: 0.1
   description: "Description placeholder for 'ACCEPT'"
-  method: get
+  method: post
   accepts: json
   returns: text/*
   namespace: classifier
@@ -140,9 +140,9 @@ check_folders_exist:
 
 check_folder_id:
   switch:
-    - condition: ${existing_outlook_info.response.body.primaryFolderId !== mail_info_data.response.body.parentFolderId}
+    - condition: ${existing_outlook_info.response.body[0].primaryFolderId !== mail_info_data.response.body.parentFolderId}
       next: rearrange_mail_payload
-  next: end
+  next: return_Folder_Match
 
 check_event_type:
   switch:
@@ -188,6 +188,11 @@ check_response:
 return_ok:
   status: 200
   return: "Outlook data send successfully"
+  next: end
+
+return_Folder_Match:
+  status: 200
+  return: "Folder Match,No Update"
   next: end
 
 return_mail_info_not_found:

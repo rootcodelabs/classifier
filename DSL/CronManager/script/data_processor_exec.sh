@@ -15,7 +15,7 @@ payload=$(cat <<EOF
   "updateType": "$updateType",
   "savedFilePath": "$savedFilePath",
   "patchPayload": "$patchPayload",
-  "cookie": "$cookie"
+  "cookie": "$cookie",
   "sessionId": "$sessionId"
 }
 EOF
