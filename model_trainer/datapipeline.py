@@ -56,9 +56,9 @@ class DataPipeline:
     
     def extract_input_columns(self):
         
-        validationRules = self.hierarchy['validationCriteria']['validationRules']
+        validation_rules = self.hierarchy['validationCriteria']['validationRules']
 
-        input_columns = [key for key, value in validationRules.items() if value['isDataClass'] == False]
+        input_columns = [key for key, value in validation_rules.items() if value['isDataClass'] == False]
         return input_columns
     
     def models_and_filters(self):
