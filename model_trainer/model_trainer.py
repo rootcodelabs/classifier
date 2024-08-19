@@ -92,7 +92,7 @@ class ModelTrainer:
         payload = {}
         session_id = None
         model_details = self.model_details['response']['data'][0]
-        payload["modelId"] = self.new_model_id
+        payload["modelId"] = int(self.new_model_id)
         payload["modelName"] = model_details["modelName"]
         payload["majorVersion"] = model_details["majorVersion"]
         payload["minorVersion"] = model_details["minorVersion"]
@@ -109,7 +109,7 @@ class ModelTrainer:
 
             logger.info(f"REQUEST TO CREATE TRAINING PROGRESS SESSION FOR MODEL ID {self.new_model_id} SUCCESSFUL")
             logger.info(f"RESPONSE PAYLOAD \n {response.json()}")
-            session_id = response.json()["sessionId"]
+            session_id = response.json()["response"]["sessionId"]
             
 
         else:
@@ -144,7 +144,7 @@ class ModelTrainer:
 
             logger.info(f"REQUEST TO UPEQ%# TRAINING PROGRESS SESSION FOR MODEL ID {self.new_model_id} SUCCESSFUL")
             logger.info(f"RESPONSE PAYLOAD \n {response.json()}")
-            session_id = response.json()["sessionId"]
+            session_id = response.json()["response"]["sessionId"]
             
 
         else:
