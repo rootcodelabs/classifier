@@ -59,7 +59,7 @@ extract_data:
 
 check_production_model_status:
   switch:
-    - condition: ${is_production_model == 'true'}
+    - condition: ${is_production_model === 'true'}
       next: get_production_data_model_meta_data_overview
   next: get_data_model_meta_data_overview
 

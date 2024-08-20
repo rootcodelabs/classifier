@@ -77,7 +77,7 @@ route_to_platform:
       type: json
       cookie: ${cookie}
     body:
-      is_connect: ${is_connect}
+      isConnect: ${is_connect}
   result: res
   next: check_platform_response_status
 
