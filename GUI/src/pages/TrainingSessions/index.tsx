@@ -33,6 +33,7 @@ const TrainingSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
+      if(progress.validationStatus !=="Success" && progress.progressPercentage!==100)
       return sse(`/${progress.id}`, 'model', (data: SSEEventData) => {
         console.log(`New data for notification ${progress.id}:`, data);
         handleUpdate(data.sessionId, data);

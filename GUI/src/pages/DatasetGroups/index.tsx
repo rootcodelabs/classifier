@@ -13,6 +13,7 @@ import ViewDatasetGroup from './ViewDatasetGroup';
 import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
+import NoDataView from 'components/molecules/NoDataView';
 
 type FilterData = {
   datasetGroupName: string;
@@ -178,28 +179,33 @@ const DatasetGroups: FC = () => {
                 <CircularSpinner />
               </div>
             )}
-            <div className="grid-container" style={{ marginTop: '20px' }}>
-              {datasetGroupsData?.response?.data?.map(
-                (dataset: SingleDatasetType, index: number) => {
-                  return (
-                    <DatasetGroupCard
-                      key={dataset?.id + index}
-                      datasetGroupId={dataset?.id}
-                      isEnabled={dataset?.isEnabled}
-                      datasetName={dataset?.groupName}
-                      version={`V${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
-                      isLatest={dataset.latest}
-                      lastUpdated={dataset?.lastUpdatedTimestamp}
-                      lastUsed={dataset?.lastTrainedTimestamp}
-                      validationStatus={dataset.validationStatus}
-                      lastModelTrained={dataset?.lastModelTrained}
-                      setId={setId}
-                      setView={setView}
-                    />
-                  );
-                }
-              )}
-            </div>
+            {datasetGroupsData?.response?.data?.length > 0 ? (
+              <div className="grid-container" style={{ marginTop: '20px' }}>
+                {datasetGroupsData?.response?.data?.map(
+                  (dataset: SingleDatasetType, index: number) => {
+                    return (
+                      <DatasetGroupCard
+                        key={dataset?.id + index}
+                        datasetGroupId={dataset?.id}
+                        isEnabled={dataset?.isEnabled}
+                        datasetName={dataset?.groupName}
+                        version={`V${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                        isLatest={dataset.latest}
+                        lastUpdated={dataset?.lastUpdatedTimestamp}
+                        lastUsed={dataset?.lastTrainedTimestamp}
+                        validationStatus={dataset.validationStatus}
+                        lastModelTrained={dataset?.lastModelTrained}
+                        setId={setId}
+                        setView={setView}
+                      />
+                    );
+                  }
+                )}
+              </div>
+            ) : (
+              <NoDataView text={t('datasetGroups.noDatasets') ?? ''} />
+            )}
+
             <Pagination
               pageCount={pageCount}
               pageIndex={pageIndex}
