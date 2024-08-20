@@ -44,6 +44,10 @@
     "extedSession": "Extend Session",
     "unAuthorized": "Unauthorized",
     "unAuthorizedDesc": "You do not have permission to view this page.",
+    "latest": "Latest",
+    "failed": "Failed",
+    "sessionTimeOutTitle": "You session has been ended!",
+    "sessionTimeOutDesc": "Extend your session or signout from application in {{seconds}}",
     "close":"Close"
   },
   "menu": {
@@ -112,7 +116,7 @@
     "integrationSuccessDesc": "You have successfully connected with {{channel}}! Your integration is now complete, and you can start working with {{channel}} seamlessly.",
     "confirmationModalTitle": "Are you sure?",
     "disconnectConfirmationModalDesc": "Are you sure you want to disconnect the {{channel}} integration? This action cannot be undone and may affect your workflow and linked issues.",
-    "connectConfirmationModalDesc": "Are you sure you want to connect the {{channel}} integration?",
+    "connectConfirmationModalDesc": "Are you sure you want to connect the {{channel}} integration? This action cannot be undone and may affect your workflow and linked issues.",
     "disconnectErrorTi/tle": "Disconnection Unsuccessful",
     "disconnectErrorDesc": "Failed to disconnect {{channel}}. Please check your settings and try again. If the problem persists, contact support for assistance.",
     "addUserButton": " Add a user",
@@ -177,7 +181,8 @@
       "typeNumbers": "Numbers",
       "typeDateTime": "DateTime",
       "addClassButton": "Add class",
-      "addNowButton": "Add now"
+      "addNowButton": "Add now",
+      "selectPlaceholder": "- Select -"
     },
     "classHierarchy": {
       "title": "Class Hierarchy",
@@ -191,6 +196,8 @@
       "deleteClaassDesc": "Confirm that you are wish to delete the following record",
       "columnInsufficientHeader": "Insufficient Columns in Dataset",
       "columnInsufficientDescription": "The dataset must have at least 2 columns. Additionally, there needs to be at least one column designated as a data class and one column that is not a data class. Please adjust your dataset accordingly.",
+      "classsesInsufficientHeader": "Insufficient Classes in Dataset",
+      "classsesInsufficientDescription": "The dataset must have at least 2 main classes in the class hierarchy",
       "createDatasetSuccessTitle": "Dataset Group Created Successfully",
       "createDatasetUnsuccessTitle": "Dataset Group Creation Unsuccessful",
       "createDatasetSucceessDesc": "You have successfully created the dataset group. In the detailed view, you can now see and edit the dataset as needed.",
@@ -231,6 +238,10 @@
       "validationInitiatedTitle": "Dataset uploaded and validation initiated",
       "validationInitiatedDesc": "The dataset file was successfully uploaded. The validation and preprocessing is now initiated",
       "viewValidations": "View Validation Sessions",
+      "fieldName": "Enter a field name",
+      "fieldNameError": "{{name}} cannot be used as a field name",
+      "fieldNameExist": "{{name}} already exists as a field name",
+      "selectDataType": "Select a data type",
       "table": {
         "id": "rowId",
         "data": "Data",

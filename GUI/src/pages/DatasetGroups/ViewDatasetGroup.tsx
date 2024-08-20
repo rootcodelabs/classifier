@@ -249,8 +249,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     },
   });
 
-  const handleFileSelect = (file: File | null) => {
-    if (file) setFile(file);
+  const handleFileSelect = (file: File | undefined) => {
+    setFile(file)
   };
 
   const handleImport = () => {

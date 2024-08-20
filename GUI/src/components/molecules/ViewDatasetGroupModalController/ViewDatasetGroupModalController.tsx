@@ -32,7 +32,7 @@ const ViewDatasetGroupModalController = ({
   exportFormat,
 }: {
   setImportStatus: React.Dispatch<React.SetStateAction<string>>;
-  handleFileSelect: (file: File | null) => void;
+  handleFileSelect: (file: File | undefined) => void;
   fileUploadRef: RefObject<FileUploadHandle>;
   handleImport: () => void;
   importStatus: string;

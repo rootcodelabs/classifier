@@ -17,7 +17,10 @@ import ValidationCriteriaCardsView from 'components/molecules/ValidationCriteria
 import { useMutation } from '@tanstack/react-query';
 import { createDatasetGroup } from 'services/datasets';
 import { useDialog } from 'hooks/useDialog';
-import { CreateDatasetGroupModals } from 'enums/datasetEnums';
+import {
+  CreateDatasetGroupModals,
+  ValidationErrorTypes,
+} from 'enums/datasetEnums';
 import CreateDatasetGroupModalController from 'components/molecules/CreateDatasetGroupModals/CreateDatasetGroupModal';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 
@@ -33,6 +36,7 @@ const CreateDatasetGroup: FC = () => {
 
   const initialClass = [
     { id: uuidv4(), fieldName: '', level: 0, children: [] },
+    { id: uuidv4(), fieldName: '', level: 0, children: [] },
   ];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +51,8 @@ const CreateDatasetGroup: FC = () => {
   const [validationRuleError, setValidationRuleError] = useState(false);
   const [nodes, setNodes] = useState<TreeNode[]>(initialClass);
   const [nodesError, setNodesError] = useState(false);
+  const [valiadationErrorType, setValidationErrorType] =
+    useState<ValidationErrorTypes>(ValidationErrorTypes.NULL);
 
   const validateData = useCallback(() => {
     setNodesError(validateClassHierarchy(nodes));
@@ -60,6 +66,11 @@ const CreateDatasetGroup: FC = () => {
       if (!isValidationRulesSatisfied(validationRules)) {
         setIsModalOpen(true);
         setModalType(CreateDatasetGroupModals.VALIDATION_ERROR);
+        setValidationErrorType(ValidationErrorTypes.VALIDATION_CRITERIA);
+      } else if (nodes.length < 2) {
+        setIsModalOpen(true);
+        setModalType(CreateDatasetGroupModals.VALIDATION_ERROR);
+        setValidationErrorType(ValidationErrorTypes.CLASS_HIERARCHY);
       } else {
         const payload: DatasetGroup = {
           groupName: datasetName,
@@ -88,71 +99,82 @@ const CreateDatasetGroup: FC = () => {
   return (
     <div>
       <div className="container">
-        <div className="title_container">
-          <div className="title">{t('datasetGroups.createDataset.title')}</div>
-        </div>
-        <div>
-          <Card
-            isHeaderLight={false}
-            header={t('datasetGroups.createDataset.datasetDetails')}
-          >
-            <div>
-              <FormInput
-                label={t('datasetGroups.createDataset.datasetName') ?? ''}
-                placeholder={
-                  t('datasetGroups.createDataset.datasetInputPlaceholder') ?? ''
-                }
-                name="datasetName"
-                onChange={(e) => setDatasetName(e.target.value)}
-                error={
-                  !datasetName && datasetNameError
-                    ? t(
-                        'datasetGroups.createDataset.datasetInputPlaceholder'
-                      ) ?? ''
-                    : ''
-                }
-              />
+        <div className="content-wrapper">
+          <div className="title_container">
+            <div className="title">
+              {t('datasetGroups.createDataset.title')}
             </div>
-          </Card>
+          </div>
+          <div>
+            <Card
+              isHeaderLight={false}
+              header={t('datasetGroups.createDataset.datasetDetails')}
+            >
+              <div>
+                <FormInput
+                  label={t('datasetGroups.createDataset.datasetName') ?? ''}
+                  placeholder={
+                    t('datasetGroups.createDataset.datasetInputPlaceholder') ??
+                    ''
+                  }
+                  name="datasetName"
+                  onChange={(e) => setDatasetName(e.target.value)}
+                  error={
+                    !datasetName && datasetNameError
+                      ? t(
+                          'datasetGroups.createDataset.datasetInputPlaceholder'
+                        ) ?? ''
+                      : ''
+                  }
+                />
+              </div>
+            </Card>
 
-          <ValidationCriteriaCardsView
-            validationRules={validationRules}
-            setValidationRules={setValidationRules}
-            validationRuleError={validationRuleError}
-            setValidationRuleError={setValidationRuleError}
+            <ValidationCriteriaCardsView
+              validationRules={validationRules}
+              setValidationRules={setValidationRules}
+              validationRuleError={validationRuleError}
+              setValidationRuleError={setValidationRuleError}
+            />
+
+            <div className="title-sm">Class Hierarchy</div>
+            <Card>
+              {' '}
+              <ClassHierarchy
+                nodes={nodes}
+                setNodes={setNodes}
+                nodesError={nodesError}
+                setNodesError={setNodesError}
+              />
+            </Card>
+          </div>
+
+          <CreateDatasetGroupModalController
+            modalType={modalType}
+            isModalOpen={isModalOpen}
+            setIsModalOpen={setIsModalOpen}
+            valiadationErrorType={valiadationErrorType}
           />
 
-          <div className="title-sm">Class Hierarchy</div>
-          <Card>
-            {' '}
-            <ClassHierarchy
-              nodes={nodes}
-              setNodes={setNodes}
-              nodesError={nodesError}
-              setNodesError={setNodesError}
-            />
-          </Card>
-        </div>
-
-        <CreateDatasetGroupModalController
-          modalType={modalType}
-          isModalOpen={isModalOpen}
-          setIsModalOpen={setIsModalOpen}
-        />
-        
-        <div className="button-container">
-          <Button
-            disabled={createDatasetGroupMutation.isLoading}
-            onClick={() => validateData()}
-          >
-            {t('datasetGroups.createDatasetGroupButton')}
-          </Button>
-          <Button
-            appearance={ButtonAppearanceTypes.SECONDARY}
-            onClick={() => navigate('/dataset-groups')}
-          >
-            {t('global.cancel')}
-          </Button>
+          <div className="button-container">
+            <Button
+              // disabled={
+              //   createDatasetGroupMutation.isLoading ||
+              //   validateClassHierarchy(nodes) ||
+              //   datasetName === '' ||
+              //   validateValidationRules(validationRules)
+              // }
+              onClick={() => validateData()}
+            >
+              {t('datasetGroups.createDatasetGroupButton')}
+            </Button>
+            <Button
+              appearance={ButtonAppearanceTypes.SECONDARY}
+              onClick={() => navigate('/dataset-groups')}
+            >
+              {t('global.cancel')}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

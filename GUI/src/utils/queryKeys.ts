@@ -5,7 +5,9 @@ export const userManagementQueryKeys = {
     pagination?: PaginationState,
     sorting?: SortingState
   ) {
-    return ['accounts/users', pagination, sorting];
+    return ['accounts/users', pagination, sorting].filter(
+      (val) => val !== undefined
+    );
   },
 };
 
@@ -48,6 +50,7 @@ export const datasetQueryKeys = {
       (val) => val !== undefined
     );
   },
+  GET_DATASET_GROUP_PROGRESS: () => ['datasetgroups/progress'],
 };
 
 export const stopWordsQueryKeys = {

@@ -1,4 +1,3 @@
-import { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProgressBar from 'components/ProgressBar';
 import { Card, Label } from 'components';
@@ -21,10 +20,10 @@ const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({dgName,ver
       <div className="flex-grid">
         {dgName} <Label type='success'>{version}</Label>
         {isLatest &&(
-        <Label type='success'>Latest</Label>
+        <Label type='success'>{t('global.latest')}</Label>
         )}
          {status==="Fail" &&(
-        <Label type='error'>Failed</Label>
+        <Label type='error'>{t('global.failed')}</Label>
         )}
       </div>
     }

@@ -1,6 +1,11 @@
-import { FC, MouseEvent, useState } from 'react';
+import { FC, MouseEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useLocation } from 'react-router-dom';
+import {
+  NavLink,
+  useLocation,
+  useNavigate,
+  useNavigation,
+} from 'react-router-dom';
 import {
   MdApps,
   MdKeyboardArrowDown,
@@ -23,6 +28,8 @@ import { TbLetterT } from "react-icons/tb";
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+
+  const navigate = useNavigate();
 
   const items = [
     {
