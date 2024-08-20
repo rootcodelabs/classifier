@@ -3,7 +3,7 @@ import httpx
 import requests
 import os
 from constants import (GRAPH_API_BASE_URL, Folder, ClassHierarchy)
-GET_OUTLOOK_ACCESS_TOKEN_URL=os.getenv("GET_OUTLOOK_ACCESS_TOKEN_URL") 
+OUTLOOK_ACCESS_TOKEN_API_URL=os.getenv("OUTLOOK_ACCESS_TOKEN_API_URL") 
 from typing import List
 
 async def fetch_folders(folder_id: str = 'root', outlook_access_token:str=''):
@@ -102,8 +102,8 @@ def get_corrected_folder_hierarchy(hierarchy: List[Folder], final_folder_id: str
 
 def get_outlook_access_token(model_id:int):    
     try:
-        get_outlook_access_token_url = GET_OUTLOOK_ACCESS_TOKEN_URL
-        response = requests.post(get_outlook_access_token_url, json={"modelId": model_id})
+        outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
+        response = requests.post(outlook_access_token_url, json={"modelId": model_id})
         response.raise_for_status()
         data = response.json()
 

@@ -1,7 +1,7 @@
 import requests
 import os
 
-GET_OUTLOOK_ACCESS_TOKEN_URL=os.getenv("GET_OUTLOOK_ACCESS_TOKEN_URL")
+OUTLOOK_ACCESS_TOKEN_API_URL=os.getenv("OUTLOOK_ACCESS_TOKEN_API_URL")
 
 class TestModelInference:
     def __init__(self):
@@ -9,8 +9,8 @@ class TestModelInference:
     
     def get_class_hierarchy_by_model_id(self, model_id):
         try:
-            get_outlook_access_token_url = GET_OUTLOOK_ACCESS_TOKEN_URL
-            response = requests.post(get_outlook_access_token_url, json={"modelId": model_id})
+            outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
+            response = requests.post(outlook_access_token_url, json={"modelId": model_id})
             response.raise_for_status()
             data = response.json()
 

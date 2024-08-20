@@ -1,7 +1,6 @@
 from typing import List, Dict
 
-class Inference:
-    
+class Inference:   
     def __init__(self) -> None:
         pass
     
@@ -15,8 +14,6 @@ class Inference:
 class TestInferenceWrapper:
     def __init__(self) -> None:
         self.model_dictionary: Dict[int, Inference] = {}
-
-
 
     def model_initiate(self, model_id: int, model_path: str, best_performing_model: str, class_hierarchy: list) -> bool:
         try:
@@ -38,7 +35,6 @@ class TestInferenceWrapper:
                 raise Exception(f"Model with ID {model_id} not found")
         except Exception as e:
             raise Exception(f"Failed to call the inference. Reason: {e}")
-    
     
     def stop_model(self, model_id: int) -> None:
         if model_id in self.models:

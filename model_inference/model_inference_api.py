@@ -71,7 +71,7 @@ async def download_outlook_model(request: Request, modelData:UpdateRequest, back
                 clear_folder_contents(folder_path)
                 inference_obj.stop_model(deployment_platform=modelData.replaceDeploymentPlatform)
         
-            # 4. Instantiate Munsif's Inference Model
+            # 4. Instantiate Inference Model
             model_path = f"shared/models/outlook/{modelData.modelId}"
             best_model = modelData.bestBaseModel
             
@@ -124,7 +124,7 @@ async def download_jira_model(request: Request, modelData:UpdateRequest, backgro
         
             inference_obj.stop_model(deployment_platform=modelData.replaceDeploymentPlatform)
         
-        # 4. Instantiate Munsif's Inference Model
+        # 4. Instantiate Inference Model
         class_hierarchy = modelInference.get_class_hierarchy_by_model_id(modelData.modelId)
         if(class_hierarchy):
             
@@ -190,7 +190,7 @@ async def outlook_inference(request:Request, inferenceData:OutlookInferenceReque
                 #  Create Corrected Folder Hierarchy using the final folder id
                 corrected_folder_hierarchy = modelInference.build_corrected_folder_hierarchy(final_folder_id=inferenceData.finalFolderId, model_id=model_id)
                 
-                # Call Munsif's user_corrected_probablities
+                # Call user_corrected_probablities
                 corrected_probs = inference_obj.get_corrected_probabilities(text=inferenceData.inputText, corrected_labels=corrected_folder_hierarchy, deployment_platform="outlook")
                 
                 if(corrected_probs):
@@ -256,7 +256,7 @@ async def jira_inference(request:Request, inferenceData:JiraInferenceRequest):
         is_exist = modelInference.check_inference_data_exists(input_id=inferenceData.inputId)
         
         if(is_exist): # Update Inference Scenario    
-            # Call Munsif's user_corrected_probablities
+            # Call user_corrected_probablities
             corrected_probs = inference_obj.get_corrected_probabilities(text=inferenceData.inputText, corrected_labels=inferenceData.finalLabels, deployment_platform="outlook")
             
             if(corrected_probs):

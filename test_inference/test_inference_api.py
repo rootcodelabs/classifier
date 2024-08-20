@@ -52,7 +52,7 @@ async def download_test_model(request: Request, modelData:TestDeploymentRequest,
         
         backgroundTasks.add_task(os.remove, zip_file_path)  
         
-        # 3. Instantiate Munsif's Inference Model
+        # 3. Instantiate Inference Model
         class_hierarchy = testModelInference.get_class_hierarchy_by_model_id(modelData.replacementModelId)
         if(class_hierarchy):
             

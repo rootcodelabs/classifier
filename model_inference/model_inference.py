@@ -5,7 +5,7 @@ GET_INFERENCE_DATASET_EXIST_URL = os.getenv("GET_INFERENCE_DATASET_EXIST_URL")
 CREATE_INFERENCE_URL=os.getenv("CREATE_INFERENCE_URL")
 UPDATE_INFERENCE_URL=os.getenv("UPDATE_INFERENCE_URL")
 CLASS_HIERARCHY_VALIDATION_URL=os.getenv("CLASS_HIERARCHY_VALIDATION_URL")
-GET_OUTLOOK_ACCESS_TOKEN_URL=os.getenv("GET_OUTLOOK_ACCESS_TOKEN_URL")
+OUTLOOK_ACCESS_TOKEN_API_URL=os.getenv("OUTLOOK_ACCESS_TOKEN_API_URL")
 BUILD_CORRECTED_FOLDER_HIERARCHY_URL = os.getenv("BUILD_CORRECTED_FOLDER_HIERARCHY_URL")
 FIND_FINAL_FOLDER_ID_URL = os.getenv("FIND_FINAL_FOLDER_ID_URL")
 
@@ -15,8 +15,8 @@ class ModelInference:
     
     def get_class_hierarchy_by_model_id(self, model_id):
         try:
-            get_outlook_access_token_url = GET_OUTLOOK_ACCESS_TOKEN_URL
-            response = requests.post(get_outlook_access_token_url, json={"modelId": model_id})
+            outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
+            response = requests.post(outlook_access_token_url, json={"modelId": model_id})
             response.raise_for_status()
             data = response.json()
 

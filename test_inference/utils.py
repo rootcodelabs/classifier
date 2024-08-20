@@ -10,7 +10,6 @@ def calculate_average_predicted_class_probability(class_probabilities:List[float
     
     return average_probability 
 
-
 def get_s3_payload(destinationFilePath:str, destinationStorageType:str, sourceFilePath:str, sourceStorageType:str):
     S3_FERRY_PAYLOAD = {
             "destinationFilePath": destinationFilePath,
@@ -19,7 +18,6 @@ def get_s3_payload(destinationFilePath:str, destinationStorageType:str, sourceFi
             "sourceStorageType": sourceStorageType
         }
     return S3_FERRY_PAYLOAD
-
 
 def get_inference_success_payload(predictedClasses:List[str], averageConfidence:float, predictedProbabilities:List[float] ):   
     INFERENCE_SUCCESS_PAYLOAD = {
@@ -30,11 +28,9 @@ def get_inference_success_payload(predictedClasses:List[str], averageConfidence:
     
     return INFERENCE_SUCCESS_PAYLOAD
 
-
 def unzip_file(zip_path, extract_to):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(extract_to)
-
 
 def delete_folder(folder_path: str):
     try:
