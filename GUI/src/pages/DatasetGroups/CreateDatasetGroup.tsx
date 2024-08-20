@@ -39,6 +39,7 @@ const CreateDatasetGroup: FC = () => {
     { id: uuidv4(), fieldName: '', level: 0, children: [] },
   ];
 
+  // Properly destructure useState calls into value and setter pairs
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<CreateDatasetGroupModals>(
     CreateDatasetGroupModals.NULL
@@ -51,7 +52,7 @@ const CreateDatasetGroup: FC = () => {
   const [validationRuleError, setValidationRuleError] = useState(false);
   const [nodes, setNodes] = useState<TreeNode[]>(initialClass);
   const [nodesError, setNodesError] = useState(false);
-  const [valiadationErrorType, setValidationErrorType] =
+  const [validationErrorType, setValidationErrorType] =
     useState<ValidationErrorTypes>(ValidationErrorTypes.NULL);
 
   const validateData = useCallback(() => {
@@ -153,17 +154,11 @@ const CreateDatasetGroup: FC = () => {
             modalType={modalType}
             isModalOpen={isModalOpen}
             setIsModalOpen={setIsModalOpen}
-            valiadationErrorType={valiadationErrorType}
+            validationErrorType={validationErrorType}
           />
 
           <div className="button-container">
             <Button
-              // disabled={
-              //   createDatasetGroupMutation.isLoading ||
-              //   validateClassHierarchy(nodes) ||
-              //   datasetName === '' ||
-              //   validateValidationRules(validationRules)
-              // }
               onClick={() => validateData()}
             >
               {t('datasetGroups.createDatasetGroupButton')}

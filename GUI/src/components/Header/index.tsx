@@ -136,7 +136,6 @@ const Header: FC = () => {
       </header>
 
       {sessionTimeOutModalOpened && (
-        <>
           <Dialog
             onClose={() => setSessionTimeOutModalOpened(false)}
             isOpen={sessionTimeOutModalOpened}
@@ -167,7 +166,6 @@ const Header: FC = () => {
               }) ?? ''}
             </p>
           </Dialog>
-        </>
       )}
     </div>
   );

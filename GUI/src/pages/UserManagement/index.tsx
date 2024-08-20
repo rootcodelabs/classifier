@@ -15,7 +15,6 @@ import UserModal from './UserModal';
 import { userManagementQueryKeys } from 'utils/queryKeys';
 import { userManagementEndpoints } from 'utils/endpoints';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
-import { useDialog } from 'hooks/useDialog';
 import SkeletonTable from 'components/molecules/TableSkeleton/TableSkeleton';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import ActionButtons from 'components/molecules/UserManagementActionButtons/UserManagementActionButtons';

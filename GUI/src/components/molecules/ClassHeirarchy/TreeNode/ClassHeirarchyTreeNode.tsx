@@ -22,7 +22,6 @@ const ClassHeirarchyTreeNode = ({
   nodesError?: boolean;
 }) => {
   const { t } = useTranslation();
-
   const [fieldName, setFieldName] = useState(node.fieldName);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -31,6 +30,16 @@ const ClassHeirarchyTreeNode = ({
     node.fieldName = newValue;
     if (isClassHierarchyDuplicated(nodes, newValue)) setNodesError(true);
     else setNodesError(false);
+  };
+
+  const handleKeyPress = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    callback: () => void
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      callback();
+    }
   };
 
   const errorMessage =
@@ -59,15 +68,28 @@ const ClassHeirarchyTreeNode = ({
           />
         </div>
         <div
+          role="button"
+          tabIndex={0}
           onClick={() => onAddSubClass(node?.id)}
+          onKeyPress={(event) => handleKeyPress(event, () => onAddSubClass(node?.id))}
           className="link"
           style={{
             textDecoration: 'underline',
+            cursor: 'pointer',
           }}
         >
           {t('datasetGroups.classHierarchy.addSubClass')}
         </div>
-        <div onClick={() => onDelete(node?.id)} className="link">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onDelete(node?.id)}
+          onKeyPress={(event) => handleKeyPress(event, () => onDelete(node?.id))}
+          className="link"
+          style={{
+            cursor: 'pointer',
+          }}
+        >
           <MdDeleteOutline /> {t('global.delete')}
         </div>
       </div>

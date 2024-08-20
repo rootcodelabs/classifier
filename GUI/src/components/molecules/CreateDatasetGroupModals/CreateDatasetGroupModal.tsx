@@ -11,12 +11,12 @@ const CreateDatasetGroupModalController = ({
   modalType,
   isModalOpen,
   setIsModalOpen,
-  valiadationErrorType,
+  validationErrorType,
 }: {
   modalType: CreateDatasetGroupModals;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  valiadationErrorType?: ValidationErrorTypes;
+  validationErrorType?: ValidationErrorTypes;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const CreateDatasetGroupModalController = ({
         <Dialog
           isOpen={isModalOpen}
           title={
-            valiadationErrorType === ValidationErrorTypes.VALIDATION_CRITERIA
+            validationErrorType === ValidationErrorTypes.VALIDATION_CRITERIA
               ? t('datasetGroups.modals.columnInsufficientHeader')
               : t('datasetGroups.modals.classsesInsufficientHeader')
           }
@@ -46,7 +46,7 @@ const CreateDatasetGroupModalController = ({
           }
           onClose={() => setIsModalOpen(false)}
         >
-          {valiadationErrorType === ValidationErrorTypes.VALIDATION_CRITERIA
+          {validationErrorType === ValidationErrorTypes.VALIDATION_CRITERIA
             ? t('datasetGroups.modals.columnInsufficientDescription')
             : t('datasetGroups.modals.classsesInsufficientDescription')}
         </Dialog>
