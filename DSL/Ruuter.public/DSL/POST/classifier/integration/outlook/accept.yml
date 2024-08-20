@@ -2,7 +2,7 @@ declaration:
   call: declare
   version: 0.1
   description: "Description placeholder for 'ACCEPT'"
-  method: get
+  method: post
   accepts: json
   returns: text/*
   namespace: classifier
