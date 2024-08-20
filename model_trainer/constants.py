@@ -52,7 +52,7 @@ INITIATING_TRAINING_PROGRESS_MESSAGE = "Download and preparing dataset"
 
 TRAINING_IN_PROGRESS_PROGRESS_MESSAGE = "The dataset is being trained on all selected models"
 
-DEPLOYING_MODEL_PROGRESS_MESSAGE = "Model training complete. The trained model is now being deployed to the {deployment_environment} enivronment"
+DEPLOYING_MODEL_PROGRESS_MESSAGE = "Model training complete. The trained model is now being deployed"
 
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to the {deployment_environment} environment"
 

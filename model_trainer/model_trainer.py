@@ -17,8 +17,6 @@ from loguru import logger
 
 logger.add(sink=TRAINING_LOGS_PATH)
 
-#TODO - REFACTOR CODE TO CREATE A GENERIC FUNCTION HERE WHICH WILL CONSTRUCT AND RETURN THE CONSTANTS IN A DICTIONARY WHICH CAN BE REFERENCED IN ALL PARTS OF THE CODE
-
 class ModelTrainer:
     def __init__(self, cookie, new_model_id,old_model_id) -> None:
 
@@ -170,8 +168,6 @@ class ModelTrainer:
                                             inference_routes={})
 
 
-        ############### TODO - THIS IS A TEST CALLING OF THE PROGRESS SESSION CREATE AND UPDATE ENDPOINTS - THE ACTUAL CALLING REFERENCES SHOULD BE PLACED IN THE RIGHT PLACED WITHIN THIS FUNCTION AND THE INFERENCE ENDPOINTS
-
         deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
 
         session_id = self.create_model_training_progress_session()
@@ -183,8 +179,6 @@ class ModelTrainer:
                                                     process_complete=False
                                                     )
 
-
-        ############### TODO - THIS IS A TEST CALLING OF THE PROGRESS SESSION CREATE AND UPDATE ENDPOINTS - THE ACTUAL CALLING REFERENCES SHOULD BE PLACED IN THE RIGHT PLACED WITHIN THIS FUNCTION AND THE INFERENCE ENDPOINTS
 
         
 
@@ -215,6 +209,14 @@ class ModelTrainer:
         selected_label_encoders = []
         average_accuracy = []
         logger.info(f"MODELS TO BE TRAINED: {models_to_train}")
+
+        self.update_model_training_progress_session(session_id=session_id, 
+                                            training_status=TRAINING_IN_PROGRESS_PROGRESS_STATUS,
+                                            training_progress_update_message=TRAINING_IN_PROGRESS_PROGRESS_MESSAGE,
+                                            training_progress_percentage=TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE,
+                                            process_complete=False
+                                            )
+
 
         for i in range(len(models_to_train)):
             training_pipeline =  TrainingPipeline(dfs, models_to_train[i])
@@ -264,8 +266,6 @@ class ModelTrainer:
             raise RuntimeError(f"RESPONSE STATUS: {response.text}")
         
 
-        ## Updating model training status to 'trained' and training results with the model training stats
-        ## TODO - The training results payload should be corrected formatted here to be sent to the database
         current_timestamp = int(datetime.now().timestamp())
         self.update_model_db_training_status(training_status=MODEL_TRAINING_SUCCESSFUL,
                                             model_s3_location=s3_save_location,
@@ -297,6 +297,16 @@ class ModelTrainer:
                 "replaceDeploymentPlatform": deployment_platform,
                 "bestModelName":best_model_name
             }
+
+        logger.info(f"FINAL MODEL TRAINING PROGRESS SESSION UPDATE {deployment_platform}")
+
+        self.update_model_training_progress_session(session_id=session_id, 
+                                            training_status=DEPLOYING_MODEL_PROGRESS_STATUS,
+                                            training_progress_update_message=DEPLOYING_MODEL_PROGRESS_MESSAGE,
+                                            training_progress_percentage=DEPLOYING_MODEL_PROGRESS_PERCENTAGE,
+                                            process_complete=False
+                                            )
+
 
         response = requests.post(deploy_url, json=payload)
 
