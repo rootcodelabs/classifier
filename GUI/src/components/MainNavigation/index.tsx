@@ -24,8 +24,6 @@ const MainNavigation: FC = () => {
   const { t } = useTranslation();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
-  const navigate = useNavigate();
-
   const items = [
     {
       id: 'userManagement',

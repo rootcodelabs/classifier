@@ -22,32 +22,15 @@ const ClassHeirarchyTreeNode = ({
   nodesError?: boolean;
 }) => {
   const { t } = useTranslation();
+
   const [fieldName, setFieldName] = useState(node.fieldName);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setFieldName(newValue);
-    node.fieldName = newValue;
-    if (isClassHierarchyDuplicated(nodes, newValue)) setNodesError(true);
+    setFieldName(e.target.value);
+    node.fieldName = e.target.value;
+    if (isClassHierarchyDuplicated(nodes, e.target.value)) setNodesError(true);
     else setNodesError(false);
   };
-
-  const handleKeyPress = (
-    event: React.KeyboardEvent<HTMLDivElement>,
-    callback: () => void
-  ) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      callback();
-    }
-  };
-
-  const errorMessage =
-    nodesError && !fieldName
-      ? t('datasetGroups.classHierarchy.fieldHint') ?? ''
-      : fieldName && isClassHierarchyDuplicated(nodes, fieldName)
-      ? t('datasetGroups.classHierarchy.filedHintIfExists') ?? ''
-      : '';
 
   return (
     <div
@@ -64,31 +47,24 @@ const ClassHeirarchyTreeNode = ({
             placeholder={t('datasetGroups.classHierarchy.fieldHint') ?? ''}
             value={fieldName}
             onChange={handleChange}
-            error={errorMessage}
+            error={
+              nodesError && !fieldName
+                ? t('datasetGroups.classHierarchy.fieldHint') ?? ''
+                : fieldName && isClassHierarchyDuplicated(nodes, fieldName)
+                ? t('datasetGroups.classHierarchy.filedHintIfExists') ?? ''
+                : ''
+            }
           />
         </div>
         <div
-          role="button"
-          tabIndex={0}
           onClick={() => onAddSubClass(node?.id)}
-          onKeyPress={(event) => handleKeyPress(event, () => onAddSubClass(node?.id))}
           className="link"
-          style={{
-            textDecoration: 'underline',
-            cursor: 'pointer',
-          }}
         >
           {t('datasetGroups.classHierarchy.addSubClass')}
         </div>
         <div
-          role="button"
-          tabIndex={0}
           onClick={() => onDelete(node?.id)}
-          onKeyPress={(event) => handleKeyPress(event, () => onDelete(node?.id))}
           className="link"
-          style={{
-            cursor: 'pointer',
-          }}
         >
           <MdDeleteOutline /> {t('global.delete')}
         </div>
@@ -96,7 +72,7 @@ const ClassHeirarchyTreeNode = ({
       {node?.children &&
         node?.children?.map((child) => (
           <ClassHeirarchyTreeNode
-            key={child.id}
+            key={child?.id}
             node={child}
             onAddSubClass={onAddSubClass}
             onDelete={onDelete}
