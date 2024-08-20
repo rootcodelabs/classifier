@@ -104,7 +104,7 @@ async function updateDatasetGroupProgress(
       validationStatus,
       progressPercentage,
       validationMessage,
-      timestamp: new Date(),
+      timestamp: Date.now(),
     },
   });
 }
