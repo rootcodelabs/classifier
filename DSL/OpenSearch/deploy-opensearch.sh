@@ -1,8 +1,8 @@
 #!/bin/bash
 
-URL=$1
-AUTH=$2
-MOCK_ALLOWED=${3:-false}
+URL=http://localhost:9200
+AUTH=admin
+MOCK_ALLOWED=${3:-true}
 
 if [[ -z $URL || -z $AUTH ]]; then
   echo "Url and Auth are required"
