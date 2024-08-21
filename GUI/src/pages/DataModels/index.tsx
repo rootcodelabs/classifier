@@ -13,6 +13,7 @@ import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinne
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { DataModelResponse, FilterData, Filters } from 'types/dataModels';
 import { dataModelsQueryKeys } from 'utils/queryKeys';
+import NoDataView from 'components/molecules/NoDataView';
 
 const DataModels: FC = () => {
   const { t } = useTranslation();
@@ -140,31 +141,37 @@ const DataModels: FC = () => {
                     {t('dataModels.productionModels')}
                   </div>{' '}
                 </div>
-
-                <div className="grid-container" style={{ margin: '30px 0px' }}>
-                  {prodDataModelsData?.data?.map(
-                    (dataset: DataModelResponse, index: number) => {
-                      return (
-                        <DataModelCard
-                          key={index}
-                          modelId={dataset?.id}
-                          dataModelName={dataset?.modelName}
-                          datasetGroupName={dataset?.connectedDgName}
-                          version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
-                          isLatest={dataset.latest}
-                          dgVersion={dataset?.dgVersion}
-                          lastTrained={dataset?.lastTrained}
-                          trainingStatus={dataset.trainingStatus}
-                          platform={dataset?.deploymentEnv}
-                          maturity={dataset?.maturityLabel}
-                          results={dataset?.trainingResults}
-                          setId={setId}
-                          setView={setView}
-                        />
-                      );
-                    }
-                  )}
-                </div>
+                {prodDataModelsData?.data?.length > 0 ? (
+                  <div
+                    className="grid-container"
+                    style={{ margin: '30px 0px' }}
+                  >
+                    {prodDataModelsData?.data?.map(
+                      (dataset: DataModelResponse, index: number) => {
+                        return (
+                          <DataModelCard
+                            key={index}
+                            modelId={dataset?.id}
+                            dataModelName={dataset?.modelName}
+                            datasetGroupName={dataset?.connectedDgName}
+                            version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
+                            isLatest={dataset.latest}
+                            dgVersion={dataset?.dgVersion}
+                            lastTrained={dataset?.lastTrained}
+                            trainingStatus={dataset.trainingStatus}
+                            platform={dataset?.deploymentEnv}
+                            maturity={dataset?.maturityLabel}
+                            results={dataset?.trainingResults}
+                            setId={setId}
+                            setView={setView}
+                          />
+                        );
+                      }
+                    )}
+                  </div>
+                ) : (
+                  <NoDataView text={t('dataModels.noProdModels') ?? ''} />
+                )}
               </div>
               <div>
                 <div className="title_container">
@@ -187,6 +194,7 @@ const DataModels: FC = () => {
                       handleFilterChange('modelName', selection?.value ?? '')
                     }
                     defaultValue={filters?.modelName}
+                    style={{fontSize:"1rem"}}
                   />
                   <FormSelect
                     label=""
@@ -267,30 +275,34 @@ const DataModels: FC = () => {
                   </Button>
                 </div>
 
-                <div className="grid-container" style={{ marginTop: '30px' }}>
-                  {dataModelsData?.data?.map(
-                    (dataset: DataModelResponse, index: number) => {
-                      return (
-                        <DataModelCard
-                          key={index}
-                          modelId={dataset?.id}
-                          dataModelName={dataset?.modelName}
-                          datasetGroupName={dataset?.connectedDgName}
-                          version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
-                          isLatest={dataset.latest}
-                          dgVersion={dataset?.dgVersion}
-                          lastTrained={dataset?.lastTrained}
-                          trainingStatus={dataset.trainingStatus}
-                          platform={dataset?.deploymentEnv}
-                          maturity={dataset?.maturityLabel}
-                          results={dataset?.trainingResults}
-                          setId={setId}
-                          setView={setView}
-                        />
-                      );
-                    }
-                  )}
-                </div>
+                {dataModelsData?.data?.length > 0 ? (
+                  <div className="grid-container" style={{ marginTop: '30px' }}>
+                      {dataModelsData?.data?.map(
+                        (dataset: DataModelResponse, index: number) => {
+                          return (
+                            <DataModelCard
+                              key={index}
+                              modelId={dataset?.id}
+                              dataModelName={dataset?.modelName}
+                              datasetGroupName={dataset?.connectedDgName}
+                              version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
+                              isLatest={dataset.latest}
+                              dgVersion={dataset?.dgVersion}
+                              lastTrained={dataset?.lastTrained}
+                              trainingStatus={dataset.trainingStatus}
+                              platform={dataset?.deploymentEnv}
+                              maturity={dataset?.maturityLabel}
+                              results={dataset?.trainingResults}
+                              setId={setId}
+                              setView={setView}
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                ) : (
+                  <NoDataView text={t('dataModels.noModels') ?? ''} />
+                )}
               </div>
               <Pagination
                 pageCount={pageCount}

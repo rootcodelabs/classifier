@@ -46,6 +46,11 @@ export const correctedTextEndpoints = {
     `/classifier/inference/corrected-metadata?pageNum=${pageNumber}&pageSize=${pageSize}&platform=${platform}&sortType=${sortType}`,
 };
 
+export const authEndpoints = {
+  GET_EXTENDED_COOKIE: () :string => `/auth/jwt/extend`,
+  LOGOUT: (): string => `/accounts/logout`
+}
+
 export const dataModelsEndpoints = {
   GET_OVERVIEW: (): string => '/classifier/datamodel/overview',
   GET_DATAMODELS_FILTERS: (): string =>
@@ -59,7 +64,7 @@ export const dataModelsEndpoints = {
   GET_DATA_MODEL_PROGRESS: (): string => `classifier/datamodel/progress`,
 };
 
-export const testModelsEnpoinnts = {
+export const testModelsEndpoints = {
   GET_MODELS: (): string => `/classifier/testmodel/models`,
   CLASSIFY_TEST_MODELS: (): string => `/classifier/testmodel/test-data`,
 };
