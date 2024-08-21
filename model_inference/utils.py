@@ -1,6 +1,7 @@
 import zipfile
 import os
 import shutil
+from typing import List, Optional
 
 def unzip_file(zip_path, extract_to):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -26,3 +27,38 @@ def get_s3_payload(destinationFilePath:str, destinationStorageType:str, sourceFi
             "sourceStorageType": sourceStorageType
         }
     return S3_FERRY_PAYLOAD
+
+def get_inference_create_payload(inferenceInputId:str, inferenceText:str, predictedLabels:List[str], averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None, mailId : Optional[str] = None ):   
+    INFERENCE_CREATE_PAYLOAD = {       
+        "inputId": inferenceInputId,
+        "inferenceText": inferenceText,
+        "predictedLabels": predictedLabels,
+        "averagePredictedClassesProbability": averagePredictedClassesProbability,
+        "platform": platform,
+        "primaryFolderId": primaryFolderId,
+        "mailId":mailId
+    }
+    
+    return INFERENCE_CREATE_PAYLOAD
+
+
+def get_inference_update_payload(inferenceInputId:str, isCorrected:bool, correctedLabels:List[str], averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None ):   
+    INFERENCE_UPDATE_PAYLOAD = {       
+        "inferenceId": inferenceInputId,
+        "isCorrected": isCorrected,
+        "predictedLabels": correctedLabels,
+        "averagePredictedClassesProbability": averagePredictedClassesProbability,
+        "primaryFolderId": primaryFolderId,
+        "platform": platform 
+    }
+    
+    return INFERENCE_UPDATE_PAYLOAD
+   
+
+def calculate_average_predicted_class_probability(class_probabilities:List[float]):
+    
+    total_probability = sum(class_probabilities)
+    average_probability = total_probability / len(class_probabilities)
+    
+    return average_probability        
+    

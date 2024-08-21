@@ -277,37 +277,41 @@ async def upload_and_copy(request: Request, importData: ImportJsonMajor):
     
 @app.post("/datasetgroup/data/copy")
 async def upload_and_copy(request: Request, copyPayload: CopyPayload):
-    cookie = request.cookies.get("customJwtCookie")
-    await authenticate_user(f'customJwtCookie={cookie}')
+    try:
+        cookie = request.cookies.get("customJwtCookie")
+        await authenticate_user(f'customJwtCookie={cookie}')
 
-    dg_id = copyPayload.dgId
-    new_dg_id = copyPayload.newDgId
-    files = copyPayload.fileLocations
+        dg_id = copyPayload.dgId
+        new_dg_id = copyPayload.newDgId
+        files = copyPayload.fileLocations
 
-    if len(files)>0:
-        local_storage_location = TEMP_COPY_FILE
-    else:
-        print("Abort copying since sent file list does not have any entry.")
-        upload_success = UPLOAD_SUCCESS.copy()
-        upload_success["saved_file_path"] = ""
-        return JSONResponse(status_code=200, content=upload_success)
-
-    for file in files:
-        old_location = f"/dataset/{dg_id}/{file}"
-        new_location = NEW_DATASET_LOCATION.format(new_dg_id=new_dg_id) + file
-        response = s3_ferry.transfer_file(local_storage_location, "FS", old_location, "S3")
-        response = s3_ferry.transfer_file(new_location, "S3", local_storage_location, "FS")
-
-        if response.status_code == 201:
-            print(f"Copying completed : {file}")
+        if len(files)>0:
+            local_storage_location = TEMP_COPY_FILE
         else:
-            print(f"Copying failed : {file}")
-            raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
-    else:
-        os.remove(local_storage_location)
-        upload_success = UPLOAD_SUCCESS.copy()
-        upload_success["saved_file_path"] = NEW_DATASET_LOCATION.format(new_dg_id=new_dg_id)
-        return JSONResponse(status_code=200, content=upload_success)
+            print("Abort copying since sent file list does not have any entry.")
+            upload_success = UPLOAD_SUCCESS.copy()
+            upload_success["saved_file_path"] = ""
+            return JSONResponse(status_code=200, content=upload_success)
+
+        for file in files:
+            old_location = f"/dataset/{dg_id}/{file}"
+            new_location = NEW_DATASET_LOCATION.format(new_dg_id=new_dg_id) + file
+            response = s3_ferry.transfer_file(local_storage_location, "FS", old_location, "S3")
+            response = s3_ferry.transfer_file(new_location, "S3", local_storage_location, "FS")
+
+            if response.status_code == 201:
+                print(f"Copying completed : {file}")
+            else:
+                print(f"Copying failed : {file}")
+                raise HTTPException(status_code=500, detail=S3_UPLOAD_FAILED)
+        else:
+            os.remove(f"../shared/{local_storage_location}")
+            upload_success = UPLOAD_SUCCESS.copy()
+            upload_success["saved_file_path"] = NEW_DATASET_LOCATION.format(new_dg_id=new_dg_id)
+            return JSONResponse(status_code=200, content=upload_success)
+    except Exception as e:
+        print(f"Error in /datasetgroup/data/copy : {e}")
+        return JSONResponse(status_code=200, content="File Copy Failed")
 
 def extract_stop_words(file: UploadFile) -> List[str]:
     file_converter = FileConverter()

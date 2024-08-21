@@ -1,15 +1,18 @@
 from fastapi import  HTTPException
 import httpx
+import requests
+import os
 from constants import (GRAPH_API_BASE_URL, Folder, ClassHierarchy)
+OUTLOOK_ACCESS_TOKEN_API_URL=os.getenv("OUTLOOK_ACCESS_TOKEN_API_URL") 
 from typing import List
 
-async def fetch_folders(folder_id: str = 'root', ACCESS_TOKEN: str = 'none'):
+async def fetch_folders(folder_id: str = 'root', outlook_access_token:str=''):
     url = f"{GRAPH_API_BASE_URL}/me/mailFolders"
     if folder_id != 'root':
         url = f"{GRAPH_API_BASE_URL}/me/mailFolders/{folder_id}/childFolders"
     
     headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Authorization": f"Bearer {outlook_access_token}",
         "Content-Type": "application/json"
     }
     
@@ -26,11 +29,12 @@ async def fetch_folders(folder_id: str = 'root', ACCESS_TOKEN: str = 'none'):
     
     return all_folders
 
-async def build_folder_hierarchy(folder_id: str = 'root'):
-    folders = await fetch_folders(folder_id)
+async def build_folder_hierarchy(outlook_access_token:str, folder_id: str = 'root'):
+    
+    folders = await fetch_folders(folder_id, outlook_access_token=outlook_access_token)
     
     async def build_hierarchy(folder):
-        child_folders = await build_folder_hierarchy(folder['id'])
+        child_folders = await build_folder_hierarchy(outlook_access_token=outlook_access_token, folder_id=folder['id'])
         return Folder(
             id=folder['id'],
             displayName=folder['displayName'],
@@ -40,9 +44,9 @@ async def build_folder_hierarchy(folder_id: str = 'root'):
     return [await build_hierarchy(folder) for folder in folders]
 
 
-async def validate_hierarchy(class_hierarchies: List[ClassHierarchy]):
+async def validate_hierarchy(class_hierarchies: List[ClassHierarchy],  outlook_access_token:str):
     errors = []
-    folder_hierarchy = await build_folder_hierarchy()
+    folder_hierarchy = await build_folder_hierarchy(outlook_access_token=outlook_access_token)
 
     def find_folder(name: str, folders: List[Folder]):
         return next((folder for folder in folders if folder.displayName == name), None)
@@ -94,3 +98,17 @@ def get_corrected_folder_hierarchy(hierarchy: List[Folder], final_folder_id: str
     if not result:
         raise ValueError(f"Folder with ID '{final_folder_id}' not found in the hierarchy")
     return result
+
+
+def get_outlook_access_token(model_id:int):    
+    try:
+        outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
+        response = requests.post(outlook_access_token_url, json={"modelId": model_id})
+        response.raise_for_status()
+        data = response.json()
+
+        access_token = data["outlook_access_token"]
+        return access_token
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to retrieve Outlook Access Token. Reason: {e}") 
+    

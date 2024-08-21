@@ -40,6 +40,7 @@ This repo will primarily contain:
 - For setting up the database initially, run helper script `./token.sh`
 - Then setup database password in constant.ini under the key DB_PASSWORD
 - Run migrations added in this repository by running the helper script `./migrate.sh`(consider db properties before run the script)
+- When creating new migrations, use the helper `./create-migration.sh name-of-migration sql` which will create a new file in the correct directory and add the required headers, pass file name(ex: data-model-sessions) and the format(sql or xml) as inputs
 
 ### Open Search
 
