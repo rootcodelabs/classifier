@@ -19,13 +19,17 @@ app = FastAPI()
 ner_processor = NERProcessor()
 html_cleaner = HTMLCleaner()
 
-JIRA_INFERENCE_ENDPOINT = os.getenv("RUUTER_PRIVATE_URL")
-OUTLOOK_INFERENCE_ENDPOINT = os.getenv("RUUTER_PRIVATE_URL")
+JIRA_INFERENCE_ENDPOINT = os.getenv("JIRA_INFERENCE_ENDPOINT")
+OUTLOOK_INFERENCE_ENDPOINT = os.getenv("OUTLOOK_INFERENCE_ENDPOINT")
 
 @app.post("/anonymize")
 async def process_text(request: Request):
     try:
         payload = await request.json()
+
+        print("-----------------------------")
+        print(payload)
+        print("-----------------------------")
 
         data_dict = payload.get("data", {})
         concatenated_text = " ".join(str(value) for value in data_dict.values())
@@ -42,22 +46,34 @@ async def process_text(request: Request):
         processed_text = TextProcessor.combine_chunks(processed_chunks)
 
         output_payload = {key: value for key, value in payload.items() if key != "data"}
-        output_payload["input_text"] = processed_text
-        output_payload["status"] = True
+        output_payload["inputText"] = processed_text
 
         platform = payload.get("platform", "").lower()
 
         headers = {
                 'Content-Type': 'application/json'
             }
+        del output_payload["platform"]
+        del output_payload["parentFolderId"]
+        del output_payload["mailId"]
+        output_payload["inputId"] = output_payload.pop("key")
+        output_payload["finalLabels"] = output_payload.pop("labels")
+        print(f"Output payload : {output_payload}")
 
+        print(f"platform : {platform}")
         if platform == "jira":
             response = requests.post(JIRA_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
         elif platform == "outlook":
             response = requests.post(OUTLOOK_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
+        else:
+            print("Playform not recognized... ")
+            response = None
+
+        print(f"Response from {platform} : {response}")
 
         return output_payload
     except Exception as e:
+        print(f"Exception in annonymizer endpoint : {e}")
         output_payload = {key: value for key, value in payload.items() if key != "data"}
         output_payload["input_text"] = e
         output_payload["status"] = False
