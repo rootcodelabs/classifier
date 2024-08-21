@@ -17,7 +17,6 @@ import { stopWordsQueryKeys } from 'utils/queryKeys';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { StopWordImportOptions } from 'enums/datasetEnums';
 import { useDialog } from 'hooks/useDialog';
-import { AxiosError } from 'axios';
 
 const StopWords: FC = () => {
   const { t } = useTranslation();
@@ -28,11 +27,10 @@ const StopWords: FC = () => {
   const [importOption, setImportOption] = useState('');
   const [file, setFile] = useState<File | null>();
   const fileUploadRef = useRef<FileUploadHandle>(null);
-  const [addedStopWord, setAddedStopWord] = useState('');
 
   const { register, setValue, watch } = useForm({
     defaultValues: {
-      stopWord: addedStopWord,
+      stopWord: '',
     },
   });
 
@@ -49,7 +47,7 @@ const StopWords: FC = () => {
 
   const addStopWordMutation = useMutation({
     mutationFn: (data: { stopWords: string[] }) => addStopWord(data),
-    onSuccess: async (res) => {
+    onSuccess: async () => {
       await queryClient.invalidateQueries(
         stopWordsQueryKeys.GET_ALL_STOP_WORDS()
       );
@@ -59,7 +57,7 @@ const StopWords: FC = () => {
 
   const deleteStopWordMutation = useMutation({
     mutationFn: (data: { stopWords: string[] }) => deleteStopWord(data),
-    onSuccess: async (res) => {
+    onSuccess: async () => {
       await queryClient.invalidateQueries(
         stopWordsQueryKeys.GET_ALL_STOP_WORDS()
       );
@@ -89,7 +87,7 @@ const StopWords: FC = () => {
       setIsModalOpen(false);
       importMutationSuccessFunc();
     },
-    onError: async (error: AxiosError) => {
+    onError: async () => {
       setIsModalOpen(true);
       open({
         title: t('stopWords.importModal.unsuccessTitle') ?? '',
@@ -104,7 +102,7 @@ const StopWords: FC = () => {
       setIsModalOpen(false);
       importMutationSuccessFunc();
     },
-    onError: async (error: AxiosError) => {
+    onError: async () => {
       setIsModalOpen(true);
       open({
         title: t('stopWords.importModal.unsuccessTitle') ?? '',
@@ -113,8 +111,8 @@ const StopWords: FC = () => {
     },
   });
 
-  const handleFileSelect = (file: File | null) => {
-    if (file) setFile(file);
+  const handleFileSelect = (file: File | undefined) => {
+    setFile(file);
   };
 
   const handleStopWordFileOperations = () => {
@@ -231,6 +229,7 @@ const StopWords: FC = () => {
                 ref={fileUploadRef}
                 disabled={importOption === ''}
                 onFileSelect={handleFileSelect}
+                accept={['xlsx', 'json', 'yaml', 'txt']}
               />
             </div>
           </Dialog>

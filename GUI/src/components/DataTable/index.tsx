@@ -233,22 +233,6 @@ const DataTable: FC<DataTableProps> = (
               </button>
             </div>
           )}
-          {/* <div className='data-table__page-size'>
-            <label htmlFor={id}>{t('global.resultCount')}</label>
-            <select
-              id={id}
-              value={table.getState().pagination.pageSize}
-              onChange={e => {
-                table.setPageSize(Number(e.target.value));
-              }}
-            >
-              {[10, 20, 30, 40, 50].map(pageSize => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
-                </option>
-              ))}
-            </select>
-          </div> */}
         </div>
       )}
     </div>

@@ -1,16 +1,15 @@
 import { FormInput } from 'components/FormElements';
 import React, {
-  useState,
   ChangeEvent,
   forwardRef,
   useImperativeHandle,
   Ref,
+  useRef,
 } from 'react';
 
 type FileUploadProps = {
-  label?: string;
-  onFileSelect: (file: File | null) => void;
-  accept?: string;
+  onFileSelect: (file: File | undefined) => void;
+  accept?: string | string[];
   disabled?: boolean;
 };
 
@@ -20,26 +19,34 @@ export type FileUploadHandle = {
 
 const FileUpload = forwardRef(
   (props: FileUploadProps, ref: Ref<FileUploadHandle>) => {
-    const { onFileSelect, accept,disabled } = props;
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const { onFileSelect, accept, disabled } = props;
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => ({
       clearFile() {
-        setSelectedFile(null);
-        onFileSelect(null);
+        onFileSelect(undefined);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       },
     }));
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files ? e.target.files[0] : null;
-      setSelectedFile(file);
+      const file = e.target.files ? e.target.files[0] : undefined;
       onFileSelect(file);
     };
 
-    const restrictFormat = (accept: string) => {
-      if (accept === 'json') return '.json';
-      else if (accept === 'xlsx') return '.xlsx';
-      else if (accept === 'yaml') return '.yaml, .yml';
+    const restrictFormat = (accept: string | string[]) => {
+      if (typeof accept === 'string') {
+        console.log("hii")
+        if (accept === 'json') return '.json';
+        else if (accept === 'xlsx') return '.xlsx';
+        else if (accept === 'yaml') return '.yaml, .yml';
+        return '';
+      } else {
+        return accept.map(ext => `.${ext}`).join(', ');
+      }
+
     };
 
     return (
@@ -50,9 +57,18 @@ const FileUpload = forwardRef(
             onChange={handleFileChange}
             accept={restrictFormat(accept ?? '')}
             disabled={disabled}
+            ref={fileInputRef}
           />
         </FormInput>
-        <button type="button" onClick={() => setSelectedFile(null)}>
+        <button
+          type="button"
+          onClick={() => {
+            onFileSelect(undefined);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+            }
+          }}
+        >
           Clear
         </button>
       </div>
