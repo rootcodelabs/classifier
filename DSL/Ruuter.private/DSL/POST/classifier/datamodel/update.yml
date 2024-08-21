@@ -137,7 +137,7 @@ set_deployment_env:
 
 check_deployment_platform:
   switch:
-    - condition: ${deployment_env_data_set == 'jira' || deployment_env_data_set == 'outlook'|| deployment_env_data_set == 'pinal' }
+    - condition: ${deployment_env_data_set == 'jira' || deployment_env_data_set == 'outlook'}
       next: update_existing_models_deployment_platform
     - condition: ${deployment_env_data_set == 'testing' || deployment_env_data_set == 'undeployed' }
       next: check_event_type_for_latest_version_again
