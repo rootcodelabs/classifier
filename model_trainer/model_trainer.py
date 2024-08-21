@@ -36,7 +36,7 @@ class ModelTrainer:
             self.model_details = response.json()
             logger.info("SUCCESSFULLY RECIEVED MODEL DETAILS")
         else:
-            
+
             logger.error(f"FAILED WITH STATUS CODE: {response.status_code}")
             logger.error(f"RESPONSE: {response.text}")
 
@@ -64,12 +64,20 @@ class ModelTrainer:
     def update_model_db_training_status(self,training_status, model_s3_location,
                                         last_trained_time_stamp,training_results, inference_routes):
 
+        training_results_payload = {"trainingResults":{}}
+
+        if len(training_results) == 3:
+            logger.info(f"UPDATE TRAINING STATUS DB RESULTS PAYLOAD: {training_results}")
+            training_results_payload["trainingResults"]["classes"] = training_results[0]
+            training_results_payload["trainingResults"]["accuracy"] = training_results[1]
+            training_results_payload["trainingResults"]["f1_score"] = training_results[2]
+
         payload = {}
         payload["modelId"] = int(self.new_model_id)
         payload["trainingStatus"] = training_status
         payload["modelS3Location"] = model_s3_location
         payload["lastTrainedTimestamp"] = last_trained_time_stamp
-        payload["trainingResults"] = training_results
+        payload["trainingResults"] = training_results_payload
         payload["inferenceRoutes"] = {"inference_routes":inference_routes}
 
         logger.info(f"{training_status} UPLOAD PAYLOAD - \n {payload}")
@@ -140,7 +148,7 @@ class ModelTrainer:
 
         if response.status_code==200:
 
-            logger.info(f"REQUEST TO UPEQ%# TRAINING PROGRESS SESSION FOR MODEL ID {self.new_model_id} SUCCESSFUL")
+            logger.info(f"REQUEST TO UPDATE TRAINING PROGRESS SESSION FOR MODEL ID {self.new_model_id} SUCCESSFUL")
             logger.info(f"RESPONSE PAYLOAD \n {response.json()}")
             session_id = response.json()["response"]["sessionId"]
             
@@ -159,163 +167,173 @@ class ModelTrainer:
         
     def train(self):
         
-        #updating model training status to in-progress
-        current_timestamp = int(datetime.now().timestamp())
-        self.update_model_db_training_status(training_status=MODEL_TRAINING_IN_PROGRESS,
-                                            model_s3_location="",
-                                            last_trained_time_stamp=current_timestamp,
-                                            training_results={},
-                                            inference_routes={})
+        try:
+            #updating model training status to in-progress
+            current_timestamp = int(datetime.now().timestamp())
+            self.update_model_db_training_status(training_status=MODEL_TRAINING_IN_PROGRESS,
+                                                model_s3_location="",
+                                                last_trained_time_stamp=current_timestamp,
+                                                training_results={},
+                                                inference_routes={})
 
 
-        deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
+            deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
 
-        session_id = self.create_model_training_progress_session()
+            session_id = self.create_model_training_progress_session()
 
-        self.update_model_training_progress_session(session_id=session_id, 
-                                                    training_status=INITIATING_TRAINING_PROGRESS_STATUS,
-                                                    training_progress_update_message=INITIATING_TRAINING_PROGRESS_MESSAGE.format(deployment_platform=deployment_platform),
-                                                    training_progress_percentage=INITIATING_TRAINING_PROGRESS_PERCENTAGE,
-                                                    process_complete=False
-                                                    )
-
-
-        
-
-        s3_ferry = S3Ferry()
-        dg_id = self.model_details['response']['data'][0]['connectedDgId']
-        data_pipeline = DataPipeline(dg_id, self.cookie)
-        dfs = data_pipeline.create_dataframes()
-        models_inference_metadata,_  = data_pipeline.models_and_filters()
-        models_to_train = self.model_details['response']['data'][0]['baseModels']
-
-        local_basemodel_layers_save_path = LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH.format(model_id=self.new_model_id)
-        local_classification_layer_save_path = LOCAL_CLASSIFICATION_LAYER_SAVE_PATH.format(model_id=self.new_model_id)
-        local_label_encoder_save_path = LOCAL_LABEL_ENCODER_SAVE_PATH.format(model_id=self.new_model_id)
+            self.update_model_training_progress_session(session_id=session_id, 
+                                                        training_status=INITIATING_TRAINING_PROGRESS_STATUS,
+                                                        training_progress_update_message=INITIATING_TRAINING_PROGRESS_MESSAGE.format(deployment_platform=deployment_platform),
+                                                        training_progress_percentage=INITIATING_TRAINING_PROGRESS_PERCENTAGE,
+                                                        process_complete=False
+                                                        )
 
 
-        ModelTrainer.create_training_folders([local_basemodel_layers_save_path,
-                                              local_classification_layer_save_path,
-                                              local_label_encoder_save_path])
-        
-
-
-        with open(f'{MODEL_RESULTS_PATH}/{self.new_model_id}/models_dets.pkl', 'wb') as file:
-            pickle.dump(models_inference_metadata, file)
-
-
-        selected_models = []
-        selected_classifiers = []
-        selected_label_encoders = []
-        average_accuracy = []
-        logger.info(f"MODELS TO BE TRAINED: {models_to_train}")
-
-        self.update_model_training_progress_session(session_id=session_id, 
-                                            training_status=TRAINING_IN_PROGRESS_PROGRESS_STATUS,
-                                            training_progress_update_message=TRAINING_IN_PROGRESS_PROGRESS_MESSAGE,
-                                            training_progress_percentage=TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE,
-                                            process_complete=False
-                                            )
-
-
-        for i in range(len(models_to_train)):
-            training_pipeline =  TrainingPipeline(dfs, models_to_train[i])
-            metrics, models, classifiers, label_encoders = training_pipeline.train()
-            selected_models.append(models)
-            selected_classifiers.append(classifiers)
-            selected_label_encoders.append(label_encoders)
-            average = sum(metrics[1]) / len(metrics[1])
-            average_accuracy.append(average)
-
-        max_value_index = average_accuracy.index(max(average_accuracy))
-        best_model_base = selected_models[max_value_index]
-        best_model_classifier = selected_classifiers[max_value_index]
-        best_model_label_encoder = selected_label_encoders[max_value_index]
-        best_model_name = models_to_train[max_value_index]
-
-        logger.info("TRAINING COMPLETE")
-        logger.info(f"THE BEST PERFORMING MODEL IS {best_model_name}")
-
-        torch.save(best_model_base, f"{local_basemodel_layers_save_path}/base_model_trainable_layers_{self.new_model_id}.pth")
-        torch.save(best_model_classifier, f"{local_classification_layer_save_path}/classifier_{self.new_model_id}.pth")
-        
-        label_encoder_path = f"{local_label_encoder_save_path}/label_encoder_{self.new_model_id}.pkl"
-        with open(label_encoder_path, 'wb') as file:
-            pickle.dump(best_model_label_encoder, file)
-
-        
-        model_zip_path = f"{MODEL_RESULTS_PATH}/{str(self.new_model_id)}"
-
-        shutil.make_archive(base_name=model_zip_path, root_dir=model_zip_path, format="zip") 
-        
-        s3_save_location = f"{S3_FERRY_MODEL_STORAGE_PATH}/{str(self.new_model_id)}/{str(self.new_model_id)}.zip"
-        local_source_location = f"{MODEL_RESULTS_PATH.replace('/shared/','')}/{str(self.new_model_id)}.zip" # Removing 'shared/' path here so that S3 ferry source file path works without any issue
-
-        logger.info("INITIATING MODEL UPLOAD TO S3")
-        logger.info(f"SOURCE LOCATION - {local_source_location}")
-        logger.info(f"S3 SAVE LOCATION - {s3_save_location}")
-        
-        response = s3_ferry.transfer_file(s3_save_location, "S3", local_source_location, "FS")
-        
-        if response.status_code == 201:
-            logger.info(f"MODEL FILE UPLOADED SUCCESSFULLY TO {s3_save_location}")
-        
-        else:
-            logger.error(f"MODEL FILE UPLOAD TO {s3_save_location} FAILED")
-            logger.error(f"RESPONSE: {response.text}")
-            raise RuntimeError(f"RESPONSE STATUS: {response.text}")
-        
-
-        current_timestamp = int(datetime.now().timestamp())
-        self.update_model_db_training_status(training_status=MODEL_TRAINING_SUCCESSFUL,
-                                            model_s3_location=s3_save_location,
-                                            last_trained_time_stamp=current_timestamp,
-                                            training_results={}, 
-                                            inference_routes=models_inference_metadata)
-        
-
-
-        logger.info(f"INITIATING DEPLOYMENT TO {deployment_platform}")
-
-        deploy_url = DEPLOYMENT_ENDPOINT.format(deployment_platform = deployment_platform)
-
-    
-    ## CODE SHOULD BE UPDATED TO CHECK WHETHER old_model_id  == new_model_id (because that is how ruuter sends the request if it's a model create operation) 
-        if self.old_model_id is not None:
             
-            payload = {
-                "modelId": self.new_model_id,
-                "replaceDeployment": True,
-                "replaceDeploymentPlatform":deployment_platform,
-                "bestModelName":best_model_name
-            }
+
+            s3_ferry = S3Ferry()
+            dg_id = self.model_details['response']['data'][0]['connectedDgId']
+            data_pipeline = DataPipeline(dg_id, self.cookie)
+            dfs = data_pipeline.create_dataframes()
+            models_inference_metadata,_  = data_pipeline.models_and_filters()
+            models_to_train = self.model_details['response']['data'][0]['baseModels']
+
+            local_basemodel_layers_save_path = LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH.format(model_id=self.new_model_id)
+            local_classification_layer_save_path = LOCAL_CLASSIFICATION_LAYER_SAVE_PATH.format(model_id=self.new_model_id)
+            local_label_encoder_save_path = LOCAL_LABEL_ENCODER_SAVE_PATH.format(model_id=self.new_model_id)
+
+
+            ModelTrainer.create_training_folders([local_basemodel_layers_save_path,
+                                                local_classification_layer_save_path,
+                                                local_label_encoder_save_path])
+            
+
+
+            with open(f'{MODEL_RESULTS_PATH}/{self.new_model_id}/models_dets.pkl', 'wb') as file:
+                pickle.dump(models_inference_metadata, file)
+
+
+            selected_models = []
+            selected_classifiers = []
+            selected_label_encoders = []
+            selected_metrics = []
+            average_accuracy = []
+            logger.info(f"MODELS TO BE TRAINED: {models_to_train}")
+
+            self.update_model_training_progress_session(session_id=session_id, 
+                                                training_status=TRAINING_IN_PROGRESS_PROGRESS_STATUS,
+                                                training_progress_update_message=TRAINING_IN_PROGRESS_PROGRESS_MESSAGE,
+                                                training_progress_percentage=TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE,
+                                                process_complete=False
+                                                )
+
+
+            for i in range(len(models_to_train)):
+                training_pipeline =  TrainingPipeline(dfs, models_to_train[i])
+                metrics, models, classifiers, label_encoders = training_pipeline.train()
+                selected_models.append(models)
+                selected_classifiers.append(classifiers)
+                selected_metrics.append(metrics)
+                selected_label_encoders.append(label_encoders)
+                average = sum(metrics[1]) / len(metrics[1])
+                average_accuracy.append(average)
+
+            max_value_index = average_accuracy.index(max(average_accuracy))
+            best_model_base = selected_models[max_value_index]
+            best_model_classifier = selected_classifiers[max_value_index]
+            best_model_label_encoder = selected_label_encoders[max_value_index]
+            best_model_name = models_to_train[max_value_index]
+            best_model_metrics = selected_metrics[max_value_index]
+
+            logger.info(f"BEST MODEL METRICS - {best_model_metrics}")
+
+            logger.info("TRAINING COMPLETE")
+            logger.info(f"THE BEST PERFORMING MODEL IS {best_model_name}")
+
+            for i, (model, classifier, label_encoder) in enumerate(zip(best_model_base, best_model_classifier, best_model_label_encoder)):
+                torch.save(model, f"{local_basemodel_layers_save_path}/last_two_layers_dfs_{i}.pth")
+                torch.save(classifier, f"{local_classification_layer_save_path}/classifier_{i}.pth")
+                
+                label_encoder_path = f"{local_label_encoder_save_path}/label_encoder_{i}.pkl"
+                with open(label_encoder_path, 'wb') as file:
+                    pickle.dump(label_encoder, file)
+            
+            model_zip_path = f"{MODEL_RESULTS_PATH}/{str(self.new_model_id)}"
+
+            shutil.make_archive(base_name=model_zip_path, root_dir=model_zip_path, format="zip") 
+            
+            s3_save_location = f"{S3_FERRY_MODEL_STORAGE_PATH}/{str(self.new_model_id)}/{str(self.new_model_id)}.zip"
+            local_source_location = f"{MODEL_RESULTS_PATH.replace('/shared/','')}/{str(self.new_model_id)}.zip" # Removing 'shared/' path here so that S3 ferry source file path works without any issue
+
+            logger.info("INITIATING MODEL UPLOAD TO S3")
+            logger.info(f"SOURCE LOCATION - {local_source_location}")
+            logger.info(f"S3 SAVE LOCATION - {s3_save_location}")
+            
+            response = s3_ferry.transfer_file(s3_save_location, "S3", local_source_location, "FS")
+            
+            if response.status_code == 201:
+                logger.info(f"MODEL FILE UPLOADED SUCCESSFULLY TO {s3_save_location}")
+            
+            else:
+                logger.error(f"MODEL FILE UPLOAD TO {s3_save_location} FAILED")
+                logger.error(f"RESPONSE: {response.text}")
+                raise RuntimeError(f"RESPONSE STATUS: {response.text}")
+            
+
+            current_timestamp = int(datetime.now().timestamp())
+            self.update_model_db_training_status(training_status=MODEL_TRAINING_SUCCESSFUL,
+                                                model_s3_location=s3_save_location,
+                                                last_trained_time_stamp=current_timestamp,
+                                                training_results=best_model_metrics, 
+                                                inference_routes=models_inference_metadata)
+            
+
+
+            logger.info(f"INITIATING DEPLOYMENT TO {deployment_platform}")
+
+            deploy_url = DEPLOYMENT_ENDPOINT.format(deployment_platform = deployment_platform)
+
         
-        else:
-            payload = {
-                "modelId": self.new_model_id,
-                "replaceDeployment": False,
-                "replaceDeploymentPlatform": deployment_platform,
-                "bestModelName":best_model_name
-            }
+        ## CODE SHOULD BE UPDATED TO CHECK WHETHER old_model_id  == new_model_id (because that is how ruuter sends the request if it's a model create operation) 
+            if self.old_model_id is not None:
+                
+                payload = {
+                    "modelId": self.new_model_id,
+                    "replaceDeployment": True,
+                    "replaceDeploymentPlatform":deployment_platform,
+                    "bestModelName":best_model_name
+                }
+            
+            else:
+                payload = {
+                    "modelId": self.new_model_id,
+                    "replaceDeployment": False,
+                    "replaceDeploymentPlatform": deployment_platform,
+                    "bestModelName":best_model_name
+                }
 
-        logger.info(f"FINAL MODEL TRAINING PROGRESS SESSION UPDATE {deployment_platform}")
+            logger.info(f"FINAL MODEL TRAINING PROGRESS SESSION UPDATE {deployment_platform}")
 
-        self.update_model_training_progress_session(session_id=session_id, 
-                                            training_status=DEPLOYING_MODEL_PROGRESS_STATUS,
-                                            training_progress_update_message=DEPLOYING_MODEL_PROGRESS_MESSAGE,
-                                            training_progress_percentage=DEPLOYING_MODEL_PROGRESS_PERCENTAGE,
-                                            process_complete=False
-                                            )
+            self.update_model_training_progress_session(session_id=session_id, 
+                                                training_status=DEPLOYING_MODEL_PROGRESS_STATUS,
+                                                training_progress_update_message=DEPLOYING_MODEL_PROGRESS_MESSAGE,
+                                                training_progress_percentage=DEPLOYING_MODEL_PROGRESS_PERCENTAGE,
+                                                process_complete=False
+                                                )
 
 
-        response = requests.post(deploy_url, json=payload)
+            response = requests.post(deploy_url, json=payload)
 
-        if response.status_code == 201 or response.status_code == 200:
-            logger.info(f"{deployment_platform} DEPLOYMENT SUCCESSFUL")
+            if response.status_code == 201 or response.status_code == 200:
+                logger.info(f"{deployment_platform} DEPLOYMENT SUCCESSFUL")
+            
+            else:
+                logger.error(f"{deployment_platform} DEPLOYMENT FAILED")
+                logger.info(f"RESPONSE: {response.text}")
+
+                raise RuntimeError(f"RESPONSE : {response.text}")
         
-        else:
-            logger.error(f"{deployment_platform} DEPLOYMENT FAILED")
-            logger.info(f"RESPONSE: {response.text}")
+        except Exception as e:
 
-            raise RuntimeError(f"RESPONSE : {response.text}")
+            logger.error(f"RUNTIME CRASHED - ERROR - {e.with_traceback()}")
 
