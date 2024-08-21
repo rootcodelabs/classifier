@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   ruuter-public:
     container_name: ruuter-public
@@ -283,10 +281,20 @@ services:
       - shared-volume:/shared
     environment:
       - UPLOAD_DIRECTORY=/shared
-      - JIRA_MODEL_DOWNLOAD_DIRECTORY=/shared/models/jira
-      - OUTLOOK_MODEL_DOWNLOAD_DIRECTORY=/shared/models/outlook
       - RUUTER_PRIVATE_URL=http://ruuter-private:8088
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
+      - JIRA_MODEL_DOWNLOAD_DIRECTORY=/shared/models/jira
+      - OUTLOOK_MODEL_DOWNLOAD_DIRECTORY=/shared/models/outlook
+      - GET_INFERENCE_DATASET_EXIST_URL=http://ruuter-public:8086/internal/exist?inputId=inferenceInputId
+      - CREATE_INFERENCE_URL=http://ruuter-public:8086/internal/create
+      - UPDATE_INFERENCE_URL=http://ruuter-public:8086/internal/corrected
+      - GET_DATAMODEL_METADATA_BY_ID_URL=http://ruuter-private:8088/classifier/datamodel/metadata?modelId=inferenceModelId
+      - GET_DATASET_GROUP_METADATA_BY_ID_URL=http://ruuter-private:8088/classifier/datasetgroup/group/metadata?groupId=dataSetGroupId
+      - CLASS_HIERARCHY_VALIDATION_URL=http://hierarchy-validation:8009/check-folder-hierarchy
+      - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
+      - BUILD_CORRECTED_FOLDER_HIERARCHY_URL=http://hierarchy-validation:8009/corrected-folder-hierarchy
+      - FIND_FINAL_FOLDER_ID_URL=http://hierarchy-validation:8009/find-folder-id
+      - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
     ports:
       - "8003:8003"
     networks:
@@ -295,6 +303,51 @@ services:
     depends_on:
       - init
       - s3-ferry
+
+  test-inference:
+    build:
+      context: ./test_inference
+      dockerfile: Dockerfile
+    container_name: test-inference
+    volumes:
+      - shared-volume:/shared
+    environment:
+      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+      - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
+      - TEST_MODEL_DOWNLOAD_DIRECTORY=/shared/models/test
+      - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
+      - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
+    ports:
+      - "8010:8010"
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.21
+    depends_on:
+      - init
+      - file-handler
+
+  hierarchy-validation:
+    build:
+      context: ./hierarchy_validation
+      dockerfile: Dockerfile
+    container_name: hierarchy-validation
+    volumes:
+      - shared-volume:/shared
+    environment:
+      - UPLOAD_DIRECTORY=/shared
+      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+      - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
+      - JIRA_MODEL_DOWNLOAD_DIRECTORY=/shared/models/jira
+      - OUTLOOK_MODEL_DOWNLOAD_DIRECTORY=/shared/models/outlook
+      - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
+    ports:
+      - "8009:8009"
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.22
+    depends_on:
+      - init
+      - file-handler
 
   opensearch-node:
     image: opensearchproject/opensearch:2.11.1

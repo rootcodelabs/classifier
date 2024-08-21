@@ -8,16 +8,34 @@ declaration:
   namespace: classifier
   allowlist:
     body:
-      - field: is_connect
+      - field: isConnect
         type: boolean
         description: "Body field 'isConnect'"
 
 extract_request_data:
   assign:
-    is_connect: ${incoming.body.is_connect}
-  next: get_auth_header
+    is_connect: ${incoming.body.isConnect}
+  next: get_platform_integration_status
 
-#check already subcribe or not from db
+get_platform_integration_status:
+  call: http.post
+  args:
+    url: "[#CLASSIFIER_RESQL]/get-platform-integration-status"
+    body:
+      platform: 'JIRA'
+  result: res
+  next: assign_db_platform_integration_data
+
+assign_db_platform_integration_data:
+  assign:
+    db_platform_status: ${res.response.body[0].isConnect}
+  next: validate_request
+
+validate_request:
+  switch:
+    - condition: ${db_platform_status !== is_connect}
+      next: get_auth_header
+  next: return_already_request
 
 get_auth_header:
   call: http.post
@@ -92,4 +110,9 @@ remove_subscription_data:
 
 return_result:
   return: res.response.body
+  next: end
+
+return_already_request:
+  status: 400
+  return: "Already Requested-Bad Request"
   next: end

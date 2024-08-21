@@ -9,7 +9,7 @@ declaration:
   allowlist:
     params:
       - field: validationToken
-        type: boolean
+        type: string
         description: "parameter 'validationToken'"
     body:
       - field: payload
