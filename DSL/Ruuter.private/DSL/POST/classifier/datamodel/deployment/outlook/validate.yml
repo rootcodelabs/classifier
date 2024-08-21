@@ -9,7 +9,7 @@ declaration:
   allowlist:
     body:
       - field: modelId
-        type: string
+        type: number
         description: "Body field 'modelId'"
 
 extract_request:
