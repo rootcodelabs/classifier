@@ -24,7 +24,6 @@ async function searchDatasetGroupNotification({
         size: 1,
       },
     });
-
     for (const hit of response.body.hits.hits) {
       if (!hit._source.sentTo?.includes(connectionId)) {
         console.log(`hit: ${JSON.stringify(hit)}`);

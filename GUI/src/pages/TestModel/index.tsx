@@ -11,7 +11,7 @@ import {
   TestModelType,
 } from 'types/testModelTypes';
 import { formatClassHierarchyArray } from 'utils/commonUtilts';
-import { testModelsEnpoinnts } from 'utils/endpoints';
+import { testModelsEndpoints } from 'utils/endpoints';
 import { testModelsQueryKeys } from 'utils/queryKeys';
 import { formatPredictions } from 'utils/testModelUtil';
 import './testModelStyles.scss';
@@ -30,7 +30,7 @@ const TestModel: FC = () => {
   const { isLoading } = useQuery({
     queryKey: testModelsQueryKeys.GET_TEST_MODELS(),
     queryFn: async () => {
-      const response = await apiDev.get(testModelsEnpoinnts.GET_MODELS());
+      const response = await apiDev.get(testModelsEndpoints.GET_MODELS());
       return response?.data?.response?.data ?? ([] as TestModelType[]);
     },
     onSuccess: (data: TestModelType[]) => {
@@ -52,7 +52,7 @@ const TestModel: FC = () => {
   } = useMutation({
     mutationFn: async (data: ClassifyTestModalPayloadType) => {
       const response = await apiDev.post(
-        testModelsEnpoinnts.CLASSIFY_TEST_MODELS(),
+        testModelsEndpoints.CLASSIFY_TEST_MODELS(),
         data
       );
       return response?.data?.response?.data as ClassifyTestModalResponseType;

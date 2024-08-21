@@ -19,7 +19,7 @@ type DataModelCardProps = {
   platform?: string;
   maturity?: string;
   setId: React.Dispatch<React.SetStateAction<number>>;
-  setView: React.Dispatch<React.SetStateAction<"individual"|"list" >>;
+  setView: React.Dispatch<React.SetStateAction<'individual' | 'list'>>;
   results?: any;
 };
 
@@ -101,21 +101,23 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
         <p>{dataModelName}</p>
         <div className="flex">
           <Label>{version}</Label>
-          {isLatest ? <Label type="success">{t('datasetGroups.datasetCard.latest') ?? ''}</Label> : null}
+          {isLatest ? (
+            <Label type="success">
+              {t('datasetGroups.datasetCard.latest') ?? ''}
+            </Label>
+          ) : null}
         </div>
 
         <div className="py-3">
           <p>
-          {t('dataModels.dataModelCard.datasetGroup') ?? ''}:
+            {t('dataModels.dataModelCard.datasetGroup') ?? ''}:
             {datasetGroupName}
           </p>
           <p>
-          {t('dataModels.dataModelCard.dgVersion') ?? ''}:
-            {dgVersion}
+            {t('dataModels.dataModelCard.dgVersion') ?? ''}:{dgVersion}
           </p>
           <p>
-          {t('dataModels.dataModelCard.lastTrained') ?? ''}:            {lastTrained}
-
+            {t('dataModels.dataModelCard.lastTrained') ?? ''}: {lastTrained}
           </p>
         </div>
         <div className="flex">
@@ -131,20 +133,31 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
             onClick={() => {
               open({
                 title: t('dataModels.trainingResults.title') ?? '',
-                footer: <Button onClick={close}>{t('global.close') ?? ''}</Button>,
+                footer: (
+                  <Button onClick={close}>{t('global.close') ?? ''}</Button>
+                ),
                 size: 'large',
                 content: (
                   <div>
                     <div className="flex" style={{ margin: '20px 0px' }}>
-                      {t('dataModels.trainingResults.bestPerformingModel') ?? ''} -
+                      {t('dataModels.trainingResults.bestPerformingModel') ??
+                        ''}{' '}
+                      -
                     </div>{' '}
                     <Card
                       isHeaderLight={true}
                       header={
                         <div className="training-results-grid-container">
-                          <div> {t('dataModels.trainingResults.classes') ?? ''}</div>
-                          <div>{t('dataModels.trainingResults.accuracy') ?? ''}</div>
-                          <div>{t('dataModels.trainingResults.f1Score') ?? ''}</div>
+                          <div>
+                            {' '}
+                            {t('dataModels.trainingResults.classes') ?? ''}
+                          </div>
+                          <div>
+                            {t('dataModels.trainingResults.accuracy') ?? ''}
+                          </div>
+                          <div>
+                            {t('dataModels.trainingResults.f1Score') ?? ''}
+                          </div>
                         </div>
                       }
                     >
@@ -177,7 +190,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
               });
             }}
           >
-             {t('dataModels.trainingResults.viewResults') ?? ''} Results
+            {t('dataModels.trainingResults.viewResults') ?? ''} Results
           </Button>
           <Button
             appearance="primary"

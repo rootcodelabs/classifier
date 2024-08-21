@@ -5,13 +5,14 @@ import sse from 'services/sse-service';
 import { useQuery } from '@tanstack/react-query';
 import { getDatasetGroupsProgress } from 'services/datasets';
 import { ValidationProgressData, SSEEventData } from 'types/datasetGroups';
+import { datasetQueryKeys } from 'utils/queryKeys';
 
 const ValidationSessions: FC = () => {
   const { t } = useTranslation();
   const [progresses, setProgresses] = useState<ValidationProgressData[]>([]);
 
-  const { data: progressData,refetch } = useQuery<ValidationProgressData[]>(
-    ['datasetgroups/progress'],
+  const { data: progressData, refetch } = useQuery<ValidationProgressData[]>(
+    datasetQueryKeys.GET_DATASET_GROUP_PROGRESS(),
     () => getDatasetGroupsProgress(),
     {
       onSuccess: (data) => {

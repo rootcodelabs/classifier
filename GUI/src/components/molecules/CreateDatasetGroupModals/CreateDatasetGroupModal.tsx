@@ -1,54 +1,38 @@
-import { CreateDatasetGroupModals } from 'enums/datasetEnums';
+import {
+  CreateDatasetGroupModals,
+  ValidationErrorTypes,
+} from 'enums/datasetEnums';
 import { Button, Dialog } from 'components';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useDialog } from 'hooks/useDialog';
 
 const CreateDatasetGroupModalController = ({
   modalType,
   isModalOpen,
   setIsModalOpen,
+  validationErrorType,
 }: {
   modalType: CreateDatasetGroupModals;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  validationErrorType?: ValidationErrorTypes;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { open, close } = useDialog();
 
-  const opneValidationErrorModal = (modalType: CreateDatasetGroupModals) => {
-    open({
-      title: t('datasetGroups.modals.columnInsufficientHeader') ?? "",
-      content: (
-        <p>
-          {t('datasetGroups.modals.columnInsufficientDescription')}
-        </p>
-      ),
-      footer: (
-        <div>
-              <Button
-                appearance={ButtonAppearanceTypes.SECONDARY}
-                onClick={() => setIsModalOpen(false)}
-              >
-                {t('global.cancel')}
-              </Button>
-              <Button onClick={() => setIsModalOpen(false)}>
-                {t('datasetGroups.createDataset.addNowButton')}
-              </Button>
-            </div>
-      )
-    })
-  }
   return (
     <>
       {modalType === CreateDatasetGroupModals.VALIDATION_ERROR && (
         <Dialog
           isOpen={isModalOpen}
-          title={t('datasetGroups.modals.columnInsufficientHeader')}
+          title={
+            validationErrorType === ValidationErrorTypes.VALIDATION_CRITERIA
+              ? t('datasetGroups.modals.columnInsufficientHeader')
+              : t('datasetGroups.modals.classsesInsufficientHeader')
+          }
           footer={
-            <div>
+            <div className="footer-button-wrapper">
               <Button
                 appearance={ButtonAppearanceTypes.SECONDARY}
                 onClick={() => setIsModalOpen(false)}
@@ -62,7 +46,9 @@ const CreateDatasetGroupModalController = ({
           }
           onClose={() => setIsModalOpen(false)}
         >
-          {t('datasetGroups.modals.columnInsufficientDescription')}
+          {validationErrorType === ValidationErrorTypes.VALIDATION_CRITERIA
+            ? t('datasetGroups.modals.columnInsufficientDescription')
+            : t('datasetGroups.modals.classsesInsufficientDescription')}
         </Dialog>
       )}
       {modalType === CreateDatasetGroupModals.SUCCESS && (
@@ -70,7 +56,7 @@ const CreateDatasetGroupModalController = ({
           isOpen={isModalOpen}
           title={t('datasetGroups.modals.createDatasetSuccessTitle')}
           footer={
-            <div className="flex-grid">
+            <div className="footer-button-wrapper">
               <Button
                 appearance={ButtonAppearanceTypes.SECONDARY}
                 onClick={() => setIsModalOpen(false)}

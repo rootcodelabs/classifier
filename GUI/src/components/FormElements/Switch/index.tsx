@@ -14,7 +14,7 @@ type SwitchProps = Partial<ControllerRenderProps> & {
   checked?: boolean;
   defaultChecked?: boolean;
   hideLabel?: boolean;
-  onCheckedChange?: (checked: boolean) => void|any;
+  onCheckedChange?: (checked: boolean) => void;
 };
 
 const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
@@ -38,7 +38,10 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
     const offValueLabel = offLabel || t('global.off');
 
     return (
-      <div className="switch" style={{  [`${'--active-color'}`]: onColor }}>
+      <div
+        className="switch"
+        style={{ [`${'--active-color'}`]: onColor } as React.CSSProperties}
+      >
         {label && !hideLabel && (
           <label htmlFor={id} className="switch__label">
             {label}

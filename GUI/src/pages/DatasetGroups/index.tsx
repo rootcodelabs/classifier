@@ -13,6 +13,7 @@ import ViewDatasetGroup from './ViewDatasetGroup';
 import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
+import NoDataView from 'components/molecules/NoDataView';
 
 type FilterData = {
   datasetGroupName: string;
@@ -104,8 +105,15 @@ const DatasetGroups: FC = () => {
                 placeholder={t('datasetGroups.table.group') ?? ''}
                 options={formattedArray(filterData?.response?.dgNames) ?? []}
                 onSelectionChange={(selection) =>
-                  handleFilterChange('datasetGroupName', selection?.value ?? '')
+                  handleFilterChange(
+                    'datasetGroupName',
+                    (selection?.value as string) ?? ''
+                  )
                 }
+                value={{
+                  label: filters.datasetGroupName,
+                  value: filters.datasetGroupName,
+                }}
               />
               <FormSelect
                 label=""
@@ -113,7 +121,10 @@ const DatasetGroups: FC = () => {
                 placeholder={t('datasetGroups.table.version') ?? ''}
                 options={formattedArray(filterData?.response?.dgVersions) ?? []}
                 onSelectionChange={(selection) =>
-                  handleFilterChange('version', selection?.value ?? '')
+                  handleFilterChange(
+                    'version',
+                    (selection?.value as string) ?? ''
+                  )
                 }
               />
               <FormSelect
@@ -125,7 +136,10 @@ const DatasetGroups: FC = () => {
                   []
                 }
                 onSelectionChange={(selection) =>
-                  handleFilterChange('validationStatus', selection?.value ?? '')
+                  handleFilterChange(
+                    'validationStatus',
+                    (selection?.value as string) ?? ''
+                  )
                 }
               />
               <FormSelect
@@ -141,7 +155,7 @@ const DatasetGroups: FC = () => {
                   { label: 'Z-A', value: 'desc' },
                 ]}
                 onSelectionChange={(selection) =>
-                  handleFilterChange('sort', selection?.value ?? '')
+                  handleFilterChange('sort', (selection?.value as string) ?? '')
                 }
               />
               <Button onClick={() => setEnableFetch(true)}>
@@ -149,42 +163,49 @@ const DatasetGroups: FC = () => {
               </Button>
               <Button
                 onClick={() => {
-                  navigate(0);
+                  setFilters({
+                    datasetGroupName: 'all',
+                    version: 'x.x.x',
+                    validationStatus: 'all',
+                    sort: 'asc',
+                  });
                 }}
               >
                 {t('global.reset')}
               </Button>
             </div>
             {isLoading && (
-              <div className='skeleton-container'>
+              <div className="skeleton-container">
                 <CircularSpinner />
               </div>
             )}
-            <div
-              className="grid-container"
-              style={{marginTop: '20px' }}
-            >
-              {datasetGroupsData?.response?.data?.map(
-                (dataset: SingleDatasetType, index: number) => {
-                  return (
-                    <DatasetGroupCard
-                      key={index}
-                      datasetGroupId={dataset?.id}
-                      isEnabled={dataset?.isEnabled}
-                      datasetName={dataset?.groupName}
-                      version={`V${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
-                      isLatest={dataset.latest}
-                      lastUpdated={dataset?.lastUpdatedTimestamp}
-                      lastUsed={dataset?.lastTrainedTimestamp}
-                      validationStatus={dataset.validationStatus}
-                      lastModelTrained={dataset?.lastModelTrained}
-                      setId={setId}
-                      setView={setView}
-                    />
-                  );
-                }
-              )}
-            </div>
+            {datasetGroupsData?.response?.data?.length > 0 ? (
+              <div className="grid-container" style={{ marginTop: '20px' }}>
+                {datasetGroupsData?.response?.data?.map(
+                  (dataset: SingleDatasetType, index: number) => {
+                    return (
+                      <DatasetGroupCard
+                        key={dataset?.id + index}
+                        datasetGroupId={dataset?.id}
+                        isEnabled={dataset?.isEnabled}
+                        datasetName={dataset?.groupName}
+                        version={`V${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                        isLatest={dataset.latest}
+                        lastUpdated={dataset?.lastUpdatedTimestamp}
+                        lastUsed={dataset?.lastTrainedTimestamp}
+                        validationStatus={dataset.validationStatus}
+                        lastModelTrained={dataset?.lastModelTrained}
+                        setId={setId}
+                        setView={setView}
+                      />
+                    );
+                  }
+                )}
+              </div>
+            ) : (
+              <NoDataView text={t('datasetGroups.noDatasets') ?? ''} />
+            )}
+
             <Pagination
               pageCount={pageCount}
               pageIndex={pageIndex}
