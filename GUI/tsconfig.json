@@ -22,7 +22,9 @@
     "baseUrl": "src",
     "types": [
       "vite/client",
-      "node"
+      "node",
+      // "testing-library__jest-dom",
+      "jest"
     ]
   },
   "include": [

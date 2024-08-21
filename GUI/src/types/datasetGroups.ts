@@ -150,3 +150,17 @@ export type SSEEventData = {
   validationMessage?: string;
   progressPercentage: number;
 };
+export interface TransformValidationCriteria {
+  fields: string[];
+  validationRules: {
+    [key: string]: {
+      type: string;
+      isDataClass: boolean;
+    };
+  };
+}
+export interface TransformValidationRule {
+  fieldName: string;
+  dataType: string;
+  isDataClass: boolean;
+}

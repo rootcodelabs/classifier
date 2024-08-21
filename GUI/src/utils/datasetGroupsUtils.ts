@@ -1,11 +1,17 @@
-import { Class, TreeNode, ValidationRule, ValidationRuleResponse } from 'types/datasetGroups';
+import {
+  Class,
+  TransformValidationCriteria,
+  TreeNode,
+  ValidationRule,
+  ValidationRuleResponse,
+} from 'types/datasetGroups';
 import { v4 as uuidv4 } from 'uuid';
 import isEqual from 'lodash/isEqual';
 
 export const transformValidationRules = (
   data: ValidationRule[] | undefined
 ) => {
-  const validationCriteria = {
+  const validationCriteria: TransformValidationCriteria = {
     fields: [],
     validationRules: {},
   };
@@ -23,7 +29,7 @@ export const transformValidationRules = (
 };
 
 export const transformClassHierarchy = (data: Class[]) => {
-  const transformNode = (node: Class) => {
+  const transformNode: any = (node: Class) => {
     return {
       class: node?.fieldName,
       subclasses: node?.children?.map(transformNode),
@@ -52,7 +58,9 @@ export const reverseTransformClassHierarchy = (data: any) => {
   return data?.map((item: any) => traverse(item, 0));
 };
 
-export const transformObjectToArray = (data: Record<string, ValidationRuleResponse> | undefined) => {
+export const transformObjectToArray = (
+  data: Record<string, ValidationRuleResponse> | undefined
+) => {
   if (data) {
     const output = Object.entries(data).map(([fieldName, details], index) => ({
       id: index + 1,
@@ -60,36 +68,34 @@ export const transformObjectToArray = (data: Record<string, ValidationRuleRespon
       dataType: details?.type,
       isDataClass: details?.isDataClass,
     }));
-
     return output;
   }
 };
 
 export const validateClassHierarchy = (data: Class[]) => {
-  console.log("data ", data)
   for (let item of data) {
     if (item.fieldName === '') {
-      console.log("data s")
       return true;
     }
     if (item.children && item.children.length > 0) {
       if (validateClassHierarchy(item.children)) {
-        console.log("data 2")
         return true;
       }
     }
   }
-  console.log("data 4")
   return false;
 };
 
 export const validateValidationRules = (data: ValidationRule[] | undefined) => {
-  for (let item of data) {
-    if (item.fieldName === '' || item.dataType === '') {
-      return true;
+  if (data) {
+    for (let item of data) {
+      if (item.fieldName === '' || item.dataType === '') {
+        return true;
+      }
     }
-  }
-  return false;
+    return false;
+  }  
+  return false
 };
 
 export const getTimestampNow = () => {
@@ -120,7 +126,10 @@ export const isValidationRulesSatisfied = (data: ValidationRule[]) => {
   return false;
 };
 
-export const isFieldNameExisting = (dataArray: ValidationRule[] | undefined, fieldNameToCheck: string) => {
+export const isFieldNameExisting = (
+  dataArray: ValidationRule[] | undefined,
+  fieldNameToCheck: string
+) => {
   const count = dataArray?.reduce((acc, item) => {
     return item?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase()
       ? acc + 1
@@ -130,7 +139,10 @@ export const isFieldNameExisting = (dataArray: ValidationRule[] | undefined, fie
   return count === 2;
 };
 
-export const countFieldNameOccurrences = (dataArray:TreeNode[] | undefined, fieldNameToCheck: string) => {
+export const countFieldNameOccurrences = (
+  dataArray: TreeNode[] | undefined,
+  fieldNameToCheck: string
+) => {
   let count = 0;
 
   function countOccurrences(node: TreeNode) {
@@ -148,7 +160,10 @@ export const countFieldNameOccurrences = (dataArray:TreeNode[] | undefined, fiel
   return count;
 };
 
-export const isClassHierarchyDuplicated = (dataArray: TreeNode[] | undefined, fieldNameToCheck: string) => {
+export const isClassHierarchyDuplicated = (
+  dataArray: TreeNode[] | undefined,
+  fieldNameToCheck: string
+) => {
   const count = countFieldNameOccurrences(dataArray, fieldNameToCheck);
   return count === 2;
 };
@@ -162,12 +177,21 @@ export const handleDownload = (response: any, format: string) => {
     link.setAttribute('download', `export.${format}`); // Specify the file name and extension
     document.body.appendChild(link);
     link.click();
-    link.parentNode.removeChild(link);
+    link?.parentNode?.removeChild(link);
   } catch (error) {
     console.error('Error downloading the file', error);
   }
 };
 
-export const isMajorUpdate = (initialData, updatedData) => {
+export const isMajorUpdate = (initialData: any, updatedData: any) => {
   return !isEqual(initialData, updatedData);
 };
+
+
+
+
+
+
+
+
+
