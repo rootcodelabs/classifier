@@ -79,7 +79,7 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
 
     const selectClasses = clsx('select', disabled && 'select--disabled');
 
-    const placeholderValue = placeholder || t('global.choose');
+    const placeholderValue = placeholder || t('datasetGroups.createDataset.selectPlaceholder');
 
     return (
       <div className={selectClasses} style={rest.style}>

@@ -8,7 +8,7 @@ import { enableDataset } from 'services/datasets';
 import { useDialog } from 'hooks/useDialog';
 import { Operation } from 'types/datasetGroups';
 import { datasetQueryKeys } from 'utils/queryKeys';
-import { DatasetViewEnum, ValidationStatus } from 'enums/datasetEnums';
+import { DatasetViewEnum } from 'enums/datasetEnums';
 import { ButtonAppearanceTypes, LabelType } from 'enums/commonEnums';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from 'utils/commonUtilts';
@@ -20,7 +20,6 @@ type DatasetGroupCardProps = {
   version?: string;
   isLatest?: boolean;
   isEnabled?: boolean;
-  enableAllowed?: boolean;
   lastUpdated?: Date | null;
   lastUsed?: Date | null;
   validationStatus?: string;
@@ -130,8 +129,8 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
             appearance={ButtonAppearanceTypes.PRIMARY}
             size="s"
             onClick={() => {
-              setId && setId(datasetGroupId);
-              setView && setView(DatasetViewEnum.INDIVIDUAL);
+              setId?.(datasetGroupId);
+              setView?.(DatasetViewEnum.INDIVIDUAL);
             }}
           >
             {t('datasetGroups.datasetCard.settings')}

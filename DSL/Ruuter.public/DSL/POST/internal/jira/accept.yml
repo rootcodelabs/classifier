@@ -91,9 +91,9 @@ send_issue_data:
     body:
       platform: 'JIRA'
       key: ${issue_info.key}
-      data: ${extract_info}
-      parentFolderId: null
-      mailId: null
+      data: ${extract_info.response.body}
+      parentFolderId: None
+      mailId: None
       labels: ${issue_info.fields.labels}
   result: res
 

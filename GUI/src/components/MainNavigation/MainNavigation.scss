@@ -9,6 +9,7 @@
   overflow: auto;
   scrollbar-width: none;
   transition: width .1s ease-out;
+  z-index: 9999;
 
   &::-webkit-scrollbar {
     display: none;
@@ -51,10 +52,11 @@
     }
 
     &:active {
-      background-color: get-color(sapphire-blue-7);
+      background-color: #2E78B3;
     }
 
     &.active {
+      background-color: #2E78B3;
       font-weight: 700;
     }
   }

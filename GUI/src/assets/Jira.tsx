@@ -7,7 +7,7 @@ const Jira = () => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_154_12584)">
+      <g clipPath="url(#clip0_154_12584)">
         <rect width="80" height="80" rx="40" fill="white" />
         <path
           d="M67.5152 20H38.6289C38.6289 27.2 44.4564 33.03 51.6583 33.03H56.9708V38.1713C56.9708 45.3713 62.8008 51.2012 70.0008 51.2012V22.4856C70.0003 21.8265 69.7382 21.1946 69.2722 20.7286C68.8062 20.2625 68.1742 20.0005 67.5152 20Z"
@@ -31,8 +31,8 @@ const Jira = () => {
           y2="47.1041"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0.176" stop-color="#0052CC" />
-          <stop offset="1" stop-color="#2684FF" />
+          <stop offset="0.176" stopColor="#0052CC" />
+          <stop offset="1" stopColor="#2684FF" />
         </linearGradient>
         <linearGradient
           id="paint1_linear_154_12584"
@@ -42,8 +42,8 @@ const Jira = () => {
           y2="62.7351"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0.176" stop-color="#0052CC" />
-          <stop offset="1" stop-color="#2684FF" />
+          <stop offset="0.176" stopColor="#0052CC" />
+          <stop offset="1" stopColor="#2684FF" />
         </linearGradient>
         <clipPath id="clip0_154_12584">
           <rect width="80" height="80" rx="40" fill="white" />

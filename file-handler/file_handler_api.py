@@ -415,7 +415,7 @@ async def delete_dataset_files(request: Request):
         print(f"Error in delete_dataset_files: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/datamodel/data/corrected/download")
+@app.post("/datamodel/data/corrected/download") #Download Filtered
 async def download_and_convert(request: Request, exportData: ExportCorrectedDataFile, backgroundTasks: BackgroundTasks):
     cookie = request.cookies.get("customJwtCookie")
     await authenticate_user(f'customJwtCookie={cookie}')
