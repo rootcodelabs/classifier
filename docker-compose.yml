@@ -177,6 +177,9 @@ services:
       - ./DSL/CronManager/script:/app/scripts
       - ./DSL/CronManager/config:/app/config
       - ./model_trainer:/app/model_trainer
+      - ./dataset-processor:/app/dataset_processor
+      - shared-volume:/shared
+
     environment:
       - server.port=9010
     ports:
