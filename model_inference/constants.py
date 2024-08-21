@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 S3_DOWNLOAD_FAILED = {
     "upload_status": 500,
@@ -15,12 +15,12 @@ class UpdateRequest(BaseModel):
     bestBaseModel:str
 
 class OutlookInferenceRequest(BaseModel):
-    inputId:int
+    inputId:str
     inputText:str
-    finalFolderId:int
+    finalFolderId:str
     mailId:str
 
 class JiraInferenceRequest(BaseModel):
-    inputId:int
+    inputId:str
     inputText:str
-    finalLabels:List[str]
+    finalLabels:Optional[List[str]] = None

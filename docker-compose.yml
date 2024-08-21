@@ -313,10 +313,10 @@ services:
       - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
       - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
     ports:
-      - "8010:8010"
+      - "8011:8011"
     networks:
       bykstack:
-        ipv4_address: 172.25.0.21
+        ipv4_address: 172.25.0.23
     depends_on:
       - init
       - file-handler
