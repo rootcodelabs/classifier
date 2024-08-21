@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Header, HTTPException
+from fastapi import FastAPI, Request, Header, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from ner import NERProcessor
 from text_processing import TextProcessor
@@ -10,7 +10,7 @@ import hmac
 import hashlib
 import json
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 import pandas as pd
 import io
 
@@ -22,16 +22,15 @@ html_cleaner = HTMLCleaner()
 JIRA_INFERENCE_ENDPOINT = os.getenv("JIRA_INFERENCE_ENDPOINT")
 OUTLOOK_INFERENCE_ENDPOINT = os.getenv("OUTLOOK_INFERENCE_ENDPOINT")
 
-@app.post("/anonymize")
-async def process_text(request: Request):
+def anonymizer_functions(payload):
     try:
-        payload = await request.json()
-
-        print("-----------------------------")
-        print(payload)
-        print("-----------------------------")
-
         data_dict = payload.get("data", {})
+
+        if len(data_dict["attachments"]) <= 0:
+            data_dict["attachments"] = ""
+        else:
+            data_dict["attachments"] = ', '.join(data_dict["attachments"])
+
         concatenated_text = " ".join(str(value) for value in data_dict.values())
 
         cleaned_text = html_cleaner.remove_html_tags(concatenated_text)
@@ -53,17 +52,22 @@ async def process_text(request: Request):
         headers = {
                 'Content-Type': 'application/json'
             }
-        del output_payload["platform"]
-        del output_payload["parentFolderId"]
-        del output_payload["mailId"]
-        output_payload["inputId"] = output_payload.pop("key")
-        output_payload["finalLabels"] = output_payload.pop("labels")
-        print(f"Output payload : {output_payload}")
-
-        print(f"platform : {platform}")
         if platform == "jira":
+            del output_payload["platform"]
+            del output_payload["parentFolderId"]
+            del output_payload["mailId"]
+            output_payload["inputId"] = output_payload.pop("key")
+            output_payload["finalLabels"] = output_payload.pop("labels")
+
+            print(f"Output payload : {output_payload}")
             response = requests.post(JIRA_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
         elif platform == "outlook":
+            del output_payload["labels"]
+            del output_payload["platform"]
+            output_payload["inputId"] = output_payload.pop("key")
+            output_payload["finalFolderId"] = output_payload.pop("parentFolderId")
+
+            print(f"Output payload : {output_payload}")
             response = requests.post(OUTLOOK_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
         else:
             print("Playform not recognized... ")
@@ -73,12 +77,23 @@ async def process_text(request: Request):
 
         return output_payload
     except Exception as e:
-        print(f"Exception in annonymizer endpoint : {e}")
-        output_payload = {key: value for key, value in payload.items() if key != "data"}
-        output_payload["input_text"] = e
-        output_payload["status"] = False
+        print(f"Error while annonymizing the data : {e}")
 
-        return output_payload
+@app.post("/anonymize")
+async def process_text(request: Request, background_tasks: BackgroundTasks):
+    try:
+        payload = await request.json()
+
+        print("-----------------------------")
+        print(payload)
+        print("-----------------------------")
+
+        background_tasks.add_task(anonymizer_functions, payload=payload)
+
+        return JSONResponse(status_code=200, content={"status":True, "detail":"Anonymizing process started"})
+
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status":False, "detail":"Anonymizing process failed.", "error":e})
     
 @app.post("/verify_signature")
 async def verify_signature_endpoint(request: Request, x_hub_signature: str = Header(...)):

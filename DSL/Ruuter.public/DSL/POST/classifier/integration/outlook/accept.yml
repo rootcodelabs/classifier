@@ -170,12 +170,10 @@ send_outlook_data:
     body:
       platform: 'OUTLOOK'
       key: ${mail_info_data.response.body.internetMessageId}
-      data: ${outlook_body}
+      data: ${outlook_body.response.body}
       parentFolderId: ${mail_info_data.response.body.parentFolderId}
       mailId: ${mail_info_data.response.body.id}
-      labels: null
-    response:
-      statusCodeValue: 200
+      labels: None
   result: res
   next: check_response
 
