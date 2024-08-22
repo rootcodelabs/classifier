@@ -56,7 +56,8 @@ execute_cron_manager:
     query:
       cookie: ${cookie}
       modelId: ${model_id}
-      new_model_id: -1
+      newModelId: -1
+      updateType: 'none'
   result: res
   next: assign_success_response
 

@@ -315,8 +315,8 @@ execute_cron_manager:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_model/model_trainer"
     query:
       cookie: ${incoming.headers.cookie}
-      model_id: ${model_id}
-      new_model_id: ${new_model_id}
+      modelId: ${model_id}
+      newModelId: ${new_model_id}
       updateType: ${update_type}
   result: res
   next: assign_success_response
