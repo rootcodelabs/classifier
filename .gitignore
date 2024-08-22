@@ -399,3 +399,4 @@ FodyWeavers.xsd
 
 /tim-db
 /data
+DSL/Liquibase/data/update_refresh_token.sql
