@@ -28,7 +28,7 @@ def get_s3_payload(destinationFilePath:str, destinationStorageType:str, sourceFi
         }
     return S3_FERRY_PAYLOAD
 
-def get_inference_create_payload(inferenceInputId:str, inferenceText:str, predictedLabels:List[str], averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None, mailId : Optional[str] = None ):   
+def get_inference_create_payload(inferenceInputId:str, inferenceText:str, predictedLabels:list, averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None, mailId : Optional[str] = None ):   
     INFERENCE_CREATE_PAYLOAD = {       
         "inputId": inferenceInputId,
         "inferenceText": inferenceText,
@@ -42,7 +42,7 @@ def get_inference_create_payload(inferenceInputId:str, inferenceText:str, predic
     return INFERENCE_CREATE_PAYLOAD
 
 
-def get_inference_update_payload(inferenceInputId:str, isCorrected:bool, correctedLabels:List[str], averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None ):   
+def get_inference_update_payload(inferenceInputId:str, isCorrected:bool, correctedLabels:list, averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None ):   
     INFERENCE_UPDATE_PAYLOAD = {       
         "inferenceId": inferenceInputId,
         "isCorrected": isCorrected,
@@ -55,7 +55,7 @@ def get_inference_update_payload(inferenceInputId:str, isCorrected:bool, correct
     return INFERENCE_UPDATE_PAYLOAD
    
 
-def calculate_average_predicted_class_probability(class_probabilities:List[float]):
+def calculate_average_predicted_class_probability(class_probabilities):
     
     total_probability = sum(class_probabilities)
     average_probability = total_probability / len(class_probabilities)

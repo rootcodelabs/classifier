@@ -1,5 +1,9 @@
 import requests
 import os
+from loguru import logger
+from constants import INFERENCE_LOGS_PATH
+
+logger.add(sink=INFERENCE_LOGS_PATH)
 
 GET_INFERENCE_DATASET_EXIST_URL = os.getenv("GET_INFERENCE_DATASET_EXIST_URL")
 CREATE_INFERENCE_URL=os.getenv("CREATE_INFERENCE_URL")
@@ -14,29 +18,46 @@ class ModelInference:
         pass
     
     def get_class_hierarchy_by_model_id(self, model_id):
+        
         try:
             outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
+
+
             response = requests.post(outlook_access_token_url, json={"modelId": model_id})
-            response.raise_for_status()
             data = response.json()
 
-            class_hierarchy = data["class_hierarchy"]
+            logger.info(f"DATA OF get_class_hierarchy_by_model_id FUNCTION {data} ")
+
+            class_hierarchy = data["response"]["class_hierarchy"]
             return class_hierarchy
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Failed to retrieve the class hierarchy Reason: {e}")    
+        
+        except Exception as e:
+            logger.error(f"Failed to retrieve the class hierarchy Reason: {e}")
+            raise RuntimeError(f"Failed to retrieve the class hierarchy Reason: {e}")    
     
 
         
     def validate_class_hierarchy(self, class_hierarchy, model_id):
+
+        logger.info(f"CLASS HIERARCHY -  {class_hierarchy}")
+        logger.info(f"MODEL ID - {model_id}")
+
         try:
             validate_class_hierarchy_url = CLASS_HIERARCHY_VALIDATION_URL
-            response = requests.post(validate_class_hierarchy_url,  json={"class_hierarchy": class_hierarchy, "modelId": model_id})
-            response.raise_for_status()
+
+            logger.info(f"INCOMING URL - {validate_class_hierarchy_url}")
+            
+            response = requests.post(validate_class_hierarchy_url,  json={"classHierarchies": class_hierarchy, "modelId": model_id})
             data = response.json()
+            
+            logger.info(f"check_folder_hierarchy API CALL REPONSE  {data}")
 
             is_valid = data["isValid"]
             return is_valid
+        
         except requests.exceptions.RequestException as e:
+            
+            logger.error(f"Failed to validate the class hierarchy. Reason: {e}")
             raise Exception(f"Failed to validate the class hierarchy. Reason: {e}")
         
         
@@ -56,15 +77,21 @@ class ModelInference:
         
     
     def check_inference_data_exists(self, input_id):
+        
+        logger.info("Check Inference Data Exists Function Calling")
+        logger.info(f"Input ID : {input_id}")
         try:
             check_inference_data_exists_url = GET_INFERENCE_DATASET_EXIST_URL.replace("inferenceInputId",str(input_id))
+            logger.info(f"Check Inference URL : {check_inference_data_exists_url}")
             response = requests.get(check_inference_data_exists_url)
-            response.raise_for_status()
             data = response.json()
+        
+            logger.info(f"Response from  check_inference_data_exists: {data}")
 
-            is_exist = data["exist"]
+            is_exist = data["response"]["exist"]
             return is_exist
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
+            logger.info(f"Failed to validate the class hierarchy. Reason: {e}")
             raise Exception(f"Failed to validate the class hierarchy. Reason: {e}")
         
 
@@ -77,20 +104,29 @@ class ModelInference:
 
             folder_hierarchy = data["folder_hierarchy"]
             return folder_hierarchy
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             raise Exception(f"Failed to validate the class hierarchy. Reason: {e}")  
         
         
     def find_final_folder_id(self, flattened_folder_hierarchy, model_id):
         try:
             find_final_folder_id_url = FIND_FINAL_FOLDER_ID_URL
-            response = requests.get(find_final_folder_id_url, json={"hierarchy":flattened_folder_hierarchy , "modelId": model_id})
-            response.raise_for_status()
+
+            logger.info(f"FIND FINAL FOLDER ID URL - {find_final_folder_id_url}")
+            logger.info(f"FLATTENED FOLDER HIERARCHY - {flattened_folder_hierarchy}")
+            logger.info(f"MODEL ID - {model_id}")
+
+            response = requests.post(find_final_folder_id_url, json={"hierarchy":flattened_folder_hierarchy , "modelId": model_id})
             data = response.json()
+
+            logger.info(f"RETURNED DATA - {data}")
+            logger.info(f"RETURNED STATUS - {response.status_code}")
 
             final_folder_id = data["folder_id"]
             return final_folder_id
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
+
+            logger.info(f"Failed to validate the class hierarchy. Reason: {e}")
             raise Exception(f"Failed to validate the class hierarchy. Reason: {e}")  
         
         
@@ -104,24 +140,29 @@ class ModelInference:
 
             is_success = data["operationSuccessful"]
             return is_success
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             raise Exception(f"Failed to call update inference. Reason: {e}")  
         
 
     def create_inference(self, payload):
         
         try:
+
+            logger.info(f"PAYLOAD - {payload}")
             create_inference_url = CREATE_INFERENCE_URL
-            response = requests.get(create_inference_url, json=payload)
-            response.raise_for_status()
+            response = requests.post(create_inference_url, json=payload)
+
             data = response.json()
 
-            is_success = data["operationSuccessful"]
+            logger.info(f"DATA IN create_inference - {data}")
+
+            is_success = data["response"]["operationSuccessful"]
             return is_success
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Failed to call create inference. Reason: {e}")  
         
-        
+        except Exception as e:
+
+            logger.info(f"Failed to call create inference. Reason: {e}")
+            raise Exception(f"Failed to call create inference. Reason: {e}")
 
 
         

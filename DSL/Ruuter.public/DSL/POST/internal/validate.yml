@@ -9,7 +9,7 @@ declaration:
   allowlist:
     body:
       - field: modelId
-        type: string
+        type: number
         description: "Body field 'modelId'"
 
 extract_request:
@@ -20,9 +20,7 @@ extract_request:
 get_token_info:
   call: http.get
   args:
-    url: "[#CLASSIFIER_RUUTER_PRIVATE]/classifier/integration/outlook/token"
-    headers:
-      cookie: ${incoming.headers.cookie}
+    url: "[#CLASSIFIER_RUUTER_PUBLIC_INTERNAL]/internal/outlook/token"
   result: res
   next: check_token_status
 

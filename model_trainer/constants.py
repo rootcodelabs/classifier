@@ -13,7 +13,9 @@ CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT = "http://ruuter-private:8088/classifi
 
 UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT = "http://ruuter-private:8088/classifier/datamodel/progress/update"
 
-DEPLOYMENT_ENDPOINT = "http://ruuter-private:8088/classifier/datamodel/deployment/{deployment_platform}/update"
+OUTLOOK_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/outlook/update"
+
+JIRA_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/jira/update"
 
 TRAINING_LOGS_PATH = "/app/model_trainer/training_logs.log"
 
@@ -64,3 +66,7 @@ TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE=50
 DEPLOYING_MODEL_PROGRESS_PERCENTAGE=80
 
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE=100
+
+OUTLOOK = "outlook"
+
+JIRA="jira"

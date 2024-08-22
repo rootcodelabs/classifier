@@ -7,12 +7,13 @@ import pickle
 import shutil
 from datetime import datetime
 from s3_ferry import S3Ferry
-from constants import  GET_MODEL_METADATA_ENDPOINT,  DEPLOYMENT_ENDPOINT, UPDATE_MODEL_TRAINING_STATUS_ENDPOINT, CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT, UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT, TRAINING_LOGS_PATH, MODEL_RESULTS_PATH, \
+from constants import  GET_MODEL_METADATA_ENDPOINT,  OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, UPDATE_MODEL_TRAINING_STATUS_ENDPOINT, CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT, UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT, TRAINING_LOGS_PATH, MODEL_RESULTS_PATH, \
                         LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH,LOCAL_CLASSIFICATION_LAYER_SAVE_PATH, \
                         LOCAL_LABEL_ENCODER_SAVE_PATH, S3_FERRY_MODEL_STORAGE_PATH, MODEL_TRAINING_IN_PROGRESS, MODEL_TRAINING_SUCCESSFUL, \
-                        INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS, \
-                        INITIATING_TRAINING_PROGRESS_MESSAGE, TRAINING_IN_PROGRESS_PROGRESS_MESSAGE, DEPLOYING_MODEL_PROGRESS_MESSAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE, \
-                        INITIATING_TRAINING_PROGRESS_PERCENTAGE, TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE, DEPLOYING_MODEL_PROGRESS_PERCENTAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE
+                        INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS,  \
+                        INITIATING_TRAINING_PROGRESS_MESSAGE, TRAINING_IN_PROGRESS_PROGRESS_MESSAGE, DEPLOYING_MODEL_PROGRESS_MESSAGE,  \
+                        INITIATING_TRAINING_PROGRESS_PERCENTAGE, TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE, DEPLOYING_MODEL_PROGRESS_PERCENTAGE, \
+                        OUTLOOK, JIRA
 from loguru import logger
 
 logger.add(sink=TRAINING_LOGS_PATH)
@@ -22,8 +23,8 @@ class ModelTrainer:
 
         model_url = GET_MODEL_METADATA_ENDPOINT
 
-        self.new_model_id = new_model_id
-        self.old_model_id = old_model_id
+        self.new_model_id = int(new_model_id)
+        self.old_model_id = int(old_model_id)
         self.cookie = cookie
         
         self.cookies_payload = {'customJwtCookie': cookie}
@@ -31,9 +32,20 @@ class ModelTrainer:
         logger.info("GETTING MODEL METADATA")
 
         response = requests.get(model_url, params = {'modelId': self.new_model_id}, cookies=self.cookies_payload)
-                    
+        
+
+        if self.old_model_id==self.new_model_id:
+            self.replace_deployment = False
+                        
+        else:
+            self.replace_deployment = True
+
+
         if response.status_code == 200:
             self.model_details = response.json()
+            self.deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
+
+
             logger.info("SUCCESSFULLY RECIEVED MODEL DETAILS")
         else:
 
@@ -73,7 +85,7 @@ class ModelTrainer:
             training_results_payload["trainingResults"]["f1_score"] = training_results[2]
 
         payload = {}
-        payload["modelId"] = int(self.new_model_id)
+        payload["modelId"] = self.new_model_id
         payload["trainingStatus"] = training_status
         payload["modelS3Location"] = model_s3_location
         payload["lastTrainedTimestamp"] = last_trained_time_stamp
@@ -98,7 +110,7 @@ class ModelTrainer:
         payload = {}
         session_id = None
         model_details = self.model_details['response']['data'][0]
-        payload["modelId"] = int(self.new_model_id)
+        payload["modelId"] = self.new_model_id
         payload["modelName"] = model_details["modelName"]
         payload["majorVersion"] = model_details["majorVersion"]
         payload["minorVersion"] = model_details["minorVersion"]
@@ -163,6 +175,51 @@ class ModelTrainer:
         return session_id
 
         
+    def deploy_model(self, best_model_name, progress_session_id):
+        
+        payload = {}
+        payload["modelId"] = self.new_model_id
+        payload["replaceDeployment"] = self.replace_deployment
+        payload["replaceDeploymentPlatform"] = self.deployment_platform
+        payload["bestBaseModel"] = best_model_name
+        payload["progressSessionId"] = progress_session_id
+
+        logger.info(f"SENDING MODEL DEPLOYMENT REQUEST FOR MODEL ID - {self.new_model_id}")
+        logger.info(f"MODEL DEPLOYMENT PAYLOAD - {payload}")
+        
+        deployment_url = None
+
+        if self.deployment_platform == JIRA:
+
+            deployment_url = JIRA_DEPLOYMENT_ENDPOINT
+        
+        elif self.deployment_platform == OUTLOOK:
+
+            deployment_url = OUTLOOK_DEPLOYMENT_ENDPOINT
+
+        else:
+            
+            logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.deployment_platform}")
+            raise RuntimeError(f"RUNTIME ERROR - UNRECOGNIZED DEPLOYMENT PLATFORM - {self.deployment_platform}")
+        
+
+        response = requests.post( url=deployment_url, 
+                                 json=payload, cookies=self.cookies_payload)
+
+
+
+        if response.status_code==200:
+
+            logger.info(f"REQUEST TO DEPLOY MODEL ID {self.new_model_id} SUCCESSFUL")
+            logger.info(f"RESPONSE PAYLOAD \n {response.json()}")
+            
+
+        else:
+            logger.error(f"REQUEST TO DEPLOY MODEL ID {self.new_model_id} FAILED")
+            logger.error(f"ERROR RESPONSE JSON {response.json()}")
+            logger.error(f"ERROR RESPONSE TEXT {response.text}")
+            raise RuntimeError(response.text)
+
 
         
     def train(self):
@@ -288,30 +345,6 @@ class ModelTrainer:
                                                 inference_routes=models_inference_metadata)
             
 
-
-            logger.info(f"INITIATING DEPLOYMENT TO {deployment_platform}")
-
-            deploy_url = DEPLOYMENT_ENDPOINT.format(deployment_platform = deployment_platform)
-
-        
-        ## CODE SHOULD BE UPDATED TO CHECK WHETHER old_model_id  == new_model_id (because that is how ruuter sends the request if it's a model create operation) 
-            if self.old_model_id is not None:
-                
-                payload = {
-                    "modelId": self.new_model_id,
-                    "replaceDeployment": True,
-                    "replaceDeploymentPlatform":deployment_platform,
-                    "bestModelName":best_model_name
-                }
-            
-            else:
-                payload = {
-                    "modelId": self.new_model_id,
-                    "replaceDeployment": False,
-                    "replaceDeploymentPlatform": deployment_platform,
-                    "bestModelName":best_model_name
-                }
-
             logger.info(f"FINAL MODEL TRAINING PROGRESS SESSION UPDATE {deployment_platform}")
 
             self.update_model_training_progress_session(session_id=session_id, 
@@ -322,17 +355,10 @@ class ModelTrainer:
                                                 )
 
 
-            response = requests.post(deploy_url, json=payload)
+            logger.info(f"INITIATING DEPLOYMENT TO {deployment_platform}")
 
-            if response.status_code == 201 or response.status_code == 200:
-                logger.info(f"{deployment_platform} DEPLOYMENT SUCCESSFUL")
-            
-            else:
-                logger.error(f"{deployment_platform} DEPLOYMENT FAILED")
-                logger.info(f"RESPONSE: {response.text}")
+            self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id)
 
-                raise RuntimeError(f"RESPONSE : {response.text}")
-        
         except Exception as e:
 
             logger.error(f"RUNTIME CRASHED - ERROR - {e.with_traceback()}")

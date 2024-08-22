@@ -4,9 +4,13 @@ from fastapi.responses import JSONResponse
 import os
 from s3_ferry import S3Ferry
 from utils import unzip_file, clear_folder_contents, calculate_average_predicted_class_probability, get_inference_create_payload, get_inference_update_payload
-from constants import S3_DOWNLOAD_FAILED, JiraInferenceRequest, OutlookInferenceRequest, UpdateRequest
+from constants import S3_DOWNLOAD_FAILED, INFERENCE_LOGS_PATH, JiraInferenceRequest, OutlookInferenceRequest, UpdateRequest
 from inference_wrapper import InferenceWrapper
 from model_inference import ModelInference
+from loguru import logger
+import json
+
+logger.add(sink=INFERENCE_LOGS_PATH)
 
 app = FastAPI()
 modelInference = ModelInference()
@@ -34,17 +38,22 @@ if not os.path.exists(OUTLOOK_MODEL_DOWNLOAD_DIRECTORY):
     os.makedirs(OUTLOOK_MODEL_DOWNLOAD_DIRECTORY) 
 
 
-@app.post("/classifier/deployment/outlook/update")
-async def download_outlook_model(request: Request, modelData:UpdateRequest, backgroundTasks: BackgroundTasks):
+@app.post("/classifier/datamodel/deployment/outlook/update")
+async def download_outlook_model(request: Request, model_data:UpdateRequest, background_tasks: BackgroundTasks):
     
-    saveLocation = f"/models/{modelData.modelId}/{modelData.modelId}.zip"
+    save_location = f"/models/{model_data.modelId}/{model_data.modelId}.zip"
+
+    logger.info(f"MODEL DATA PAYLOAD - {model_data}")
     
     try:  
-        local_file_name = f"{modelData.modelId}.zip"
+        local_file_name = f"{model_data.modelId}.zip"
         local_file_path = f"/models/outlook/{local_file_name}"
         
         ## Get class hierarchy and validate it
-        is_valid, class_hierarchy = modelInference.get_class_hierarchy_and_validate(modelData.modelId)
+        is_valid, class_hierarchy = modelInference.get_class_hierarchy_and_validate(model_data.modelId)
+
+        logger.info(f"IS VALID VALUE : {is_valid}")
+        logger.info(f"CLASS HIERARCHY VALUE : {class_hierarchy}")
         
         if(is_valid and class_hierarchy):
 
@@ -53,7 +62,7 @@ async def download_outlook_model(request: Request, modelData:UpdateRequest, back
             clear_folder_contents(folder_path)  
         
             # 2. Download the new Model
-            response = s3_ferry.transfer_file(local_file_path, "FS", saveLocation, "S3")
+            response = s3_ferry.transfer_file(local_file_path, "FS", save_location, "S3")
             if response.status_code != 201:
                 raise HTTPException(status_code = 500, detail = S3_DOWNLOAD_FAILED)
         
@@ -63,20 +72,34 @@ async def download_outlook_model(request: Request, modelData:UpdateRequest, back
             # 3. Unzip  Model Content 
             unzip_file(zip_path=zip_file_path, extract_to=extract_file_path)
         
-            backgroundTasks.add_task(os.remove, zip_file_path)  
-        
+            os.remove(zip_file_path)
             # 3. Replace the content in other folder if it a replacement 
-            if(modelData.replaceDeployment):
-                folder_path = os.path.join("..", "shared", "models", {modelData.replaceDeploymentPlatform})
+            if(model_data.replaceDeployment):
+                folder_path = os.path.join("..", "shared", "models", {model_data.replaceDeploymentPlatform})
                 clear_folder_contents(folder_path)
-                inference_obj.stop_model(deployment_platform=modelData.replaceDeploymentPlatform)
+                inference_obj.stop_model(deployment_platform=model_data.replaceDeploymentPlatform)
         
             # 4. Instantiate Inference Model
-            model_path = f"shared/models/outlook/{modelData.modelId}"
-            best_model = modelData.bestBaseModel
+            model_path = "/shared/models/outlook"
+            best_model = model_data.bestBaseModel
+
+            data = {
+                "model_path" : model_path,
+                "best_model":best_model,
+                "deployment_platform":"outlook",
+                "class_hierarchy": class_hierarchy,
+                "model_id": model_data.modelId
+            }
+
+            meta_data_save_location = '/shared/models/outlook/outlook_inference_metadata.json'
+            with open(meta_data_save_location, 'w') as json_file:
+                json.dump(data, json_file, indent=4)
+
             
-            model_initiate = inference_obj.model_swapping(model_path, best_model, deployment_platform="outlook", class_hierarchy=class_hierarchy, model_id=modelData.modelId)
-        
+            model_initiate = inference_obj.model_swapping(model_path, best_model, deployment_platform="outlook", class_hierarchy=class_hierarchy, model_id=model_data.modelId)
+            
+            logger.info(f"MODEL INITIATE - {model_initiate}")
+
             if(model_initiate):
                 return JSONResponse(status_code=200, content={"replacementStatus": 200})
             else:
@@ -177,14 +200,19 @@ async def delete_folder_content(request:Request):
    
 @app.post("/classifier/deployment/outlook/inference")
 async def outlook_inference(request:Request, inferenceData:OutlookInferenceRequest):
-    try:        
+    try:
+        logger.info(f"Inference Endpoint Calling") 
+        logger.info(f"Inference Data : {inferenceData}")
+
         model_id = inference_obj.get_model_id(deployment_platform="outlook")
-        
+        logger.info(f"Model Id : {model_id}")
         if(model_id):
             # If there is a active model
         
             # 1 . Check whether the if the Inference Exists
             is_exist = modelInference.check_inference_data_exists(input_id=inferenceData.inputId)
+
+            logger.info(f"Inference Exists : {is_exist}")
             
             if(is_exist): # Update Inference Scenario
                 #  Create Corrected Folder Hierarchy using the final folder id
@@ -196,7 +224,7 @@ async def outlook_inference(request:Request, inferenceData:OutlookInferenceReque
                 if(corrected_probs):
                     # Calculate Average Predicted Class Probability
                     average_probability = calculate_average_predicted_class_probability(corrected_probs)
-                
+
                     # Build request payload for inference/update endpoint
                     inference_update_paylod = get_inference_update_payload(inferenceInputId=inferenceData.inputId,isCorrected=True, correctedLabels=corrected_folder_hierarchy,averagePredictedClassesProbability=average_probability, platform="OUTLOOK", primaryFolderId=inferenceData.finalFolderId)
                 
@@ -214,28 +242,43 @@ async def outlook_inference(request:Request, inferenceData:OutlookInferenceReque
                     
             else: # Create Inference Scenario
                 # Call Inference
+                logger.info("CREATE INFERENCE SCENARIO OUTLOOK")
                 predicted_hierarchy, probabilities  = inference_obj.inference(inferenceData.inputText, deployment_platform="outlook")
+
+                logger.info(f"PREDICTED HIERARCHIES AND PROBABILITIES {predicted_hierarchy}")
+                logger.info(f"PROBABILITIES {probabilities}")
                 
                 if (probabilities and predicted_hierarchy):
                     
                     # Calculate Average Predicted Class Probability
                     average_probability = calculate_average_predicted_class_probability(probabilities)
-                    
+                    logger.info(f"average probability - {average_probability}")
+
                     # Get the final folder id of the predicted folder hierarchy
                     final_folder_id = modelInference.find_final_folder_id(flattened_folder_hierarchy=predicted_hierarchy, model_id=model_id)
+                    logger.info(f"final folder id - {final_folder_id}")
+
                     
                     # Build request payload for inference/create endpoint
                     inference_create_payload = get_inference_create_payload(inferenceInputId=inferenceData.inputId,inferenceText=inferenceData.inputText,predictedLabels=predicted_hierarchy, averagePredictedClassesProbability=average_probability, platform="OUTLOOK", primaryFolderId=final_folder_id, mailId=inferenceData.mailId)
-                    
+                    logger.info(f"INFERENCE CREATE PAYLOAD - {inference_create_payload}")
                     # Call inference/create endpoint
                     is_success = modelInference.create_inference(payload=inference_create_payload)
+                    logger.info(f"IS SUCCESS - {is_success}")
                     
                     if(is_success):
+
+                        logger.info("\n\n OPERATION SUCCESSFUL AND EMAIL SUCCESSFULLY UPDATED \n\n")
                         return JSONResponse(status_code=200, content={"operationSuccessful": True})
                     else:
                         raise HTTPException(status_code = 500, detail="Failed to call the create inference")  
                 
                 else:
+                    
+                    logger.info("probabilities and predicted_hierarchy are empty")
+                    logger.info(f"probabilities - {probabilities}")
+                    logger.info(f"predicted_hierarchy - {predicted_hierarchy}")
+
                     raise HTTPException(status_code = 500, detail="Failed to call inference")
         
         else:
