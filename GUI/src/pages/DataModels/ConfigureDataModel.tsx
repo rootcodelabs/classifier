@@ -34,7 +34,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   const [enabled, setEnabled] = useState<boolean>(true);
   const [initialData, setInitialData] = useState<Partial<DataModel>>({
     modelName: '',
-    dgId: '',
+    dgId: 0,
     platform: '',
     baseModels: [],
     maturity: '',
@@ -43,7 +43,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   const [dataModel, setDataModel] = useState<DataModel>({
     modelId: 0,
     modelName: '',
-    dgId: '',
+    dgId: 0,
     platform: '',
     baseModels: [],
     maturity: '',
@@ -59,7 +59,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
         setDataModel({
           modelId: data?.modelId || 0,
           modelName: data?.modelName || '',
-          dgId: data?.connectedDgId || '',
+          dgId: data?.connectedDgId || 0,
           platform: data?.deploymentEnv || '',
           baseModels: data?.baseModels || [],
           maturity: data?.maturityLabel || '',
@@ -185,11 +185,12 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
           <div className="flex-grid">
             <Button
               appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={() => deleteDataModelMutation.mutate(dataModel?.modelId)}
+              onClick={close}
             >
               {t('global.cancel')}
             </Button>
-            <Button appearance={ButtonAppearanceTypes.ERROR}>
+            <Button appearance={ButtonAppearanceTypes.ERROR} onClick={() => deleteDataModelMutation.mutate(dataModel?.modelId)}
+            >
               {t('global.delete')}
             </Button>
           </div>

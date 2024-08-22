@@ -48,7 +48,8 @@
     "failed": "Failed",
     "sessionTimeOutTitle": "You session has been ended!",
     "sessionTimeOutDesc": "Extend your session or signout from application in {{seconds}}",
-    "close":"Close"
+    "close":"Close",
+    "proceed":"Proceed"
   },
   "menu": {
     "userManagement": "User Management",
@@ -385,7 +386,7 @@
       "title": "Create Data Model",
       "replaceTitle": "Warning: Replace Production Model",
       "replaceDesc": "Adding this model to production will replace the current production model. Are you sure you want to proceed?",
-      "successTitle": "Data Model Created and Trained",
+      "successTitle": "Data Model Created and Started Training",
       "successDesc": " You have successfully created and started training the data model. You can view it on the data model dashboard.",
       "viewAll": "View All Data Models",
       "errorTitle": "Error Creating Data Model",

@@ -59,7 +59,9 @@ const DataModelForm: FC<DataModelFormType> = ({
         </div>
       )}
 
-      {dataModel && createOptions && !isLoading ? (
+      {((type === 'configure' && dataModel?.dgId > 0) || type === 'create') &&
+      createOptions &&
+      !isLoading ? (
         <div>
           <div className="title-sm">
             {t('dataModels.dataModelForm.datasetGroup')}{' '}
