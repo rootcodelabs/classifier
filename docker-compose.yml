@@ -270,7 +270,7 @@ services:
 
   model-inference:
     build:
-      context: ./model_inference
+      context: ./model-inference
       dockerfile: Dockerfile
     container_name: model-inference
     volumes:
