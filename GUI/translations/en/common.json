@@ -276,13 +276,15 @@
         },
         "delete": {
           "title": "Are you sure?",
-          "description": "Once you delete the dataset all models connected to this model will become untrainable. Are you sure you want to proceed?"
+          "description": "Once you delete the dataset all models connected to this model will become untrainable. Are you sure you want to proceed?",
+          "error":"Dataset Group Deletion  Unsuccessful"
         },
         "edit": {
           "title": "Edit",
           "data": "Data",
           "label": "Label",
-          "update": "Update"
+          "update": "Update",
+          "error":"Dataset Group Update Unsuccessful"
         },
         "upload": {
           "title": "Data upload successful",

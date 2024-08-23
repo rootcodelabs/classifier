@@ -29,6 +29,7 @@ export const datasetsEndpoints = {
     `/classifier/datasetgroup/update/minor`,
   DATASET_GROUP_MAJOR_UPDATE: (): string =>
     `/classifier/datasetgroup/update/major`,
+  DELETE_DATASET_GROUP:(): string =>`classifier/datasetgroup/delete`,
   GET_STOP_WORDS: (): string => `/classifier/datasetgroup/stop-words`,
   POST_STOP_WORDS: (): string => `/classifier/datasetgroup/update/stop-words`,
   DELETE_STOP_WORD: (): string => `/classifier/datasetgroup/delete/stop-words`,
