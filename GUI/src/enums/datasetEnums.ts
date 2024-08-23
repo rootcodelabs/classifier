@@ -41,3 +41,10 @@ export enum StopWordImportOptions {
   ADD = 'add',
   DELETE = 'delete',
 }
+
+export enum ValidationErrorTypes {
+  NAME = 'NAME',
+  CLASS_HIERARCHY = 'CLASS_HIERARCHY',
+  VALIDATION_CRITERIA = 'VALIDATION_CRITERIA',
+  NULL = 'NULL',
+}

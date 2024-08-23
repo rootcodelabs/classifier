@@ -11,6 +11,7 @@ import { formatClassHierarchyArray, formatDateTime } from 'utils/commonUtilts';
 import Card from 'components/Card';
 import { InferencePayload } from 'types/correctedTextTypes';
 import './CorrectedTextTable.scss';
+import NoDataView from '../NoDataView';
 
 const CorrectedTextsTable = ({
   correctedTextData,
@@ -145,7 +146,8 @@ const CorrectedTextsTable = ({
                 justifyContent: 'center',
               }}
             >
-              {t('datasetGroups.detailedView.noData') ?? ''}
+              <NoDataView text={t('datasetGroups.detailedView.noData') ?? ''}/>
+             
             </div>
           </Card>
         )}

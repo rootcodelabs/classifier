@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo "Started Shell Script to process"
 # Ensure required environment variables are set
 if [ -z "$dgId" ] || [ -z "$newDgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ] || [ -z "$sessionId" ]; then

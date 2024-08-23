@@ -1,12 +1,14 @@
 import React, { useCallback } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import dataTypes from '../../../../config/dataTypesConfig.json';
-import { MdDehaze, MdDelete } from 'react-icons/md';
+import { MdDehaze, MdDeleteOutline  } from 'react-icons/md';
 import Card from 'components/Card';
 import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';
 import { ValidationRule } from 'types/datasetGroups';
 import { Link } from 'react-router-dom';
 import { isFieldNameExisting } from 'utils/datasetGroupsUtils';
+import './DragableItemStyle.scss';
+import { useTranslation } from 'react-i18next';
 
 const ItemTypes = {
   ITEM: 'item',
@@ -27,6 +29,7 @@ const DraggableItem = ({
   setValidationRules: React.Dispatch<React.SetStateAction<ValidationRule[]>>;
   validationRuleError?: boolean;
 }) => {
+  const { t } = useTranslation();
   const [, ref] = useDrag({
     type: ItemTypes.ITEM,
     item: { index },
@@ -34,10 +37,8 @@ const DraggableItem = ({
 
   const [, drop] = useDrop({
     accept: ItemTypes.ITEM,
-    hover: (draggedItem: {
-        index: number
-    }) => {
-      if (draggedItem?.index !== index) {
+    hover: (draggedItem: { index: number }) => {
+      if (draggedItem.index !== index) {
         moveItem(draggedItem.index, index);
         draggedItem.index = index;
       }
@@ -72,63 +73,76 @@ const DraggableItem = ({
     );
     updatedItems && setValidationRules(updatedItems);
   };
+
+  const getErrorMessage = (item: ValidationRule) => {
+    if (validationRuleError) {
+      if (!item.fieldName) {
+        return t('datasetGroups.detailedView.fieldName');
+      }
+      if (item.fieldName.toLowerCase() === 'rowid') {
+        return t('datasetGroups.detailedView.fieldNameError', {
+          name: item.fieldName,
+        });
+      }
+      if (isFieldNameExisting(validationRules, item.fieldName)) {
+        return t('datasetGroups.detailedView.fieldNameExist', {
+          name: item.fieldName,
+        });
+      }
+    }
+    return '';
+  };
+
   return (
     <div ref={(node) => ref(drop(node))}>
       <Card>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+        <div className="dragabbleCardContainer">
           <FormInput
-            label="Field Name"
+            label={t('datasetGroups.createDataset.fieldName')}
             placeholder="Enter Field Name"
             name={`fieldName ${index}`}
             defaultValue={item.fieldName}
             onBlur={(e) => handleChange(item.id, e.target.value)}
-            error={
-              validationRuleError && !item.fieldName
-                ? 'Enter a field name'
-                : validationRuleError &&
-                  item.fieldName &&
-                  item?.fieldName.toString().toLocaleLowerCase() === 'rowid'
-                ? `${item?.fieldName} cannot be used as a field name`
-                : item.fieldName &&
-                  isFieldNameExisting(validationRules, item?.fieldName)
-                ? `${item?.fieldName} alreday exist as field name`
-                : ''
-            }
+            error={getErrorMessage(item)}
           />
           <FormSelect
-            label="Data Type"
+            label={t('datasetGroups.createDataset.datasetType')}
             name={`dataType ${index}`}
             options={dataTypes}
             defaultValue={item.dataType}
             onSelectionChange={(selection) =>
-              changeDataType(item.id, selection?.value ?? "")
+              changeDataType(item.id, selection?.value as string)
             }
             error={
               validationRuleError && !item.dataType ? 'Select a data type' : ''
             }
           />
-          <div style={{ display: 'flex', justifyContent: 'end', gap: '10px' }}>
+          <div
+            className="dragabbleButtonWrapper"
+          >
             <Link
               to={''}
               style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
               onClick={() => deleteItem(item.id)}
               className="link"
             >
-              <MdDelete />
-              Delete
+              <MdDeleteOutline  />
+              {t('global.delete')}
             </Link>
             <FormCheckbox
               label=""
               item={{
-                label: 'Data Class',
+                label: t('datasetGroups.createDataset.dataClass'),
                 value: 'active',
               }}
               name="dataClass"
               checked={item.isDataClass}
               onChange={() => setIsDataClass(item.id, item.isDataClass)}
-              style={{ width: '150px' }}
+              style={{
+                width: '150px',
+              }}
             />
-            <MdDehaze className="link" size={30} />
+            <MdDehaze className="link" size={30} color='#7A7C8A' />
           </div>
         </div>
       </Card>

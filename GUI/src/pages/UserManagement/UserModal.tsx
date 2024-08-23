@@ -17,7 +17,7 @@ import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 type UserModalProps = {
   onClose: () => void;
-  user?: User | undefined;
+  user?: User;
   isModalOpen?: boolean;
 };
 

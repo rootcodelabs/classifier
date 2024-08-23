@@ -11,7 +11,7 @@ export interface Class {
   id: string;
   fieldName: string;
   level: number;
-  children: Class[] | any;
+  children: Class[];
 }
 
 export interface LinkedModel {
