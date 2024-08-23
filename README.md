@@ -62,13 +62,12 @@ This repo will primarily contain:
 - Scroll down to API token section and then click `Create and manage API tokens---> Create API Token`
 - Navigate to Jira Account(This is the Account where jira issue create and prediction happen)
 - Then go to settings--> system--> webHooks
-  - create webhook
-    - url - `Base_URL/webhook`(base url should be internet url for Jira-verification Container)
-    - click issue created,updated check boxes
-    - set a secret key by click 'Generate Secret'
-    - optional: Add the relevant project key to trigger only when updates or creates happen for issues within that project
-              in JQL section(Ex JQL: project=classifier)
-
+- create webhook
+  - url - `Base_URL/webhook`(base url should be internet url for Jira-verification Container)
+  - click issue created,updated check boxes
+  - set a secret key by click 'Generate Secret'
+  - optional: Add the relevant project key to trigger only when updates or creates happen for issues within that project
+     in JQL section(Ex JQL: project=classifier)
 - Set Values in Constant.ini
      - JIRA_API_TOKEN
      - JIRA_USERNAME
