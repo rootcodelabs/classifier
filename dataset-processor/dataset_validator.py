@@ -176,6 +176,7 @@ class DatasetValidator:
             data_values = self.extract_data_class_values(data, data_class_columns)
 
             missing_in_hierarchy = data_values - hierarchy_values
+            missing_in_hierarchy = [item for item in missing_in_hierarchy if item is not None]
             missing_in_data = hierarchy_values - data_values
 
             if missing_in_hierarchy:
