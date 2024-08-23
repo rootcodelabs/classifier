@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from ner import NERProcessor
 from text_processing import TextProcessor
 from fake_replacements import FakeReplacer
+from webhook_request_retention import RequestRetentionList
 from html_cleaner import HTMLCleaner
 import os
 import requests
@@ -13,9 +14,11 @@ from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 import pandas as pd
 import io
+import uvicorn
 
 app = FastAPI()
 
+request_validator = RequestRetentionList()
 ner_processor = NERProcessor()
 html_cleaner = HTMLCleaner()
 
@@ -24,6 +27,12 @@ OUTLOOK_INFERENCE_ENDPOINT = os.getenv("OUTLOOK_INFERENCE_ENDPOINT")
 
 def anonymizer_functions(payload):
     try:
+        if(payload.get("platform", "").lower()=="outlook"):
+            orginal_request = request_validator.add_email(payload.get("mailId", "")+payload.get("parentFolderId", ""))
+            if not orginal_request:
+                return False
+
+
         data_dict = payload.get("data", {})
 
         if len(data_dict["attachments"]) <= 0:
@@ -78,6 +87,7 @@ def anonymizer_functions(payload):
         return output_payload
     except Exception as e:
         print(f"Error while annonymizing the data : {e}")
+        return False
 
 @app.post("/anonymize")
 async def process_text(request: Request, background_tasks: BackgroundTasks):
@@ -165,5 +175,5 @@ async def anonymize_file(file: UploadFile = File(...), columns: str = Form(...))
 
 
 if __name__ == "__main__":
-    import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8010)
