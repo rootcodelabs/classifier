@@ -46,8 +46,8 @@ def get_inference_update_payload(inferenceInputId:str, isCorrected:bool, correct
     INFERENCE_UPDATE_PAYLOAD = {       
         "inferenceId": inferenceInputId,
         "isCorrected": isCorrected,
-        "predictedLabels": correctedLabels,
-        "averagePredictedClassesProbability": averagePredictedClassesProbability,
+        "correctedLabels": correctedLabels,
+        "averageCorrectedClassesProbability": averagePredictedClassesProbability,
         "primaryFolderId": primaryFolderId,
         "platform": platform 
     }

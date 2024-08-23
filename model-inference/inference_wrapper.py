@@ -94,17 +94,46 @@ class InferenceWrapper:
             self.active_outlook_model_id = None
             
             
-    def get_model_id(self, deployment_platform:str):
-        logger.info("Get Model Id Calling")
-        logger.info(f"Platform : {deployment_platform}")
+    def get_outlook_model_id(self):
+        logger.info("Get Outlook Model Id Calling")
 
-
-        logger.info(f"Model Exists : {'Yes' if self.active_outlook_model else 'No'}")
-        model_id = None
+        logger.info(f"Outlook Model Exists : {'Yes' if self.active_outlook_model else 'No'}")
+        outlook_model_id = None
 
         if not self.active_outlook_model :
             file_location = "/shared/models/outlook/outlook_inference_metadata.json"
-            logger.info("RETRIEVING DATA FROM JSON FILE IN get_model_id function ")
+            logger.info("RETRIEVING DATA FROM JSON FILE IN get_outlook_model_id function ")
+            if os.path.exists(file_location):
+                with open(file_location, 'r') as json_file:
+                    data = json.load(json_file)
+                    
+                model_path = data.get("model_path")
+                best_model = data.get("best_model")
+                deployment_platform = data.get("deployment_platform")
+                class_hierarchy = data.get("class_hierarchy")
+                model_id = data.get("model_id")
+                
+                self.model_swapping(model_path=model_path, best_performing_model=best_model, deployment_platform=deployment_platform,class_hierarchy=class_hierarchy, model_id=model_id)
+                
+            else:
+               return None            
+
+        if(self.active_outlook_model):
+            outlook_model_id= self.active_outlook_model_id
+            logger.info(f"Outlook Model Id : {outlook_model_id}")
+            
+        return outlook_model_id
+    
+
+    def get_jira_model_id(self):
+        logger.info("Get Jira Model Id Calling")
+
+        logger.info(f"Jira Model Exists : {'Yes' if self.active_jira_model else 'No'}")
+        jira_model_id = None
+
+        if not self.active_jira_model :
+            file_location = "/shared/models/outlook/jira_inference_metadata.json"
+            logger.info("RETRIEVING DATA FROM JSON FILE IN get_jira_model_id function ")
             if os.path.exists(file_location):
                 with open(file_location, 'r') as json_file:
                     data = json.load(json_file)
@@ -119,28 +148,32 @@ class InferenceWrapper:
                 
             else:
                return None
-        if(deployment_platform == "jira" and self.active_jira_model):
-            model_id = self.active_jira_model_id
-            
 
-        if(deployment_platform == "outlook" and self.active_outlook_model):
-            model_id = self.active_outlook_model_id
-            logger.info(f"Outlook Model Id : {model_id}")
+        if(self.active_jira_model):
+            jira_model_id= self.active_jira_model_id
+            logger.info(f"Jira Model Id : {jira_model_id}")
 
+        return jira_model_id
 
-        return model_id
-    
     
     def get_corrected_probabilities(self, text, corrected_labels , deployment_platform):
         try:
+            
+            logger.info(f"TEXT IN get_corrected_probabilities - {text}")
+            logger.info(f"CORRECTED LABELS IN get_corrected_probabilities - {corrected_labels}")
+            logger.info(f"DEPLOYMENT PLATFORM IN get_corrected_probabilities - {deployment_platform}")
+
             corrected_probabilities = None
             if(deployment_platform == "jira" and self.active_jira_model):
                 corrected_probabilities = self.active_jira_model.user_corrected_probabilities(text_input=text, user_classes=corrected_labels)
 
             if(deployment_platform == "outlook" and self.active_outlook_model):
                 corrected_probabilities = self.active_outlook_model.user_corrected_probabilities(text_input=text, user_classes=corrected_labels)
-                
+
+
+            logger.info(f"CORRECTED PROBABILITIES - {corrected_probabilities}")
             return corrected_probabilities
         
         except Exception as e:
-            raise Exception(f"Failed to retrieve corrected probabilities from the inference pipeline. Reason: {e}")     
+            logger.info(f"ERROR IN get_corrected_probabilities - {corrected_probabilities}")
+            raise RuntimeError(f"Failed to retrieve corrected probabilities from the inference pipeline. Reason: {e}")     

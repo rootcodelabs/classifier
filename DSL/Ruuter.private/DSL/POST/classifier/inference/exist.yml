@@ -2,19 +2,19 @@ declaration:
   call: declare
   version: 0.1
   description: "Description placeholder for 'EXIST'"
-  method: get
+  method: post
   accepts: json
   returns: json
   namespace: classifier
   allowlist:
-    params:
+    body:
       - field: inputId
         type: string
-        description: "Parameter 'inferenceId'"
+        description: "Body field 'inputId'"
 
 extract_data:
   assign:
-    input_id: ${incoming.params.inputId}
+    input_id: ${incoming.body.inputId}
     exist: false
   next: get_input_metadata_by_id
 

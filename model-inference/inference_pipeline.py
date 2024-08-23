@@ -157,6 +157,9 @@ class InferencePipeline:
         return predicted_classes, probabilities
     
     def user_corrected_probabilities(self, text_input, user_classes):
+        
+        logger.info(f"USER CLASSES - {user_classes}")
+        logger.info(f"TEXT INPUT  - {text_input}")
 
         inputs = self.tokenizer(text_input, truncation=True, padding=True, return_tensors='pt')
         inputs.to(self.device)
@@ -166,8 +169,10 @@ class InferencePipeline:
         real_predicted_probabilities = []
         self.base_model.to(self.device)
         i = 0
-        data = self.hierarchy_file['classHierarchy']
+        data = self.hierarchy_file
         parent = 1
+
+        logger.info("ENTERING LOOP IN user_corrected_probabilities")
 
         for i in range(len(user_classes)):
             current_classes = {parent: [d['class'] for d in data]}
@@ -199,6 +204,9 @@ class InferencePipeline:
                 user_class_index = label_encoder.transform([user_classes[i]])[0]
 
                 user_class_probability = probability[:, user_class_index].item()
+
+                logger.info(f"USER CLASS PROBABILITY {user_class_probability}")
+
                 user_class_probabilities.append(int(user_class_probability * 100))
 
                 predictions = torch.argmax(outputs.logits, dim=1)

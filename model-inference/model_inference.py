@@ -2,6 +2,7 @@ import requests
 import os
 from loguru import logger
 from constants import INFERENCE_LOGS_PATH
+import urllib.parse
 
 logger.add(sink=INFERENCE_LOGS_PATH)
 
@@ -81,9 +82,13 @@ class ModelInference:
         logger.info("Check Inference Data Exists Function Calling")
         logger.info(f"Input ID : {input_id}")
         try:
-            check_inference_data_exists_url = GET_INFERENCE_DATASET_EXIST_URL.replace("inferenceInputId",str(input_id))
+
+            check_inference_data_exists_url = GET_INFERENCE_DATASET_EXIST_URL
             logger.info(f"Check Inference URL : {check_inference_data_exists_url}")
-            response = requests.get(check_inference_data_exists_url)
+
+            payload = {}
+            payload["inputId"] = input_id
+            response = requests.post(check_inference_data_exists_url,json=payload)
             data = response.json()
         
             logger.info(f"Response from  check_inference_data_exists: {data}")
@@ -98,15 +103,24 @@ class ModelInference:
     def build_corrected_folder_hierarchy(self, final_folder_id, model_id):
         try:
             build_corrected_folder_hierarchy_url = BUILD_CORRECTED_FOLDER_HIERARCHY_URL
-            response = requests.get(build_corrected_folder_hierarchy_url, json={"folderId": final_folder_id, "modelId": model_id})
+            response = requests.post(build_corrected_folder_hierarchy_url, json={"folderId": final_folder_id, "modelId": model_id})
+            
+            logger.info(f"build_corrected_folder_hierarchy response status code {response.status_code}")
+
             response.raise_for_status()
             data = response.json()
 
+            logger.info(f"build_corrected_folder_hierarchy response status code {data}")
+
             folder_hierarchy = data["folder_hierarchy"]
+
+            logger.info(f"build_corrected_folder_hierarchy folder hierarchy - {data}")
+
             return folder_hierarchy
         except Exception as e:
-            raise Exception(f"Failed to validate the class hierarchy. Reason: {e}")  
-        
+            logger.info(f"EXCEPTION IN build_corrected_folder_hierarchy - {e}")
+            raise RuntimeError(f"Failed to validate the class hierarchy. Reason: {e}")
+
         
     def find_final_folder_id(self, flattened_folder_hierarchy, model_id):
         try:
@@ -133,15 +147,22 @@ class ModelInference:
     
     def update_inference(self, payload):
         try:
-            update_inference_url = UPDATE_INFERENCE_URL
-            response = requests.get(update_inference_url, json=payload)
-            response.raise_for_status()
-            data = response.json()
+            
+            logger.info(f"PAYLOAD IN update_inference  - {payload}")
 
-            is_success = data["operationSuccessful"]
+            update_inference_url = UPDATE_INFERENCE_URL
+            response = requests.post(update_inference_url, json=payload)
+
+            data = response.json()
+            
+            logger.info(f"DATA IN UPDATE INFERENCE - {data}")
+            is_success = data["response"]["operationSuccessful"]
             return is_success
+
         except Exception as e:
-            raise Exception(f"Failed to call update inference. Reason: {e}")  
+
+            logger.info(f"Failed to call update inference. Reason: {e}")
+            raise RuntimeError(f"Failed to call update inference. Reason: {e}")
         
 
     def create_inference(self, payload):

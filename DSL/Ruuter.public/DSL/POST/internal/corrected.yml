@@ -9,7 +9,7 @@ declaration:
   allowlist:
     body:
       - field: inferenceId
-        type: number
+        type: string
         description: "Body field 'inferenceId'"
       - field: isCorrected
         type: boolean
@@ -26,10 +26,7 @@ declaration:
       - field: platform
         type: string
         description: "Body field 'platform'"
-    headers:
-      - field: cookie
-        type: string
-        description: "Cookie field"
+
 
 extract_request_data:
   assign:
