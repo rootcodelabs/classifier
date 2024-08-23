@@ -4,8 +4,8 @@ services:
     image: ruuter
     environment:
       - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080,http://localhost:8000
-      - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
-      - application.internalRequests.allowedIPs=127.0.0.1,172.25.0.7,172.25.0.21
+      - application.http  CodesAllowList=200,201,202,204,400,401,403,404,500
+      - application.internalRequests.allowedIPs=127.0.0.1,172.25.0.7,172.25.0.21,172.25.0.22
       - application.logging.displayRequestContent=true
       - application.incomingRequests.allowedMethodTypes=POST,GET,PUT
       - application.logging.displayResponseContent=true
@@ -169,24 +169,6 @@ services:
         ipv4_address: 172.25.0.10
     restart: always
 
-  cron-manager:
-    container_name: cron-manager
-    image: cron-manager-python
-    volumes:
-      - ./DSL/CronManager/DSL:/DSL
-      - ./DSL/CronManager/script:/app/scripts
-      - ./DSL/CronManager/config:/app/config
-      - ./model_trainer:/app/model_trainer
-      - ./dataset-processor:/app/dataset_processor
-      - shared-volume:/shared
-
-    environment:
-      - server.port=9010
-    ports:
-      - 9010:8080
-    networks:
-      bykstack:
-        ipv4_address: 172.25.0.11
 
   init:
     image: busybox
@@ -196,6 +178,26 @@ services:
     networks:
       bykstack:
         ipv4_address: 172.25.0.12
+
+  cron-manager:
+    container_name: cron-manager
+    image: cron-manager-python
+    volumes:
+      - ./DSL/CronManager/DSL:/DSL
+      - ./DSL/CronManager/script:/app/scripts
+      - ./DSL/CronManager/config:/app/config
+      - ./model_trainer:/app/model_trainer
+      - shared-volume:/shared
+    environment:
+      - server.port=9010
+    ports:
+      - 9010:8080
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.11
+    depends_on:
+      - init
+      - s3-ferry
 
   file-handler:
     build:
@@ -272,7 +274,7 @@ services:
 
   model-inference:
     build:
-      context: ./model_inference
+      context: ./model-inference
       dockerfile: Dockerfile
     container_name: model-inference
     volumes:
@@ -443,6 +445,21 @@ services:
 volumes:
   shared-volume:
   opensearch-data:
+
+
+# Uncomment below container if you wish to debug progress bar sessions in opensearch dashboard
+# opensearch-dashboards:
+#       image: opensearchproject/opensearch-dashboards:2.11.1
+#       container_name: opensearch-dashboards
+#       environment:
+#         - OPENSEARCH_HOSTS=http://opensearch-node:9200
+#         - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+#       ports:
+#         - 5601:5601
+#       networks:
+#         bykstack:
+#           ipv4_address: 172.25.0.24
+
 
 networks:
   bykstack:
