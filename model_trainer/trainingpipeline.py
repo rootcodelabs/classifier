@@ -7,13 +7,15 @@ import torch
 import shutil
 import pandas as pd
 import os
-
+from constants import TRAINING_LOGS_PATH
+from loguru import logger
 
 from transformers import logging
 import warnings
 warnings.filterwarnings("ignore", message="Some weights of the model checkpoint were not used when initializing")
 logging.set_verbosity_error()
 
+logger.add(sink=TRAINING_LOGS_PATH)
 
 class CustomDataset(Dataset):
     def __init__(self, encodings, labels):
@@ -30,7 +32,7 @@ class CustomDataset(Dataset):
     
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(device)
+logger.info(f"TRAINING HARDWARE {device}")
 
 
 class TrainingPipeline:
@@ -73,6 +75,8 @@ class TrainingPipeline:
         models = []
         classifiers = []
         label_encoders =[]
+
+        logger.info(f"INITIATING TRAINING FOR {self.model_name} MODEL")
         for i in range(len(self.dfs)):
             current_df = self.dfs[i]
             if len(current_df) < 10:

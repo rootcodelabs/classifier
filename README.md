@@ -9,6 +9,13 @@ This repo will primarily contain:
 2. Docker Compose file to set up and run Classifier as a fully functional service;
 3. You can view the UI designs for this project in this [Figma file](https://www.figma.com/design/VWoZu2s7auo7YTw49RqNtV/Estonian-Classifier-English-Version?node-id=712-1695&t=cx6ZZVuEkfWqlbZB-1)
 
+
+## Instructions for MacOs Users
+#### TODO - Include instructions for MacOS users to delete specific parts of the base image to make the build work
+
+## Version 
+##### TODO - Talk about programming language versions and framework versions used in the project here
+
 ## Dev setup
 
 - Clone [Ruuter](https://github.com/buerokratt/Ruuter)
@@ -21,9 +28,14 @@ This repo will primarily contain:
 - Navigate to TIM and build the image `docker build -t tim .`
 - Clone [Authentication Layer](https://github.com/buerokratt/Authentication-layer)
 - Navigate to Authentication Layer and build the image  `docker build -f Dockerfile.dev -t authentication-layer .`
-- Clone [Cron Manager](https://github.com/buerokratt/CronManager.git)
-- Navigate to Cron Manager dev branch and build the image `docker build -t cron-manager .`
+- Clone [S3 Ferry](https://github.com/buerokratt/S3-Ferry)
+- Navigate to S3-Ferry and build the image `docker build  -t s3-ferry .`
+- Clone [Cron Manager](https://github.com/rootcodelabs/CronManager) (<i>This is a forked repo of the original Buerokratt CronManager with a Python environment included</i>)
+- Navigate to Cron Manager dev branch and build the cron-manager-python image `docker build -f Dockerfile.python -t cron-manager-python .`
 
+## Give execution permission for all mounted shell scripts
+- Navigate to the parent folder of the classifier project and run the below command to make the shell files executable
+- `find classifier -type f -name "*.sh" -exec chmod +x {} \;`
 
 ### Refresh Token setup
 
@@ -71,6 +83,7 @@ This repo will primarily contain:
      - JIRA_CLOUD_DOMAIN
      - JIRA_WEBHOOK_ID
 
+
 ### Notes
 
 -To get Jira webhook id ,can use below CURL request with valid credentials
@@ -86,3 +99,6 @@ JIRA_CLOUD_DOMAIN/rest/webhooks/1.0/webhook`
 ##### Ruuter Internal Requests
 
 - When running ruuter either on local or in an environment make sure to adjust `- application.internalRequests.allowedIPs=127.0.0.1,{YOUR_IPS}` under ruuter environments
+
+## Ngrok setup for local testing
+#### Explain about Setting up ngrok to test in localhost
