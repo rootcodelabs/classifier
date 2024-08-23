@@ -8,7 +8,7 @@ declaration:
   namespace: classifier
   allowlist:
     body:
-      - field: is_connect
+      - field: isConnect
         type: boolean
         description: "Body field 'isConnect'"
     headers:
@@ -18,7 +18,7 @@ declaration:
 
 extract_request_data:
   assign:
-    is_connect: ${incoming.body.is_connect}
+    is_connect: ${incoming.body.isConnect}
   next: get_platform_integration_status
 
 get_platform_integration_status:
@@ -87,7 +87,7 @@ subscribe_outlook:
     body:
       changeType: "created,updated"
       notificationUrl: "[#CLASSIFIER_RUUTER_PUBLIC_FRONTEND_URL]/classifier/integration/outlook/accept"
-      resource: "me/mailFolders('inbox')/messages"
+      resource: "me/messages"
       expirationDateTime: ${expiration_date_time}
       clientState: "secretClientValue"
   result: res_subscribe

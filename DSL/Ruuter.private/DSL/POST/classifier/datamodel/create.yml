@@ -174,13 +174,13 @@ check_connected_model_updated_status:
   next: assign_fail_response
 
 execute_cron_manager:
-  call: reflect.mock
+  call: http.post
   args:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_model/model_trainer"
     query:
-      cookie: ${incoming.headers.cookie}
-      model_id: ${model_id}
-      new_model_id: ${model_id}
+      cookie: ${incoming.headers.cookie.replace('customJwtCookie=','')} #Removing the customJwtCookie phrase from payload to to send cookie token only
+      modelId: ${model_id}
+      newModelId: ${model_id}
       updateType: 'major'
   result: res
   next: assign_success_response

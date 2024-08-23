@@ -14,13 +14,6 @@
   gap: 10px;
 }
 
-.status {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  color: #333;
-}
-
 .dot {
   width: 10px;
   height: 10px;
@@ -56,6 +49,7 @@
   justify-content: flex-end;
   display: flex;
   align-items: center;
+  margin-top: 15px;
 }
 
 .left-label {

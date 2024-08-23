@@ -32,7 +32,7 @@ const ViewDatasetGroupModalController = ({
   exportFormat,
 }: {
   setImportStatus: React.Dispatch<React.SetStateAction<string>>;
-  handleFileSelect: (file: File | null) => void;
+  handleFileSelect: (file: File | undefined) => void;
   fileUploadRef: RefObject<FileUploadHandle>;
   handleImport: () => void;
   importStatus: string;
@@ -101,6 +101,7 @@ const ViewDatasetGroupModalController = ({
                   name="format"
                   items={formats}
                   onChange={setImportFormat}
+                  selectedValue={importFormat}
                 ></FormRadios>
               </div>
               <p>{t('datasetGroups.detailedView.modals.import.attachments')}</p>
@@ -164,6 +165,7 @@ const ViewDatasetGroupModalController = ({
                   name="format"
                   items={formats}
                   onChange={setExportFormat}
+                  selectedValue={exportFormat}
                 ></FormRadios>
               </div>
             </div>

@@ -2,12 +2,18 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import { FilterFn } from '@tanstack/react-table';
 import moment from 'moment';
 
-export const formattedArray = (data: string[]) => {
+type FormattedOption = {
+  label: string;
+  value: string;
+};
+
+export const formattedArray = (data: string[]|undefined): FormattedOption[]|undefined => {
   return data?.map((name) => ({
     label: name,
     value: name,
   }));
 };
+
 
 export const convertTimestampToDateTime = (timestamp: number) => {
   return moment.unix(timestamp).format('YYYY-MM-DD HH:mm:ss');
@@ -33,4 +39,43 @@ export const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 
 export const formatDate = (date: Date, format: string) => {
   return moment(date).format(format);
+};
+
+export const formatDateTime = (date: string) => {
+  const format = 'DD-MM-YYYY-HH:mm:ss';
+
+  // Parse the date string using moment
+  const momentDate = moment(date, format);
+
+  // Format the date as MM/DD/YYYY
+  const formattedDate = momentDate.format('M/D/YYYY');
+
+  // Format the time as h.mm A (AM/PM)
+  const formattedTime = momentDate.format('h.mm A');
+
+  return {
+    formattedDate,
+    formattedTime,
+  };
+};
+
+export const formatClassHierarchyArray = (array: string | string[]) => {
+  let formatedArray: string[];
+  if (typeof array === 'string') {
+    try {
+      const cleanedInput = array?.replace(/\s+/g, '');
+      formatedArray = JSON.parse(cleanedInput);
+    } catch (error) {
+      console.error('Error parsing input string:', error);
+      return '';
+    }
+  } else {
+    formatedArray = array;
+  }
+
+  return formatedArray
+    .map((item, index) =>
+      index === formatedArray?.length - 1 ? item : item + ' ->'
+    )
+    .join(' ');
 };

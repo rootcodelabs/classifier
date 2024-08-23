@@ -7,8 +7,7 @@ import {
   MdOutlineDataset,
   MdPeople,
   MdSettings,
-  MdSettingsBackupRestore,
-  MdTextFormat,
+  MdSettingsBackupRestore
 } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -19,6 +18,7 @@ import apiDev from 'services/api-dev';
 import { userManagementEndpoints } from 'utils/endpoints';
 import { integrationQueryKeys } from 'utils/queryKeys';
 import { ROLES } from 'enums/roles';
+import { TbLetterT } from "react-icons/tb";
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -60,14 +60,24 @@ const MainNavigation: FC = () => {
     {
       id: 'dataModels',
       label: t('menu.dataModels'),
-      path: '/data-models',
+      path: '#',
       icon: <MdApps />,
+      children: [
+        {
+          label: t('menu.models'),
+          path: '/data-models',
+        },
+        {
+          label: t('menu.trainingSessions'),
+          path: 'training-sessions',
+        }
+      ],
     },
     {
-      id: 'incomingTexts',
-      label: t('menu.incomingTexts'),
-      path: '/incoming-texts',
-      icon: <MdTextFormat />,
+      id: 'correctedTexts',
+      label: t('menu.correctedTexts'),
+      path: '/corrected-texts',
+      icon: <TbLetterT/>,
     },
     {
       id: 'testModel',
@@ -77,18 +87,12 @@ const MainNavigation: FC = () => {
     },
   ];
 
-  const filterItemsByRole = (role: string, items: MenuItem[]) => {
+  const filterItemsByRole = (role: string[], items: MenuItem[]) => {
     return items?.filter((item) => {
-      switch (role) {
-        case ROLES.ROLE_ADMINISTRATOR:
-          return item?.id;
-        case ROLES.ROLE_MODEL_TRAINER:
-          return item?.id !== 'userManagement' && item?.id !== 'integration';
-        case 'ROLE_UNAUTHENTICATED':
-          return false;
-        default:
-          return false;
-      }
+      if (role.includes(ROLES.ROLE_ADMINISTRATOR)) return item?.id;
+      else if (role.includes(ROLES.ROLE_MODEL_TRAINER))
+        return item?.id !== 'userManagement' && item?.id !== 'integration';
+      else return false;
     });
   };
 
@@ -98,8 +102,8 @@ const MainNavigation: FC = () => {
       return res?.data?.response;
     },
     onSuccess: (res) => {
-      const role = res[0];
-      const filteredItems = filterItemsByRole(role, items);
+      const roles = res;
+      const filteredItems = filterItemsByRole(roles, items);
       setMenuItems(filteredItems);
     },
     onError: (error) => {

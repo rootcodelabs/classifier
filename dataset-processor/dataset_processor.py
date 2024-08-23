@@ -7,16 +7,13 @@ from constants import *
 
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 GET_VALIDATION_SCHEMA = os.getenv("GET_VALIDATION_SCHEMA")
-FILE_HANDLER_DOWNLOAD_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_JSON_URL")
 GET_STOPWORDS_URL = os.getenv("GET_STOPWORDS_URL")
 FILE_HANDLER_IMPORT_CHUNKS_URL = os.getenv("FILE_HANDLER_IMPORT_CHUNKS_URL")
 FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL = os.getenv("FILE_HANDLER_DOWNLOAD_LOCATION_JSON_URL")
 GET_PAGE_COUNT_URL = os.getenv("GET_PAGE_COUNT_URL")
 SAVE_JSON_AGGREGRATED_DATA_URL = os.getenv("SAVE_JSON_AGGREGRATED_DATA_URL")
 DOWNLOAD_CHUNK_URL = os.getenv("DOWNLOAD_CHUNK_URL")
-STATUS_UPDATE_URL = os.getenv("STATUS_UPDATE_URL")
 FILE_HANDLER_COPY_CHUNKS_URL = os.getenv("FILE_HANDLER_COPY_CHUNKS_URL")
-PARAPHRASE_API_URL = os.getenv("PARAPHRASE_API_URL")
 
 class DatasetProcessor:
     def __init__(self):
@@ -317,6 +314,7 @@ class DatasetProcessor:
         
     def update_preprocess_status(self,dg_id, cookie, processed_data_available, raw_data_available, preprocess_data_location, raw_data_location, enable_allowed, num_samples, num_pages):
         url = STATUS_UPDATE_URL
+        
         print(url)
         headers = {
             'Content-Type': 'application/json',
@@ -334,6 +332,7 @@ class DatasetProcessor:
         }
 
         try:
+            print(data)
             response = requests.post(url, json=data, headers=headers)
             response.raise_for_status()
             return response.json()
@@ -341,306 +340,294 @@ class DatasetProcessor:
             print(f"An error occurred: {e}")
             return None
         
-    def process_handler(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload):
-        print(f"Process handler started with updateType: {updateType}")
+    def process_handler(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload, sessionId):
+        print("IN DATASET PROCESSOR PROCESS_HANDLER")
+        
+        print(MSG_PROCESS_HANDLER_STARTED.format(updateType))
         page_count = self.get_page_count(dgId, cookie)
-        print(f"Page Count : {page_count}")
+        print(MSG_PAGE_COUNT.format(page_count))
+
+        if int(sessionId) >= 0:
+            session_id = sessionId
+        if not session_id:
+                return self.generate_response(False, MSG_FAIL)
         
-        if updateType == "minor" and page_count>0:
+        if page_count > 0 and updateType == 'minor':
             updateType = "minor_append_update"
-        elif updateType == "patch":
-            pass
-        else:
+        elif page_count <= 0 and updateType == 'minor':
             updateType = "minor_initial_update"
-        
+
         if updateType == "minor_initial_update":
-            print("Handling Minor update")
-            # dataset = self.get_dataset(dgId, cookie)
-            dataset = self.get_dataset_by_location(savedFilePath, cookie)
-            if dataset is not None:
-                print("Dataset retrieved successfully")
-                structured_data = self.check_and_convert(dataset)
-                if structured_data is not None:
-                    print("Dataset converted successfully")
-                    selected_data_fields_to_enrich = self.get_selected_data_fields(newDgId, cookie)
-                    if selected_data_fields_to_enrich is not None:
-                        print("Selected data fields to enrich retrieved successfully")
-                        max_row_id = max(item["rowId"] for item in structured_data)
-                        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
-
-                        agregated_dataset = structured_data + enriched_data
-                        
-                        if enriched_data is not None:
-                            print("Data enrichment successful")
-                            stop_words = self.get_stopwords(cookie)
-                            if stop_words is not None:
-                                print("Stop words retrieved successfully")
-                                print(agregated_dataset)
-                                cleaned_data = self.remove_stop_words(agregated_dataset, stop_words)
-                                if cleaned_data is not None:
-                                    print("Stop words removed successfully")
-                                    print(cleaned_data)
-                                    chunked_data = self.chunk_data(cleaned_data)
-                                    if chunked_data is not None:
-                                        print("Data chunking successful")
-                                        print(chunked_data)
-                                        operation_result = self.save_chunked_data(chunked_data, cookie, newDgId, 0)
-                                        if operation_result:
-                                            print("Chunked data saved successfully")
-                                            agregated_dataset_operation = self.save_aggregrated_data(newDgId, cookie, cleaned_data)
-                                            if agregated_dataset_operation != None:
-                                                return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(cleaned_data), len(chunked_data))
-                                                print(return_data)
-                                                return SUCCESSFUL_OPERATION
-                                            else:
-                                                print("Failed to save aggregated dataset for minor update")
-                                                return FAILED_TO_SAVE_AGGREGATED_DATA
-                                        else:
-                                            print("Failed to save chunked data")
-                                            return FAILED_TO_SAVE_CHUNKED_DATA
-                                    else:
-                                        print("Failed to chunk cleaned data")
-                                        return FAILED_TO_CHUNK_CLEANED_DATA
-                                else:
-                                    print("Failed to remove stop words")
-                                    return FAILED_TO_REMOVE_STOP_WORDS
-                            else:
-                                print("Failed to retrieve stop words")
-                                return FAILED_TO_GET_STOP_WORDS
-                        else:
-                            print("Failed to enrich data")
-                            return FAILED_TO_ENRICH_DATA
-                    else:
-                        print("Failed to get selected data fields to enrich")
-                        return FAILED_TO_GET_SELECTED_FIELDS
-                else:
-                    print("Failed to convert dataset")
-                    return FAILED_TO_CHECK_AND_CONVERT
-            else:
-                print("Failed to retrieve dataset")
-                return FAILED_TO_GET_DATASET
+            result = self.handle_minor_initial_update(dgId, newDgId, cookie, savedFilePath, session_id)
         elif updateType == "minor_append_update":
-            print("Handling Minor update")
-            agregated_dataset = self.get_dataset(dgId, cookie)
-            max_row_id = max(item["rowId"] for item in agregated_dataset)
-            if agregated_dataset is not None:
-                print("Aggregated dataset retrieved successfully")
-                minor_update_dataset = self.get_dataset_by_location(savedFilePath, cookie)
-                if minor_update_dataset is not None:
-                    print("Minor update dataset retrieved successfully")
-                    structured_data = self.check_and_convert(minor_update_dataset)
-                    structured_data = self.add_row_id(structured_data, max_row_id)
-                    print(structured_data[-1])
-                    if structured_data is not None:
-                        print("Minor update dataset converted successfully")
-                        selected_data_fields_to_enrich = self.get_selected_data_fields(newDgId, cookie)
-                        if selected_data_fields_to_enrich is not None:
-                            print("Selected data fields to enrich for minor update retrieved successfully")
-                            max_row_id = max(item["rowId"] for item in structured_data)
-                            enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
-                            if enriched_data is not None:
-                                print("Minor update data enrichment successful")
-                                stop_words = self.get_stopwords(cookie)
-                                if stop_words is not None:
-                                    combined_new_dataset = structured_data + enriched_data
-                                    print("Stop words for minor update retrieved successfully")
-                                    cleaned_data = self.remove_stop_words(combined_new_dataset, stop_words)
-                                    if cleaned_data is not None:
-                                        print("Stop words for minor update removed successfully")
-                                        chunked_data = self.chunk_data(cleaned_data)
-                                        if chunked_data is not None:
-                                            print("Minor update data chunking successful")
-                                            page_count = self.get_page_count(dgId, cookie)
-                                            if page_count is not None:
-                                                print(f"Page count retrieved successfully: {page_count}")
-                                                print(chunked_data)
-                                                copy_exsisting_files = self.copy_chunked_datafiles(dgId, newDgId, cookie, page_count)
-                                                if copy_exsisting_files is not None:
-                                                    operation_result = self.save_chunked_data(chunked_data, cookie, newDgId, page_count)
-                                                    if operation_result is not None:
-                                                        print("Chunked data for minor update saved successfully")
-                                                        agregated_dataset += cleaned_data
-                                                        agregated_dataset_operation = self.save_aggregrated_data(newDgId, cookie, agregated_dataset)
-                                                        if agregated_dataset_operation:
-                                                            print("Aggregated dataset for minor update saved successfully")
-                                                            return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(agregated_dataset), (len(chunked_data)+page_count))
-                                                            print(return_data)  
-                                                            return SUCCESSFUL_OPERATION
-                                                        else:
-                                                            print("Failed to save aggregated dataset for minor update")
-                                                            return FAILED_TO_SAVE_AGGREGATED_DATA
-                                                    else:
-                                                        print("Failed to save chunked data for minor update")
-                                                        return FAILED_TO_SAVE_CHUNKED_DATA
-                                                else:
-                                                    print("Failed to copy existing chunked data for minor update")
-                                                    return FAILED_TO_COPY_CHUNKED_DATA
-                                            else:
-                                                print("Failed to get page count")
-                                                return FAILED_TO_GET_PAGE_COUNT
-                                        else:
-                                            print("Failed to chunk cleaned data for minor update")
-                                            return FAILED_TO_CHUNK_CLEANED_DATA
-                                    else:
-                                        print("Failed to remove stop words for minor update")
-                                        return FAILED_TO_REMOVE_STOP_WORDS
-                                else:
-                                    print("Failed to retrieve stop words for minor update")
-                                    return FAILED_TO_GET_STOP_WORDS
-                            else:
-                                print("Failed to enrich data for minor update")
-                                return FAILED_TO_ENRICH_DATA
-                        else:
-                            print("Failed to get selected data fields to enrich for minor update")
-                            return FAILED_TO_GET_SELECTED_FIELDS
-                    else:
-                        print("Failed to convert minor update dataset")
-                        return FAILED_TO_CHECK_AND_CONVERT
-                else:
-                    print("Failed to retrieve minor update dataset")
-                    return FAILED_TO_GET_MINOR_UPDATE_DATASET
-            else:
-                print("Failed to retrieve aggregated dataset for minor update")
-                return FAILED_TO_GET_AGGREGATED_DATASET
+            result = self.handle_minor_append_update(dgId, newDgId, cookie, savedFilePath, session_id)
         elif updateType == "patch":
-            decoded_string = urllib.parse.unquote(patchPayload)
-            data_payload = json.loads(decoded_string)
-            if (data_payload["editedData"]!=[]):
-                print("Handling Patch update")
-                stop_words = self.get_stopwords(cookie)
-                if stop_words is not None:
-                    print("Stop words for patch update retrieved successfully")
-                    cleaned_patch_payload = self.remove_stop_words(data_payload["editedData"], stop_words)
-                    if cleaned_patch_payload is not None:
-                        print("Stop words for patch update removed successfully")
-                        page_count = self.get_page_count(dgId, cookie)
-                        if page_count is not None:
-                            print(f"Page count for patch update retrieved successfully: {page_count}")
-                            print(cleaned_patch_payload)
-                            chunk_updates = {}
-                            for entry in cleaned_patch_payload:
-                                rowId = entry.get("rowId")
-                                rowId = int(rowId)
-                                chunkNum = (rowId - 1) // 5 + 1
-                                if chunkNum not in chunk_updates:
-                                    chunk_updates[chunkNum] = []
-                                chunk_updates[chunkNum].append(entry)
-                            print(f"Chunk updates prepared: {chunk_updates}")
-                            for chunkNum, entries in chunk_updates.items():
-                                chunk_data = self.download_chunk(dgId, cookie, chunkNum)
-                                if chunk_data is not None:
-                                    print(f"Chunk {chunkNum} downloaded successfully")
-                                    for entry in entries:
-                                        rowId = entry.get("rowId")
-                                        rowId = int(rowId)
-                                        for idx, chunk_entry in enumerate(chunk_data):
-                                            if chunk_entry.get("rowId") == rowId:
-                                                chunk_data[idx] = entry
-                                                break
-                                    chunk_save_operation = self.save_chunked_data([chunk_data], cookie, dgId, chunkNum-1)
-                                    if chunk_save_operation == None:
-                                        print(f"Failed to save chunk {chunkNum}")
-                                        return FAILED_TO_SAVE_CHUNKED_DATA
-                                else:
-                                    print(f"Failed to download chunk {chunkNum}")
-                                    return FAILED_TO_DOWNLOAD_CHUNK
-                            agregated_dataset = self.get_dataset(dgId, cookie)
-                            if agregated_dataset is not None:
-                                print("Aggregated dataset for patch update retrieved successfully")
-                                for entry in cleaned_patch_payload:
-                                    rowId = entry.get("rowId")
-                                    rowId = int(rowId)
-                                    for index, item in enumerate(agregated_dataset):
-                                        if item.get("rowId") == rowId:
-                                            entry["rowId"] = rowId
-                                            del entry["rowId"]
-                                            agregated_dataset[index] = entry
-                                            break
+            result = self.handle_patch_update(dgId, cookie, patchPayload, session_id)
+        else:
+            print(f"Update TYPE {updateType}")
+        
+        self.update_progress(cookie, PROGRESS_SUCCESS if result['response']['operationSuccessful'] else PROGRESS_FAIL, MSG_SUCCESS if result['response']['operationSuccessful'] else MSG_FAIL, STATUS_MSG_SUCCESS if result['response']['operationSuccessful'] else STATUS_MSG_FAIL, session_id)
+        return result
 
-                                save_result_update = self.save_aggregrated_data(dgId, cookie, agregated_dataset)
-                                if save_result_update:
-                                    print("Aggregated dataset for patch update saved successfully")
-                                else:
-                                    print("Failed to save aggregated dataset for patch update")
-                                    return FAILED_TO_SAVE_AGGREGATED_DATA
-                            else:
-                                print("Failed to retrieve aggregated dataset for patch update")
-                                return FAILED_TO_GET_AGGREGATED_DATASET
-                        else:
-                            print("Failed to get page count for patch update")
-                            return FAILED_TO_GET_PAGE_COUNT
-                    else:
-                        print("Failed to remove stop words for patch update")
-                        return FAILED_TO_REMOVE_STOP_WORDS
-                else:
-                    print("Failed to retrieve stop words for patch update")
-                    return FAILED_TO_GET_STOP_WORDS
+    def handle_minor_initial_update(self, dgId, newDgId, cookie, savedFilePath, session_id):
+        self.update_progress(cookie, PROGRESS_CLEANING_PROCESSING, MSG_CLEANING_PROCESSING, STATUS_MSG_CLEANING_DATASET, session_id)
+        
+        dataset = self.get_dataset_by_location(savedFilePath, cookie)
+        if dataset is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        structured_data = self.check_and_convert(dataset)
+        if structured_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        selected_data_fields_to_enrich = self.get_selected_data_fields(newDgId, cookie)
+        if selected_data_fields_to_enrich is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        max_row_id = max(item["rowId"] for item in structured_data)
+        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
+        if enriched_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        self.update_progress(cookie, PROGRESS_GENERATING_DATA, MSG_GENERATING_DATA, STATUS_MSG_GENERATING_DATA, session_id)
+        
+        aggregated_dataset = structured_data + enriched_data
+        stop_words = self.get_stopwords(cookie)
+        if stop_words is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        cleaned_data = self.remove_stop_words(aggregated_dataset, stop_words)
+        if cleaned_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        self.update_progress(cookie, PROGRESS_CHUNKING_UPLOADING, MSG_CHUNKING_UPLOADING, STATUS_MSG_GENERATING_DATA, session_id)
+        
+        chunked_data = self.chunk_data(cleaned_data)
+        if chunked_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        operation_result = self.save_chunked_data(chunked_data, cookie, newDgId, 0)
+        if not operation_result:
+            return self.generate_response(False, MSG_FAIL)
+        
+        aggregated_dataset_operation = self.save_aggregrated_data(newDgId, cookie, cleaned_data)
+        if not aggregated_dataset_operation:
+            return self.generate_response(False, MSG_FAIL)
+        
+        return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(cleaned_data), len(chunked_data))
+        return self.generate_response(True, MSG_PROCESS_COMPLETE)
+
+    def handle_minor_append_update(self, dgId, newDgId, cookie, savedFilePath, session_id):
+        self.update_progress(cookie, PROGRESS_CLEANING_PROCESSING, MSG_CLEANING_PROCESSING, STATUS_MSG_CLEANING_DATASET, session_id)
+        
+        aggregated_dataset = self.get_dataset(dgId, cookie)
+        if aggregated_dataset is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        max_row_id = max(item["rowId"] for item in aggregated_dataset)
+        minor_update_dataset = self.get_dataset_by_location(savedFilePath, cookie)
+        if minor_update_dataset is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        structured_data = self.check_and_convert(minor_update_dataset)
+        if structured_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        structured_data = self.add_row_id(structured_data, max_row_id)
+        selected_data_fields_to_enrich = self.get_selected_data_fields(newDgId, cookie)
+        if selected_data_fields_to_enrich is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        enriched_data = self.enrich_data(structured_data, selected_data_fields_to_enrich, max_row_id)
+        if enriched_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        self.update_progress(cookie, PROGRESS_GENERATING_DATA, MSG_GENERATING_DATA, STATUS_MSG_GENERATING_DATA, session_id)
+        
+        stop_words = self.get_stopwords(cookie)
+        if stop_words is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        combined_new_dataset = structured_data + enriched_data
+        cleaned_data = self.remove_stop_words(combined_new_dataset, stop_words)
+        if cleaned_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        chunked_data = self.chunk_data(cleaned_data)
+        if chunked_data is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        page_count = self.get_page_count(dgId, cookie)
+        if page_count is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        copy_existing_files = self.copy_chunked_datafiles(dgId, newDgId, cookie, page_count)
+        if copy_existing_files is None:
+            return self.generate_response(False, MSG_FAIL)
+        
+        operation_result = self.save_chunked_data(chunked_data, cookie, newDgId, page_count)
+        if not operation_result:
+            return self.generate_response(False, MSG_FAIL)
+        
+        aggregated_dataset += cleaned_data
+        aggregated_dataset_operation = self.save_aggregrated_data(newDgId, cookie, aggregated_dataset)
+        if not aggregated_dataset_operation:
+            return self.generate_response(False, MSG_FAIL)
+        
+        return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(aggregated_dataset), (len(chunked_data) + page_count))
+        return self.generate_response(True, MSG_PROCESS_COMPLETE)
+
+    def handle_patch_update(self, dgId, cookie, patchPayload, session_id):
+        decoded_string = urllib.parse.unquote(patchPayload)
+        data_payload = json.loads(decoded_string)
+        
+        if data_payload["editedData"]:
+            self.update_progress(cookie, PROGRESS_CLEANING_PROCESSING, MSG_CLEANING_PROCESSING, STATUS_MSG_CLEANING_DATASET, session_id)
+            stop_words = self.get_stopwords(cookie)
+            if stop_words is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            cleaned_patch_payload = self.remove_stop_words(data_payload["editedData"], stop_words)
+            if cleaned_patch_payload is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            page_count = self.get_page_count(dgId, cookie)
+            if page_count is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            chunk_updates = self.prepare_chunk_updates(cleaned_patch_payload)
+            if chunk_updates is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            for chunk_num, entries in chunk_updates.items():
+                chunk_data = self.download_chunk(dgId, cookie, chunk_num)
+                if chunk_data is None:
+                    return self.generate_response(False, MSG_FAIL)
                 
-            print(data_payload["deletedDataRows"])
-            if (data_payload["deletedDataRows"]!=[]):
-                try:
-                    print("Handling deleted data rows")
-                    deleted_rows = data_payload["deletedDataRows"]
-                    aggregated_dataset = self.get_dataset(dgId, cookie)
-                    if aggregated_dataset is not None:
-                        print("Aggregated dataset for delete operation retrieved successfully")
-                        updated_dataset = [row for row in aggregated_dataset if row.get('rowId') not in deleted_rows]
-                        for idx, row in enumerate(updated_dataset, start=1):
-                            row['rowId'] = idx
-                        if updated_dataset is not None:
-                            print("Deleted rows removed and dataset updated successfully")
-                            chunked_data = self.chunk_data(updated_dataset)
-                            if chunked_data is not None:
-                                print("Data chunking after delete operation successful")
-                                print(chunked_data)
-                                operation_result = self.save_chunked_data(chunked_data, cookie, dgId, 0)
-                                if operation_result:
-                                    print("Chunked data after delete operation saved successfully")
-                                    save_result_delete = self.save_aggregrated_data(dgId, cookie, updated_dataset)
-                                    if save_result_delete:
-                                        print("Aggregated dataset after delete operation saved successfully")
-                                    else:
-                                        print("Failed to save aggregated dataset after delete operation")
-                                        return FAILED_TO_SAVE_AGGREGATED_DATA
-                                else:
-                                    print("Failed to save chunked data after delete operation")
-                                    return FAILED_TO_SAVE_CHUNKED_DATA
-                            else:
-                                print("Failed to chunk data after delete operation")
-                                return FAILED_TO_CHUNK_CLEANED_DATA
-                        else:
-                            print("Failed to update dataset after deleting rows")
-                            return FAILED_TO_UPDATE_DATASET
-                    else:
-                        print("Failed to retrieve aggregated dataset for delete operation")
-                        return FAILED_TO_GET_AGGREGATED_DATASET
-                except Exception as e:
-                    print(f"An error occurred while handling deleted data rows: {e}")
-                    return FAILED_TO_HANDLE_DELETED_ROWS
-
-            if data_payload["editedData"]==[] and data_payload["deletedDataRows"]==[]:
-                return SUCCESSFUL_OPERATION
-            elif data_payload["editedData"]!=[] and data_payload["deletedDataRows"]==[]:
-                if save_result_update:
-                    return SUCCESSFUL_OPERATION
-                else:
-                    return FAILED_TO_SAVE_AGGREGATED_DATA
-            elif data_payload["editedData"]==[] and data_payload["deletedDataRows"]!=[]:
-                if save_result_delete:
-                    return_data = self.update_preprocess_status(dgId, cookie, True, False, f"/dataset/{dgId}/chunks/", "", True, len(updated_dataset), len(chunked_data))
-                    print(return_data)
-                    return SUCCESSFUL_OPERATION
-                else:
-                    return FAILED_TO_SAVE_AGGREGATED_DATA
-            elif data_payload["editedData"]!=[] and data_payload["deletedDataRows"]!=[]:
-                if save_result_update and save_result_delete:
-                    return_data = self.update_preprocess_status(dgId, cookie, True, False, f"/dataset/{dgId}/chunks/", "", True, len(updated_dataset), len(chunked_data))
-                    print(return_data)
-                    return SUCCESSFUL_OPERATION
-                else:
-                    return FAILED_TO_SAVE_AGGREGATED_DATA
-
+                for entry in entries:
+                    row_id = int(entry.get("rowId"))
+                    for idx, chunk_entry in enumerate(chunk_data):
+                        if chunk_entry.get("rowId") == row_id:
+                            chunk_data[idx] = entry
+                            break
                 
+                chunk_save_operation = self.save_chunked_data([chunk_data], cookie, dgId, chunk_num - 1)
+                if chunk_save_operation is None:
+                    return self.generate_response(False, MSG_FAIL)
+            
+            aggregated_dataset = self.get_dataset(dgId, cookie)
+            if aggregated_dataset is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            for entry in cleaned_patch_payload:
+                row_id = int(entry.get("rowId"))
+                for index, item in enumerate(aggregated_dataset):
+                    if item.get("rowId") == row_id:
+                        aggregated_dataset[index] = entry
+                        break
+            
+            save_result_update = self.save_aggregrated_data(dgId, cookie, aggregated_dataset)
+            if not save_result_update:
+                return self.generate_response(False, MSG_FAIL)
+        
+        if data_payload["deletedDataRows"]:
+            self.update_progress(cookie, PROGRESS_CLEANING_PROCESSING, MSG_CLEANING_PROCESSING, STATUS_MSG_CLEANING_DATASET, session_id)
+            deleted_rows = data_payload["deletedDataRows"]
+            aggregated_dataset = self.get_dataset(dgId, cookie)
+            if aggregated_dataset is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            updated_dataset = [row for row in aggregated_dataset if row.get('rowId') not in deleted_rows]
+            updated_dataset = self.reindex_dataset(updated_dataset)
+            if updated_dataset is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            chunked_data = self.chunk_data(updated_dataset)
+            if chunked_data is None:
+                return self.generate_response(False, MSG_FAIL)
+            
+            operation_result = self.save_chunked_data(chunked_data, cookie, dgId, 0)
+            if not operation_result:
+                return self.generate_response(False, MSG_FAIL)
+            
+            save_result_delete = self.save_aggregrated_data(dgId, cookie, updated_dataset)
+            if not save_result_delete:
+                return self.generate_response(False, MSG_FAIL)
+        
+        return self.generate_response(True, MSG_PROCESS_COMPLETE)
 
+    def get_session_id(self, dgId, cookie):
+        headers = {'Cookie': cookie}
+        try:
+            response = requests.get(GET_PROGRESS_SESSIONS_URL, headers=headers)
+            response.raise_for_status()
+            sessions = response.json().get("response", {}).get("data", [])
+            print("Sessions")
+            print(sessions)
+            for session in sessions:
+                if session['dgId'] == dgId:
+                    return session['id']
+            return None
+        except requests.exceptions.RequestException as e:
+            print(e)
+            print(MSG_FAIL)
+            return None
 
+    def update_progress(self, cookie, progress, message, status, session_id):
 
+        if progress == PROGRESS_SUCCESS or progress == PROGRESS_FAIL:
+            process_complete = True
+        else:
+            process_complete = False
+
+        url = UPDATE_PROGRESS_SESSION_URL
+        headers = {'Content-Type': 'application/json', 'Cookie': cookie}
+        payload = {
+            'sessionId': int(session_id),
+            'validationStatus': status,
+            'validationMessage': message,
+            'progressPercentage': progress,
+            'processComplete': process_complete
+        }
+        try:
+            print(f"Progress Update > {payload}")
+            response = requests.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(e)
+            print(MSG_FAIL)
+            return None
+
+    def generate_response(self, success, message):
+        return {
+            'response': {
+                'operationSuccessful': success,
+                'message': message
+            }
+        }
+
+    def prepare_chunk_updates(self, cleaned_patch_payload):
+        try:
+            chunk_updates = {}
+            for entry in cleaned_patch_payload:
+                row_id = int(entry.get("rowId"))
+                chunk_num = (row_id - 1) // 5 + 1
+                if chunk_num not in chunk_updates:
+                    chunk_updates[chunk_num] = []
+                chunk_updates[chunk_num].append(entry)
+            return chunk_updates
+        except Exception as e:
+            print(e)
+            print(MSG_FAIL)
+            return None
+
+    def reindex_dataset(self, dataset):
+        try:
+            for idx, row in enumerate(dataset, start=1):
+                row['rowId'] = idx
+            return dataset
+        except Exception as e:
+            print(e)
+            print(MSG_FAIL)
+            return None

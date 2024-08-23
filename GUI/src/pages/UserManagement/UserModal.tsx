@@ -7,17 +7,26 @@ import { Button, Dialog, FormInput, Track } from 'components';
 import { User, UserDTO } from 'types/user';
 import { checkIfUserExists, createUser, editUser } from 'services/users';
 import { useToast } from 'hooks/useToast';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import './SettingsUsers.scss';
 import { FC, useMemo } from 'react';
 import { ROLES } from 'enums/roles';
 import { userManagementQueryKeys } from 'utils/queryKeys';
 import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 type UserModalProps = {
   onClose: () => void;
-  user?: User | undefined;
+  user?: User;
   isModalOpen?: boolean;
+};
+
+const DropdownIndicator = (props: any) => {
+  return (
+    <components.DropdownIndicator {...props}>
+      {props.selectProps.menuIsOpen ? <FaChevronUp /> : <FaChevronDown />}
+    </components.DropdownIndicator>
+  );
 };
 
 const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
@@ -108,9 +117,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     onSuccess: async (data) => {
       if (data.response === 'true') {
         toast.open({
-          type: ToastTypes.SUCCESS,
+          type: ToastTypes.ERROR,
           title: t('global.notificationError'),
-          message: t('settings.users.userExists'),
+          message: t('userManagement.addUser.userExists'),
         });
       } else {
         createNewUser();
@@ -134,8 +143,6 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     else checkIfUserExistsMutation.mutate({ userData: data });
   });
 
-  const requiredText = t('settings.users.required') ?? '*';
-
   return (
     <Dialog
       isOpen={isModalOpen}
@@ -146,7 +153,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
       }
       onClose={onClose}
       footer={
-        <div className="footer-button-wrapper">
+        <div className="button-wrapper">
           <Button
             appearance={ButtonAppearanceTypes.SECONDARY}
             onClick={onClose}
@@ -159,7 +166,8 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
               !isValid ||
               !isDirty ||
               userEditMutation.isLoading ||
-              checkIfUserExistsMutation.isLoading
+              checkIfUserExistsMutation.isLoading || 
+              userCreateMutation.isLoading
             }
           >
             {t('global.confirm')}
@@ -172,9 +180,12 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           defaultValue={`${user?.firstName ?? ''} ${
             user?.lastName ?? ''
           }`.trim()}
-          {...register('fullName', { required: requiredText })}
+          {...register('fullName', {
+            required: t('userManagement.addUser.nameRequired') ?? '',
+          })}
           label={t('userManagement.addUser.name')}
           placeholder={t('userManagement.addUser.namePlaceholder') ?? ''}
+          maxLength={49}
         />
         {errors?.fullName && (
           <span className="error-span">{errors?.fullName?.message}</span>
@@ -183,7 +194,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
         <Controller
           control={control}
           name="authorities"
-          rules={{ required: requiredText }}
+          rules={{ required: t('userManagement.addUser.roleRequired') ?? '' }}
           render={({ field: { onChange, onBlur, name, ref } }) => (
             <div className="multiSelect">
               <label className="multiSelect__label">
@@ -203,6 +214,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
                   isMulti={true}
                   placeholder={t('userManagement.addUser.rolePlaceholder')}
                   onChange={onChange}
+                  components={{ DropdownIndicator }}
                 />
               </div>
             </div>
@@ -214,10 +226,10 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
         {!user && (
           <FormInput
             {...register('useridcode', {
-              required: requiredText,
+              required: t('userManagement.addUser.idCodeRequired') ?? '',
               pattern: {
                 value: /\bEE\d+\b/,
-                message: t('settings.users.invalidIdCode'),
+                message: t('userManagement.addUser.invalidIdCode'),
               },
             })}
             label={t('userManagement.addUser.personalId')}
@@ -239,10 +251,10 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
 
         <FormInput
           {...register('csaEmail', {
-            required: requiredText,
+            required: t('userManagement.addUser.emailRequired') ?? '',
             pattern: {
               value: /\S+@\S+\.\S+/,
-              message: t('settings.users.invalidemail'),
+              message: t('userManagement.addUser.invalidemail'),
             },
           })}
           label={t('userManagement.addUser.email')}

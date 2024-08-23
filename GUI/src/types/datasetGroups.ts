@@ -11,7 +11,7 @@ export interface Class {
   id: string;
   fieldName: string;
   level: number;
-  children: Class[] | any;
+  children: Class[];
 }
 
 export interface LinkedModel {
@@ -131,3 +131,22 @@ export type DatasetDetails = {
 export type SelectedRowPayload = {
   rowId: number;
 } & Record<string, string>;
+
+export type ValidationProgressData = {
+  id: string;
+  groupName: string;
+  majorVersion: number;
+  minorVersion: number;
+  patchVersion: number;
+  latest: boolean;
+  validationStatus: string;
+  validationMessage?: string;
+  progressPercentage: number;
+};
+
+export type SSEEventData = {
+  sessionId: string;
+  validationStatus: string;
+  validationMessage?: string;
+  progressPercentage: number;
+};

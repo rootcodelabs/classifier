@@ -13,6 +13,14 @@ import ViewDatasetGroup from './ViewDatasetGroup';
 import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
+import NoDataView from 'components/molecules/NoDataView';
+
+type FilterData = {
+  datasetGroupName: string;
+  version: string;
+  validationStatus: string;
+  sort: 'asc' | 'desc';
+};
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -23,16 +31,16 @@ const DatasetGroups: FC = () => {
   const [enableFetch, setEnableFetch] = useState(true);
   const [view, setView] = useState<DatasetViewEnum>(DatasetViewEnum.LIST);
 
-  useEffect(() => {
-    setEnableFetch(true);
-  }, [view]);
-
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterData>({
     datasetGroupName: 'all',
     version: 'x.x.x',
     validationStatus: 'all',
     sort: 'asc',
   });
+
+  useEffect(() => {
+    setEnableFetch(true);
+  }, [view]);
 
   const { data: datasetGroupsData, isLoading } = useQuery(
     datasetQueryKeys.DATASET_OVERVIEW(
@@ -59,10 +67,12 @@ const DatasetGroups: FC = () => {
       enabled: enableFetch,
     }
   );
+
   const { data: filterData } = useQuery(
     datasetQueryKeys.DATASET_FILTERS(),
     () => getFilterData()
   );
+
   const pageCount = datasetGroupsData?.response?.data?.[0]?.totalPages || 1;
 
   const handleFilterChange = (name: string, value: string) => {
@@ -91,32 +101,45 @@ const DatasetGroups: FC = () => {
             <div className="search-panel">
               <FormSelect
                 label=""
-                name="sort"
+                name="datasetGroupName"
                 placeholder={t('datasetGroups.table.group') ?? ''}
                 options={formattedArray(filterData?.response?.dgNames) ?? []}
                 onSelectionChange={(selection) =>
-                  handleFilterChange('datasetGroupName', selection?.value ?? '')
+                  handleFilterChange(
+                    'datasetGroupName',
+                    (selection?.value as string) ?? ''
+                  )
                 }
+                value={{
+                  label: filters.datasetGroupName,
+                  value: filters.datasetGroupName,
+                }}
               />
               <FormSelect
                 label=""
-                name="sort"
+                name="version"
                 placeholder={t('datasetGroups.table.version') ?? ''}
                 options={formattedArray(filterData?.response?.dgVersions) ?? []}
                 onSelectionChange={(selection) =>
-                  handleFilterChange('version', selection?.value ?? '')
+                  handleFilterChange(
+                    'version',
+                    (selection?.value as string) ?? ''
+                  )
                 }
               />
               <FormSelect
                 label=""
-                name="sort"
+                name="validationStatus"
                 placeholder={t('datasetGroups.table.validationStatus') ?? ''}
                 options={
                   formattedArray(filterData?.response?.dgValidationStatuses) ??
                   []
                 }
                 onSelectionChange={(selection) =>
-                  handleFilterChange('validationStatus', selection?.value ?? '')
+                  handleFilterChange(
+                    'validationStatus',
+                    (selection?.value as string) ?? ''
+                  )
                 }
               />
               <FormSelect
@@ -132,7 +155,7 @@ const DatasetGroups: FC = () => {
                   { label: 'Z-A', value: 'desc' },
                 ]}
                 onSelectionChange={(selection) =>
-                  handleFilterChange('sort', selection?.value ?? '')
+                  handleFilterChange('sort', (selection?.value as string) ?? '')
                 }
               />
               <Button onClick={() => setEnableFetch(true)}>
@@ -140,42 +163,49 @@ const DatasetGroups: FC = () => {
               </Button>
               <Button
                 onClick={() => {
-                  navigate(0);
+                  setFilters({
+                    datasetGroupName: 'all',
+                    version: 'x.x.x',
+                    validationStatus: 'all',
+                    sort: 'asc',
+                  });
                 }}
               >
                 {t('global.reset')}
               </Button>
             </div>
             {isLoading && (
-              <div className='skeleton-container'>
+              <div className="skeleton-container">
                 <CircularSpinner />
               </div>
             )}
-            <div
-              className="bordered-card grid-container"
-              style={{ padding: '20px', marginTop: '20px' }}
-            >
-              {datasetGroupsData?.response?.data?.map(
-                (dataset: SingleDatasetType, index: number) => {
-                  return (
-                    <DatasetGroupCard
-                      key={index}
-                      datasetGroupId={dataset?.id}
-                      isEnabled={dataset?.isEnabled}
-                      datasetName={dataset?.groupName}
-                      version={`${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
-                      isLatest={dataset.latest}
-                      lastUpdated={dataset?.lastUpdatedTimestamp}
-                      lastUsed={dataset?.lastTrainedTimestamp}
-                      validationStatus={dataset.validationStatus}
-                      lastModelTrained={dataset?.lastModelTrained}
-                      setId={setId}
-                      setView={setView}
-                    />
-                  );
-                }
-              )}
-            </div>
+            {datasetGroupsData?.response?.data?.length > 0 ? (
+              <div className="grid-container" style={{ marginTop: '20px' }}>
+                {datasetGroupsData?.response?.data?.map(
+                  (dataset: SingleDatasetType, index: number) => {
+                    return (
+                      <DatasetGroupCard
+                        key={dataset?.id + index}
+                        datasetGroupId={dataset?.id}
+                        isEnabled={dataset?.isEnabled}
+                        datasetName={dataset?.groupName}
+                        version={`V${dataset?.majorVersion}.${dataset?.minorVersion}.${dataset?.patchVersion}`}
+                        isLatest={dataset.latest}
+                        lastUpdated={dataset?.lastUpdatedTimestamp}
+                        lastUsed={dataset?.lastTrainedTimestamp}
+                        validationStatus={dataset.validationStatus}
+                        lastModelTrained={dataset?.lastModelTrained}
+                        setId={setId}
+                        setView={setView}
+                      />
+                    );
+                  }
+                )}
+              </div>
+            ) : (
+              <NoDataView text={t('datasetGroups.noDatasets') ?? ''} />
+            )}
+
             <Pagination
               pageCount={pageCount}
               pageIndex={pageIndex}

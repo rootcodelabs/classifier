@@ -6,7 +6,11 @@ const client = new Client({
   ssl: openSearchConfig.ssl,
 });
 
-async function searchDatasetGroupNotification({ sessionId, connectionId, sender }) {
+async function searchDatasetGroupNotification({
+  sessionId,
+  connectionId,
+  sender,
+}) {
   try {
     const response = await client.search({
       index: openSearchConfig.datasetGroupProgress,
@@ -14,23 +18,24 @@ async function searchDatasetGroupNotification({ sessionId, connectionId, sender 
         query: {
           bool: {
             must: { match: { sessionId } },
-            must_not: { match: { sentTo: connectionId } },
           },
         },
-        sort: { timestamp: { order: "asc" } },
+        sort: { timestamp: { order: "desc" } },
+        size: 1,
       },
     });
-
     for (const hit of response.body.hits.hits) {
-      console.log(`hit: ${JSON.stringify(hit)}`);
-      const sessionJson = {
-        sessionId: hit._source.sessionId,
-        progressPercentage: hit._source.progressPercentage,
-        validationStatus: hit._source.validationStatus,
-        validationMessage: hit._source.validationMessage,
-      };
-      await sender(sessionJson);
-      await markAsSent(hit, connectionId);
+      if (!hit._source.sentTo?.includes(connectionId)) {
+        console.log(`hit: ${JSON.stringify(hit)}`);
+        const sessionJson = {
+          sessionId: hit._source.sessionId,
+          progressPercentage: hit._source.progressPercentage,
+          validationStatus: hit._source.validationStatus,
+          validationMessage: hit._source.validationMessage,
+        };
+        await sender(sessionJson);
+        await markAsSent(hit, connectionId);
+      }
     }
   } catch (e) {
     console.error(e);
@@ -46,23 +51,25 @@ async function searchModelNotification({ sessionId, connectionId, sender }) {
         query: {
           bool: {
             must: { match: { sessionId } },
-            must_not: { match: { sentTo: connectionId } },
           },
         },
-        sort: { timestamp: { order: "asc" } },
+        sort: { timestamp: { order: "desc" } },
+        size: 1,
       },
     });
 
     for (const hit of response.body.hits.hits) {
-      console.log(`hit: ${JSON.stringify(hit)}`);
-      const sessionJson = {
-        sessionId: hit._source.sessionId,
-        progressPercentage: hit._source.progressPercentage,
-        trainingStatus: hit._source.trainingStatus,
-        trainingMessage: hit._source.trainingMessage,
-      };
-      await sender(sessionJson);
-      await markAsSent(hit, connectionId);
+      if (!hit._source.sentTo?.includes(connectionId)) {
+        console.log(`hit: ${JSON.stringify(hit)}`);
+        const sessionJson = {
+          sessionId: hit._source.sessionId,
+          progressPercentage: hit._source.progressPercentage,
+          trainingStatus: hit._source.trainingStatus,
+          trainingMessage: hit._source.trainingMessage,
+        };
+        await sender(sessionJson);
+        await markAsSent(hit, connectionId);
+      }
     }
   } catch (e) {
     console.error(e);
@@ -102,7 +109,7 @@ async function updateDatasetGroupProgress(
       validationStatus,
       progressPercentage,
       validationMessage,
-      timestamp: new Date(),
+      timestamp: Date.now(),
     },
   });
 }
@@ -120,7 +127,7 @@ async function updateModelProgress(
       trainingStatus,
       progressPercentage,
       trainingMessage,
-      timestamp: new Date(),
+      timestamp: Date.now(),
     },
   });
 }

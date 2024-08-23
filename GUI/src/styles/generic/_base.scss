@@ -36,9 +36,9 @@ body {
 }
 
 .bordered-card{
-  background-color: white;
+  background-color: rgb(252, 237, 208);
   border-radius: 10px;
-  border: solid 1px get-color(black-coral-1);
+  padding: 10px 20px;
 }
 
 .title {
@@ -57,6 +57,22 @@ body {
   margin: 20px 0px;
 }
 
+.title-m {
+  font-size: 1.3rem;
+  color: #000;
+  font-weight: 300;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0px;
+}
+
+.warning{
+  font-size: 13px;
+  color: rgb(223, 116, 2);
+  margin-top: 20px;
+}
+
 .flex-between {
   display: flex;
   justify-content: space-between;
@@ -70,6 +86,10 @@ body {
 .text-center {
  text-align: center;
 }
+
+.error {
+  color: rgb(222, 10, 10);
+ }
 
 a,
 input,

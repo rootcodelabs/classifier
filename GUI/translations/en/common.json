@@ -14,8 +14,8 @@
     "active": "Active",
     "activate": "Activate",
     "deactivate": "Deactivate",
-    "disconnect":"Disconnect",
-    "connect":"Connect",
+    "disconnect": "Disconnect",
+    "connect": "Connect",
     "on": "On",
     "off": "Off",
     "back": "Back",
@@ -40,7 +40,15 @@
     "asc": "asc",
     "desc": "desc",
     "reset": "Reset",
-    "choose": "Choose"
+    "choose": "Choose",
+    "extedSession": "Extend Session",
+    "unAuthorized": "Unauthorized",
+    "unAuthorizedDesc": "You do not have permission to view this page.",
+    "latest": "Latest",
+    "failed": "Failed",
+    "sessionTimeOutTitle": "You session has been ended!",
+    "sessionTimeOutDesc": "Extend your session or signout from application in {{seconds}}",
+    "close":"Close"
   },
   "menu": {
     "userManagement": "User Management",
@@ -49,15 +57,17 @@
     "datasetGroups": "Dataset Groups",
     "validationSessions": "Validation Sessions",
     "dataModels": "Data Models",
+    "models": "Models",
+    "trainingSessions": "Training Sessions",
     "testModel": "Test Model",
     "stopWords": "Stop Words",
-    "incomingTexts": "Incoming Texts"
+    "correctedTexts": "Corrected texts"
   },
   "userManagement": {
     "title": "User Management",
     "addUserButton": " Add a user",
     "addUser": {
-      "addUserModalTitle": "Add a new user",
+      "addUserModalTitle": "Add a New User",
       "editUserModalTitle": "Edit User",
       "deleteUserModalTitle": "Are you sure?",
       "deleteUserModalDesc": "Confirm that you are wish to delete the following record",
@@ -70,14 +80,23 @@
       "title": "Title",
       "titlePlaceholder": "Enter title",
       "email": "Email",
-      "emailPlaceholder": "Enter email"
+      "emailPlaceholder": "Enter email",
+      "nameRequired": "Name is required",
+      "roleRequired": "Role is required",
+      "idCodeRequired": "ID code is required",
+      "titleRequired": "Title is required",
+      "emailRequired": "Email is required",
+      "invalidIdCode": "Invalid ID code",
+      "invalidemail": "Invalid Email",
+      "userExists": "User already exists"
     },
     "table": {
       "fullName": "Full Name",
       "personalId": "Personal ID",
       "role": "Role",
       "email": "Email",
-      "actions": "Actions"
+      "actions": "Actions",
+      "title": "Title"
     }
   },
   "integration": {
@@ -97,7 +116,7 @@
     "integrationSuccessDesc": "You have successfully connected with {{channel}}! Your integration is now complete, and you can start working with {{channel}} seamlessly.",
     "confirmationModalTitle": "Are you sure?",
     "disconnectConfirmationModalDesc": "Are you sure you want to disconnect the {{channel}} integration? This action cannot be undone and may affect your workflow and linked issues.",
-    "connectConfirmationModalDesc": "Are you sure you want to connect the {{channel}} integration?",
+    "connectConfirmationModalDesc": "Are you sure you want to connect the {{channel}} integration? This action cannot be undone and may affect your workflow and linked issues.",
     "disconnectErrorTi/tle": "Disconnection Unsuccessful",
     "disconnectErrorDesc": "Failed to disconnect {{channel}}. Please check your settings and try again. If the problem persists, contact support for assistance.",
     "addUserButton": " Add a user",
@@ -130,6 +149,7 @@
   "datasetGroups": {
     "title": "Dataset Groups",
     "createDatasetGroupButton": "Create Dataset Group",
+    "noDatasets":"No data sets available",
     "table": {
       "group": "Dataset Group",
       "version": "Version",
@@ -162,11 +182,12 @@
       "typeNumbers": "Numbers",
       "typeDateTime": "DateTime",
       "addClassButton": "Add class",
-      "addNowButton": "Add now"
+      "addNowButton": "Add now",
+      "selectPlaceholder": "- Select -"
     },
     "classHierarchy": {
       "title": "Class Hierarchy",
-      "addClassButton":"Add main class",
+      "addClassButton": "Add main class",
       "addSubClass": "Add Subclass",
       "fieldHint": "Enter a field name",
       "filedHintIfExists": "Class name already exists"
@@ -176,6 +197,8 @@
       "deleteClaassDesc": "Confirm that you are wish to delete the following record",
       "columnInsufficientHeader": "Insufficient Columns in Dataset",
       "columnInsufficientDescription": "The dataset must have at least 2 columns. Additionally, there needs to be at least one column designated as a data class and one column that is not a data class. Please adjust your dataset accordingly.",
+      "classsesInsufficientHeader": "Insufficient Classes in Dataset",
+      "classsesInsufficientDescription": "The dataset must have at least 2 main classes in the class hierarchy",
       "createDatasetSuccessTitle": "Dataset Group Created Successfully",
       "createDatasetUnsuccessTitle": "Dataset Group Creation Unsuccessful",
       "createDatasetSucceessDesc": "You have successfully created the dataset group. In the detailed view, you can now see and edit the dataset as needed.",
@@ -192,7 +215,7 @@
       "import": "Import Dataset",
       "unsavedChangesWarning": "You have made changes to the ataset which are not saved. Please save the changes to apply",
       "insufficientExamplesDesc": "Insufficient examples - at least 10 examples are needed to activate the dataset group",
-      "noData": "No Data Available",
+      "noData": "No Corrected Texts Available",
       "noDataDesc": "You have created the dataset group, but there are no datasets available to show here. You can upload a dataset to view it in this space. Once added, you can edit or delete the data as needed.",
       "importExamples": "Import Examples",
       "importNewData": "Import New Data",
@@ -216,6 +239,10 @@
       "validationInitiatedTitle": "Dataset uploaded and validation initiated",
       "validationInitiatedDesc": "The dataset file was successfully uploaded. The validation and preprocessing is now initiated",
       "viewValidations": "View Validation Sessions",
+      "fieldName": "Enter a field name",
+      "fieldNameError": "{{name}} cannot be used as a field name",
+      "fieldNameExist": "{{name}} already exists as a field name",
+      "selectDataType": "Select a data type",
       "table": {
         "id": "rowId",
         "data": "Data",
@@ -294,5 +321,119 @@
     "title": "Validation Sessions",
     "inprogress": "Validation in-Progress",
     "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
+  },
+
+  "correctedTexts": {
+    "title": "Corrected Texts",
+    "export": "Export Data",
+    "searchIncomingText": "Search incoming texts",
+    "filterAsc": "Filter by data created - Ascending",
+    "filterDesc": "Filter by data created - Descending",
+    "platform": "Platform",
+    "dateAndTime": "Date & Time",
+    "inferenceTime": "Inference Time",
+    "text": "Text",
+    "predictedHierarchy": "Predicted Class Hierarchy",
+    "predictedConfidenceProbability": "Predicted Classes Average Confidence Probability",
+    "correctedHierarchy": "Corrected Class Hierarchy",
+    "correctedConfidenceProbability": "Corrected Classes Average Confidence Probability"
+  },
+
+  "dataModels": {
+    "productionModels": "Production Models",
+    "dataModels": "Data Models",
+    "createModel": "Create Model",
+    "noProdModels":"No production models available",
+    "noModels":"No models available",
+    "filters": {
+      "modelName": "Model Name",
+      "version": "Version",
+      "platform": "Platform",
+      "datasetGroup": "Dataset Group",
+      "trainingStatus": "Training Status",
+      "maturity": "Maturity",
+      "sort": "Sort by name (A - Z)"
+    },
+    "trainingStatus": {
+      "retrainingNeeded": "Retraining Needed",
+      "trained": "Trained",
+      "trainingInProgress": "Training In Progress",
+      "untrainable": "Untrainable",
+      "notTrained": "Not Trained"
+    },
+    "maturity": {
+      "development": "Development",
+      "production": "Production",
+      "staging": "Staging",
+      "testing": "Testing"
+    },
+    "dataModelCard": {
+      "datasetGroup": "Dataset Group",
+      "dgVersion": "Dataset Group Version",
+      "lastTrained": "Last Trained"
+    },
+    "trainingResults": {
+      "title": "Training Results",
+      "bestPerformingModel": "Best Performing Model",
+      "classes": "Classes",
+      "accuracy": "Accuracy",
+      "f1Score": "F1 Score",
+      "noResults": "No training results available",
+      "viewResults": " View Results"
+    },
+    "createDataModel": {
+      "title": "Create Data Model",
+      "replaceTitle": "Warning: Replace Production Model",
+      "replaceDesc": "Adding this model to production will replace the current production model. Are you sure you want to proceed?",
+      "successTitle": "Data Model Created and Trained",
+      "successDesc": " You have successfully created and started training the data model. You can view it on the data model dashboard.",
+      "viewAll": "View All Data Models",
+      "errorTitle": "Error Creating Data Model",
+      "errorDesc": " There was an issue creating or training the data model. Please try again. If the problem persists, contact support for assistance.",
+      "replaceWarning": "{{platform}} integration is currently disabled, therefore the model wouldn't recieve any inputs or make any predictions"
+    },
+    "configureDataModel": {
+      "saveChangesTitile": "Changes Saved Successfully",
+      "saveChangesDesc": "You have successfully saved the changes. You can view the data model in the \"All Data Models\" view.",
+      "updateErrorTitile": "Error Updating Data Model",
+      "updateErrorDesc": "There was an issue updating the data model. Please try again. If the problem persists, contact support for assistance.",
+      "deleteErrorTitle": "Cannot Delete Model",
+      "deleteErrorDesc": "The model cannot be deleted because it is currently in production. Please escalate another model to production before proceeding to delete this model.",
+      "deleteConfirmation": "Are you sure?",
+      "deleteConfirmationDesc": "Confirm that you are wish to delete the following data model",
+      "deleteModalErrorTitle": "Error Deleting Data Model",
+      "deleteModalErrorDesc": "There was an issue deleting the data model. Please try again. If the problem persists, contact support for assistance.",
+      "retrainDataModalErrorTitle": "Error retraining data model",
+      "retrainDataModalErrorDesc":"There was an issue retraining the data model. Please try again. If the problem persists, contact support for assistance." ,
+      "title": "Configure Data Model",
+      "retrainCard": "Model updated. Please initiate retraining to continue benefiting from the latest improvements.",
+      "retrain": "Retrain",
+      "deleteModal": "Delete Model",
+      "confirmRetrain": "Confirm Retrain Model",
+      "confirmRetrainDesc": "Are you sure you want to retrain this model?",
+      "save": "Save Changes"
+    },
+    "dataModelForm": {
+      "modelVersion": "Model Version",
+      "datasetGroup": "Select Dataset Group",
+      "baseModels": "Select Base Models",
+      "deploymentPlatform": "Select Deployment Platform",
+      "maturityLabel": "Select Maturity Label"
+      }
+  },
+  "trainingSessions": {
+    "title": "Training Sessions",
+    "inprogress": "Validation in-Progress",
+    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
+  },
+  "testModels": {
+    "title": "Test Model",
+    "selectionLabel": "Model",
+    "placeholder": "Choose model",
+    "classifyTextLabel": "Enter Text",
+    "classify": "Classify",
+    "predictedHierarchy": "Predicted Class Hierarchy : ",
+    "averageConfidence": "Average Confidence : ",
+    "classProbabilities": "Class Probabilities : "
   }
 }

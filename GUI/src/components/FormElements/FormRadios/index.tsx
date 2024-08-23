@@ -8,7 +8,7 @@ type FormRadiosType = {
   items: {
     label: string;
     value: string;
-  }[];
+  }[] |undefined;
   onChange: (selectedValue: string) => void;
   selectedValue?: string; // New prop for the selected value
   isStack?: boolean;

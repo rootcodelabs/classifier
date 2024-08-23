@@ -98,7 +98,7 @@ assign_new_dg_id:
 execute_cron_manager:
   call: http.post
   args:
-    url: "[#CLASSIFIER_CRON_MANAGER]/execute/dataset_processing/data_validation"
+    url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_validation/data_validation"
     query:
       cookie: ${incoming.headers.cookie}
       dgId: ${dg_id}

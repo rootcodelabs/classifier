@@ -115,6 +115,7 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
               onDelete={deleteNode}
               nodes={nodes}
               setNodesError={setNodesError}
+              nodesError={nodesError}
             />
           ))}
         </div>

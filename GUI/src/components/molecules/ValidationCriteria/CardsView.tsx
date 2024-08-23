@@ -5,6 +5,7 @@ import Button from 'components/Button';
 import { ValidationRule } from 'types/datasetGroups';
 import { v4 as uuidv4 } from 'uuid';
 import DraggableItem from './DraggableItem/DraggableItem';
+import { useTranslation } from 'react-i18next';
 
 type ValidationRulesProps = {
   validationRules?: ValidationRule[];
@@ -20,6 +21,7 @@ const ValidationCriteriaCardsView: FC<
   setValidationRuleError,
   validationRuleError,
 }) => {
+  const { t } = useTranslation();
   const moveItem = (fromIndex: number, toIndex: number) => {
     const updatedItems = Array.from(validationRules ?? []);
     const [movedItem] = updatedItems.splice(fromIndex, 1);
@@ -38,7 +40,7 @@ const ValidationCriteriaCardsView: FC<
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="title-sm">Create Validation Rule</div>
+      <div className="title-sm">{t('datasetGroups.createDataset.validationCriteria')}</div>
       {validationRules &&
         validationRules?.map((item, index) => (
           <DraggableItem
@@ -52,7 +54,7 @@ const ValidationCriteriaCardsView: FC<
           />
         ))}
       <div className="flex" style={{ justifyContent: 'end' }}>
-        <Button onClick={addNewClass}>Add Class</Button>
+        <Button onClick={addNewClass}>{t('datasetGroups.createDataset.addClassButton')}</Button>
       </div>
     </DndProvider>
   );

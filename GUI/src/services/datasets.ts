@@ -45,7 +45,7 @@ export async function enableDataset(enableData: Operation) {
 
 export async function getFilterData() {
   const { data } = await apiDev.get(
-    datasetsEndpoints.GET_DATASET_OVERVIEW_BY_FILTERS()
+    datasetsEndpoints.GET_DATASET_FILTERS()
   );
   return data;
 }
@@ -81,7 +81,6 @@ export async function createDatasetGroup(datasetGroup: DatasetGroup) {
 }
 
 export async function importDataset(file: File, id: string | number) {
-  console.log('fileeee ', file);
   const { data } = await apiExternal.post(datasetsEndpoints.IMPORT_DATASETS(), {
     dataFile: file,
     dgId: id,

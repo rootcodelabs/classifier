@@ -105,7 +105,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   );
 
   const { data: metadata, isLoading: isMetadataLoading } = useQuery(
-    datasetQueryKeys.GET_MATA_DATA(dgId),
+    datasetQueryKeys.GET_META_DATA(dgId),
     () => getMetadata(dgId),
     { enabled: fetchEnabled }
   );
@@ -249,8 +249,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     },
   });
 
-  const handleFileSelect = (file: File | null) => {
-    if (file) setFile(file);
+  const handleFileSelect = (file: File | undefined) => {
+    setFile(file)
   };
 
   const handleImport = () => {
@@ -305,7 +305,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             >
               {t('global.cancel')}
             </Button>
-            <Button>
+            <Button onClick={()=>{navigate('/validation-sessions');close()}}>
               {t('datasetGroups.detailedView.viewValidations') ?? ''}
             </Button>
           </div>

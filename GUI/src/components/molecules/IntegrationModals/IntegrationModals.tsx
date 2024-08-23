@@ -81,7 +81,7 @@ const IntegrationModals = ({
           isOpen={isModalOpen}
           title={t('integration.confirmationModalTitle')}
           footer={
-            <div>
+            <div className="footer-button-wrapper">
               <Button
                 appearance="secondary"
                 onClick={() => setIsModalOpen(false)}
@@ -113,7 +113,7 @@ const IntegrationModals = ({
           isOpen={isModalOpen}
           title={t('integration.confirmationModalTitle')}
           footer={
-            <div>
+            <div className="footer-button-wrapper">
               <Button
                 appearance="secondary"
                 onClick={() => setIsModalOpen(false)}

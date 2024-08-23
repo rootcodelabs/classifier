@@ -66,16 +66,20 @@ export const transformObjectToArray = (data: Record<string, ValidationRuleRespon
 };
 
 export const validateClassHierarchy = (data: Class[]) => {
+  console.log("data ", data)
   for (let item of data) {
     if (item.fieldName === '') {
+      console.log("data s")
       return true;
     }
     if (item.children && item.children.length > 0) {
       if (validateClassHierarchy(item.children)) {
+        console.log("data 2")
         return true;
       }
     }
   }
+  console.log("data 4")
   return false;
 };
 

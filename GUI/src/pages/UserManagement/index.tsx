@@ -1,5 +1,5 @@
 import { FC, useMemo, useState } from 'react';
-import { Button, DataTable, Icon } from '../../components';
+import { Button, DataTable } from '../../components';
 import {
   PaginationState,
   Row,
@@ -7,22 +7,17 @@ import {
   createColumnHelper,
 } from '@tanstack/react-table';
 import { User } from '../../types/user';
-import { MdOutlineDeleteOutline, MdOutlineEdit } from 'react-icons/md';
 import './UserManagement.scss';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
-import { deleteUser } from 'services/users';
-import { useToast } from 'hooks/useToast';
-import { AxiosError } from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import apiDev from 'services/api-dev';
 import UserModal from './UserModal';
 import { userManagementQueryKeys } from 'utils/queryKeys';
 import { userManagementEndpoints } from 'utils/endpoints';
-import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
-import { useDialog } from 'hooks/useDialog';
+import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import SkeletonTable from 'components/molecules/TableSkeleton/TableSkeleton';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
+import ActionButtons from 'components/molecules/UserManagementActionButtons/UserManagementActionButtons';
 
 const UserManagement: FC = () => {
   const columnHelper = createColumnHelper<User>();
@@ -35,20 +30,19 @@ const UserManagement: FC = () => {
   });
   const [sorting, setSorting] = useState<SortingState>([]);
   const { t } = useTranslation();
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const { open, close } = useDialog();
 
+  const getSortString = (length: number) => {
+    if (length === 0) return 'name asc';
+    else
+      return `${sorting[0]?.id} ${
+        sorting[0]?.desc ? t('global.desc') : t('global.asc')
+      }`;
+  };
   const fetchUsers = async (
     pagination: PaginationState,
     sorting: SortingState
   ) => {
-    const sort =
-      sorting?.length === 0
-        ? 'name asc'
-        : sorting[0]?.id +
-          ' ' +
-          (sorting[0]?.desc ? t('global.desc') : t('global.asc'));
+    const sort = getSortString(sorting?.length);
     const { data } = await apiDev.post(userManagementEndpoints.FETCH_USERS(), {
       page: pagination?.pageIndex + 1,
       page_size: pagination?.pageSize,
@@ -57,54 +51,13 @@ const UserManagement: FC = () => {
     return data?.response ?? [];
   };
 
-  const { data: users, isLoading } = useQuery(
-    userManagementQueryKeys.getAllEmployees(),
-    () => fetchUsers(pagination, sorting)
-  );
-
-  const ActionButtons: FC<{ row: User }> = ({ row }) => (
-    <div className="action-button-container">
-      <Button
-        appearance={ButtonAppearanceTypes.TEXT}
-        onClick={() => setEditableRow(row)}
-      >
-        <Icon icon={<MdOutlineEdit />} />
-        {t('global.change')}
-      </Button>
-      <Button
-        appearance={ButtonAppearanceTypes.TEXT}
-        onClick={async () => {
-          open({
-            title: t('userManagement.addUser.deleteUserModalTitle') ?? '',
-            content: <p>{t('userManagement.addUser.deleteUserModalDesc')}</p>,
-            footer: (
-              <div>
-                <Button
-                  appearance={ButtonAppearanceTypes.SECONDARY}
-                  onClick={() => {
-                    close();
-                  }}
-                >
-                  {t('global.no')}
-                </Button>
-                <Button
-                  appearance={ButtonAppearanceTypes.ERROR}
-                  onClick={() =>
-                    deleteUserMutation.mutate({ id: row.useridcode })
-                  }
-                >
-                  {t('global.yes')}
-                </Button>
-              </div>
-            ),
-          });
-        }}
-      >
-        <Icon icon={<MdOutlineDeleteOutline />} />
-        {t('global.delete')}
-      </Button>
-    </div>
-  );
+  const { data: users, isLoading } = useQuery({
+    queryKey: userManagementQueryKeys.getAllEmployees(pagination, sorting),
+    queryFn: () => fetchUsers(pagination, sorting),
+    onSuccess: (data) => {
+      setTotalPages(data[0]?.totalPages);
+    },
+  });
 
   const usersColumns = useMemo(
     () => [
@@ -117,6 +70,9 @@ const UserManagement: FC = () => {
       ),
       columnHelper.accessor('useridcode', {
         header: t('userManagement.table.personalId') ?? '',
+      }),
+      columnHelper.accessor('csaTitle', {
+        header: t('userManagement.table.title') ?? '',
       }),
       columnHelper.accessor(
         (data: User) => {
@@ -142,8 +98,17 @@ const UserManagement: FC = () => {
       }),
       columnHelper.display({
         id: 'actions',
-        header: t('userManagement.table.actions') ?? '',
-        cell: (props) => <ActionButtons row={props?.row?.original} />,
+        header: () => (
+          <div className="table-header">
+            {t('userManagement.table.actions') ?? ''}
+          </div>
+        ),
+        cell: (props) => (
+          <ActionButtons
+            row={props?.row?.original}
+            setEditableRow={setEditableRow}
+          />
+        ),
         meta: {
           size: '1%',
         },
@@ -152,28 +117,7 @@ const UserManagement: FC = () => {
     [t]
   );
 
-  const deleteUserMutation = useMutation({
-    mutationFn: ({ id }: { id: string | number }) => deleteUser(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries(
-        userManagementQueryKeys.getAllEmployees()
-      );
-      toast.open({
-        type: ToastTypes.SUCCESS,
-        title: t('global.notification'),
-        message: t('toast.success.userDeleted'),
-      });
-    },
-    onError: (error: AxiosError) => {
-      toast.open({
-        type: ToastTypes.ERROR,
-        title: t('global.notificationError'),
-        message: error?.message ?? '',
-      });
-    },
-  });
-
-  if (isLoading) return <CircularSpinner/>;
+  if (isLoading) return <CircularSpinner />;
 
   return (
     <div>
