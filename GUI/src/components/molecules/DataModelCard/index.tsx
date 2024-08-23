@@ -10,7 +10,7 @@ import { TrainingResults } from 'types/dataModels';
 
 type DataModelCardProps = {
   modelId: number;
-  dataModelName?: string | undefined;
+  dataModelName?: string;
   datasetGroupName?: string;
   version?: string;
   isLatest?: boolean;
@@ -166,17 +166,17 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                         <div className="training-results-grid-container">
                           <div>
                             {results?.trainingResults?.classes?.map((c: string) => {
-                              return <div>{c}</div>;
+                              return <div key={c}>{c}</div>;
                             })}
                           </div>
                           <div>
                             {results?.trainingResults?.accuracy?.map((c: string) => {
-                              return <div>{c}</div>;
+                              return <div key={c}>{c}</div>;
                             })}
                           </div>
                           <div>
                             {results?.trainingResults?.f1_score?.map((c: string) => {
-                              return <div>{c}</div>;
+                              return <div key={c}>{c}</div>;
                             })}
                           </div>
                         </div>

@@ -41,7 +41,7 @@
     "desc": "desc",
     "reset": "Reset",
     "choose": "Choose",
-    "extedSession": "Extend Session",
+    "extendSession": "Extend Session",
     "unAuthorized": "Unauthorized",
     "unAuthorizedDesc": "You do not have permission to view this page.",
     "latest": "Latest",

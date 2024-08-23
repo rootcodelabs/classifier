@@ -3,7 +3,6 @@ import './index.scss';
 import { useTranslation } from 'react-i18next';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { Button, FormSelect } from 'components';
-import CorrectedTextsTables from 'components/molecules/CorrectedTextTables/CorrectedTextsTables';
 import { useQuery } from '@tanstack/react-query';
 import { correctedTextEndpoints } from 'utils/endpoints';
 import apiDev from '../../services/api-dev';
@@ -68,7 +67,6 @@ const CorrectedTexts: FC = () => {
           appearance={ButtonAppearanceTypes.PRIMARY}
           size="m"
           onClick={() => {
-            // setNewUserModal(true);
           }}
         >
           {t('correctedTexts.export')}
