@@ -21,8 +21,10 @@ class ModelInference:
     def get_class_hierarchy_by_model_id(self, model_id):
         
         try:
+            logger.info(f"get_class_hierarchy_by_model_id - {model_id}")
             outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
 
+            logger.info(f"OUTLOOK ACCESS TOKEN URL - {outlook_access_token_url}")
 
             response = requests.post(outlook_access_token_url, json={"modelId": model_id})
             data = response.json()
@@ -36,7 +38,6 @@ class ModelInference:
             logger.error(f"Failed to retrieve the class hierarchy Reason: {e}")
             raise RuntimeError(f"Failed to retrieve the class hierarchy Reason: {e}")    
     
-
         
     def validate_class_hierarchy(self, class_hierarchy, model_id):
 
@@ -82,7 +83,8 @@ class ModelInference:
         logger.info("Check Inference Data Exists Function Calling")
         logger.info(f"Input ID : {input_id}")
         try:
-
+            is_exist = None
+            inference_id = None
             check_inference_data_exists_url = GET_INFERENCE_DATASET_EXIST_URL
             logger.info(f"Check Inference URL : {check_inference_data_exists_url}")
 
@@ -94,11 +96,16 @@ class ModelInference:
             logger.info(f"Response from  check_inference_data_exists: {data}")
 
             is_exist = data["response"]["exist"]
-            return is_exist
-        except Exception as e:
-            logger.info(f"Failed to validate the class hierarchy. Reason: {e}")
-            raise Exception(f"Failed to validate the class hierarchy. Reason: {e}")
+
+            if (len(data["response"]["data"]) > 0):
+
+                inference_id=data["response"]["data"][0]["inferenceId"]
         
+            return is_exist, inference_id
+        except Exception as e:
+            logger.info(f"check_inference_data_exists failed. Reason: {e}")
+            raise RuntimeError(f"check_inference_data_exists failed. Reason: {e}")
+
 
     def build_corrected_folder_hierarchy(self, final_folder_id, model_id):
         try:

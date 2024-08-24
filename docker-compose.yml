@@ -434,7 +434,7 @@ services:
     ports:
       - "3008:3008"
     environment:
-      JIRA_WEBHOOK_SECRET: value
+      JIRA_WEBHOOK_SECRET: FM8P4YU8lY5uWMDCZukG
       RUUTER_PUBLIC_JIRA_URL: http://ruuter-public:8086/internal/jira/accept
     networks:
       bykstack:
