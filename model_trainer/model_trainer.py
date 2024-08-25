@@ -29,6 +29,9 @@ class ModelTrainer:
         
         self.cookies_payload = {'customJwtCookie': cookie}
 
+
+        logger.info(f"COOKIES PAYLOAD - {self.cookies_payload}")
+
         logger.info("GETTING MODEL METADATA")
 
         response = requests.get(model_url, params = {'modelId': self.new_model_id}, cookies=self.cookies_payload)

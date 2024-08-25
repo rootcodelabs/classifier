@@ -1,2 +1,2 @@
-SELECT input_id
-FROM "input"  WHERE input_id =:id;
+SELECT id
+FROM "input"  WHERE id =:id;

@@ -4,7 +4,9 @@ from fastapi.responses import JSONResponse
 import os
 from s3_ferry import S3Ferry
 from utils import unzip_file, clear_folder_contents, calculate_average_predicted_class_probability, get_inference_create_payload, get_inference_update_payload
-from constants import S3_DOWNLOAD_FAILED, INFERENCE_LOGS_PATH, JiraInferenceRequest, OutlookInferenceRequest, UpdateRequest
+from constants import S3_DOWNLOAD_FAILED, INFERENCE_LOGS_PATH, JiraInferenceRequest, \
+    OutlookInferenceRequest, UpdateRequest, OUTLOOK_MODELS_FOLDER_PATH, JIRA_MODELS_FOLDER_PATH,\
+    SHARED_MODELS_ROOT_FOLDER
 from inference_wrapper import InferenceWrapper
 from model_inference import ModelInference
 from loguru import logger
@@ -13,7 +15,7 @@ import json
 logger.add(sink=INFERENCE_LOGS_PATH)
 
 app = FastAPI()
-modelInference = ModelInference()
+model_inference = ModelInference()
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,16 +43,23 @@ if not os.path.exists(OUTLOOK_MODEL_DOWNLOAD_DIRECTORY):
 @app.post("/classifier/datamodel/deployment/outlook/update")
 async def download_outlook_model(request: Request, model_data:UpdateRequest):
     
-    save_location = f"/models/{model_data.modelId}/{model_data.modelId}.zip"
-
+    save_location = f"/models/{model_data.modelId}/{model_data.modelId}.zip"    
     logger.info(f"MODEL DATA PAYLOAD - {model_data}")
     
     try:  
+
+        ## Authenticating User Cookie
+        cookie = request.cookies.get("customJwtCookie")
+        await model_inference.authenticate_user(f'customJwtCookie={cookie}')
+
+
         local_file_name = f"{model_data.modelId}.zip"
         local_file_path = f"/models/outlook/{local_file_name}"
         
+        model_progress_session_id = model_data.progressSessionId
+
         ## Get class hierarchy and validate it
-        is_valid, class_hierarchy = modelInference.get_class_hierarchy_and_validate(model_data.modelId)
+        is_valid, class_hierarchy = model_inference.get_class_hierarchy_and_validate(model_data.modelId)
 
         logger.info(f"IS VALID VALUE : {is_valid}")
         logger.info(f"CLASS HIERARCHY VALUE : {class_hierarchy}")
@@ -58,25 +67,28 @@ async def download_outlook_model(request: Request, model_data:UpdateRequest):
         if(is_valid and class_hierarchy):
 
             # 1. Clear the current content inside the folder
-            folder_path = os.path.join("..", "shared", "models", "outlook")
-            clear_folder_contents(folder_path)  
+            outlook_models_folder_path = OUTLOOK_MODELS_FOLDER_PATH
+            clear_folder_contents(outlook_models_folder_path)  
         
             # 2. Download the new Model
             response = s3_ferry.transfer_file(local_file_path, "FS", save_location, "S3")
             if response.status_code != 201:
                 raise HTTPException(status_code = 500, detail = S3_DOWNLOAD_FAILED)
         
-            zip_file_path = os.path.join("..", "shared/models/outlook", local_file_name)
-            extract_file_path = os.path.join("..", "shared/models/outlook")
+            zip_file_path = f"{outlook_models_folder_path}/{local_file_name}"
+            extract_file_path = outlook_models_folder_path
          
             # 3. Unzip  Model Content 
             unzip_file(zip_path=zip_file_path, extract_to=extract_file_path)
+            shared_models_root_folder = SHARED_MODELS_ROOT_FOLDER
         
             os.remove(zip_file_path)
             # 3. Replace the content in other folder if it a replacement 
             if(model_data.replaceDeployment):
-                folder_path = os.path.join("..", "shared", "models", {model_data.replaceDeploymentPlatform})
-                clear_folder_contents(folder_path)
+                # replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}" # TODO - THIS NEEDS TO BE CHANGED AND REPLACED 
+                replace_deployment_folder_path = f"{shared_models_root_folder}/jira"
+                logger.info(f"REPLACE DEPLOYMENT FOLDER PATH - {replace_deployment_folder_path}")
+                clear_folder_contents(replace_deployment_folder_path)
                 inference_obj.stop_model(deployment_platform=model_data.replaceDeploymentPlatform)
         
             # 4. Instantiate Inference Model
@@ -96,11 +108,21 @@ async def download_outlook_model(request: Request, model_data:UpdateRequest):
                 json.dump(data, json_file, indent=4)
 
             
-            model_initiate = inference_obj.model_swapping(model_path, best_model, deployment_platform="outlook", class_hierarchy=class_hierarchy, model_id=model_data.modelId)
+            model_initiate = inference_obj.load_model(model_path, best_model, deployment_platform="outlook", class_hierarchy=class_hierarchy, model_id=model_data.modelId)
             
             logger.info(f"MODEL INITIATE - {model_initiate}")
+            
+
 
             if(model_initiate):
+                
+                #TODO - Add update_training_status db to update training status to deployed in models metadata DB
+
+                model_inference.update_model_training_progress_session(session_id=model_progress_session_id,
+                                                                       model_id=model_data.modelId,
+                                                                       cookie=cookie)
+                
+                logger.info(f"OUTLOOK MODEL UPDATE SUCCESSFUL FOR MODEL ID - {model_data.modelId}")
                 return JSONResponse(status_code=200, content={"replacementStatus": 200})
             else:
                 raise HTTPException(status_code = 500, detail = "Failed to initiate inference object")
@@ -117,40 +139,66 @@ async def download_outlook_model(request: Request, model_data:UpdateRequest):
 async def download_jira_model(request: Request, model_data:UpdateRequest):
     
     save_location = f"/models/{model_data.modelId}/{model_data.modelId}.zip"
+    logger.info(f"JIRA MODEL DATA PAYLOAD - {model_data}")
     
     try:
+
+        ## Authenticating User Cookie
+        cookie = request.cookies.get("customJwtCookie")
+        await model_inference.authenticate_user(f'customJwtCookie={cookie}')
+
+
         local_file_name = f"{model_data.modelId}.zip"
         local_file_path = f"/models/jira/{local_file_name}"
+
+        model_progress_session_id = model_data.progressSessionId
         
+        logger.info(f"MODEL DATA - {model_data}")
         # 1. Clear the current content inside the folder
-        folder_path = os.path.join("..", "shared", "models", "jira")
-        clear_folder_contents(folder_path)  
+        jira_models_folder_path = JIRA_MODELS_FOLDER_PATH
+        clear_folder_contents(jira_models_folder_path)
         
         # 2. Download the new Model
         response = s3_ferry.transfer_file(local_file_path, "FS", save_location, "S3")
         if response.status_code != 201:
             raise HTTPException(status_code = 500, detail = S3_DOWNLOAD_FAILED)
         
-        zip_file_path = os.path.join("..", "shared/models/jira", local_file_name)
-        extract_file_path = os.path.join("..", "shared/models/jira")
+        
+        zip_file_path = f"{jira_models_folder_path}/{local_file_name}"
+        extract_file_path = jira_models_folder_path
          
         # 3. Unzip  Model Content 
         unzip_file(zip_path=zip_file_path, extract_to=extract_file_path)
         
-        os.remove(zip_file_path)  
+        os.remove(zip_file_path)
         
         #3. Replace the content in other folder if it a replacement --> Call the delete endpoint
+        logger.info("JUST ABOUT TO ENTER   - if(model_data.replaceDeployment):")
+
+        shared_models_root_folder = SHARED_MODELS_ROOT_FOLDER
+
         if(model_data.replaceDeployment):
-            folder_path = os.path.join("..", "shared", "models", {model_data.replaceDeploymentPlatform})
-            clear_folder_contents(folder_path)
+            
+            logger.info("INSIDE REPLACE DEPLOYMENT")
+            # replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
+            replace_deployment_folder_path = f"{shared_models_root_folder}/outlook" # TODO - THIS NEEDS TO BE CHANGED AND REPLACED 
+
+            logger.info(f"REPLACE DEPLOYMENT FOLDER PATH - {replace_deployment_folder_path}")
+            clear_folder_contents(replace_deployment_folder_path)
         
             inference_obj.stop_model(deployment_platform=model_data.replaceDeploymentPlatform)
         
         # 4. Instantiate Inference Model
-        class_hierarchy = modelInference.get_class_hierarchy_by_model_id(model_data.modelId)
+
+        logger.info("JUST ABOUT TO ENTER get_class_hierarchy_by_model_id")
+
+        class_hierarchy = model_inference.get_class_hierarchy_by_model_id(model_data.modelId)
+
+        logger.info(f"JIRA UPDATE CLASS HIERARCHY - {class_hierarchy}")
+
         if(class_hierarchy):
-            
-            model_path = f"shared/models/jira/{model_data.modelId}"
+        
+            model_path = JIRA_MODELS_FOLDER_PATH
             best_model = model_data.bestBaseModel
 
             data = {
@@ -161,13 +209,26 @@ async def download_jira_model(request: Request, model_data:UpdateRequest):
                 "model_id": model_data.modelId
             }
 
-            meta_data_save_location = '/shared/models/jira/jira_inference_metadata.json'
+
+            meta_data_save_location = f"{model_path}/jira_inference_metadata.json"
             with open(meta_data_save_location, 'w') as json_file:
                 json.dump(data, json_file, indent=4)
 
-            model_initiate = inference_obj.model_swapping(model_path, best_model, deployment_platform="jira", class_hierarchy=class_hierarchy, model_id=model_data.modelId)
-            
+            model_initiate = inference_obj.load_model(model_path, best_model, deployment_platform="jira", class_hierarchy=class_hierarchy, model_id=model_data.modelId)
+            logger.info(f"JIRA MODEL INITITATE - {model_initiate}")
+
             if(model_initiate):
+                logger.info(f"MODEL INITIATE - {model_initiate}")
+
+                #TODO - Add update_training_status db to update training status to deployed in models metadata DB
+
+                model_inference.update_model_training_progress_session(session_id=model_progress_session_id,
+                                                                       model_id=model_data.modelId,
+                                                                       cookie=cookie)
+                
+                logger.info(f"OUTLOOK MODEL UPDATE SUCCESSFUL FOR MODEL ID - {model_data.modelId}")
+
+                logger.info("JIRA DEPLOYMENT SUCCESSFUL")
                 return JSONResponse(status_code=200, content={"replacementStatus": 200})
             else:
                 raise HTTPException(status_code = 500, detail = "Failed to initiate inference object")
@@ -181,8 +242,8 @@ async def download_jira_model(request: Request, model_data:UpdateRequest):
 @app.post("/classifier/datamodel/deployment/jira/delete")
 async def delete_folder_content(request:Request):
     try:
-        folder_path = os.path.join("..", "shared", "models", "jira")
-        clear_folder_contents(folder_path)  
+        jira_models_folder_path = JIRA_MODELS_FOLDER_PATH
+        clear_folder_contents(jira_models_folder_path)  
         
         # Stop the model
         inference_obj.stop_model(deployment_platform="jira")
@@ -197,8 +258,8 @@ async def delete_folder_content(request:Request):
 @app.post("/classifier/datamodel/deployment/outlook/delete")
 async def delete_folder_content(request:Request):
     try:
-        folder_path = os.path.join("..", "shared", "models", "outlook")
-        clear_folder_contents(folder_path)  
+        outlook_models_folder_path = OUTLOOK_MODELS_FOLDER_PATH
+        clear_folder_contents(outlook_models_folder_path)  
         
         # Stop the model
         inference_obj.stop_model(deployment_platform="outlook")
@@ -222,17 +283,21 @@ async def outlook_inference(request:Request, inference_data:OutlookInferenceRequ
             # If there is a active model
         
             # 1 . Check whether the if the Inference Exists
-            is_exist = modelInference.check_inference_data_exists(input_id=inference_data.inputId)
+            is_exist, inference_id = model_inference.check_inference_data_exists(input_id=inference_data.inputId)
 
             logger.info(f"Inference Exists : {is_exist}")
+            logger.info(f"Inference ID - {inference_id}")
             
             if(is_exist): # Update Inference Scenario
                 #  Create Corrected Folder Hierarchy using the final folder id
-                corrected_folder_hierarchy = modelInference.build_corrected_folder_hierarchy(final_folder_id=inference_data.finalFolderId, model_id=model_id)
+                corrected_folder_hierarchy = model_inference.build_corrected_folder_hierarchy(final_folder_id=inference_data.finalFolderId, 
+                                                                                             model_id=model_id)
                 
                 logger.info(f"CORRECTED FOLDER HIERARCHY - {corrected_folder_hierarchy}")
                 # Call user_corrected_probablities
-                corrected_probs = inference_obj.get_corrected_probabilities(text=inference_data.inputText, corrected_labels=corrected_folder_hierarchy, deployment_platform="outlook")
+                corrected_probs = inference_obj.get_corrected_probabilities(text=inference_data.inputText, 
+                                                                            corrected_labels=corrected_folder_hierarchy, 
+                                                                            deployment_platform="outlook")
                 
                 logger.info(f"CORRECTED PROBABILITIES IN MODEL INFERENCE API - {corrected_probs}")
 
@@ -242,15 +307,15 @@ async def outlook_inference(request:Request, inference_data:OutlookInferenceRequ
 
                     logger.info(f"AVERAGE PROBABILITY - {average_probability}")
                     # Build request payload for inference/update endpoint
-                    inference_update_payload = get_inference_update_payload(inferenceInputId=inference_data.inputId,isCorrected=True, 
-                                                                            correctedLabels=corrected_folder_hierarchy,
-                                                                            averagePredictedClassesProbability=average_probability, 
+                    inference_update_payload = get_inference_update_payload(inference_id=inference_id,is_corrected=True, 
+                                                                            corrected_labels=corrected_folder_hierarchy,
+                                                                            average_predicted_classes_probability=average_probability, 
                                                                             platform="OUTLOOK", 
-                                                                            primaryFolderId=inference_data.finalFolderId)
+                                                                            primary_folder_id=inference_data.finalFolderId)
 
                     logger.info(f"INFERENCE PAYLOAD - {inference_update_payload}")
                     # Call inference/update endpoint
-                    is_success = modelInference.update_inference(payload=inference_update_payload)
+                    is_success = model_inference.update_inference(payload=inference_update_payload)
                     
                     logger.info(f"IS SUCCESS - {is_success}")
 
@@ -278,15 +343,15 @@ async def outlook_inference(request:Request, inference_data:OutlookInferenceRequ
                     logger.info(f"average probability - {average_probability}")
 
                     # Get the final folder id of the predicted folder hierarchy
-                    final_folder_id = modelInference.find_final_folder_id(flattened_folder_hierarchy=predicted_hierarchy, model_id=model_id)
+                    final_folder_id = model_inference.find_final_folder_id(flattened_folder_hierarchy=predicted_hierarchy, model_id=model_id)
                     logger.info(f"final folder id - {final_folder_id}")
 
                     
                     # Build request payload for inference/create endpoint
-                    inference_create_payload = get_inference_create_payload(inferenceInputId=inference_data.inputId,inferenceText=inference_data.inputText,predictedLabels=predicted_hierarchy, averagePredictedClassesProbability=average_probability, platform="OUTLOOK", primaryFolderId=final_folder_id, mailId=inference_data.mailId)
+                    inference_create_payload = get_inference_create_payload(inference_input_id=inference_data.inputId,inference_text=inference_data.inputText,predicted_labels=predicted_hierarchy, average_predicted_classes_probability=average_probability, platform="OUTLOOK", primary_folder_id=final_folder_id, mail_id=inference_data.mailId)
                     logger.info(f"INFERENCE CREATE PAYLOAD - {inference_create_payload}")
                     # Call inference/create endpoint
-                    is_success = modelInference.create_inference(payload=inference_create_payload)
+                    is_success = model_inference.create_inference(payload=inference_create_payload)
                     logger.info(f"IS SUCCESS - {is_success}")
                     
                     if(is_success):
@@ -317,28 +382,40 @@ async def outlook_inference(request:Request, inference_data:OutlookInferenceRequ
 @app.post("/classifier/deployment/jira/inference")
 async def jira_inference(request:Request, inferenceData:JiraInferenceRequest):
     try:
-        
+
+
+        logger.info(f"INFERENCE DATA IN JIRA INFERENCE - {inferenceData}")
+
         model_id = inference_obj.get_jira_model_id()
+
         
         if(model_id):        
             # 1 . Check whether the if the Inference Exists
-            is_exist = modelInference.check_inference_data_exists(input_id=inferenceData.inputId)
+            is_exist, inference_id = model_inference.check_inference_data_exists(input_id=inferenceData.inputId)
             
-            if(is_exist): # Update Inference Scenario    
+            logger.info(f"LOGGING IS EXIST IN JIRA IN JIRA UPDATE INFERENCE - {is_exist}")
+            if(is_exist): # Update Inference Scenario
                 # Call user_corrected_probablities
-                corrected_probs = inference_obj.get_corrected_probabilities(text=inferenceData.inputText, corrected_labels=inferenceData.finalLabels, deployment_platform="outlook")
+                corrected_probs = inference_obj.get_corrected_probabilities(text=inferenceData.inputText, corrected_labels=inferenceData.finalLabels, deployment_platform="jira")
                 
+                logger.info(f"CORRECT PROBS IN JIRA UPDATE INFERENCE - {corrected_probs}")
                 if(corrected_probs):
                     # Calculate Average Predicted Class Probability
                     average_probability = calculate_average_predicted_class_probability(corrected_probs)
                 
                     # Build request payload for inference/update endpoint
-                    inference_update_paylod = get_inference_update_payload(inferenceInputId=inferenceData.inputId,isCorrected=True, correctedLabels=inferenceData.finalLabels, averagePredictedClassesProbability=average_probability, platform="JIRA", primaryFolderId=None)
-                
+                    inference_update_payload = get_inference_update_payload(inference_id=inference_id,is_corrected=True, corrected_labels=inferenceData.finalLabels, average_predicted_classes_probability=average_probability, platform="JIRA", primary_folder_id=None)
+
+                    logger.info(f"INFERENCE UPDATE PAYLOAD - {inference_update_payload}")
                     # Call inference/update endpoint
-                    is_success = modelInference.update_inference(payload=inference_update_paylod)
+                    is_success = model_inference.update_inference(payload=inference_update_payload)
+
+                    logger.info(f"IS SUCCESS IN JIRA UPDATE INFERENCE - {is_success} ")
                     
+
                     if(is_success):
+
+                        logger.info("JIRA UPDATE INFERENCE SUCCESSFUL")
                         return JSONResponse(status_code=200, content={"operationSuccessful": True})
                     else:
                         raise HTTPException(status_code = 500, detail="Failed to call the update inference")  
@@ -351,18 +428,23 @@ async def jira_inference(request:Request, inferenceData:JiraInferenceRequest):
                 # Call Inference
                 predicted_hierarchy, probabilities  = inference_obj.inference(inferenceData.inputText, deployment_platform="jira")
                 
+                logger.info(f"JIRA PREDICTED HIERARCHY - {predicted_hierarchy}")
+                logger.info(f"JIRA PROBABILITIES - {probabilities}")
+
                 if (probabilities and predicted_hierarchy):
                     
                     # Calculate Average Predicted Class Probability
                     average_probability = calculate_average_predicted_class_probability(probabilities)
                     
                     # Build request payload for inference/create endpoint
-                    inference_create_payload = get_inference_create_payload(inferenceInputId=inferenceData.inputId,inferenceText=inferenceData.inputText,predictedLabels=predicted_hierarchy, averagePredictedClassesProbability=average_probability, platform="JIRA", primaryFolderId=None, mailId=None)
+                    inference_create_payload = get_inference_create_payload(inference_input_id=inferenceData.inputId,inference_text=inferenceData.inputText,predicted_labels=predicted_hierarchy, average_predicted_classes_probability=average_probability, platform="JIRA", primary_folder_id=None, mail_id=None)
                     
                     # Call inference/create endpoint
-                    is_success = modelInference.create_inference(payload=inference_create_payload)
+                    is_success = model_inference.create_inference(payload=inference_create_payload)
                     
+                    logger.info(f"JIRA inference is_success - {is_success}")
                     if(is_success):
+                        logger.info("JIRA CREATE INFERENCE SUCCESSFUL")
                         return JSONResponse(status_code=200, content={"operationSuccessful": True})
                     else:
                         raise HTTPException(status_code = 500, detail="Failed to call the create inference")  

@@ -19,36 +19,36 @@ def clear_folder_contents(folder_path: str):
     except Exception as e:
         raise Exception(f"Failed to delete contents in {folder_path}. Reason: {e}")
     
-def get_s3_payload(destinationFilePath:str, destinationStorageType:str, sourceFilePath:str, sourceStorageType:str):
+def get_s3_payload(destination_file_path:str, destination_storage_type:str, source_file_path:str, source_storage_type:str):
     S3_FERRY_PAYLOAD = {
-            "destinationFilePath": destinationFilePath,
-            "destinationStorageType": destinationStorageType,
-            "sourceFilePath": sourceFilePath,
-            "sourceStorageType": sourceStorageType
+            "destinationFilePath": destination_file_path,
+            "destinationStorageType": destination_storage_type,
+            "sourceFilePath": source_file_path,
+            "sourceStorageType": source_storage_type
         }
     return S3_FERRY_PAYLOAD
 
-def get_inference_create_payload(inferenceInputId:str, inferenceText:str, predictedLabels:list, averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None, mailId : Optional[str] = None ):   
+def get_inference_create_payload(inference_input_id:str, inference_text:str, predicted_labels:list, average_predicted_classes_probability:int, platform:str, primary_folder_id: Optional[str] = None, mail_id : Optional[str] = None ):   
     INFERENCE_CREATE_PAYLOAD = {       
-        "inputId": inferenceInputId,
-        "inferenceText": inferenceText,
-        "predictedLabels": predictedLabels,
-        "averagePredictedClassesProbability": averagePredictedClassesProbability,
+        "inputId": inference_input_id,
+        "inferenceText": inference_text,
+        "predictedLabels": predicted_labels,
+        "averagePredictedClassesProbability": average_predicted_classes_probability,
         "platform": platform,
-        "primaryFolderId": primaryFolderId,
-        "mailId":mailId
+        "primaryFolderId": primary_folder_id,
+        "mailId":mail_id
     }
     
     return INFERENCE_CREATE_PAYLOAD
 
 
-def get_inference_update_payload(inferenceInputId:str, isCorrected:bool, correctedLabels:list, averagePredictedClassesProbability:int, platform:str, primaryFolderId: Optional[str] = None ):   
+def get_inference_update_payload(inference_id:str, is_corrected:bool, corrected_labels:list, average_predicted_classes_probability:int, platform:str, primary_folder_id: Optional[str] = None ):   
     INFERENCE_UPDATE_PAYLOAD = {       
-        "inferenceId": inferenceInputId,
-        "isCorrected": isCorrected,
-        "correctedLabels": correctedLabels,
-        "averageCorrectedClassesProbability": averagePredictedClassesProbability,
-        "primaryFolderId": primaryFolderId,
+        "inferenceId": inference_id,
+        "isCorrected": is_corrected,
+        "correctedLabels": corrected_labels,
+        "averageCorrectedClassesProbability": average_predicted_classes_probability,
+        "primaryFolderId": primary_folder_id,
         "platform": platform 
     }
     

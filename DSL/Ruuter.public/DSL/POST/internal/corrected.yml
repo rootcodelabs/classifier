@@ -9,7 +9,7 @@ declaration:
   allowlist:
     body:
       - field: inferenceId
-        type: string
+        type: number
         description: "Body field 'inferenceId'"
       - field: isCorrected
         type: boolean
