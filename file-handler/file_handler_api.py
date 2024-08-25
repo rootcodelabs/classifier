@@ -200,7 +200,8 @@ async def download_and_convert(request: Request, saveLocation:str, background_ta
     json_file_path = os.path.join(JSON_FILE_DIRECTORY, f"{local_file_name}")
 
     with open(f"{json_file_path}", 'r') as json_file:
-        json_data = json.load(json_file)
+        json_str = json_file.read().replace('NaN', 'null')
+        json_data = json.loads(json_str)
 
     background_tasks.add_task(os.remove, json_file_path)
 
