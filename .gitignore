@@ -413,3 +413,4 @@ protected_configs/
 
 config.env
 constants.ini
+jira_config.env

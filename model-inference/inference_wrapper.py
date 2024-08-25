@@ -132,7 +132,7 @@ class InferenceWrapper:
         jira_model_id = None
 
         if not self.active_jira_model :
-            file_location = "/shared/models/outlook/jira_inference_metadata.json"
+            file_location = "/shared/models/jira/jira_inference_metadata.json"
             logger.info("RETRIEVING DATA FROM JSON FILE IN get_jira_model_id function ")
             if os.path.exists(file_location):
                 with open(file_location, 'r') as json_file:
