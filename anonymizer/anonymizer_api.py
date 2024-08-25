@@ -14,6 +14,7 @@ from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 import pandas as pd
 import io
+import uvicorn
 
 app = FastAPI()
 
@@ -174,5 +175,5 @@ async def anonymize_file(file: UploadFile = File(...), columns: str = Form(...))
 
 
 if __name__ == "__main__":
-    import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8010)

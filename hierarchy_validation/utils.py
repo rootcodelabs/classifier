@@ -2,11 +2,14 @@ from fastapi import  HTTPException
 import httpx
 import requests
 import os
-from constants import (GRAPH_API_BASE_URL, Folder, ClassHierarchy)
-OUTLOOK_ACCESS_TOKEN_API_URL=os.getenv("OUTLOOK_ACCESS_TOKEN_API_URL") 
-from typing import List
+from constants import GRAPH_API_BASE_URL, HIERARCHY_VALIDATION_LOGS
+OUTLOOK_ACCESS_TOKEN_API_URL=os.getenv("OUTLOOK_ACCESS_TOKEN_API_URL")
 
-async def fetch_folders(folder_id: str = 'root', outlook_access_token:str=''):
+from loguru import logger
+
+logger.add(sink=HIERARCHY_VALIDATION_LOGS)
+
+async def fetch_folders(folder_id: str = 'root', outlook_access_token:str=''):  
     url = f"{GRAPH_API_BASE_URL}/me/mailFolders"
     if folder_id != 'root':
         url = f"{GRAPH_API_BASE_URL}/me/mailFolders/{folder_id}/childFolders"
@@ -35,61 +38,65 @@ async def build_folder_hierarchy(outlook_access_token:str, folder_id: str = 'roo
     
     async def build_hierarchy(folder):
         child_folders = await build_folder_hierarchy(outlook_access_token=outlook_access_token, folder_id=folder['id'])
-        return Folder(
-            id=folder['id'],
-            displayName=folder['displayName'],
-            childFolders=child_folders
-        )
+
+        hierarchy = {}
+        hierarchy["id"] = folder['id']
+        hierarchy["displayName"] = folder['displayName']
+        hierarchy["childFolders"] = child_folders
+        return hierarchy
     
     return [await build_hierarchy(folder) for folder in folders]
 
-
-async def validate_hierarchy(class_hierarchies: List[ClassHierarchy],  outlook_access_token:str):
+async def validate_hierarchy(class_hierarchies,  outlook_access_token):
     errors = []
     folder_hierarchy = await build_folder_hierarchy(outlook_access_token=outlook_access_token)
 
-    def find_folder(name: str, folders: List[Folder]):
-        return next((folder for folder in folders if folder.displayName == name), None)
+    def find_folder(name, folders):
+        return next((folder for folder in folders if folder["displayName"] == name), None)
 
-    def check_hierarchy(classes: List[ClassHierarchy], folders: List[Folder], path: str):
+    def check_hierarchy(classes, folders, path):
         for cls in classes:
-            folder = find_folder(cls.class_name, folders)
+            folder = find_folder(cls["class"], folders)
             if not folder:
-                errors.append(f"Folder '{cls.class_name}' not found at path '{path}'")
+                current_cls = cls["class"]
+                errors.append(f"Folder {current_cls} not found at path '{path}'")
                 return False
-            if cls.subclasses:
-                if not check_hierarchy(cls.subclasses, folder.childFolders, f"{path}/{cls.class_name}"):
+            if cls["subclasses"]:
+                current_cls = cls["class"]
+                if not check_hierarchy(cls["subclasses"], folder["childFolders"], f"{path}/{current_cls}"):
                     return False
         return True
+
+    logger.info(f"CLASS HIERARCHY IN UTIL FUNCTION - {class_hierarchies}")
+    logger.info(f"FOLDER HIERARCHY IN OUTLOOK UTIL FUNCTION - {folder_hierarchy}")
 
     result = check_hierarchy(class_hierarchies, folder_hierarchy, '')
     return {"isValid": result, "errors": errors}
 
 
-def find_folder_id(hierarchy: List[Folder], path: List[str]):
+def find_folder_id(hierarchy, path):
     current_level = hierarchy
     for folder_name in path:
         found = False
         for folder in current_level:
-            if folder.displayName.lower() == folder_name.lower():
+            if folder["displayName"].lower() == folder_name.lower():
                 if folder_name == path[-1]:
-                    return folder.id
-                current_level = folder.childFolders
+                    return folder["id"]
+                current_level = folder["childFolders"]
                 found = True
                 break
         if not found:
             raise ValueError(f"Folder '{folder_name}' not found in the given path")
     raise ValueError("Path is empty or invalid")
 
-
-def get_corrected_folder_hierarchy(hierarchy: List[Folder], final_folder_id: str):
-    def search_hierarchy(folders: List[Folder], target_id: str, current_path: List[str]):
+def get_corrected_folder_hierarchy(hierarchy, final_folder_id):
+    def search_hierarchy(folders, target_id, current_path):
         for folder in folders:
-            new_path = current_path + [folder.displayName]
-            if folder.id == target_id:
+            new_path = current_path + [folder["displayName"]]
+            if folder["id"] == target_id:
                 return new_path
-            if folder.childFolders:
-                result = search_hierarchy(folder.childFolders, target_id, new_path)
+            if folder["childFolders"]:
+                result = search_hierarchy(folder["childFolders"], target_id, new_path)
                 if result:
                     return result
         return []
@@ -100,15 +107,17 @@ def get_corrected_folder_hierarchy(hierarchy: List[Folder], final_folder_id: str
     return result
 
 
-def get_outlook_access_token(model_id:int):    
+def get_outlook_access_token(model_id):    
     try:
         outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
         response = requests.post(outlook_access_token_url, json={"modelId": model_id})
-        response.raise_for_status()
         data = response.json()
 
-        access_token = data["outlook_access_token"]
+        logger.info(f"RESPONSE OF get_outlook_access_token {data}")
+
+        access_token = data["response"]["outlook_access_token"]
         return access_token
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to retrieve Outlook Access Token. Reason: {e}") 
+    except Exception as e:
+        logger.error(f"ERROR IN get_outlook_access_token: {e}")
+        raise Exception(f"Failed to retrieve Outlook Access Token Reason: {e}") 
     
