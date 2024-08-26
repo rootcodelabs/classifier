@@ -175,9 +175,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   const handleDelete = () => {
     if (
       dataModel.platform === Platform.JIRA ||
-      dataModel.platform === Platform.OUTLOOK ||
-      dataModel.platform === Platform.PINAL
-    ) {
+      dataModel.platform === Platform.OUTLOOK) {
       open({
         title: t('dataModels.configureDataModel.deleteErrorTitle'),
         content: <p>{t('dataModels.configureDataModel.deleteErrorDesc')}</p>,
