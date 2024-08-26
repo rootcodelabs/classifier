@@ -42,7 +42,7 @@ const UserManagement: FC = () => {
     pagination: PaginationState,
     sorting: SortingState
   ) => {
-    const sort = getSortString(sorting?.length);
+    const sort = getSortString(sorting?.length);    
     const { data } = await apiDev.post(userManagementEndpoints.FETCH_USERS(), {
       page: pagination?.pageIndex + 1,
       page_size: pagination?.pageSize,
@@ -69,6 +69,7 @@ const UserManagement: FC = () => {
         }
       ),
       columnHelper.accessor('useridcode', {
+        id :"idCode",
         header: t('userManagement.table.personalId') ?? '',
       }),
       columnHelper.accessor('csaTitle', {

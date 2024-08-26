@@ -156,8 +156,8 @@ const DataModels: FC = () => {
                             datasetGroupName={dataset?.connectedDgName}
                             version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
                             isLatest={dataset.latest}
-                            dgVersion={dataset?.dgVersion}
-                            lastTrained={dataset?.lastTrained}
+                            dgVersion={`V${dataset?.connectedDgMajorVersion}.${dataset?.connectedDgMinorVersion}${dataset?.connectedDgPatchVersion}`}
+                            lastTrained={dataset?.lastTrainedTimestamp}
                             trainingStatus={dataset.trainingStatus}
                             platform={dataset?.deploymentEnv}
                             maturity={dataset?.maturityLabel}
@@ -287,8 +287,8 @@ const DataModels: FC = () => {
                               datasetGroupName={dataset?.connectedDgName}
                               version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
                               isLatest={dataset.latest}
-                              dgVersion={dataset?.dgVersion}
-                              lastTrained={dataset?.lastTrained}
+                              dgVersion={`V${dataset?.connectedDgMajorVersion}.${dataset?.connectedDgMinorVersion}${dataset?.connectedDgPatchVersion}`}
+                              lastTrained={dataset?.lastTrainedTimestamp}
                               trainingStatus={dataset.trainingStatus}
                               platform={dataset?.deploymentEnv}
                               maturity={dataset?.maturityLabel}
