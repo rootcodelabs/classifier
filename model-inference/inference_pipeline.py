@@ -82,7 +82,7 @@ class InferencePipeline:
         self.base_model.to(self.device)
 
         logger.info(f"CLASS HIERARCHY FILE {self.hierarchy_file}")
-        logger.info(f"INPUTS  - {inputs}")
+        
 
 
         data = self.hierarchy_file
