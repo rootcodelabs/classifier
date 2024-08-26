@@ -469,14 +469,14 @@ async def delete_datamodels(request: Request):
             }
             active_models_deleted = False
             if deployment_env.lower() == "jira":
-                response = requests.post(JIRA_ACTIVE_MODEL_DELETE_URL, headers=headers, json={"modelId": model_id})
+                response = requests.post(JIRA_ACTIVE_MODEL_DELETE_URL, headers=headers)
                 if response.status_code == 200:
                     active_models_deleted = True
             elif deployment_env.lower() == "outlook":
-                response = requests.post(OUTLOOK_ACTIVE_MODEL_DELETE_URL, headers=headers, json={"modelId": model_id})
+                response = requests.post(OUTLOOK_ACTIVE_MODEL_DELETE_URL, headers=headers)
                 if response.status_code == 200:
                     active_models_deleted = True
-            elif deployment_env.lower() == "test":
+            elif deployment_env.lower() == "testing":
                 response = requests.post(TEST_MODEL_DELETE_URL, headers=headers, json={"deleteModelId": model_id})
                 if response.status_code == 200:
                     active_models_deleted = True
