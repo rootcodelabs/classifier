@@ -82,6 +82,8 @@ This repo will primarily contain:
      - JIRA_USERNAME
      - JIRA_CLOUD_DOMAIN
      - JIRA_WEBHOOK_ID
+- Create a .env file called jira_config.env and add the jira webhook secret as shown below
+  - JIRA_WEBHOOK_SECRET=<<JIRA_WEBHOOK_SECRET>>
 
 
 ### Notes

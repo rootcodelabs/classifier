@@ -12,6 +12,7 @@ echo "cookie - $cookie"
 echo "old model id - $modelId"
 echo "new model id  - $newModelId"
 echo "update type - $updateType"
+echo "previous deployment env - $previousDeploymentEnv"
 
 echo "Activating Python Environment"
 source "/app/python_virtual_env/bin/activate"

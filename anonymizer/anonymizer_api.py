@@ -79,7 +79,7 @@ def anonymizer_functions(payload):
             print(f"Output payload : {output_payload}")
             response = requests.post(OUTLOOK_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
         else:
-            print("Playform not recognized... ")
+            print("Platform not recognized... ")
             response = None
 
         print(f"Response from {platform} : {response}")

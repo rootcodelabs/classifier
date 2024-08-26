@@ -182,6 +182,7 @@ execute_cron_manager:
       modelId: ${model_id}
       newModelId: ${model_id}
       updateType: 'major'
+      prevDeploymentEnv: 'None'
   result: res
   next: assign_success_response
 
