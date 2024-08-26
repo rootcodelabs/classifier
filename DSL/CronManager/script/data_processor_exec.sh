@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Print the files in the current directory
+echo "Listing files in the current directory:"
+ls -la
+
 # VENV_DIR="/home/cronmanager/clsenv"
 # REQUIREMENTS="dataset_processor/requirements.txt"
 # PYTHON_SCRIPT="dataset_processor/invoke_dataset_processor.py"
