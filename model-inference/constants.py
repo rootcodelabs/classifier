@@ -31,7 +31,6 @@ MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deploye
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS = "Model Trained And Deployed"
 
 
-
 S3_DOWNLOAD_FAILED = {
     "upload_status": 500,
     "operation_successful": False,
@@ -57,3 +56,10 @@ class JiraInferenceRequest(BaseModel):
     inputId:str
     inputText:str
     finalLabels:Optional[List[str]] = None
+
+class TestInferenceRequest(BaseModel):
+    modelId:int
+    text:str
+
+class DeleteTestRequest(BaseModel):
+    deleteModelId:int

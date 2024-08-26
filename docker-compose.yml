@@ -285,6 +285,7 @@ services:
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
       - JIRA_MODEL_DOWNLOAD_DIRECTORY=/shared/models/jira
       - OUTLOOK_MODEL_DOWNLOAD_DIRECTORY=/shared/models/outlook
+      - TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY=/shared/models/testing
       - GET_INFERENCE_DATASET_EXIST_URL=http://ruuter-public:8086/internal/exist
       - CREATE_INFERENCE_URL=http://ruuter-public:8086/internal/create
       - UPDATE_INFERENCE_URL=http://ruuter-public:8086/internal/corrected
@@ -302,28 +303,6 @@ services:
     depends_on:
       - init
       - s3-ferry
-
-  test-inference:
-    build:
-      context: ./test_inference
-      dockerfile: Dockerfile
-    container_name: test-inference
-    volumes:
-      - shared-volume:/shared
-    environment:
-      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
-      - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
-      - TEST_MODEL_DOWNLOAD_DIRECTORY=/shared/models/test
-      - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
-      - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
-    ports:
-      - "8011:8011"
-    networks:
-      bykstack:
-        ipv4_address: 172.25.0.23
-    depends_on:
-      - init
-      - file-handler
 
   hierarchy-validation:
     build:

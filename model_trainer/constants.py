@@ -17,6 +17,8 @@ OUTLOOK_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deplo
 
 JIRA_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/jira/update"
 
+TEST_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/test/update"
+
 TRAINING_LOGS_PATH = "/app/model_trainer/training_logs.log"
 
 MODEL_RESULTS_PATH = "/shared/model_trainer/results" #stored in the shared folder which is connected to s3-ferry
@@ -70,3 +72,5 @@ MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE=100
 OUTLOOK = "outlook"
 
 JIRA="jira"
+
+TESTING="testing"
