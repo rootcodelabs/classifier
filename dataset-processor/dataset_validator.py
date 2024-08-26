@@ -103,6 +103,7 @@ class DatasetValidator:
             return response.json()
         except requests.exceptions.RequestException as e:
             print(MSG_REQUEST_FAILED.format("Dataset download"))
+            print(e)
             return None
 
     def get_validation_criteria(self, dgId, cookie):
@@ -136,8 +137,9 @@ class DatasetValidator:
                     if field in row:
                         value = row[field]
                         if not self.validate_value(value, rules['type']):
-                            print(MSG_VALIDATION_FIELD_FAIL.format(field, idx + 1))
-                            return {'success': False, 'message': MSG_VALIDATION_FIELD_FAIL.format(field, idx + 1)}
+                            if value is not None:
+                                print(MSG_VALIDATION_FIELD_FAIL.format(field, idx + 1))
+                                return {'success': False, 'message': MSG_VALIDATION_FIELD_FAIL.format(field, idx + 1)}
             print(MSG_VALIDATION_FIELDS_SUCCESS)
             return {'success': True, 'message': MSG_VALIDATION_FIELDS_SUCCESS}
         except Exception as e:
@@ -174,6 +176,7 @@ class DatasetValidator:
             data_values = self.extract_data_class_values(data, data_class_columns)
 
             missing_in_hierarchy = data_values - hierarchy_values
+            missing_in_hierarchy = [item for item in missing_in_hierarchy if item is not None]
             missing_in_data = hierarchy_values - data_values
 
             if missing_in_hierarchy:
