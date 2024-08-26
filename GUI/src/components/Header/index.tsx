@@ -155,7 +155,7 @@ const Header: FC = () => {
                     extendUserSessionMutation.mutate();
                   }}
                 >
-                  {t('global.extedSession')}
+                  {t('global.extendSession')}
                 </Button>
               </div>
             }

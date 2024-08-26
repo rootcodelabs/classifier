@@ -6,10 +6,11 @@ import './DataModel.scss';
 import { Maturity, TrainingStatus } from 'enums/dataModelsEnums';
 import Card from 'components/Card';
 import { useTranslation } from 'react-i18next';
+import { TrainingResults } from 'types/dataModels';
 
 type DataModelCardProps = {
   modelId: number;
-  dataModelName?: string | undefined;
+  dataModelName?: string;
   datasetGroupName?: string;
   version?: string;
   isLatest?: boolean;
@@ -20,7 +21,7 @@ type DataModelCardProps = {
   maturity?: string;
   setId: React.Dispatch<React.SetStateAction<number>>;
   setView: React.Dispatch<React.SetStateAction<'individual' | 'list'>>;
-  results?: any;
+  results?: TrainingResults;
 };
 
 const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
@@ -141,9 +142,9 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                   <div>
                     <div className="flex" style={{ margin: '20px 0px' }}>
                       {t('dataModels.trainingResults.bestPerformingModel') ??
-                        ''}{' '}
+                        ''}
                       -
-                    </div>{' '}
+                    </div>
                     <Card
                       isHeaderLight={true}
                       header={
@@ -164,18 +165,18 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                       {results ? (
                         <div className="training-results-grid-container">
                           <div>
-                            {results?.classes?.map((c: string) => {
-                              return <div>{c}</div>;
+                            {results?.trainingResults?.classes?.map((c: string) => {
+                              return <div key={c}>{c}</div>;
                             })}
                           </div>
                           <div>
-                            {results?.accuracy?.map((c: string) => {
-                              return <div>{c}</div>;
+                            {results?.trainingResults?.accuracy?.map((c: string) => {
+                              return <div key={c}>{c}</div>;
                             })}
                           </div>
                           <div>
-                            {results?.f1_score?.map((c: string) => {
-                              return <div>{c}</div>;
+                            {results?.trainingResults?.f1_score?.map((c: string) => {
+                              return <div key={c}>{c}</div>;
                             })}
                           </div>
                         </div>
@@ -190,7 +191,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
               });
             }}
           >
-            {t('dataModels.trainingResults.viewResults') ?? ''} Results
+            {t('dataModels.trainingResults.viewResults') ?? ''}
           </Button>
           <Button
             appearance="primary"

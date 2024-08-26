@@ -14,6 +14,7 @@ import {
 } from 'types/datasetGroups';
 import { useNavigate } from 'react-router-dom';
 import {
+  deleteDatasetGroup,
   exportDataset,
   getDatasets,
   getMetadata,
@@ -277,6 +278,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       handleCloseModals();
     },
     onError: () => {
+      handleCloseModals();
+      setImportStatus('ABORTED');
       open({
         title: t('datasetGroups.detailedView.ImportDataUnsucessTitle') ?? '',
         content: (
@@ -413,8 +416,26 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     },
     onError: () => {
       open({
-        title: 'Dataset Group Update Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.detailedView.modals.edit.error'),
+        content: <p>{ t('datasetGroups.modals.delete.errorDesc') }</p>,
+      });
+    },
+  });
+
+  const handleDeleteDataset = () => {
+    deleteDatasetMutation.mutate(dgId);
+  };
+
+  const deleteDatasetMutation = useMutation({
+    mutationFn: (dgId: number) => deleteDatasetGroup(dgId),
+    onSuccess: async () => {
+      navigate(0);
+      close();
+    },
+    onError: () => {
+      open({
+        title: t('datasetGroups.detailedView.modals.delete.error'),
+        content: <p>{ t('datasetGroups.modals.delete.errorDesc') }</p>,
       });
     },
   });
@@ -483,7 +504,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
                       </Button>
                       <Button
                         appearance={ButtonAppearanceTypes.ERROR}
-                        onClick={() => close()}
+                        onClick={() => handleDeleteDataset()}
                       >
                         {t('global.delete')}
                       </Button>
