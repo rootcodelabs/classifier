@@ -200,7 +200,8 @@ async def download_and_convert(request: Request, saveLocation:str, background_ta
     json_file_path = os.path.join(JSON_FILE_DIRECTORY, f"{local_file_name}")
 
     with open(f"{json_file_path}", 'r') as json_file:
-        json_data = json.load(json_file)
+        json_str = json_file.read().replace('NaN', 'null')
+        json_data = json.loads(json_str)
 
     background_tasks.add_task(os.remove, json_file_path)
 
@@ -456,12 +457,40 @@ async def delete_datamodels(request: Request):
 
         payload = await request.json()
         model_id = int(payload["modelId"])
+        deployment_env = payload["deploymentEnv"]
 
         deleter = ModelDeleter(S3_FERRY_URL)
         success = deleter.delete_model_files(model_id)
 
         if success:
-            return JSONResponse(status_code=200, content={"message": "Data model deletion completed successfully."})
+            headers = {
+                'Content-Type': 'application/json',
+                'Cookie': f'customJwtCookie={cookie}'
+            }
+            active_models_deleted = False
+            if deployment_env.lower() == "jira":
+                response = requests.post(JIRA_ACTIVE_MODEL_DELETE_URL, headers=headers, json={"modelId": model_id})
+                if response.status_code == 200:
+                    active_models_deleted = True
+            elif deployment_env.lower() == "outlook":
+                response = requests.post(OUTLOOK_ACTIVE_MODEL_DELETE_URL, headers=headers, json={"modelId": model_id})
+                if response.status_code == 200:
+                    active_models_deleted = True
+            elif deployment_env.lower() == "test":
+                response = requests.post(TEST_MODEL_DELETE_URL, headers=headers, json={"deleteModelId": model_id})
+                if response.status_code == 200:
+                    active_models_deleted = True
+            else:
+                active_models_deleted = True
+            if active_models_deleted:
+                response = requests.post(MODEL_METADATA_DELETE_URL, headers=headers, json={"deleteModelId": model_id})
+                if response.status_code == 200:
+                    active_models_deleted = True
+                    return JSONResponse(status_code=200, content={"message": "Data model deletion completed successfully."})
+                else:
+                    return JSONResponse(status_code=500, content={"message": "Data model metadata deletion failed."})
+            else:
+                return JSONResponse(status_code=500, content={"message": "Active data model deletion failed."})
         else:
             return JSONResponse(status_code=500, content={"message": "Data model deletion failed."})
     except Exception as e:

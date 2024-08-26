@@ -87,7 +87,7 @@ const TestModel: FC = () => {
             />
           </div>
 
-          <div className="testModalformTextArea">
+          <div className="testModalFormTextArea">
             <p>{t('testModels.classifyTextLabel')}</p>
             <FormTextarea
               label=""
@@ -99,7 +99,7 @@ const TestModel: FC = () => {
           </div>
           <div className="testModalClassifyButton">
             <Button
-              disabled={testModel.text === ''}
+              disabled={testModel.text === '' || testModel.modelId===null}
               onClick={() => mutate(testModel)}
             >
               {t('testModels.classify')}

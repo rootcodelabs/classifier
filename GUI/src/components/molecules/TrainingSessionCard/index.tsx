@@ -1,4 +1,3 @@
-import { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProgressBar from 'components/ProgressBar';
 import { Card, Label } from 'components';
@@ -32,11 +31,11 @@ const TrainingSessionCard: React.FC<TrainingSessionCardProps> = ({
         <div>
           <div className="flex-grid">
           <div> {modelName} </div>
-            {isLatest && <Label type="success">Latest</Label>}
+            {isLatest && <Label type="success">{t('global.latest')}</Label>}
             <Label type="success">{version}</Label>
             {platform && <Label type="success">{platform}</Label>}{' '}
             {maturity && <Label type="success">{maturity}</Label>}
-            {status === 'Fail' && <Label type="error">Failed</Label>}
+            {status === 'Fail' && <Label type="error">{t('global.failed')}</Label>}
           </div>
         </div>
       }

@@ -11,10 +11,12 @@ COPY model_inference.py .
 COPY inference_pipeline.py .
 COPY s3_ferry.py .
 COPY utils.py .
+COPY test_inference_wrapper.py .
 
 ENV HF_HOME=/app/cache/
 
-RUN mkdir -p /shared && chown appuser:appuser /shared && chmod 770 /shared
+RUN mkdir -p /shared && chown appuser:appuser /shared && chmod 777 /shared
+RUN mkdir -p /shared/models/testing && chown appuser:appuser /shared/models/testing && chmod 777 /shared/models/testing
 RUN chown -R appuser:appuser /app
 EXPOSE 8003
 USER appuser
