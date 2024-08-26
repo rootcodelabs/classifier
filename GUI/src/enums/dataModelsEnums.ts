@@ -16,7 +16,6 @@ export enum Maturity {
 export enum Platform {
   JIRA = 'jira',
   OUTLOOK = 'outlook',
-  PINAL = 'pinal',
   UNDEPLOYED = 'undeployed',
 }
 

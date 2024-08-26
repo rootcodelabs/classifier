@@ -1,17 +1,19 @@
 import React, { useRef, useState } from 'react';
-import "../../page.module.css"
 import styles from "../../page.module.css";
 
 const CopyableTextField: React.FC<{ value: string }> = ({ value }) => {
   const [copied, setCopied] = useState(false);
   const textFieldRef = useRef<HTMLInputElement>(null);
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     if (textFieldRef.current) {
-      textFieldRef.current.select();
-      document.execCommand('copy');
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      try {
+        await navigator.clipboard.writeText(textFieldRef.current.value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
     }
   };
 

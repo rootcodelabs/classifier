@@ -44,9 +44,7 @@ export async function enableDataset(enableData: Operation) {
 }
 
 export async function getFilterData() {
-  const { data } = await apiDev.get(
-    datasetsEndpoints.GET_DATASET_FILTERS()
-  );
+  const { data } = await apiDev.get(datasetsEndpoints.GET_DATASET_FILTERS());
   return data;
 }
 
@@ -129,6 +127,14 @@ export async function majorUpdate(updatedData: DatasetGroup) {
     {
       ...updatedData,
     }
+  );
+  return data;
+}
+
+export async function deleteDatasetGroup(dgId: number) {
+  const { data } = await apiDev.post(
+    datasetsEndpoints.DELETE_DATASET_GROUP(),
+    { dgId }
   );
   return data;
 }
