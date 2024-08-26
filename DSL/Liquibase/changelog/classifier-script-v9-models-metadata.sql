@@ -7,7 +7,7 @@ CREATE TYPE Maturity_Label AS ENUM ('development', 'staging', 'production ready'
 CREATE TYPE Deployment_Env AS ENUM ('jira', 'outlook', 'pinal', 'testing', 'undeployed');
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset3
-CREATE TYPE Training_Status AS ENUM ('not trained', 'training in progress', 'trained', 'retraining needed', 'untrainable');
+CREATE TYPE Training_Status AS ENUM ('not trained', 'training in-progress', 'trained', 'retraining needed', 'untrainable');
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset4
 CREATE TYPE Base_Models AS ENUM ('distil-bert', 'roberta', 'bert');

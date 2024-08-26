@@ -8,8 +8,11 @@ COPY constants.py .
 COPY inference_wrapper.py .
 COPY model_inference_api.py .
 COPY model_inference.py .
+COPY inference_pipeline.py .
 COPY s3_ferry.py .
 COPY utils.py .
+
+ENV HF_HOME=/app/cache/
 
 RUN mkdir -p /shared && chown appuser:appuser /shared && chmod 770 /shared
 RUN chown -R appuser:appuser /app
