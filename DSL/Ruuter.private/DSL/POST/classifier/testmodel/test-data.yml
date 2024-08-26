@@ -60,17 +60,14 @@ check_data_model_exist:
   next: return_model_not_found
 
 send_data_to_predict:
-  call: reflect.mock
+  call: http.post
   args:
-    url: "[#CLASSIFIER_ANONYMIZER]/anonymize"
+    url: "[#CLASSIFIER_MODEL_INFERENCE]/classifier/deployment/testing/inference"
+    headers:
+      cookie: ${cookie}
     body:
-      id: ${model_id}
+      modelId: ${model_id}
       text: ${text}
-    response:
-      statusCodeValue: 200
-      predictedClasses: [ "Police","Special Agency","External","Reports","Annual Report" ]
-      averageConfidence: 89.8
-      predictedProbabilities: [ 98,82,91,90,88 ]
   result: res_predict
   next: check_data_predict_status
 

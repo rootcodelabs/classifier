@@ -54,6 +54,8 @@ export const getChangedAttributes = (
   (Object.keys(original) as (keyof DataModel)[]).forEach((key) => {
     if (original[key] !== updated[key]) {
       changes[key] = updated[key] as string | null;
+    }else {
+      changes[key] = null;
     }
   });
 

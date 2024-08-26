@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import SkeletonTable from '../TableSkeleton/TableSkeleton';
 import DataTable from 'components/DataTable';
 import {
