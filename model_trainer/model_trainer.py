@@ -19,37 +19,42 @@ from loguru import logger
 logger.add(sink=TRAINING_LOGS_PATH)
 
 class ModelTrainer:
-    def __init__(self, cookie, new_model_id,old_model_id) -> None:
+    def __init__(self, cookie, new_model_id,old_model_id,prev_deployment_env,update_type) -> None:
 
         model_url = GET_MODEL_METADATA_ENDPOINT
 
         self.new_model_id = int(new_model_id)
         self.old_model_id = int(old_model_id)
+        self.prev_deployment_env = prev_deployment_env
         self.cookie = cookie
+        self.update_type = update_type
         
         self.cookies_payload = {'customJwtCookie': cookie}
-
 
         logger.info(f"COOKIES PAYLOAD - {self.cookies_payload}")
 
         logger.info("GETTING MODEL METADATA")
 
-        response = requests.get(model_url, params = {'modelId': self.new_model_id}, cookies=self.cookies_payload)
-        
+        if self.update_type == "retrain":
+            logger.info(f"ENTERING INTO RETRAIN SEQUENCE FOR MODELID - {self.new_model_id}")
 
+        response = requests.get(model_url, params = {'modelId': self.new_model_id}, cookies=self.cookies_payload)
+
+        #only for model create and retrain operations old_model_id=new_model_id
         if self.old_model_id==self.new_model_id:
             self.replace_deployment = False
-                        
+
         else:
             self.replace_deployment = True
 
 
         if response.status_code == 200:
             self.model_details = response.json()
-            self.deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
+            self.current_deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
 
 
             logger.info("SUCCESSFULLY RECIEVED MODEL DETAILS")
+            logger.info(f"MODEL DETAILS - {self.model_details}")
         else:
 
             logger.error(f"FAILED WITH STATUS CODE: {response.status_code}")
@@ -183,27 +188,31 @@ class ModelTrainer:
         payload = {}
         payload["modelId"] = self.new_model_id
         payload["replaceDeployment"] = self.replace_deployment
-        payload["replaceDeploymentPlatform"] = self.deployment_platform
+        payload["replaceDeploymentPlatform"] = self.prev_deployment_env
         payload["bestBaseModel"] = best_model_name
         payload["progressSessionId"] = progress_session_id
+        payload["updateType"] = self.update_type
+
+        if self.update_type == "retrain":
+            payload["replaceDeploymentPlatform"] = self.current_deployment_platform
 
         logger.info(f"SENDING MODEL DEPLOYMENT REQUEST FOR MODEL ID - {self.new_model_id}")
         logger.info(f"MODEL DEPLOYMENT PAYLOAD - {payload}")
         
         deployment_url = None
 
-        if self.deployment_platform == JIRA:
+        if self.current_deployment_platform == JIRA:
 
             deployment_url = JIRA_DEPLOYMENT_ENDPOINT
         
-        elif self.deployment_platform == OUTLOOK:
+        elif self.current_deployment_platform == OUTLOOK:
 
             deployment_url = OUTLOOK_DEPLOYMENT_ENDPOINT
 
         else:
             
-            logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.deployment_platform}")
-            raise RuntimeError(f"RUNTIME ERROR - UNRECOGNIZED DEPLOYMENT PLATFORM - {self.deployment_platform}")
+            logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
+            raise RuntimeError(f"RUNTIME ERROR - UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
         
 
         response = requests.post( url=deployment_url, 

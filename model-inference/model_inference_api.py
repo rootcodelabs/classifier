@@ -14,6 +14,9 @@ import json
 
 logger.add(sink=INFERENCE_LOGS_PATH)
 
+
+logger.info("ENTERING MODEL INFERENCE API")
+
 app = FastAPI()
 model_inference = ModelInference()
 
@@ -84,9 +87,9 @@ async def download_outlook_model(request: Request, model_data:UpdateRequest):
         
             os.remove(zip_file_path)
             # 3. Replace the content in other folder if it a replacement 
-            if(model_data.replaceDeployment):
-                # replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}" # TODO - THIS NEEDS TO BE CHANGED AND REPLACED 
-                replace_deployment_folder_path = f"{shared_models_root_folder}/jira"
+            if(model_data.replaceDeployment and model_data.replaceDeploymentPlatform!="undeployed"  and model_data.updateType!="retrain"):
+
+                replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
                 logger.info(f"REPLACE DEPLOYMENT FOLDER PATH - {replace_deployment_folder_path}")
                 clear_folder_contents(replace_deployment_folder_path)
                 inference_obj.stop_model(deployment_platform=model_data.replaceDeploymentPlatform)
@@ -177,11 +180,10 @@ async def download_jira_model(request: Request, model_data:UpdateRequest):
 
         shared_models_root_folder = SHARED_MODELS_ROOT_FOLDER
 
-        if(model_data.replaceDeployment):
+        if(model_data.replaceDeployment and model_data.replaceDeploymentPlatform!="undeployed"  and model_data.updateType!="retrain"):
             
             logger.info("INSIDE REPLACE DEPLOYMENT")
-            # replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
-            replace_deployment_folder_path = f"{shared_models_root_folder}/outlook" # TODO - THIS NEEDS TO BE CHANGED AND REPLACED 
+            replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
 
             logger.info(f"REPLACE DEPLOYMENT FOLDER PATH - {replace_deployment_folder_path}")
             clear_folder_contents(replace_deployment_folder_path)

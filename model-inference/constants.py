@@ -42,8 +42,9 @@ S3_DOWNLOAD_FAILED = {
 class UpdateRequest(BaseModel):
     modelId: int
     replaceDeployment:bool
-    replaceDeploymentPlatform:str
+    replaceDeploymentPlatform:Optional[str] = None
     bestBaseModel:str
+    updateType: Optional[str] = None
     progressSessionId: int
 
 class OutlookInferenceRequest(BaseModel):
