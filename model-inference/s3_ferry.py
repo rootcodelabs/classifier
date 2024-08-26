@@ -21,5 +21,6 @@ class S3Ferry:
         logger.info(payload)
         logger.info(f"url : {self.url}")
         response = requests.post(self.url, json=payload)
-        print(response)
+        logger.info(f"RESPONSE STATUS CODE INSIDE TRANSFER FILE - {response.status_code}")
+
         return response

@@ -3,10 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import os
 from s3_ferry import S3Ferry
-from utils import unzip_file, clear_folder_contents, calculate_average_predicted_class_probability, get_inference_create_payload, get_inference_update_payload
+from utils import unzip_file, clear_folder_contents, calculate_average_predicted_class_probability, get_inference_create_payload, get_inference_update_payload, get_test_inference_success_payload
 from constants import S3_DOWNLOAD_FAILED, INFERENCE_LOGS_PATH, JiraInferenceRequest, \
     OutlookInferenceRequest, UpdateRequest, OUTLOOK_MODELS_FOLDER_PATH, JIRA_MODELS_FOLDER_PATH,\
-    SHARED_MODELS_ROOT_FOLDER
+    SHARED_MODELS_ROOT_FOLDER, TestInferenceRequest, DeleteTestRequest
 from inference_wrapper import InferenceWrapper
 from test_inference_wrapper import TestInferenceWrapper
 from model_inference import ModelInference
@@ -47,6 +47,9 @@ if not os.path.exists(OUTLOOK_MODEL_DOWNLOAD_DIRECTORY):
 
 if not os.path.exists(TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY):
     os.makedirs(TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY)
+    logger.info("GIVING PERMISSIONS")
+    os.chmod(TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY,mode=0o777)
+
 
 @app.post("/classifier/datamodel/deployment/outlook/update")
 async def download_outlook_model(request: Request, model_data:UpdateRequest):
@@ -245,7 +248,7 @@ async def download_jira_model(request: Request, model_data:UpdateRequest):
     except Exception as e:
         raise HTTPException(status_code = 500, detail=str(e))
     
-@app.post("/classifier/datamodel/deployment/test/update")
+@app.post("/classifier/datamodel/deployment/testing/update")
 async def download_test_model(request: Request, model_data:UpdateRequest):
     
     save_location = f"/models/{model_data.modelId}/{model_data.modelId}.zip"
@@ -272,6 +275,8 @@ async def download_test_model(request: Request, model_data:UpdateRequest):
         if not os.path.exists(test_models_folder_path):
             logger.info("CREATING FOLDER INSIDE MODEL EXIST")
             os.makedirs(test_models_folder_path)
+            logger.info("GIVING PERMISSIONS")
+            os.chmod(test_models_folder_path,mode=0o777)
 
         if os.path.exists(test_models_folder_path):
             logger.info("CLEARING TEST MODEL CONTAINERS")
@@ -283,15 +288,21 @@ async def download_test_model(request: Request, model_data:UpdateRequest):
                                           source_file_path=save_location, 
                                           source_storage_type="S3")
         
-        logger.info(f"S3 Ferry Response - {response.json()}")
+        logger.info("ZIP FILE DOWNLOADED")
         
-        if response.status_code != 201:
+        if response.status_code!=201:
             raise HTTPException(status_code = 500, detail = S3_DOWNLOAD_FAILED)
+        
+
         
         
         zip_file_path = f"{test_models_folder_path}/{local_file_name}"
+
         extract_file_path = test_models_folder_path
-         
+
+        logger.info(f"TESTING LOG FILE PATH - {zip_file_path}")
+        logger.info(f"EXTRACT FILE PATH - {extract_file_path}")
+
         # 3. Unzip  Model Content 
         unzip_file(zip_path=zip_file_path, extract_to=extract_file_path)
         
@@ -347,8 +358,9 @@ async def download_test_model(request: Request, model_data:UpdateRequest):
             with open(meta_data_save_location, 'w') as json_file:
                 json.dump(existing_data, json_file, indent=4)
 
-            model_initiate = test_inference_wrapper.load_model(model_path=model_path, best_performing_model=best_model, 
-                                                           deployment_platform="jira", class_hierarchy=class_hierarchy, 
+            model_initiate = test_inference_wrapper.load_model(model_path=model_path, 
+                                                        best_performing_model=best_model, 
+                                                       class_hierarchy=class_hierarchy, 
                                                            model_id=model_data.modelId)
             
             logger.info(f"TEST MODEL INITITATE - {model_initiate}")
@@ -592,4 +604,64 @@ async def jira_inference(request:Request, inferenceData:JiraInferenceRequest):
               
     except Exception as e:
         raise HTTPException(status_code = 500, detail=str(e))
+
+
+
+@app.post("/classifier/deployment/testing/inference")
+async def test_inference(request:Request, inference_data:TestInferenceRequest):
+    try:
+                
+        # Call Inference
+
+        logger.info("ENTERING INTO TESTING INFERENCE")
+        cookie = request.cookies.get("customJwtCookie")
+
+        logger.info(f"COOKIE - {cookie}")
+        await model_inference.authenticate_user(f'customJwtCookie={cookie}')
+        
+        
+        predicted_hierarchy, probabilities  = test_inference_wrapper.inference(model_id=inference_data.modelId, text=inference_data.text)
+        logger.info(f"PREDICTED HIERARCHY - {predicted_hierarchy}")
+        logger.info(f"PROBABILITIEs - {probabilities}")
+
+
+        if (probabilities and predicted_hierarchy):
+                
+            # Calculate Average Predicted Class Probability
+            average_probability = calculate_average_predicted_class_probability(probabilities)
+            
+            logger.info(f"AVERAGE PROBABILITY - {average_probability}")
+            # Build request payload for inference/create endpoint
+            inference_success_payload = get_test_inference_success_payload(predicted_classes=predicted_hierarchy, average_confidence=average_probability, predicted_probabilities=probabilities)                
+
+            logger.info(f"INFERENCE PAYLOAD - {inference_success_payload}")
+            return JSONResponse(status_code=200, content=inference_success_payload)
+
+        else:
+
+            logger.info("PREDICTION FAILED IN TESTING")
+            raise HTTPException(status_code = 500, detail="Failed to call inference")     
+                               
+    
+    except Exception as e:
+
+        logger.info(f"crash happened in model inference testing - {e}")
+        raise RuntimeError(f"crash happened in model inference testing - {e}")
+
+
+# @app.post("/classifier/datamodel/deployment/test/delete")
+# async def delete_folder_content(request:Request, modelData:DeleteTestRequest):
+#     try:
+#         folder_path = os.path.join("..", "shared", "models", "test", {modelData.deleteModelId})
+#         delete_folder(folder_path)  
+        
+#         # Stop the model
+#         inference_obj.stop_model(model_id=modelData.deleteModelId)
+        
+#         delete_success = {"message" : "Model Deleted Successfully!"}
+#         return JSONResponse(status_code = 200, content = delete_success)                        
+    
+#     except Exception as e:
+#         raise HTTPException(status_code = 500, detail=str(e))
+     
 

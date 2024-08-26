@@ -14,7 +14,7 @@ class TestInferenceWrapper:
 
     def load_model(self, model_id: int, model_path: str, best_performing_model: str, class_hierarchy: list) -> bool:
         try:
-            new_model = InferencePipeline(model_path, best_performing_model, class_hierarchy)
+            new_model = InferencePipeline(hierarchy_file=class_hierarchy,model_name=best_performing_model,results_folder=model_path)
             self.model_dictionary[model_id] = new_model
             return True
         except Exception as e:
@@ -30,7 +30,7 @@ class TestInferenceWrapper:
                 predicted_labels = None
                 probabilities = None
                 model = self.model_dictionary[model_id]
-                predicted_labels, probabilities = model.predict(text)
+                predicted_labels, probabilities = model.predict_class(text_input=text)
                 return predicted_labels, probabilities
             else:
                 raise Exception(f"Model with ID {model_id} not found")

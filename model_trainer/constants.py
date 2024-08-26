@@ -17,7 +17,7 @@ OUTLOOK_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deplo
 
 JIRA_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/jira/update"
 
-TEST_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/test/update"
+TEST_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/testing/update"
 
 TRAINING_LOGS_PATH = "/app/model_trainer/training_logs.log"
 
