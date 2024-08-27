@@ -127,6 +127,10 @@ class DatasetValidator:
             fields = validation_criteria.get('fields', [])
             validation_rules = validation_criteria.get('validationRules', {})
 
+            if "rowId" in fields:
+                print(MSG_ROWID_CANNOT_EXSIST)
+                return {'success': False, 'message': MSG_ROWID_CANNOT_EXSIST}
+
             for field in fields:
                 if field not in data[0]:
                     print(MSG_MISSING_FIELD.format(field))
