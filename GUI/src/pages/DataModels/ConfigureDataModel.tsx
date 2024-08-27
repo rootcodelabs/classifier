@@ -187,10 +187,6 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
             >
               {t('global.cancel')}
             </Button>
-            <Button appearance={ButtonAppearanceTypes.ERROR} onClick={() => deleteDataModelMutation.mutate(dataModel?.modelId)}
-            >
-              {t('global.delete')}
-            </Button>
           </div>
         ),
       });

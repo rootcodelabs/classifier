@@ -38,7 +38,6 @@ const FileUpload = forwardRef(
 
     const restrictFormat = (accept: string | string[]) => {
       if (typeof accept === 'string') {
-        console.log("hii")
         if (accept === 'json') return '.json';
         else if (accept === 'xlsx') return '.xlsx';
         else if (accept === 'yaml') return '.yaml, .yml';

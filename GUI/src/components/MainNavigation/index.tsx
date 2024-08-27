@@ -1,14 +1,7 @@
 import { FC, MouseEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
-import {
-  MdApps,
-  MdKeyboardArrowDown,
-  MdOutlineDataset,
-  MdPeople,
-  MdSettings,
-  MdSettingsBackupRestore
-} from 'react-icons/md';
+import { MdKeyboardArrowDown } from 'react-icons/md';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Icon } from 'components';
@@ -18,7 +11,12 @@ import apiDev from 'services/api-dev';
 import { userManagementEndpoints } from 'utils/endpoints';
 import { integrationQueryKeys } from 'utils/queryKeys';
 import { ROLES } from 'enums/roles';
-import { TbLetterT } from "react-icons/tb";
+import UserIcon from 'assets/UserIcon';
+import IntegrationIcon from 'assets/IntegrationIcon';
+import DatabaseIcon from 'assets/DatabaseIcon';
+import DataModelsIcon from 'assets/DataModelsIcon';
+import IncomingTextsIcon from 'assets/IncomingTextsIcon';
+import TestModelIcon from 'assets/TestModelIcon';
 
 const MainNavigation: FC = () => {
   const { t } = useTranslation();
@@ -29,19 +27,19 @@ const MainNavigation: FC = () => {
       id: 'userManagement',
       label: t('menu.userManagement'),
       path: '/user-management',
-      icon: <MdPeople />,
+      icon: <UserIcon />,
     },
     {
       id: 'integration',
       label: t('menu.integration'),
       path: 'integration',
-      icon: <MdSettings />,
+      icon: <IntegrationIcon />,
     },
     {
       id: 'datasets',
       label: t('menu.datasets'),
       path: '#',
-      icon: <MdOutlineDataset />,
+      icon: <DatabaseIcon />,
       children: [
         {
           label: t('menu.datasetGroups'),
@@ -61,7 +59,7 @@ const MainNavigation: FC = () => {
       id: 'dataModels',
       label: t('menu.dataModels'),
       path: '#',
-      icon: <MdApps />,
+      icon: <DataModelsIcon />,
       children: [
         {
           label: t('menu.models'),
@@ -70,20 +68,20 @@ const MainNavigation: FC = () => {
         {
           label: t('menu.trainingSessions'),
           path: 'training-sessions',
-        }
+        },
       ],
     },
     {
       id: 'correctedTexts',
       label: t('menu.correctedTexts'),
       path: '/corrected-texts',
-      icon: <TbLetterT/>,
+      icon: <IncomingTextsIcon />,
     },
     {
       id: 'testModel',
       label: t('menu.testModel'),
       path: '/test-model',
-      icon: <MdSettingsBackupRestore />,
+      icon: <TestModelIcon />,
     },
   ];
 
@@ -139,7 +137,13 @@ const MainNavigation: FC = () => {
               onClick={handleNavToggle}
             >
               <Icon icon={menuItem?.icon} />
-              <span>{menuItem?.label}</span>
+              <span
+                style={{
+                  marginLeft: '10px',
+                }}
+              >
+                {menuItem?.label}
+              </span>
               <Icon icon={<MdKeyboardArrowDown />} />
             </button>
             <ul className="nav__submenu">
@@ -149,7 +153,12 @@ const MainNavigation: FC = () => {
         ) : (
           <NavLink to={menuItem?.path ?? '#'}>
             {' '}
-            <Icon icon={menuItem?.icon} />
+            <Icon
+              icon={menuItem?.icon}
+              style={{
+                marginRight: '10px',
+              }}
+            />
             {menuItem?.label}
           </NavLink>
         )}

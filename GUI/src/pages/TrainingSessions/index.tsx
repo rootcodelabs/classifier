@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
 import TrainingSessionCard from 'components/molecules/TrainingSessionCard';
 import sse from 'services/sse-service';
 import { getDataModelsProgress } from 'services/data-models';
@@ -33,7 +32,7 @@ const TrainingSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
-      if(progress.validationStatus !=="Success" && progress.progressPercentage!==100)
+      if(progress.trainingStatus !=="Success" && progress.progressPercentage!==100)
       return sse(`/${progress.id}`, 'model', (data: SSEEventData) => {
         console.log(`New data for notification ${progress.id}:`, data);
         handleUpdate(data.sessionId, data);
