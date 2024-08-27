@@ -1,28 +1,38 @@
 #!/bin/bash
-
-echo "Started Shell Script to validator"
+echo "Started Shell Script to delete models"
 # Ensure required environment variables are set
-if [ -z "$dgId" ] || [ -z "$newDgId" ] || [ -z "$cookie" ] || [ -z "$updateType" ] || [ -z "$savedFilePath" ] || [ -z "$patchPayload" ]; then
+if [ -z "$modelId" ] || [ -z "$cookie" ]; then
   echo "One or more environment variables are missing."
-  echo "Please set dgId, newDgId, cookie, updateType, savedFilePath, and patchPayload."
+  echo "Please set modelId and cookie."
   exit 1
 fi
+
+# Set the API URL to get metadata based on the modelId
+api_url="http://ruuter-private:8088/classifier/datamodel/metadata?modelId=$modelId"
+
+# Send the request to the API and capture the output
+api_response=$(curl -s -H "Cookie: $cookie" -X GET "$api_url")
+
+# Check if the API response is valid
+if [ -z "$api_response" ]; then
+  echo "API request failed to get the model metadata."
+  exit 1
+fi
+
+deployment_env=$(echo "$api_response" | jq -r '.deploymentEnv')
 
 # Construct the payload using here document
 payload=$(cat <<EOF
 {
-  "dgId": "$dgId",
-  "newDgId": "$newDgId",
-  "updateType": "$updateType",
-  "savedFilePath": "$savedFilePath",
-  "patchPayload": "$patchPayload",
-  "cookie": "$cookie"
+  "modelId": "$modelId",
+  "cookie": "$cookie",
+  "deploymentEnv" = "$deployment_env"
 }
 EOF
 )
 
 # Set the forward URL
-forward_url="http://dataset-processor:8001/datasetgroup/update/validation/status"
+forward_url="http://file-handler:8000/datamodel/model/delete"
 
 # Send the request
 response=$(curl -s -w "\nHTTP_STATUS_CODE:%{http_code}" -X POST "$forward_url" \
