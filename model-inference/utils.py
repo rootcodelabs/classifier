@@ -60,5 +60,15 @@ def calculate_average_predicted_class_probability(class_probabilities):
     total_probability = sum(class_probabilities)
     average_probability = total_probability / len(class_probabilities)
     
-    return average_probability        
+    return average_probability     
+
+def get_test_inference_success_payload(predicted_classes:list, average_confidence:float, predicted_probabilities:list ):   
+    
+    TEST_INFERENCE_SUCCESS_PAYLOAD = {
+    "predictedClasses":predicted_classes,
+    "averageConfidence":average_confidence,
+    "predictedProbabilities": predicted_probabilities
+    }
+
+    return TEST_INFERENCE_SUCCESS_PAYLOAD  
     

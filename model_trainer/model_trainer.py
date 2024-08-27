@@ -7,49 +7,54 @@ import pickle
 import shutil
 from datetime import datetime
 from s3_ferry import S3Ferry
-from constants import  GET_MODEL_METADATA_ENDPOINT,  OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, UPDATE_MODEL_TRAINING_STATUS_ENDPOINT, CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT, UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT, TRAINING_LOGS_PATH, MODEL_RESULTS_PATH, \
+from constants import  GET_MODEL_METADATA_ENDPOINT,  OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, TEST_DEPLOYMENT_ENDPOINT ,UPDATE_MODEL_TRAINING_STATUS_ENDPOINT, CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT, UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT, TRAINING_LOGS_PATH, MODEL_RESULTS_PATH, \
                         LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH,LOCAL_CLASSIFICATION_LAYER_SAVE_PATH, \
                         LOCAL_LABEL_ENCODER_SAVE_PATH, S3_FERRY_MODEL_STORAGE_PATH, MODEL_TRAINING_IN_PROGRESS, MODEL_TRAINING_SUCCESSFUL, \
                         INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS,  \
                         INITIATING_TRAINING_PROGRESS_MESSAGE, TRAINING_IN_PROGRESS_PROGRESS_MESSAGE, DEPLOYING_MODEL_PROGRESS_MESSAGE,  \
                         INITIATING_TRAINING_PROGRESS_PERCENTAGE, TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE, DEPLOYING_MODEL_PROGRESS_PERCENTAGE, \
-                        OUTLOOK, JIRA
+                        OUTLOOK, JIRA, TESTING
 from loguru import logger
 
 logger.add(sink=TRAINING_LOGS_PATH)
 
 class ModelTrainer:
-    def __init__(self, cookie, new_model_id,old_model_id) -> None:
+    def __init__(self, cookie, new_model_id,old_model_id,prev_deployment_env,update_type) -> None:
 
         model_url = GET_MODEL_METADATA_ENDPOINT
 
         self.new_model_id = int(new_model_id)
         self.old_model_id = int(old_model_id)
+        self.prev_deployment_env = prev_deployment_env
         self.cookie = cookie
+        self.update_type = update_type
         
         self.cookies_payload = {'customJwtCookie': cookie}
-
 
         logger.info(f"COOKIES PAYLOAD - {self.cookies_payload}")
 
         logger.info("GETTING MODEL METADATA")
 
-        response = requests.get(model_url, params = {'modelId': self.new_model_id}, cookies=self.cookies_payload)
-        
+        if self.update_type == "retrain":
+            logger.info(f"ENTERING INTO RETRAIN SEQUENCE FOR MODELID - {self.new_model_id}")
 
+        response = requests.get(model_url, params = {'modelId': self.new_model_id}, cookies=self.cookies_payload)
+
+        #only for model create and retrain operations old_model_id=new_model_id
         if self.old_model_id==self.new_model_id:
             self.replace_deployment = False
-                        
+
         else:
             self.replace_deployment = True
 
 
         if response.status_code == 200:
             self.model_details = response.json()
-            self.deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
+            self.current_deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
 
 
             logger.info("SUCCESSFULLY RECIEVED MODEL DETAILS")
+            logger.info(f"MODEL DETAILS - {self.model_details}")
         else:
 
             logger.error(f"FAILED WITH STATUS CODE: {response.status_code}")
@@ -183,27 +188,35 @@ class ModelTrainer:
         payload = {}
         payload["modelId"] = self.new_model_id
         payload["replaceDeployment"] = self.replace_deployment
-        payload["replaceDeploymentPlatform"] = self.deployment_platform
+        payload["replaceDeploymentPlatform"] = self.prev_deployment_env
         payload["bestBaseModel"] = best_model_name
         payload["progressSessionId"] = progress_session_id
+        payload["updateType"] = self.update_type
+
+        if self.update_type == "retrain":
+            payload["replaceDeploymentPlatform"] = self.current_deployment_platform
 
         logger.info(f"SENDING MODEL DEPLOYMENT REQUEST FOR MODEL ID - {self.new_model_id}")
         logger.info(f"MODEL DEPLOYMENT PAYLOAD - {payload}")
         
         deployment_url = None
 
-        if self.deployment_platform == JIRA:
+        if self.current_deployment_platform == JIRA:
 
             deployment_url = JIRA_DEPLOYMENT_ENDPOINT
         
-        elif self.deployment_platform == OUTLOOK:
+        elif self.current_deployment_platform == OUTLOOK:
 
             deployment_url = OUTLOOK_DEPLOYMENT_ENDPOINT
 
+        elif self.current_deployment_platform == TESTING:
+
+            deployment_url  = TEST_DEPLOYMENT_ENDPOINT
+
         else:
             
-            logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.deployment_platform}")
-            raise RuntimeError(f"RUNTIME ERROR - UNRECOGNIZED DEPLOYMENT PLATFORM - {self.deployment_platform}")
+            logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
+            raise RuntimeError(f"RUNTIME ERROR - UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
         
 
         response = requests.post( url=deployment_url, 
