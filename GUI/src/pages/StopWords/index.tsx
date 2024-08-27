@@ -211,6 +211,7 @@ const StopWords: FC = () => {
                     importStopWordsMutation.isLoading ||
                     deleteStopWordMutation.isLoading
                   }
+                  showLoadingIcon={importStopWordsMutation.isLoading}
                 >
                   {t('stopWords.importModal.importButton') ?? ''}
                 </Button>

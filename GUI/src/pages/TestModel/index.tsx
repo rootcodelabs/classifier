@@ -99,8 +99,9 @@ const TestModel: FC = () => {
           </div>
           <div className="testModalClassifyButton">
             <Button
-              disabled={testModel.text === '' || testModel.modelId===null}
+              disabled={testModel.text === ''  || classifyLoading}
               onClick={() => mutate(testModel)}
+              showLoadingIcon={classifyLoading}
             >
               {t('testModels.classify')}
             </Button>

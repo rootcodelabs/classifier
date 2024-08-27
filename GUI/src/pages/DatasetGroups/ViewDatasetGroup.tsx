@@ -384,7 +384,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
 
     if (classHierarchyError || validationRulesError || nodesError) {
       return;
-    } else {
+    } 
+    
       if (isMajorUpdateDetected) {
         openConfirmationModal(
           t('datasetGroups.detailedView.confirmMajorUpdatesDesc'),
@@ -404,7 +405,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
           () => patchUpdateMutation.mutate(patchPayload)
         );
       }
-    }
+    
   };
 
   const majorUpdateDatasetGroupMutation = useMutation({
@@ -542,6 +543,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         deleteRow={deleteRow}
         file={file}
         exportFormat={exportFormat}
+        isImportDataLoading={importDataMutation.isLoading}
       />
     </div>
   );
