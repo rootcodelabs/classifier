@@ -54,12 +54,12 @@ extract_data:
     dataset_group: ${Number(incoming.params.datasetGroup)}
     training_status: ${incoming.params.trainingStatus}
     deployment_maturity: ${incoming.params.deploymentMaturity}
-    is_production_model: ${incoming.params.isProductionModel}
+    is_production_model: ${JSON.parse(incoming.params.isProductionModel)}
   next: check_production_model_status
 
 check_production_model_status:
   switch:
-    - condition: ${is_production_model === 'true'}
+    - condition: ${is_production_model === true}
       next: get_production_data_model_meta_data_overview
   next: get_data_model_meta_data_overview
 
