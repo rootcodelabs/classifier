@@ -56,13 +56,15 @@ const CreateDatasetGroup: FC = () => {
     useState<ValidationErrorTypes>(ValidationErrorTypes.NULL);
 
   const validateData = useCallback(() => {
+   
     setNodesError(validateClassHierarchy(nodes));
     setDatasetNameError(!datasetName);
     setValidationRuleError(validateValidationRules(validationRules));
     if (
       !validateClassHierarchy(nodes) &&
       datasetName &&
-      !validateValidationRules(validationRules)
+      !validateValidationRules(validationRules) &&  !nodesError &&
+      !validationRuleError
     ) {
       if (!isValidationRulesSatisfied(validationRules)) {
         setIsModalOpen(true);

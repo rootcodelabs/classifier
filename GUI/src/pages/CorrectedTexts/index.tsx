@@ -140,6 +140,7 @@ const CorrectedTexts: FC = () => {
           isLoading={isLoading}
           setPagination={setPagination}
           pagination={pagination}
+          setEnableFetch={setEnableFetch}
         />
       </div>
     </div>

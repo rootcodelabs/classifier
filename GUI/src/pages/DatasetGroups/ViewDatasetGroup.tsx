@@ -251,7 +251,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   });
 
   const handleFileSelect = (file: File | undefined) => {
-    setFile(file)
+    setFile(file);
   };
 
   const handleImport = () => {
@@ -308,7 +308,12 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             >
               {t('global.cancel')}
             </Button>
-            <Button onClick={()=>{navigate('/validation-sessions');close()}}>
+            <Button
+              onClick={() => {
+                navigate('/validation-sessions');
+                close();
+              }}
+            >
               {t('datasetGroups.detailedView.viewValidations') ?? ''}
             </Button>
           </div>
@@ -337,20 +342,11 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   };
 
   const datasetGroupUpdate = () => {
-    const classHierarchyError = validateClassHierarchy(nodes);
+    const classHierarchyError = validateClassHierarchy(nodes) || nodesError;
     const validationRulesError = validateValidationRules(validationRules);
 
     setNodesError(classHierarchyError);
     setValidationRuleError(validationRulesError);
-
-    if (
-      classHierarchyError ||
-      validationRulesError ||
-      nodesError ||
-      validationRuleError
-    ) {
-      return;
-    }
 
     const isMajorUpdateDetected = isMajorUpdate(
       {
@@ -386,25 +382,30 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       });
     };
 
-    if (isMajorUpdateDetected) {
-      openConfirmationModal(
-        t('datasetGroups.detailedView.confirmMajorUpdatesDesc'),
-        t('datasetGroups.detailedView.confirmMajorUpdatesTitle'),
-        handleMajorUpdate
-      );
-    } else if (minorPayload) {
-      openConfirmationModal(
-        t('datasetGroups.detailedView.confirmMinorUpdatesDesc'),
-        t('datasetGroups.detailedView.confirmMinorUpdatesTitle'),
-        () => minorUpdateMutation.mutate(minorPayload)
-      );
-    } else if (patchPayload) {
-      openConfirmationModal(
-        t('datasetGroups.detailedView.confirmPatchUpdatesDesc'),
-        t('datasetGroups.detailedView.confirmPatchUpdatesTitle'),
-        () => patchUpdateMutation.mutate(patchPayload)
-      );
-    }
+    if (classHierarchyError || validationRulesError || nodesError) {
+      return;
+    } 
+    
+      if (isMajorUpdateDetected) {
+        openConfirmationModal(
+          t('datasetGroups.detailedView.confirmMajorUpdatesDesc'),
+          t('datasetGroups.detailedView.confirmMajorUpdatesTitle'),
+          handleMajorUpdate
+        );
+      } else if (minorPayload) {
+        openConfirmationModal(
+          t('datasetGroups.detailedView.confirmMinorUpdatesDesc'),
+          t('datasetGroups.detailedView.confirmMinorUpdatesTitle'),
+          () => minorUpdateMutation.mutate(minorPayload)
+        );
+      } else if (patchPayload) {
+        openConfirmationModal(
+          t('datasetGroups.detailedView.confirmPatchUpdatesDesc'),
+          t('datasetGroups.detailedView.confirmPatchUpdatesTitle'),
+          () => patchUpdateMutation.mutate(patchPayload)
+        );
+      }
+    
   };
 
   const majorUpdateDatasetGroupMutation = useMutation({
@@ -417,7 +418,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     onError: () => {
       open({
         title: t('datasetGroups.detailedView.modals.edit.error'),
-        content: <p>{ t('datasetGroups.modals.delete.errorDesc') }</p>,
+        content: <p>{t('datasetGroups.modals.delete.errorDesc')}</p>,
       });
     },
   });
@@ -435,7 +436,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     onError: () => {
       open({
         title: t('datasetGroups.detailedView.modals.delete.error'),
-        content: <p>{ t('datasetGroups.modals.delete.errorDesc') }</p>,
+        content: <p>{t('datasetGroups.modals.delete.errorDesc')}</p>,
       });
     },
   });
@@ -456,6 +457,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         <div className="content-wrapper">
           <DatasetDetailedViewTable
             metadata={metadata ?? []}
+            isMetadataLoading={isMetadataLoading}
             handleOpenModals={handleOpenModals}
             bannerMessage={bannerMessage}
             datasets={datasets}
@@ -515,14 +517,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             >
               {t('datasetGroups.detailedView.delete') ?? ''}
             </Button>
-            <Button
-              disabled={
-                majorUpdateDatasetGroupMutation.isLoading ||
-                minorUpdateMutation.isLoading ||
-                patchUpdateMutation.isLoading
-              }
-              onClick={() => datasetGroupUpdate()}
-            >
+            <Button onClick={() => datasetGroupUpdate()}>
               {t('global.save') ?? ''}
             </Button>
           </div>
@@ -548,6 +543,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         deleteRow={deleteRow}
         file={file}
         exportFormat={exportFormat}
+        isImportDataLoading={importDataMutation.isLoading}
       />
     </div>
   );

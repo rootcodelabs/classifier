@@ -4,6 +4,7 @@ import {
   SelectHTMLAttributes,
   useId,
   useState,
+  useEffect,
 } from 'react';
 import { useSelect } from 'downshift';
 import clsx from 'clsx';
@@ -26,9 +27,10 @@ type FormSelectProps = Partial<ControllerRenderProps> &
     placeholder?: string;
     hideLabel?: boolean;
     direction?: 'down' | 'up';
-    options: FormSelectOption[]|[];
+    options: FormSelectOption[];
     onSelectionChange?: (selection: FormSelectOption | null) => void;
     error?: string;
+    defaultValue?: string | { name: string; id: string };
   };
 
 const itemToString = (item: FormSelectOption | null) => {
@@ -53,11 +55,20 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
   ) => {
     const id = useId();
     const { t } = useTranslation();
-    const defaultSelected =
+    
+    const [selectedItem, setSelectedItem] = useState<FormSelectOption | null>(
       options?.find((o) => o.value === defaultValue) || 
       options?.find((o) => typeof o.value !== 'string' && o.value?.name === defaultValue) ||
-      null;
-    const [selectedItem, setSelectedItem] = useState<FormSelectOption | null>(defaultSelected);
+      null
+    );
+
+    useEffect(() => {
+      const newSelectedItem =
+        options?.find((o) => o.value === defaultValue) || 
+        options?.find((o) => typeof o.value !== 'string' && o.value?.name === defaultValue) ||
+        null;
+      setSelectedItem(newSelectedItem);
+    }, [defaultValue, options]);
 
     const {
       isOpen,
