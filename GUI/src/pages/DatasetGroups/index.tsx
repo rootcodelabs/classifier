@@ -110,10 +110,7 @@ const DatasetGroups: FC = () => {
                     (selection?.value as string) ?? ''
                   )
                 }
-                value={{
-                  label: filters.datasetGroupName,
-                  value: filters.datasetGroupName,
-                }}
+                defaultValue={filters.datasetGroupName}
               />
               <FormSelect
                 label=""
@@ -126,6 +123,8 @@ const DatasetGroups: FC = () => {
                     (selection?.value as string) ?? ''
                   )
                 }
+                defaultValue={filters.version}
+
               />
               <FormSelect
                 label=""
@@ -141,6 +140,8 @@ const DatasetGroups: FC = () => {
                     (selection?.value as string) ?? ''
                   )
                 }
+                defaultValue={filters.validationStatus}
+
               />
               <FormSelect
                 label=""
@@ -157,6 +158,8 @@ const DatasetGroups: FC = () => {
                 onSelectionChange={(selection) =>
                   handleFilterChange('sort', (selection?.value as string) ?? '')
                 }
+                defaultValue={filters.sort}
+
               />
               <Button onClick={() => setEnableFetch(true)}>
                 {t('global.search')}
@@ -185,7 +188,7 @@ const DatasetGroups: FC = () => {
                   (dataset: SingleDatasetType, index: number) => {
                     return (
                       <DatasetGroupCard
-                        key={dataset?.id + index}
+                        key={dataset?.id}
                         datasetGroupId={dataset?.id}
                         isEnabled={dataset?.isEnabled}
                         datasetName={dataset?.groupName}

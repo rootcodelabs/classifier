@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Dialog, FormInput, FormRadios } from 'components';
 import LabelChip from 'components/LabelChip';
@@ -17,6 +17,7 @@ import { stopWordsQueryKeys } from 'utils/queryKeys';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { StopWordImportOptions } from 'enums/datasetEnums';
 import { useDialog } from 'hooks/useDialog';
+import { StopWordsImportResponse } from 'types/datasetGroups';
 
 const StopWords: FC = () => {
   const { t } = useTranslation();
@@ -65,27 +66,36 @@ const StopWords: FC = () => {
     onError: () => {},
   });
 
-  const importMutationSuccessFunc = async () => {
+  const importMutationSuccessFunc = async (
+    response: StopWordsImportResponse
+  ) => {
     setIsModalOpen(false);
-    open({
-      title: t('stopWords.importModal.successTitle') ?? '',
-      content: <p>{t('stopWords.importModal.successDesc') ?? ''}</p>,
-    });
-    setFile(null);
-    await queryClient.invalidateQueries(
-      stopWordsQueryKeys.GET_ALL_STOP_WORDS()
-    );
+    if (response.response?.operationSuccessful) {
+      open({
+        title: t('stopWords.importModal.successTitle') ?? '',
+        content: <p>{t('stopWords.importModal.successDesc') ?? ''}</p>,
+      });
+      setFile(null);
+      await queryClient.invalidateQueries(
+        stopWordsQueryKeys.GET_ALL_STOP_WORDS()
+      );
 
-    if (importOption === StopWordImportOptions.DELETE) {
-      stopWordRefetch();
+      if (importOption === StopWordImportOptions.DELETE) {
+        stopWordRefetch();
+      }
+    } else {
+      open({
+        title: t('stopWords.importModal.unsuccessTitle') ?? '',
+        content: <p>{t('stopWords.importModal.unsuccessDesc') ?? ''}</p>,
+      });
     }
+    setImportOption('');
   };
 
   const importStopWordsMutation = useMutation({
     mutationFn: (file: File) => importStopWords(file),
-    onSuccess: async () => {
-      setIsModalOpen(false);
-      importMutationSuccessFunc();
+    onSuccess: async (response) => {
+      importMutationSuccessFunc(response);
     },
     onError: async () => {
       setIsModalOpen(true);
@@ -98,9 +108,8 @@ const StopWords: FC = () => {
 
   const deleteStopWordsMutation = useMutation({
     mutationFn: (file: File) => deleteStopWords(file),
-    onSuccess: async () => {
-      setIsModalOpen(false);
-      importMutationSuccessFunc();
+    onSuccess: async (response) => {
+      importMutationSuccessFunc(response);
     },
     onError: async () => {
       setIsModalOpen(true);
@@ -120,28 +129,21 @@ const StopWords: FC = () => {
       importOption === StopWordImportOptions.ADD &&
       file &&
       file !== undefined
-    )
+    ) {
       importStopWordsMutation.mutate(file);
-    else if (
+    } else if (
       importOption === StopWordImportOptions.DELETE &&
       file &&
       file !== undefined
     )
       deleteStopWordsMutation.mutate(file);
-  };
 
-  useEffect(() => {
-    if (
-      importStopWordsMutation.isLoading &&
-      !importStopWordsMutation.isSuccess
-    ) {
-      setIsModalOpen(false);
-      open({
-        title: t('stopWords.importModal.inprogressTitle') ?? '',
-        content: <p>{t('stopWords.importModal.inprogressDesc') ?? ''}</p>,
-      });
-    }
-  }, [importStopWordsMutation]);
+    setIsModalOpen(false);
+    open({
+      title: t('stopWords.importModal.inprogressTitle') ?? '',
+      content: <p>{t('stopWords.importModal.inprogressDesc') ?? ''}</p>,
+    });
+  };
 
   return (
     <div>
@@ -169,10 +171,12 @@ const StopWords: FC = () => {
               placeholder={t('stopWords.stopWordInputHint') ?? ''}
             />
             <Button
-              disabled={watchedStopWord === ''}
+              disabled={watchedStopWord === '' || !watchedStopWord.trim()}
               onClick={() => {
                 setValue('stopWord', '');
-                addStopWordMutation.mutate({ stopWords: [watchedStopWord] });
+                addStopWordMutation.mutate({
+                  stopWords: [watchedStopWord.trim()],
+                });
               }}
             >
               {t('stopWords.add') ?? ''}

@@ -1,7 +1,6 @@
 import { forwardRef, InputHTMLAttributes, PropsWithChildren, useId } from 'react';
 import clsx from 'clsx';
 import './FormInput.scss';
-import { CHAT_INPUT_LENGTH } from 'constants/config';
 import { DefaultTFuncReturn } from 'i18next';
 
 type InputProps = PropsWithChildren<InputHTMLAttributes<HTMLInputElement>> & {

@@ -146,7 +146,7 @@ const CorrectedTextsTable = ({
                 justifyContent: 'center',
               }}
             >
-              <NoDataView text={t('datasetGroups.detailedView.noData') ?? ''}/>
+              <NoDataView text={t('datasetGroups.detailedView.noCorrectedTexts') ?? ''}/>
              
             </div>
           </Card>
