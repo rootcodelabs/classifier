@@ -1,4 +1,5 @@
 import { FC, useState } from 'react';
+import './index.scss';
 import { useTranslation } from 'react-i18next';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { Button, FormSelect } from 'components';
@@ -65,7 +66,8 @@ const CorrectedTexts: FC = () => {
         <Button
           appearance={ButtonAppearanceTypes.PRIMARY}
           size="m"
-          onClick={() => {}}
+          onClick={() => {
+          }}
         >
           {t('correctedTexts.export')}
         </Button>
@@ -138,6 +140,7 @@ const CorrectedTexts: FC = () => {
           isLoading={isLoading}
           setPagination={setPagination}
           pagination={pagination}
+          setEnableFetch={setEnableFetch}
         />
       </div>
     </div>
