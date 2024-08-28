@@ -1,5 +1,4 @@
 import { FC, useState } from 'react';
-import './index.scss';
 import { useTranslation } from 'react-i18next';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { Button, FormSelect } from 'components';
