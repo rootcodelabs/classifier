@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 from io import BytesIO
 
-API_URL = "http://0.0.0.0:8005/paraphrase"
+API_URL = "http://localhost:8005/paraphrase"
 
 def paraphrase_text(text, num_return_sequences=1, language_id=None):
     response = requests.post(
