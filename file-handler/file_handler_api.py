@@ -16,6 +16,7 @@ from io import BytesIO, TextIOWrapper
 from dataset_deleter import DatasetDeleter
 from dataset_deleter import ModelDeleter
 from datetime import datetime
+from loguru import logger
 
 app = FastAPI()
 
@@ -456,6 +457,8 @@ async def delete_datamodels(request: Request):
         await authenticate_user(f'customJwtCookie={cookie}')
 
         payload = await request.json()
+
+        logger.info(f"MODEL PAYLOAD - {payload}")
         model_id = int(payload["modelId"])
         deployment_env = payload["deploymentEnv"]
 
@@ -469,23 +472,33 @@ async def delete_datamodels(request: Request):
             }
             active_models_deleted = False
             if deployment_env.lower() == "jira":
+                
+                logger.info("DELETING JIRA ACTIVE MODEL")
                 response = requests.post(JIRA_ACTIVE_MODEL_DELETE_URL, headers=headers)
                 if response.status_code == 200:
                     active_models_deleted = True
             elif deployment_env.lower() == "outlook":
+
+                logger.info("DELETING OUTLOOK ACTIVE MODEL")
                 response = requests.post(OUTLOOK_ACTIVE_MODEL_DELETE_URL, headers=headers)
                 if response.status_code == 200:
                     active_models_deleted = True
             elif deployment_env.lower() == "testing":
+
+                logger.info("DELETING TESTING ACTIVE MODEL")
                 response = requests.post(TEST_MODEL_DELETE_URL, headers=headers, json={"deleteModelId": model_id})
+                logger.info("TESTING ACTIVE OMDEL")
                 if response.status_code == 200:
                     active_models_deleted = True
             else:
                 active_models_deleted = True
+
+
             if active_models_deleted:
-                response = requests.post(MODEL_METADATA_DELETE_URL, headers=headers, json={"deleteModelId": model_id})
+                response = requests.post(MODEL_METADATA_DELETE_URL, headers=headers, json={"modelId": model_id})
                 if response.status_code == 200:
                     active_models_deleted = True
+                    logger.info(f"MODEL DELETION PAYLOAD - {response.text}")
                     return JSONResponse(status_code=200, content={"message": "Data model deletion completed successfully."})
                 else:
                     return JSONResponse(status_code=500, content={"message": "Data model metadata deletion failed."})
