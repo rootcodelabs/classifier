@@ -51,8 +51,17 @@ class InferencePipeline:
         model_names = sorted(model_names, key=lambda x: int(x.split('_')[-1].split('.')[0]))
         self.models_dict = {}
         for i in range(len(model_names)):
-            self.models_dict[i] = torch.load(os.path.join(f"{results_folder}/{TRAINED_BASE_MODEL_LAYERS}",model_names[i]))
+            logger.info(f"RESULTS FOLDER - {results_folder}")
 
+     
+            logger.info(f"BASE MODEL FOLDER  - {TRAINED_BASE_MODEL_LAYERS}")
+            logger.info(f"MODEL NAMES - {model_names[i]}")
+
+            try:
+                self.models_dict[i] = torch.load(os.path.join(f"{results_folder}/{TRAINED_BASE_MODEL_LAYERS}",model_names[i]),map_location=self.device)
+
+            except Exception as e:
+                logger.info(e)
         classification_model_names = os.listdir(f"{results_folder}/{CLASSIFIER_LAYERS_FOLDER}")
         classification_model_names = sorted(classification_model_names, key=lambda x: int(x.split('_')[-1].split('.')[0]))
         self.classification_models_dict = {}
@@ -82,7 +91,7 @@ class InferencePipeline:
         self.base_model.to(self.device)
 
         logger.info(f"CLASS HIERARCHY FILE {self.hierarchy_file}")
-        logger.info(f"INPUTS  - {inputs}")
+        
 
 
         data = self.hierarchy_file
