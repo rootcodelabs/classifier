@@ -96,6 +96,8 @@ const IntegrationModals = ({
                     platform: channel?.toLowerCase(),
                   });
                 }}
+                disabled={platformDisableMutation.isLoading}
+                showLoadingIcon={platformDisableMutation.isLoading}
               >
                 {t('global.disconnect')}
               </Button>
@@ -128,6 +130,8 @@ const IntegrationModals = ({
                     platform: channel?.toLowerCase(),
                   });
                 }}
+                disabled={platformEnableMutation.isLoading}
+                showLoadingIcon={platformEnableMutation.isLoading}
               >
                 {t('global.connect')}
               </Button>

@@ -1,4 +1,4 @@
-import { datasetsEndpoints } from 'utils/endpoints';
+import { correctedTextEndpoints, datasetsEndpoints } from 'utils/endpoints';
 import apiDev from './api-dev';
 import apiExternal from './api-external';
 import { PaginationState } from '@tanstack/react-table';
@@ -179,6 +179,24 @@ export async function deleteStopWords(file: File) {
     {
       stopWordsFile: file,
     }
+  );
+  return data;
+}
+
+export async function exportCorrectedTexts(
+  platform: string,
+  exportType: string
+) {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  const { data } = await apiExternal.post(
+    correctedTextEndpoints.EXPORT_CORRECTED_TEXTS(),
+    {
+      platform,
+      exportType,
+    },
+    { headers, responseType: 'blob' }
   );
   return data;
 }

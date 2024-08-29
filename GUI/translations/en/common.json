@@ -337,9 +337,12 @@
     "predictedHierarchy": "Predicted Class Hierarchy",
     "predictedConfidenceProbability": "Predicted Classes Average Confidence Probability",
     "correctedHierarchy": "Corrected Class Hierarchy",
-    "correctedConfidenceProbability": "Corrected Classes Average Confidence Probability"
+    "correctedConfidenceProbability": "Corrected Classes Average Confidence Probability",
+    "exportSuccessTitle": "Data export was successful",
+    "exportSuccessDesc": "Your data has been successfully exported.",
+    "exportDataUnsucessTitle": "Data Export Unsuccessful",
+    "exportDataUnsucessDesc": "Something went wrong. Please try again."
   },
-
   "dataModels": {
     "productionModels": "Production Models",
     "dataModels": "Data Models",

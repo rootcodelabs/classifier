@@ -162,6 +162,8 @@ const CreateDatasetGroup: FC = () => {
           <div className="button-container">
             <Button
               onClick={() => validateData()}
+              disabled={createDatasetGroupMutation.isLoading}
+              showLoadingIcon={createDatasetGroupMutation.isLoading}
             >
               {t('datasetGroups.createDatasetGroupButton')}
             </Button>

@@ -77,12 +77,14 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const [updatePriority, setUpdatePriority] = useState<UpdatePriority>(
     UpdatePriority.NULL
   );
+  const [confirmationTitle, setConfirmationTitle] = useState<string>('');
+  const [confirmationDesc, setConfirmationDesc] = useState<string>('');
   const [openedModalContext, setOpenedModalContext] =
     useState<ViewDatasetGroupModalContexts>(ViewDatasetGroupModalContexts.NULL);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
   const navigate = useNavigate();
-
+  const changeConfirmationFunction = useRef(() => {});
+  const [confirmationFLow, setConfirmationFlow] = useState('');
   useEffect(() => {
     setFetchEnabled(false);
   }, []);
@@ -341,6 +343,20 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     majorUpdateDatasetGroupMutation.mutate(payload);
   };
 
+  const openConfirmationModal = (
+    content: string,
+    title: string,
+    onConfirm: () => void,
+    flow: string
+  ) => {
+    setOpenedModalContext(ViewDatasetGroupModalContexts.CONFIRMATION_MODAL);
+    setIsModalOpen(true);
+    setConfirmationDesc(content);
+    setConfirmationTitle(title);
+    changeConfirmationFunction.current = onConfirm;
+    setConfirmationFlow(flow);
+  };
+
   const datasetGroupUpdate = () => {
     const classHierarchyError = validateClassHierarchy(nodes) || nodesError;
     const validationRulesError = validateValidationRules(validationRules);
@@ -360,52 +376,32 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       }
     );
 
-    const openConfirmationModal = (
-      content: string,
-      title: string,
-      onConfirm: () => void
-    ) => {
-      open({
-        content,
-        title,
-        footer: (
-          <div className="flex-grid">
-            <Button
-              appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={close}
-            >
-              {t('global.cancel')}
-            </Button>
-            <Button onClick={onConfirm}>{t('global.confirm')}</Button>
-          </div>
-        ),
-      });
-    };
-
     if (classHierarchyError || validationRulesError || nodesError) {
       return;
-    } 
-    
-      if (isMajorUpdateDetected) {
-        openConfirmationModal(
-          t('datasetGroups.detailedView.confirmMajorUpdatesDesc'),
-          t('datasetGroups.detailedView.confirmMajorUpdatesTitle'),
-          handleMajorUpdate
-        );
-      } else if (minorPayload) {
-        openConfirmationModal(
-          t('datasetGroups.detailedView.confirmMinorUpdatesDesc'),
-          t('datasetGroups.detailedView.confirmMinorUpdatesTitle'),
-          () => minorUpdateMutation.mutate(minorPayload)
-        );
-      } else if (patchPayload) {
-        openConfirmationModal(
-          t('datasetGroups.detailedView.confirmPatchUpdatesDesc'),
-          t('datasetGroups.detailedView.confirmPatchUpdatesTitle'),
-          () => patchUpdateMutation.mutate(patchPayload)
-        );
-      }
-    
+    }
+
+    if (isMajorUpdateDetected) {
+      openConfirmationModal(
+        t('datasetGroups.detailedView.confirmMajorUpdatesDesc'),
+        t('datasetGroups.detailedView.confirmMajorUpdatesTitle'),
+        handleMajorUpdate,
+        'update'
+      );
+    } else if (minorPayload) {
+      openConfirmationModal(
+        t('datasetGroups.detailedView.confirmMinorUpdatesDesc'),
+        t('datasetGroups.detailedView.confirmMinorUpdatesTitle'),
+        () => minorUpdateMutation.mutate(minorPayload),
+        'update'
+      );
+    } else if (patchPayload) {
+      openConfirmationModal(
+        t('datasetGroups.detailedView.confirmPatchUpdatesDesc'),
+        t('datasetGroups.detailedView.confirmPatchUpdatesTitle'),
+        () => patchUpdateMutation.mutate(patchPayload),
+        'update'
+      );
+    }
   };
 
   const majorUpdateDatasetGroupMutation = useMutation({
@@ -486,38 +482,20 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             <Button
               appearance={ButtonAppearanceTypes.ERROR}
               onClick={() =>
-                open({
-                  title:
-                    t('datasetGroups.detailedView.modals.delete.title') ?? '',
-                  content: (
-                    <p>
-                      {t(
-                        'datasetGroups.detailedView.modals.delete.description'
-                      )}
-                    </p>
-                  ),
-                  footer: (
-                    <div className="flex-grid">
-                      <Button
-                        appearance={ButtonAppearanceTypes.SECONDARY}
-                        onClick={() => close()}
-                      >
-                        {t('global.cancel')}
-                      </Button>
-                      <Button
-                        appearance={ButtonAppearanceTypes.ERROR}
-                        onClick={() => handleDeleteDataset()}
-                      >
-                        {t('global.delete')}
-                      </Button>
-                    </div>
-                  ),
-                })
+                openConfirmationModal(
+                  t('datasetGroups.detailedView.modals.delete.title'),
+                  t('datasetGroups.detailedView.modals.delete.title'),
+                  () => handleDeleteDataset(),
+                  'delete'
+                )
               }
             >
               {t('datasetGroups.detailedView.delete') ?? ''}
             </Button>
-            <Button onClick={() => datasetGroupUpdate()}>
+            <Button
+              disabled={majorUpdateDatasetGroupMutation.isLoading}
+              onClick={() => datasetGroupUpdate()}
+            >
               {t('global.save') ?? ''}
             </Button>
           </div>
@@ -544,6 +522,14 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         file={file}
         exportFormat={exportFormat}
         isImportDataLoading={importDataMutation.isLoading}
+        confirmationModalTitle={confirmationTitle}
+        confirmationModalDesc={confirmationDesc}
+        onConfirmationConfirm={() => changeConfirmationFunction.current()}
+        majorUpdateLoading={majorUpdateDatasetGroupMutation.isLoading}
+        patchUpdateLoading={patchUpdateMutation.isLoading}
+        minorUpdateLoading={minorUpdateMutation.isLoading}
+        confirmationFLow={confirmationFLow}
+        deleteDatasetMutationLoading={deleteDatasetMutation.isLoading}
       />
     </div>
   );

@@ -45,6 +45,7 @@ export const correctedTextEndpoints = {
     sortType: string
   ) =>
     `/classifier/inference/corrected-metadata?pageNum=${pageNumber}&pageSize=${pageSize}&platform=${platform}&sortType=${sortType}`,
+  EXPORT_CORRECTED_TEXTS: () => `/datamodel/data/corrected/download`
 };
 
 export const authEndpoints = {
@@ -69,3 +70,4 @@ export const testModelsEndpoints = {
   GET_MODELS: (): string => `/classifier/testmodel/models`,
   CLASSIFY_TEST_MODELS: (): string => `/classifier/testmodel/test-data`,
 };
+

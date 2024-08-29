@@ -58,16 +58,18 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
     
     const [selectedItem, setSelectedItem] = useState<FormSelectOption | null>(
       options?.find((o) => o.value === defaultValue) || 
-      options?.find((o) => typeof o.value !== 'string' && o.value?.name === defaultValue) ||
+      options?.find((o) => typeof o.value === 'object' && o.value?.name === defaultValue) ||
       null
     );
 
     useEffect(() => {
       const newSelectedItem =
-        options?.find((o) => o.value === defaultValue) || 
-        options?.find((o) => typeof o.value !== 'string' && o.value?.name === defaultValue) ||
+        options?.find((o) => o.value === defaultValue) ||
+        options?.find(
+          (o) => typeof o.value === 'object' && o.value?.name  && o.value?.name === defaultValue
+        ) ||
         null;
-      setSelectedItem(newSelectedItem);
+      newSelectedItem && setSelectedItem(newSelectedItem);
     }, [defaultValue, options]);
 
     const {
