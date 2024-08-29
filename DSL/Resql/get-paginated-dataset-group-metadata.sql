@@ -20,6 +20,8 @@ WHERE
     AND (:validation_status = 'all' OR dt.validation_status = :validation_status::Validation_Status)
     AND (:group_name = 'all' OR dt.group_name = :group_name)
 ORDER BY
-    CASE WHEN :sorting = 'asc' THEN dt.group_name END ASC,
-    CASE WHEN :sorting = 'dsc' THEN dt.group_name END DESC
+    CASE WHEN :sort_by = 'name' AND :sorting = 'asc' THEN dt.group_name END ASC,
+    CASE WHEN :sort_by = 'name' AND :sorting = 'desc' THEN dt.group_name END DESC,
+    CASE WHEN :sort_by = 'created_timestamp' AND :sorting = 'asc' THEN dt.created_timestamp END ASC,
+    CASE WHEN :sort_by = 'created_timestamp' AND :sorting = 'desc' THEN dt.created_timestamp END DESC
 OFFSET ((GREATEST(:page, 1) - 1) * :page_size) LIMIT :page_size;

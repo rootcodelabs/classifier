@@ -41,6 +41,9 @@ declaration:
       - field: isProductionModel
         type: boolean
         description: "Parameter 'isProductionModel'"
+      - field: sortBy
+        type: string
+        description: "Parameter 'sortBy'"
 
 extract_data:
   assign:
@@ -55,6 +58,7 @@ extract_data:
     training_status: ${incoming.params.trainingStatus}
     deployment_maturity: ${incoming.params.deploymentMaturity}
     is_production_model: ${incoming.params.isProductionModel}
+    sort_by: ${incoming.params.sortBy}
   next: check_production_model_status
 
 check_production_model_status:
@@ -86,6 +90,7 @@ get_data_model_meta_data_overview:
       training_status: ${training_status}
       deployment_maturity: ${deployment_maturity}
       sort_type: ${sort_type}
+      sort_by: ${sort_by}
   result: res_model
   next: check_status
 
