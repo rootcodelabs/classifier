@@ -8,19 +8,12 @@ import { getDatasetsOverview, getFilterData } from 'services/datasets';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { formattedArray, parseVersionString } from 'utils/commonUtilts';
-import { SingleDatasetType } from 'types/datasetGroups';
+import { FilterData, SingleDatasetType } from 'types/datasetGroups';
 import ViewDatasetGroup from './ViewDatasetGroup';
 import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import NoDataView from 'components/molecules/NoDataView';
-
-type FilterData = {
-  datasetGroupName: string;
-  version: string;
-  validationStatus: string;
-  sort: 'created_timestamp desc' | 'created_timestamp asc' | 'name asc' | 'name desc';
-};
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -124,7 +117,6 @@ const DatasetGroups: FC = () => {
                   )
                 }
                 defaultValue={filters.version}
-
               />
               <FormSelect
                 label=""
@@ -141,26 +133,33 @@ const DatasetGroups: FC = () => {
                   )
                 }
                 defaultValue={filters.validationStatus}
-
               />
               <FormSelect
                 label=""
                 name="sort"
-                placeholder={
-                  t('datasetGroups.table.sortBy') ?? ''
-                }
+                placeholder={t('datasetGroups.table.sortBy') ?? ''}
                 options={[
-                  { label: 'Dataset Group Name A-Z', value: 'name asc' },
-                  { label: 'Dataset Group Name Z-A', value: 'name desc' },
-                  { label: 'Create Date Latest First', value: 'created_timestamp desc' },
-                  { label: 'Create Date Oldest First', value: 'created_timestamp asc' },
-
+                  {
+                    label: t('datasetGroups.sortOptions.datasetAsc'),
+                    value: 'name asc',
+                  },
+                  {
+                    label: t('datasetGroups.sortOptions.datasetDesc'),
+                    value: 'name desc',
+                  },
+                  {
+                    label: t('datasetGroups.sortOptions.createdDateDesc'),
+                    value: 'created_timestamp desc',
+                  },
+                  {
+                    label: t('datasetGroups.sortOptions.createdDateAsc'),
+                    value: 'created_timestamp asc',
+                  },
                 ]}
                 onSelectionChange={(selection) =>
                   handleFilterChange('sort', (selection?.value as string) ?? '')
                 }
                 defaultValue={filters.sort}
-
               />
               <Button onClick={() => setEnableFetch(true)}>
                 {t('global.search')}
@@ -171,7 +170,7 @@ const DatasetGroups: FC = () => {
                     datasetGroupName: 'all',
                     version: 'x.x.x',
                     validationStatus: 'all',
-                    sort: 'asc',
+                    sort: 'created_timestamp desc',
                   });
                 }}
               >

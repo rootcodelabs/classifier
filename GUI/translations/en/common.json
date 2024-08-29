@@ -148,6 +148,12 @@
     "title": "Dataset Groups",
     "createDatasetGroupButton": "Create Dataset Group",
     "noDatasets":"No data sets available",
+    "sortOptions":{
+      "datasetAsc":"Dataset Group Name A-Z",
+      "datasetDesc":"Dataset Group Name Z-A",
+      "createdDateAsc":"Created Date Oldest First",
+      "createdDateDesc":"Created Date Latest First"
+    },
     "table": {
       "group": "Dataset Group",
       "version": "Version",
@@ -349,6 +355,12 @@
     "createModel": "Create Model",
     "noProdModels":"No production models available",
     "noModels":"No models available",
+    "sortOptions":{
+      "dataModelAsc":"Data Model Name A-Z",
+      "dataModelDesc":"Data Model Name Z-A",
+      "createdDateAsc":"Created Date Oldest First",
+      "createdDateDesc":"Created Date Latest First"
+    },
     "filters": {
       "modelName": "Model Name",
       "version": "Version",

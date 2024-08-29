@@ -128,6 +128,14 @@ export type DatasetDetails = {
   fields: string[];
 };
 
+export type FilterData = {
+  datasetGroupName: string;
+  version: string;
+  validationStatus: string;
+  sort: 'created_timestamp desc' | 'created_timestamp asc' | 'name asc' | 'name desc';
+};
+
+
 export type SelectedRowPayload = {
   rowId: number;
 } & Record<string, string>;
