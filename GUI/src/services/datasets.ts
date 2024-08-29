@@ -28,7 +28,8 @@ export async function getDatasetsOverview(
       minorVersion,
       patchVersion,
       validationStatus,
-      sortType: sort,
+      sortBy:sort?.split(" ")?.[0],
+      sortType: sort?.split(" ")?.[1],
       pageSize: 12,
     },
   });

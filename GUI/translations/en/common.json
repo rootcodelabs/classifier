@@ -152,7 +152,7 @@
       "group": "Dataset Group",
       "version": "Version",
       "validationStatus": "Validation Status",
-      "sortBy": "Sort by name ({{sortOrder}})",
+      "sortBy": "Sort by",
       "email": "Email",
       "actions": "Actions"
     },

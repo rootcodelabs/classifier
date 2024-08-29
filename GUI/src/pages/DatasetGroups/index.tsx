@@ -19,7 +19,7 @@ type FilterData = {
   datasetGroupName: string;
   version: string;
   validationStatus: string;
-  sort: 'asc' | 'desc';
+  sort: 'created_timestamp desc' | 'created_timestamp asc' | 'name asc' | 'name desc';
 };
 
 const DatasetGroups: FC = () => {
@@ -35,7 +35,7 @@ const DatasetGroups: FC = () => {
     datasetGroupName: 'all',
     version: 'x.x.x',
     validationStatus: 'all',
-    sort: 'asc',
+    sort: 'created_timestamp desc',
   });
 
   useEffect(() => {
@@ -147,13 +147,14 @@ const DatasetGroups: FC = () => {
                 label=""
                 name="sort"
                 placeholder={
-                  t('datasetGroups.table.sortBy', {
-                    sortOrder: filters?.sort === 'asc' ? 'A-Z' : 'Z-A',
-                  }) ?? ''
+                  t('datasetGroups.table.sortBy') ?? ''
                 }
                 options={[
-                  { label: 'A-Z', value: 'asc' },
-                  { label: 'Z-A', value: 'desc' },
+                  { label: 'Dataset Group Name A-Z', value: 'name asc' },
+                  { label: 'Dataset Group Name Z-A', value: 'name desc' },
+                  { label: 'Create Date Latest First', value: 'created_timestamp desc' },
+                  { label: 'Create Date Oldest First', value: 'created_timestamp asc' },
+
                 ]}
                 onSelectionChange={(selection) =>
                   handleFilterChange('sort', (selection?.value as string) ?? '')
