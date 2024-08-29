@@ -59,6 +59,17 @@ extract_data:
     deployment_maturity: ${incoming.params.deploymentMaturity}
     is_production_model: ${incoming.params.isProductionModel}
     sort_by: ${incoming.params.sortBy}
+  next: check_sort_by
+
+check_sort_by:
+  switch:
+    - condition: ${sort_by === 'name' || sort_by === 'created_timestamp'}
+      next: check_production_model_status
+  next: set_sort_by
+
+set_sort_by:
+  assign:
+    sort_by: 'name'
   next: check_production_model_status
 
 check_production_model_status:

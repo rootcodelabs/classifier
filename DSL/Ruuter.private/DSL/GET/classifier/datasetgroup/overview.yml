@@ -47,6 +47,17 @@ extract_data:
     validation_status: ${incoming.params.validationStatus}
     sort_type: ${incoming.params.sortType}
     sort_by: ${incoming.params.sortBy}
+  next: check_sort_by
+
+check_sort_by:
+  switch:
+    - condition: ${sort_by === 'name' || sort_by === 'created_timestamp'}
+      next: get_dataset_meta_data_overview
+  next: set_sort_by
+
+set_sort_by:
+  assign:
+    sort_by: 'name'
   next: get_dataset_meta_data_overview
 
 get_dataset_meta_data_overview:
