@@ -6,47 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 import { getDatasetGroupsProgress } from 'services/datasets';
 import { ValidationProgressData, SSEEventData } from 'types/datasetGroups';
 import { datasetQueryKeys } from 'utils/queryKeys';
+import { useValidationSessions } from 'hooks/useValidationSessions';
 
 const ValidationSessions: FC = () => {
   const { t } = useTranslation();
-  const [progresses, setProgresses] = useState<ValidationProgressData[]>([]);
-
-  const { data: progressData, refetch } = useQuery<ValidationProgressData[]>(
-    datasetQueryKeys.GET_DATASET_GROUP_PROGRESS(),
-    () => getDatasetGroupsProgress(),
-    {
-      onSuccess: (data) => {
-        setProgresses(data);
-      },
-    }
-  );
-
-  useEffect(() => {
-    if (!progressData) return;
-
-    const handleUpdate = (sessionId: string, newData: SSEEventData) => {
-      setProgresses((prevProgresses) =>
-        prevProgresses.map((progress) =>
-          progress.id === sessionId ? { ...progress, ...newData } : progress
-        )
-      );
-    };
-
-    const eventSources = progressData.map((progress) => {
-      if (
-        progress.validationStatus !== 'Success' &&
-        progress.progressPercentage !== 100
-      )
-        return sse(`/${progress.id}`, 'dataset', (data: SSEEventData) => {
-          console.log(`New data for notification ${progress.id}:`, data);
-          handleUpdate(data.sessionId, data);
-        });
-    });
-    return () => {
-      eventSources.forEach((eventSource) => eventSource?.close());
-      console.log('SSE connections closed');
-    };
-  }, [progressData, refetch]);
+  const progresses = useValidationSessions();
 
   return (
     <div>

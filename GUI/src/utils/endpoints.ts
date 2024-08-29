@@ -61,7 +61,7 @@ export const dataModelsEndpoints = {
   CREATE_DATA_MODEL: (): string => `classifier/datamodel/create`,
   UPDATE_DATA_MODEL: (): string => `classifier/datamodel/update`,
   DELETE_DATA_MODEL: (): string => `classifier/datamodel/delete`,
-  RETRAIN_DATA_MODEL: (): string => `classifier/datamodel/re-train`,
+  RETRAIN_DATA_MODEL: (): string => `classifier/datamodel/retrain`,
   GET_DATA_MODEL_PROGRESS: (): string => `classifier/datamodel/progress`,
 };
 
