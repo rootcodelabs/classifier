@@ -417,7 +417,7 @@ async def delete_dataset_files(request: Request):
         print(f"Error in delete_dataset_files: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/datamodel/data/corrected/download") #Download Filtered
+@app.post("/datamodel/data/corrected/download")
 async def download_and_convert(request: Request, exportData: ExportCorrectedDataFile, backgroundTasks: BackgroundTasks):
     cookie = request.cookies.get("customJwtCookie")
     await authenticate_user(f'customJwtCookie={cookie}')
@@ -427,8 +427,20 @@ async def download_and_convert(request: Request, exportData: ExportCorrectedData
     if export_type not in ["xlsx", "yaml", "json"]:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
-    # get json payload by calling to Ruuter
-    json_data = {}
+    headers = {
+                'Content-Type': 'application/json',
+                'Cookie': f'customJwtCookie={cookie}'
+            }
+    
+    payload = {
+        "platform" : platform,
+        "sortType" : "asc"
+    }
+
+    response = requests.post(CORRECTED_TEXT_EXPORT, headers=headers, json=payload)
+
+    response_data = response.json()
+    json_data = response_data["data"]
     now = datetime.now()
     formatted_time_date = now.strftime("%Y%m%d_%H%M%S")
     result_string = f"corrected_text_{formatted_time_date}"
