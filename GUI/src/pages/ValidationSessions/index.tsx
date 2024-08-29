@@ -33,18 +33,20 @@ const ValidationSessions: FC = () => {
     };
 
     const eventSources = progressData.map((progress) => {
-      if(progress.validationStatus !=="Success" && progress.progressPercentage!==100)
-      return sse(`/${progress.id}`, 'dataset', (data: SSEEventData) => {
-        console.log(`New data for notification ${progress.id}:`, data);
-        handleUpdate(data.sessionId, data);
-      });
+      if (
+        progress.validationStatus !== 'Success' &&
+        progress.progressPercentage !== 100
+      )
+        return sse(`/${progress.id}`, 'dataset', (data: SSEEventData) => {
+          console.log(`New data for notification ${progress.id}:`, data);
+          handleUpdate(data.sessionId, data);
+        });
     });
-    // refetch();
     return () => {
       eventSources.forEach((eventSource) => eventSource?.close());
       console.log('SSE connections closed');
     };
-  }, [progressData,refetch]);
+  }, [progressData, refetch]);
 
   return (
     <div>

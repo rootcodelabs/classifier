@@ -1,7 +1,7 @@
 import zipfile
 import os
 import shutil
-from typing import List, Optional
+from typing import Optional
 
 def unzip_file(zip_path, extract_to):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -71,4 +71,12 @@ def get_test_inference_success_payload(predicted_classes:list, average_confidenc
     }
 
     return TEST_INFERENCE_SUCCESS_PAYLOAD  
-    
+
+def delete_folder(folder_path: str):
+    try:
+        if os.path.isdir(folder_path):
+            shutil.rmtree(folder_path)
+        else:
+            raise FileNotFoundError(f"The path {folder_path} is not a directory.")
+    except Exception as e:
+        raise Exception(f"Failed to delete the folder {folder_path}. Reason: {e}")

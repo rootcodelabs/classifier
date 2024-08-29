@@ -150,3 +150,11 @@ export type SSEEventData = {
   validationMessage?: string;
   progressPercentage: number;
 };
+
+export type StopWordsImportResponse = {
+  response: {
+    nonexistent: boolean;
+    nonexistentItems: string[];
+    operationSuccessful: boolean;
+  }
+};

@@ -63,7 +63,7 @@ export type DataModelResponse = {
   trainingStatus: string;
   deploymentEnv: string;
   maturityLabel: string;
-  trainingResults?: TrainingResults;
+  trainingResults?: string | null;
   connectedDgMajorVersion?: number;
   connectedDgMinorVersion?: number;
   connectedDgPatchVersion?: number;
@@ -85,4 +85,13 @@ export type Filters = {
   trainingStatus: string;
   maturity: string;
   sort: 'asc' | 'desc';
+};
+
+export type ErrorsType = {
+  modelName?: string;
+  dgName?: string;
+  platform?: string;
+  baseModels?: string;
+  maturity?: string;
+  dgId?: string;
 };

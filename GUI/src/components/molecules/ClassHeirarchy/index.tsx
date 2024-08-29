@@ -124,7 +124,7 @@ const ClassHierarchy: FC<PropsWithChildren<ClassHierarchyProps>> = ({
         isOpen={isModalOpen}
         title={t('datasetGroups.modals.deleteClassTitle') ?? ''}
         footer={
-          <div>
+          <div className="footer-button-wrapper">
             <Button
               appearance={ButtonAppearanceTypes.SECONDARY}
               onClick={() => setIsModalOpen(false)}
