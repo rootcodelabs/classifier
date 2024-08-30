@@ -41,7 +41,7 @@ const TrainingSessionCard: React.FC<TrainingSessionCardProps> = ({
       }
     >
       <div>
-      {(status==="failed" || status==="deployed") && progress===100 ? (
+      {(status==='failed' || status==='deployed') && progress===100 ? (
         <div className={`text-center ${status==="failed"?'error':''}`}>
          {trainingMessage}
         </div>
