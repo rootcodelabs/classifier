@@ -42,10 +42,10 @@ export const formatDate = (date: Date, format: string) => {
 };
 
 export const formatDateTime = (date: string) => {
-  const format = 'DD-MM-YYYY-HH:mm:ss';
+  // const format = 'DD-MM-YYYY-HH:mm:ss';
 
   // Parse the date string using moment
-  const momentDate = moment(date, format);
+  const momentDate = moment(date);
 
   // Format the date as MM/DD/YYYY
   const formattedDate = momentDate.format('DD/MM/YYYY');

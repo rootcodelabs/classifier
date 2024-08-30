@@ -77,7 +77,7 @@ const CorrectedTexts: FC = () => {
       handleDownload(response, exportFormat);
       setIsModalOpen(true);
       setModalTitle(t('correctedTexts.exportSuccessTitle') ?? '');
-      setModalDiscription(t('correctedTexts.exportDataUnsucessDesc') ?? '');
+      setModalDiscription(t('correctedTexts.exportSuccessDesc') ?? '');
       setModalType('success');
     },
     onError: async () => {

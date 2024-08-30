@@ -343,6 +343,7 @@
     "predictedConfidenceProbability": "Prognoositud Klasside Keskmine Usaldusväärsuse Tõenäosus",
     "correctedHierarchy": "Parandatud Klassihierarhia",
     "correctedConfidenceProbability": "Parandatud Klasside Keskmine Usaldusväärsuse Tõenäosus",
+    "labelNotFoundText": "Märgistus ei ole andmekogumis",
     "exportSuccessTitle": "Andmete Eksportimine Õnnestus",
     "exportSuccessDesc": "Sinu andmed on edukalt eksporditud.",
     "exportDataUnsucessTitle": "Andmete Eksportimine Ebaõnnestus",

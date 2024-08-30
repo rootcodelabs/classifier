@@ -219,7 +219,7 @@ services:
       - OUTLOOK_ACTIVE_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/outlook/delete
       - TEST_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/testing/delete
       - MODEL_METADATA_DELETE_URL=http://ruuter-private:8088/classifier/datamodel/metadata/delete
-      - CORRECTED_TEXT_EXPORT=http://ruuter-private:8088/classifier/inference/corrected-metadata-export.yml
+      - CORRECTED_TEXT_EXPORT=http://ruuter-private:8088/classifier/inference/corrected-metadata-export
     ports:
       - "8000:8000"
     networks:
@@ -427,23 +427,26 @@ services:
       bykstack:
         ipv4_address: 172.25.0.21
 
+
+  # Uncomment below container if you wish to debug progress bar sessions in opensearch dashboard
+  opensearch-dashboards:
+      image: opensearchproject/opensearch-dashboards:2.11.1
+      container_name: opensearch-dashboards
+      environment:
+        - OPENSEARCH_HOSTS=http://opensearch-node:9200
+        - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+      ports:
+        - 5601:5601
+      networks:
+        bykstack:
+          ipv4_address: 172.25.0.24
+
+
+
 volumes:
   shared-volume:
   opensearch-data:
 
-
-# Uncomment below container if you wish to debug progress bar sessions in opensearch dashboard
-# opensearch-dashboards:
-#       image: opensearchproject/opensearch-dashboards:2.11.1
-#       container_name: opensearch-dashboards
-#       environment:
-#         - OPENSEARCH_HOSTS=http://opensearch-node:9200
-#         - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
-#       ports:
-#         - 5601:5601
-#       networks:
-#         bykstack:
-#           ipv4_address: 172.25.0.24
 
 
 networks:

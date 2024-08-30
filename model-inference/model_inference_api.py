@@ -141,7 +141,6 @@ async def download_outlook_model(request: Request, model_data:UpdateRequest):
 
             if(model_initiate):
                 
-                #TODO - Add update_training_status db to update training status to deployed in models metadata DB
 
                 model_inference.update_model_training_progress_session(session_id=model_progress_session_id,
                                                                        model_id=model_data.modelId,
@@ -259,7 +258,6 @@ async def download_jira_model(request: Request, model_data:UpdateRequest):
             if(model_initiate):
                 logger.info(f"MODEL INITIATE - {model_initiate}")
 
-                #TODO - Add update_training_status db to update training status to deployed in models metadata DB
 
                 model_inference.update_model_training_progress_session(session_id=model_progress_session_id,
                                                                        model_id=model_data.modelId,
@@ -397,7 +395,6 @@ async def download_test_model(request: Request, model_data:UpdateRequest):
             if(model_initiate):
                 logger.info(f"TEST MODEL INITIATE - {model_initiate}")
 
-                #TODO - Add update_training_status db to update training status to deployed in models metadata DB
 
                 model_inference.update_model_training_progress_session(session_id=model_progress_session_id,
                                                                        model_id=model_data.modelId,
