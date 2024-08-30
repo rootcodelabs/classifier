@@ -31,7 +31,7 @@ export const useTrainingSessions = () => {
     const eventSources = progressData
       .filter(
         (progress) =>
-          !(progress.trainingStatus === 'deployed'||progress.trainingStatus === 'deployed') &&
+          !(progress.trainingStatus === 'deployed'||progress.trainingStatus === 'failed') &&
           progress.progressPercentage !== 100
       )
       .map((progress) =>
