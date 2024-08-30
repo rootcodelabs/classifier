@@ -88,7 +88,6 @@ const CorrectedTexts: FC = () => {
     },
   });
 
-  console.log(filters);
   return (
     <div className="container">
       <div className="title_container">
@@ -96,6 +95,7 @@ const CorrectedTexts: FC = () => {
         <Button
           appearance={ButtonAppearanceTypes.PRIMARY}
           size="m"
+          disabled={correctedTextData?.length===0}
           onClick={() => {
             setIsModalOpen(true);
             setModalType('export');

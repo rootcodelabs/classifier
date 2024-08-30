@@ -89,7 +89,7 @@ const DataModels: FC = () => {
         -1,
         'all',
         'all',
-        'asc',
+        'created_timestamp desc',
         true
       ),
       () =>
@@ -102,7 +102,7 @@ const DataModels: FC = () => {
           -1,
           'all',
           'all',
-          'asc',
+          'created_timestamp desc',
           true
         ),
       {
