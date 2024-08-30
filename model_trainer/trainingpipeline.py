@@ -41,6 +41,41 @@ class TrainingPipeline:
         self.model_name = model_name
         self.dfs = dfs
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        if model_name == 'distil-bert':
+            self.base_model= DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased')
+
+            for param in self.base_model.distilbert.parameters():
+                param.requires_grad = False
+
+            for param in self.base_model.distilbert.transformer.layer[-2:].parameters():
+                param.requires_grad = True
+
+            for param in self.base_model.classifier.parameters():
+                param.requires_grad = True
+
+        elif model_name == 'roberta':
+            self.base_model= XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base')
+            for param in self.base_model.roberta.parameters():
+                param.requires_grad = False
+
+            for param in self.base_model.roberta.encoder.layer[-2:].parameters():
+                param.requires_grad = True
+
+            for param in self.base_model.classifier.parameters():
+                param.requires_grad = True
+
+        elif model_name == 'bert':
+            self.base_model= BertForSequenceClassification.from_pretrained('bert-base-uncased')
+
+            for param in self.base_model.base_model.parameters():
+                param.requires_grad = False
+
+            for param in self.base_model.base_model.encoder.layer[-2:].parameters():
+                param.requires_grad = True
+
+            for param in self.base_model.classifier.parameters():
+                param.requires_grad = True
         
     
     def replicate_data(self, df, target_rows):
@@ -90,7 +125,7 @@ class TrainingPipeline:
             
             
             if self.model_name == 'distil-bert':
-                model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',num_labels=len(label_encoder.classes_))
+                model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',num_labels=len(label_encoder.classes_), state_dict=self.base_model.state_dict(), ignore_mismatched_sizes=True)
                 tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
 
                 for param in model.distilbert.parameters():
@@ -103,8 +138,8 @@ class TrainingPipeline:
                     param.requires_grad = True
 
             elif self.model_name == 'roberta':
-                model = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base', num_labels=len(label_encoder.classes_))
-                tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base', force_download=True)
+                model = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base', num_labels=len(label_encoder.classes_), state_dict=self.base_model.state_dict(), ignore_mismatched_sizes=True)
+                tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base')
                 for param in model.roberta.parameters():
                     param.requires_grad = False
 
@@ -115,7 +150,7 @@ class TrainingPipeline:
                     param.requires_grad = True
         
             elif self.model_name == 'bert':
-                model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(label_encoder.classes_))
+                model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(label_encoder.classes_), state_dict=self.base_model.state_dict(), ignore_mismatched_sizes=True)
                 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased') 
                 
                 for param in model.base_model.parameters():
@@ -171,9 +206,10 @@ class TrainingPipeline:
                 f1_scores.append(report[cls]['f1-score'])
             
             label_encoders.append(label_encoder)
-            # shutil.rmtree('tmp')
+            shutil.rmtree('tmp')
 
+        basic_model = self.base_model.state_dict()
         metrics = (classes, accuracies, f1_scores)
-        return metrics, models, classifiers, label_encoders
+        return metrics, models, classifiers, label_encoders, basic_model
     
         

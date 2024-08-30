@@ -10,10 +10,10 @@ from s3_ferry import S3Ferry
 from constants import   OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, TEST_DEPLOYMENT_ENDPOINT ,UPDATE_MODEL_TRAINING_STATUS_ENDPOINT, CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT, UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT, TRAINING_LOGS_PATH, MODEL_RESULTS_PATH, \
                         LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH,LOCAL_CLASSIFICATION_LAYER_SAVE_PATH, \
                         LOCAL_LABEL_ENCODER_SAVE_PATH, S3_FERRY_MODEL_STORAGE_PATH, MODEL_TRAINING_IN_PROGRESS, MODEL_TRAINING_SUCCESSFUL, \
-                        INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS,  \
-                        INITIATING_TRAINING_PROGRESS_MESSAGE, TRAINING_IN_PROGRESS_PROGRESS_MESSAGE, DEPLOYING_MODEL_PROGRESS_MESSAGE,  \
-                        INITIATING_TRAINING_PROGRESS_PERCENTAGE, TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE, DEPLOYING_MODEL_PROGRESS_PERCENTAGE, \
-                        OUTLOOK, JIRA, TESTING
+                        INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS,  \
+                        INITIATING_TRAINING_PROGRESS_MESSAGE, TRAINING_IN_PROGRESS_PROGRESS_MESSAGE, DEPLOYING_MODEL_PROGRESS_MESSAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE, \
+                        INITIATING_TRAINING_PROGRESS_PERCENTAGE, TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE, DEPLOYING_MODEL_PROGRESS_PERCENTAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE, \
+                        OUTLOOK, JIRA, TESTING, UNDEPLOYED
 from loguru import logger
 
 logger.add(sink=TRAINING_LOGS_PATH)
@@ -168,6 +168,11 @@ class ModelTrainer:
 
             deployment_url  = TEST_DEPLOYMENT_ENDPOINT
 
+        elif self.current_deployment_platform == UNDEPLOYED:
+
+            logger.info("DEPLOYMENT ENVIRONMENT IS UNDEPLOYED")
+            return None
+
         else:
             
             logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
@@ -254,6 +259,7 @@ class ModelTrainer:
 
 
             selected_models = []
+            selected_basic_model = []
             selected_classifiers = []
             selected_label_encoders = []
             selected_metrics = []
@@ -270,11 +276,12 @@ class ModelTrainer:
 
             for i in range(len(models_to_train)):
                 training_pipeline =  TrainingPipeline(dfs, models_to_train[i])
-                metrics, models, classifiers, label_encoders = training_pipeline.train()
+                metrics, models, classifiers, label_encoders, basic_model = training_pipeline.train()
                 selected_models.append(models)
                 selected_classifiers.append(classifiers)
                 selected_metrics.append(metrics)
                 selected_label_encoders.append(label_encoders)
+                selected_basic_model.append(basic_model)
                 average = sum(metrics[1]) / len(metrics[1])
                 average_accuracy.append(average)
 
@@ -284,6 +291,7 @@ class ModelTrainer:
             best_model_label_encoder = selected_label_encoders[max_value_index]
             best_model_name = models_to_train[max_value_index]
             best_model_metrics = selected_metrics[max_value_index]
+            best_basic_model = selected_basic_model[max_value_index]
 
             logger.info(f"BEST MODEL METRICS - {best_model_metrics}")
 
@@ -297,6 +305,9 @@ class ModelTrainer:
                 label_encoder_path = f"{local_label_encoder_save_path}/label_encoder_{i}.pkl"
                 with open(label_encoder_path, 'wb') as file:
                     pickle.dump(label_encoder, file)
+
+            torch.save(best_basic_model, f"{MODEL_RESULTS_PATH}/{self.new_model_id}//model_state_dict.pth")
+
             
             model_zip_path = f"{MODEL_RESULTS_PATH}/{str(self.new_model_id)}"
 
@@ -330,6 +341,8 @@ class ModelTrainer:
 
             logger.info(f"FINAL MODEL TRAINING PROGRESS SESSION UPDATE {self.current_deployment_platform}")
 
+
+
             self.update_model_training_progress_session(
                                                 training_status=DEPLOYING_MODEL_PROGRESS_STATUS,
                                                 training_progress_update_message=DEPLOYING_MODEL_PROGRESS_MESSAGE,
@@ -338,9 +351,25 @@ class ModelTrainer:
                                                 )
 
 
-            logger.info(f"INITIATING DEPLOYMENT TO {self.current_deployment_platform}")
 
-            self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id)
+
+            if self.current_deployment_platform==UNDEPLOYED:
+                
+                logger.info("MODEL DEPLOYMENT PLATFORM IS UNDEPLOYED")
+                self.update_model_training_progress_session(
+                                                    training_status=MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS,
+                                                    training_progress_update_message=MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE,
+                                                    training_progress_percentage=MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE,
+                                                    process_complete=True
+                                                    )
+                
+                logger.info("TRAINING COMPLETED")
+                
+
+            else:
+                
+                logger.info(f"INITIATING DEPLOYMENT TO {self.current_deployment_platform}")
+                self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id)
 
         except Exception as e:
 

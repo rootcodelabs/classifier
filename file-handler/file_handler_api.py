@@ -437,10 +437,12 @@ async def download_and_convert(request: Request, exportData: ExportCorrectedData
         "sortType" : "asc"
     }
 
-    response = requests.post(CORRECTED_TEXT_EXPORT, headers=headers, json=payload)
+    response = requests.get(CORRECTED_TEXT_EXPORT, headers=headers, params=payload)
+    response.raise_for_status()
 
     response_data = response.json()
-    json_data = response_data["data"]
+    print(response_data)
+    json_data = response_data["response"]["data"]
     now = datetime.now()
     formatted_time_date = now.strftime("%Y%m%d_%H%M%S")
     result_string = f"corrected_text_{formatted_time_date}"
@@ -455,6 +457,8 @@ async def download_and_convert(request: Request, exportData: ExportCorrectedData
         file_converter.convert_json_to_yaml(json_data, output_file)
     elif export_type == "json":
         output_file = f"{result_string}{JSON_EXT}"
+        with open(output_file, 'w') as json_file:
+            json.dump(json_data, json_file, indent=4)
     else:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 

@@ -74,3 +74,5 @@ OUTLOOK = "outlook"
 JIRA="jira"
 
 TESTING="testing"
+
+UNDEPLOYED="undeployed"
