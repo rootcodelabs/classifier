@@ -8,19 +8,12 @@ import { getDatasetsOverview, getFilterData } from 'services/datasets';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { formattedArray, parseVersionString } from 'utils/commonUtilts';
-import { SingleDatasetType } from 'types/datasetGroups';
+import { FilterData, SingleDatasetType } from 'types/datasetGroups';
 import ViewDatasetGroup from './ViewDatasetGroup';
 import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import NoDataView from 'components/molecules/NoDataView';
-
-type FilterData = {
-  datasetGroupName: string;
-  version: string;
-  validationStatus: string;
-  sort: 'asc' | 'desc';
-};
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -35,7 +28,7 @@ const DatasetGroups: FC = () => {
     datasetGroupName: 'all',
     version: 'x.x.x',
     validationStatus: 'all',
-    sort: 'asc',
+    sort: 'created_timestamp desc',
   });
 
   useEffect(() => {
@@ -110,10 +103,7 @@ const DatasetGroups: FC = () => {
                     (selection?.value as string) ?? ''
                   )
                 }
-                value={{
-                  label: filters.datasetGroupName,
-                  value: filters.datasetGroupName,
-                }}
+                defaultValue={filters.datasetGroupName}
               />
               <FormSelect
                 label=""
@@ -126,6 +116,7 @@ const DatasetGroups: FC = () => {
                     (selection?.value as string) ?? ''
                   )
                 }
+                defaultValue={filters.version}
               />
               <FormSelect
                 label=""
@@ -141,22 +132,34 @@ const DatasetGroups: FC = () => {
                     (selection?.value as string) ?? ''
                   )
                 }
+                defaultValue={filters.validationStatus}
               />
               <FormSelect
                 label=""
                 name="sort"
-                placeholder={
-                  t('datasetGroups.table.sortBy', {
-                    sortOrder: filters?.sort === 'asc' ? 'A-Z' : 'Z-A',
-                  }) ?? ''
-                }
+                placeholder={t('datasetGroups.table.sortBy') ?? ''}
                 options={[
-                  { label: 'A-Z', value: 'asc' },
-                  { label: 'Z-A', value: 'desc' },
+                  {
+                    label: t('datasetGroups.sortOptions.datasetAsc'),
+                    value: 'name asc',
+                  },
+                  {
+                    label: t('datasetGroups.sortOptions.datasetDesc'),
+                    value: 'name desc',
+                  },
+                  {
+                    label: t('datasetGroups.sortOptions.createdDateDesc'),
+                    value: 'created_timestamp desc',
+                  },
+                  {
+                    label: t('datasetGroups.sortOptions.createdDateAsc'),
+                    value: 'created_timestamp asc',
+                  },
                 ]}
                 onSelectionChange={(selection) =>
                   handleFilterChange('sort', (selection?.value as string) ?? '')
                 }
+                defaultValue={filters.sort}
               />
               <Button onClick={() => setEnableFetch(true)}>
                 {t('global.search')}
@@ -167,7 +170,7 @@ const DatasetGroups: FC = () => {
                     datasetGroupName: 'all',
                     version: 'x.x.x',
                     validationStatus: 'all',
-                    sort: 'asc',
+                    sort: 'created_timestamp desc',
                   });
                 }}
               >
@@ -185,7 +188,7 @@ const DatasetGroups: FC = () => {
                   (dataset: SingleDatasetType, index: number) => {
                     return (
                       <DatasetGroupCard
-                        key={dataset?.id + index}
+                        key={dataset?.id}
                         datasetGroupId={dataset?.id}
                         isEnabled={dataset?.isEnabled}
                         datasetName={dataset?.groupName}

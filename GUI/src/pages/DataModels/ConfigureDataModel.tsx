@@ -1,7 +1,7 @@
-import { FC, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Card } from 'components';
+import { Button, Card, Dialog } from 'components';
 import { useDialog } from 'hooks/useDialog';
 import BackArrowButton from 'assets/BackArrowButton';
 import {
@@ -49,7 +49,11 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     maturity: '',
     version: '',
   });
-
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [modalTitle, setModalTitle] = useState<string>('');
+  const [modalDiscription, setModalDiscription] = useState<string>('');
+  const modalFunciton = useRef(() => {});
   const { isLoading } = useQuery(
     dataModelsQueryKeys.GET_META_DATA(id),
     () => getMetadata(id),
@@ -110,25 +114,31 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
 
     if (updateType) {
       if (availableProdModels?.includes(dataModel.platform)) {
-        open({
-          title: t('dataModels.createDataModel.replaceTitle'),
-          content: t('dataModels.createDataModel.replaceDesc'),
-          footer: (
-            <div className="flex-grid">
-              <Button
-                appearance={ButtonAppearanceTypes.SECONDARY}
-                onClick={close}
-              >
-                {t('global.cancel')}
-              </Button>
-              <Button
-                onClick={() => updateDataModelMutation.mutate(updatedPayload)}
-              >
-                {t('global.proceed')}
-              </Button>
-            </div>
-          ),
-        });
+        openModal(
+          t('dataModels.createDataModel.replaceDesc'),
+          t('dataModels.createDataModel.replaceTitle'),
+          () => updateDataModelMutation.mutate(updatedPayload),
+          'replace'
+        );
+        // open({
+        //   title: t('dataModels.createDataModel.replaceTitle'),
+        //   content: t('dataModels.createDataModel.replaceDesc'),
+        //   footer: (
+        //     <div className="flex-grid">
+        //       <Button
+        //         appearance={ButtonAppearanceTypes.SECONDARY}
+        //         onClick={close}
+        //       >
+        //         {t('global.cancel')}
+        //       </Button>
+        //       <Button
+        //         onClick={() => updateDataModelMutation.mutate(updatedPayload)}
+        //       >
+        //         {t('global.proceed')}
+        //       </Button>
+        //     </div>
+        //   ),
+        // });
       } else {
         updateDataModelMutation.mutate(updatedPayload);
       }
@@ -175,7 +185,8 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   const handleDelete = () => {
     if (
       dataModel.platform === Platform.JIRA ||
-      dataModel.platform === Platform.OUTLOOK) {
+      dataModel.platform === Platform.OUTLOOK
+    ) {
       open({
         title: t('dataModels.configureDataModel.deleteErrorTitle'),
         content: <p>{t('dataModels.configureDataModel.deleteErrorDesc')}</p>,
@@ -187,36 +198,38 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
             >
               {t('global.cancel')}
             </Button>
-            <Button appearance={ButtonAppearanceTypes.ERROR} onClick={() => deleteDataModelMutation.mutate(dataModel?.modelId)}
-            >
-              {t('global.delete')}
-            </Button>
           </div>
         ),
       });
     } else {
-      open({
-        title: t('dataModels.configureDataModel.deleteConfirmation'),
-        content: (
-          <p>{t('dataModels.configureDataModel.deleteConfirmationDesc')}</p>
-        ),
-        footer: (
-          <div className="flex-grid">
-            <Button
-              appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={close}
-            >
-              {t('global.cancel')}
-            </Button>
-            <Button
-              onClick={() => deleteDataModelMutation.mutate(dataModel.modelId)}
-              appearance={ButtonAppearanceTypes.ERROR}
-            >
-              {t('global.delete')}
-            </Button>
-          </div>
-        ),
-      });
+      openModal(
+        t('dataModels.configureDataModel.deleteConfirmationDesc'),
+        t('dataModels.configureDataModel.deleteConfirmation'),
+        () => deleteDataModelMutation.mutate(dataModel.modelId),
+        'delete'
+      );
+      // open({
+      //   title: t('dataModels.configureDataModel.deleteConfirmation'),
+      //   content: (
+      //     <p>{t('dataModels.configureDataModel.deleteConfirmationDesc')}</p>
+      //   ),
+      //   footer: (
+      //     <div className="flex-grid">
+      //       <Button
+      //         appearance={ButtonAppearanceTypes.SECONDARY}
+      //         onClick={close}
+      //       >
+      //         {t('global.cancel')}
+      //       </Button>
+      //       <Button
+      //         onClick={() => deleteDataModelMutation.mutate(dataModel.modelId)}
+      //         appearance={ButtonAppearanceTypes.ERROR}
+      //       >
+      //         {t('global.delete')}
+      //       </Button>
+      //     </div>
+      //   ),
+      // });
     }
   };
 
@@ -241,6 +254,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     onSuccess: async () => {
       close();
       navigate(0);
+      setModalOpen(false)
     },
     onError: () => {
       open({
@@ -252,6 +266,18 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
     },
   });
 
+  const openModal = (
+    content: string,
+    title: string,
+    onConfirm: () => void,
+    modalType: string
+  ) => {
+    setModalOpen(true);
+    setModalType(modalType);
+    setModalDiscription(content);
+    setModalTitle(title);
+    modalFunciton.current = onConfirm;
+  };
   return (
     <div>
       <div className="container">
@@ -306,40 +332,78 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
           background: 'white',
         }}
       >
-        <Button appearance="error" onClick={() => handleDelete()}>
+        <Button
+          appearance="error"
+          disabled={deleteDataModelMutation.isLoading}
+          showLoadingIcon={deleteDataModelMutation.isLoading}
+          onClick={() => handleDelete()}
+        >
           {t('dataModels.configureDataModel.deleteModal')}
         </Button>
         <Button
           onClick={() =>
-            open({
-              title: t('dataModels.configureDataModel.confirmRetrain'),
-              content: t('dataModels.configureDataModel.confirmRetrainDesc'),
-              footer: (
-                <div className="flex-grid">
-                  <Button
-                    appearance={ButtonAppearanceTypes.SECONDARY}
-                    onClick={close}
-                  >
-                    {t('global.cancel')}
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      retrainDataModelMutation.mutate(dataModel.modelId)
-                    }
-                  >
-                    {t('dataModels.configureDataModel.retrain')}
-                  </Button>
-                </div>
-              ),
-            })
+            openModal(
+              t('dataModels.configureDataModel.confirmRetrainDesc'),
+              t('dataModels.configureDataModel.retrain'),
+              () => retrainDataModelMutation.mutate(dataModel.modelId),
+              'retrain'
+            )
           }
         >
           {t('dataModels.configureDataModel.retrain')}
         </Button>
-        <Button onClick={handleSave}>
+        <Button
+          disabled={updateDataModelMutation.isLoading}
+          showLoadingIcon={updateDataModelMutation.isLoading}
+          onClick={handleSave}
+        >
           {t('dataModels.configureDataModel.save')}
         </Button>
       </div>
+
+      <Dialog
+        onClose={() => setModalOpen(false)}
+        isOpen={modalOpen}
+        title={modalTitle}
+        footer={
+          <div className="flex-grid">
+            <Button
+              appearance={ButtonAppearanceTypes.SECONDARY}
+              onClick={close}
+            >
+              {t('global.cancel')}
+            </Button>
+            {modalType === 'retrain' ? (
+              <Button
+                disabled={retrainDataModelMutation.isLoading}
+                showLoadingIcon={retrainDataModelMutation.isLoading}
+                onClick={() => modalFunciton.current()}
+              >
+                {t('dataModels.configureDataModel.retrain')}
+              </Button>
+            ) : modalType === 'delete' ? (
+              <Button
+                disabled={deleteDataModelMutation.isLoading}
+                showLoadingIcon={deleteDataModelMutation.isLoading}
+                onClick={() => modalFunciton.current()}
+                appearance={ButtonAppearanceTypes.ERROR}
+              >
+                {t('global.delete')}
+              </Button>
+            ) : (
+              <Button
+                disabled={updateDataModelMutation.isLoading}
+                showLoadingIcon={updateDataModelMutation.isLoading}
+                onClick={() => modalFunciton.current()}
+              >
+                {t('global.proceed')}
+              </Button>
+            )}
+          </div>
+        }
+      >
+        <div className="form-container">{modalDiscription}</div>
+      </Dialog>
     </div>
   );
 };

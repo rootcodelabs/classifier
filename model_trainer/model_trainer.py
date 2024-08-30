@@ -187,6 +187,7 @@ class ModelTrainer:
         
         payload = {}
         payload["modelId"] = self.new_model_id
+        payload["oldModelId"] = self.old_model_id
         payload["replaceDeployment"] = self.replace_deployment
         payload["replaceDeploymentPlatform"] = self.prev_deployment_env
         payload["bestBaseModel"] = best_model_name

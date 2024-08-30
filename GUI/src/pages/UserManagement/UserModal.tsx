@@ -9,7 +9,7 @@ import { checkIfUserExists, createUser, editUser } from 'services/users';
 import { useToast } from 'hooks/useToast';
 import Select, { components } from 'react-select';
 import './SettingsUsers.scss';
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { ROLES } from 'enums/roles';
 import { userManagementQueryKeys } from 'utils/queryKeys';
 import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
@@ -33,12 +33,15 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const [isValidIdentification, setIsValidIdentification] =
+    useState<boolean>(false);
 
   const {
     register,
     control,
     handleSubmit,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isDirty },
+    getValues,
   } = useForm<UserDTO>({
     defaultValues: {
       useridcode: user?.useridcode,
@@ -116,6 +119,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
       checkIfUserExists(userData),
     onSuccess: async (data) => {
       if (data.response === 'true') {
+        setIsValidIdentification(false);
         toast.open({
           type: ToastTypes.ERROR,
           title: t('global.notificationError'),
@@ -143,6 +147,18 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     else checkIfUserExistsMutation.mutate({ userData: data });
   });
 
+  const hasChangedFields = () => {
+    const currentValues = getValues();
+    return (
+      currentValues.useridcode !== user?.useridcode ||
+      currentValues.authorities?.join(',') !== user?.authorities?.join(',') ||
+      currentValues.displayName !== user?.fullName ||
+      currentValues.csaTitle !== user?.csaTitle ||
+      currentValues.csaEmail !== user?.csaEmail ||
+      currentValues.fullName !== user?.fullName
+    );
+  };
+
   return (
     <Dialog
       isOpen={isModalOpen}
@@ -163,11 +179,15 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           <Button
             onClick={handleUserSubmit}
             disabled={
-              !isValid ||
               !isDirty ||
               userEditMutation.isLoading ||
-              checkIfUserExistsMutation.isLoading || 
-              userCreateMutation.isLoading
+              checkIfUserExistsMutation.isLoading ||
+              userCreateMutation.isLoading ||
+              (!user && !isValidIdentification) ||
+              (user && !hasChangedFields())
+            }
+            showLoadingIcon={
+              userEditMutation.isLoading || userCreateMutation.isLoading
             }
           >
             {t('global.confirm')}
@@ -236,6 +256,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
             placeholder={
               t('userManagement.addUser.personalIdPlaceholder') ?? ''
             }
+            onChange={() => {
+              if (!isValidIdentification) setIsValidIdentification(true);
+            }}
           />
         )}
 
@@ -253,8 +276,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           {...register('csaEmail', {
             required: t('userManagement.addUser.emailRequired') ?? '',
             pattern: {
-              value: /\S+@\S+\.\S+/,
-              message: t('userManagement.addUser.invalidemail'),
+              value:
+                /^(?=[a-zA-Z0-9])[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              message: t('userManagement.addUser.invalidEmail'),
             },
           })}
           label={t('userManagement.addUser.email')}

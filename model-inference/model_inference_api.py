@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import os
 from s3_ferry import S3Ferry
-from utils import unzip_file, clear_folder_contents, calculate_average_predicted_class_probability, get_inference_create_payload, get_inference_update_payload, get_test_inference_success_payload
+from utils import unzip_file, clear_folder_contents, calculate_average_predicted_class_probability, get_inference_create_payload, get_inference_update_payload, get_test_inference_success_payload, delete_folder
 from constants import S3_DOWNLOAD_FAILED, INFERENCE_LOGS_PATH, JiraInferenceRequest, \
     OutlookInferenceRequest, UpdateRequest, OUTLOOK_MODELS_FOLDER_PATH, JIRA_MODELS_FOLDER_PATH,\
     SHARED_MODELS_ROOT_FOLDER, TestInferenceRequest, DeleteTestRequest
@@ -96,11 +96,25 @@ async def download_outlook_model(request: Request, model_data:UpdateRequest):
             os.remove(zip_file_path)
             # 3. Replace the content in other folder if it a replacement 
             if(model_data.replaceDeployment and model_data.replaceDeploymentPlatform!="undeployed"  and model_data.updateType!="retrain"):
-
-                replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
-                logger.info(f"REPLACE DEPLOYMENT FOLDER PATH - {replace_deployment_folder_path}")
-                clear_folder_contents(replace_deployment_folder_path)
-                model_inference_wrapper.stop_model(deployment_platform=model_data.replaceDeploymentPlatform)
+                
+                logger.info("INSIDE REPLACE DEPLOYMENT")
+                # Special Scenario - Handle swapping from Testing
+                if(model_data.replaceDeploymentPlatform =="testing"):
+                    
+                    # Clear the testing model folder
+                    logger.info("DELETING OLD MODEL FROM TESTING")
+                    folder_path = f"{TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY}/{model_data.oldModelId}"
+                    delete_folder(folder_path)
+                    
+                    # Stop the testing model
+                    test_inference_wrapper.stop_model(model_id=model_data.oldModelId)
+                
+                else:
+                
+                    replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
+                    logger.info(f"REPLACE DEPLOYMENT FOLDER PATH - {replace_deployment_folder_path}")
+                    clear_folder_contents(replace_deployment_folder_path)
+                    model_inference_wrapper.stop_model(deployment_platform=model_data.replaceDeploymentPlatform)
         
             # 4. Instantiate Inference Model
             model_path = "/shared/models/outlook"
@@ -190,6 +204,21 @@ async def download_jira_model(request: Request, model_data:UpdateRequest):
 
         if(model_data.replaceDeployment and model_data.replaceDeploymentPlatform!="undeployed"  and model_data.updateType!="retrain"):
             
+            if(model_data.replaceDeploymentPlatform =="testing"):    
+                    # Clear the testing model folder
+                    logger.info("DELETING OLD MODEL FROM TESTING")
+                    folder_path = f"{TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY}/{model_data.oldModelId}"
+                    delete_folder(folder_path)
+                    
+                    # Stop the testing model
+                    test_inference_wrapper.stop_model(model_id=model_data.oldModelId)
+                
+            else:  
+                    replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
+                    logger.info(f"REPLACE DEPLOYMENT FOLDER PATH - {replace_deployment_folder_path}")
+                    clear_folder_contents(replace_deployment_folder_path)
+                    model_inference_wrapper.stop_model(deployment_platform=model_data.replaceDeploymentPlatform)
+
             logger.info("INSIDE REPLACE DEPLOYMENT")
             replace_deployment_folder_path = f"{shared_models_root_folder}/{model_data.replaceDeploymentPlatform}"
 
@@ -649,19 +678,20 @@ async def test_inference(request:Request, inference_data:TestInferenceRequest):
         raise RuntimeError(f"crash happened in model inference testing - {e}")
 
 
-# @app.post("/classifier/datamodel/deployment/test/delete")
-# async def delete_folder_content(request:Request, modelData:DeleteTestRequest):
-#     try:
-#         folder_path = os.path.join("..", "shared", "models", "test", {modelData.deleteModelId})
-#         delete_folder(folder_path)  
+@app.post("/classifier/datamodel/deployment/testing/delete")
+async def delete_folder_content(request:Request, model_data:DeleteTestRequest):
+    try:
+
+        folder_path = f"{TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY}/{model_data.deleteModelId}"
+        delete_folder(folder_path)  
         
-#         # Stop the model
-#         inference_obj.stop_model(model_id=modelData.deleteModelId)
+        # Stop the model
+        test_inference_wrapper.stop_model(model_id=model_data.deleteModelId)
         
-#         delete_success = {"message" : "Model Deleted Successfully!"}
-#         return JSONResponse(status_code = 200, content = delete_success)                        
+        delete_success = {"message" : "Model Deleted Successfully!"}
+        return JSONResponse(status_code = 200, content = delete_success)                        
     
-#     except Exception as e:
-#         raise HTTPException(status_code = 500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code = 500, detail=str(e))
      
 

@@ -217,8 +217,9 @@ services:
       - DATAMODEL_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datamodel/update/dataset-group
       - JIRA_ACTIVE_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/jira/delete
       - OUTLOOK_ACTIVE_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/outlook/delete
-      - TEST_MODEL_DELETE_URL=http://test-inference:8011/classifier/datamodel/deployment/test/delete
+      - TEST_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/testing/delete
       - MODEL_METADATA_DELETE_URL=http://ruuter-private:8088/classifier/datamodel/metadata/delete
+      - CORRECTED_TEXT_EXPORT=http://ruuter-private:8088/classifier/inference/corrected-metadata-export.yml
     ports:
       - "8000:8000"
     networks:

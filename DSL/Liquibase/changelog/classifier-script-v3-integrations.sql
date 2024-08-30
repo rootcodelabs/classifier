@@ -1,7 +1,7 @@
 -- liquibase formatted sql
 
 -- changeset kalsara Magamage:classifier-script-v3-changeset1
-CREATE TYPE platform AS ENUM ('JIRA', 'OUTLOOK', 'PINAL');
+CREATE TYPE platform AS ENUM ('JIRA', 'OUTLOOK');
 
 -- changeset kalsara Magamage:classifier-script-v3-changeset2
 CREATE TABLE public."integration_status" (
@@ -17,8 +17,7 @@ CREATE TABLE public."integration_status" (
 INSERT INTO public."integration_status" (platform, is_connect, subscription_id, token)
 VALUES
     ('JIRA', FALSE, NULL, NULL),
-    ('OUTLOOK', FALSE, NULL, NULL),
-    ('PINAL', FALSE, NULL, NULL);
+    ('OUTLOOK', FALSE, NULL, NULL);
 
 -- changeset kalsara Magamage:classifier-script-v3-changeset4
 CREATE TABLE public."input" (

@@ -50,8 +50,6 @@ check_platform:
       next: assign_jira_url
     - condition: ${platform === 'outlook'}
       next: assign_outlook_url
-    - condition: ${platform === 'pinal'}
-      next: assign_pinal_url
   next: platform_not_support
 
 assign_jira_url:
@@ -62,11 +60,6 @@ assign_jira_url:
 assign_outlook_url:
   assign:
     url: "outlook/subscribe"
-  next: route_to_platform
-
-assign_pinal_url:
-  assign:
-    url: "pinal/subscribe"
   next: route_to_platform
 
 route_to_platform:

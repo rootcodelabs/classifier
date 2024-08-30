@@ -19,12 +19,14 @@ const CorrectedTextsTable = ({
   isLoading,
   setPagination,
   pagination,
+  setEnableFetch
 }: {
   correctedTextData: InferencePayload[];
   totalPages: number;
   isLoading: boolean;
   setPagination: React.Dispatch<React.SetStateAction<PaginationState>>;
   pagination: PaginationState;
+  setEnableFetch: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const columnHelper = createColumnHelper<InferencePayload>();
   const { t } = useTranslation();
@@ -58,7 +60,25 @@ const CorrectedTextsTable = ({
         header: t('correctedTexts.platform') ?? '',
       }),
       columnHelper.accessor('inferenceText', {
-        header: t('correctedTexts.text') ?? '',
+        header: () => (
+          <div>
+            <span
+              style={{
+                width: '750px'
+              }}
+            >
+              {t('correctedTexts.text') ?? ''}
+            </span>
+          </div>
+        ),
+        cell: (props) => (
+          <div style={{
+            width: '750px',
+            textWrap: "wrap",
+          }}>
+            {props?.row?.original?.inferenceText}
+          </div>
+        ),
       }),
       columnHelper.accessor('predictedLabels', {
         header: () => (
@@ -146,7 +166,7 @@ const CorrectedTextsTable = ({
                 justifyContent: 'center',
               }}
             >
-              <NoDataView text={t('datasetGroups.detailedView.noData') ?? ''}/>
+              <NoDataView text={t('datasetGroups.detailedView.noCorrectedTexts') ?? ''}/>
              
             </div>
           </Card>
@@ -163,9 +183,10 @@ const CorrectedTextsTable = ({
               )
                 return;
               setPagination({
-                pageIndex: state.pageIndex + 1,
+                pageIndex: state.pageIndex,
                 pageSize: state.pageSize,
               });
+              setEnableFetch(true)
             }}
             pagesCount={totalPages}
             isClientSide={false}

@@ -40,6 +40,7 @@ S3_DOWNLOAD_FAILED = {
 
 class UpdateRequest(BaseModel):
     modelId: int
+    oldModelId: int
     replaceDeployment:bool
     replaceDeploymentPlatform:Optional[str] = None
     bestBaseModel:str

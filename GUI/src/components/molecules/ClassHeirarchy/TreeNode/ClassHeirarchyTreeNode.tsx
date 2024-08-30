@@ -1,7 +1,7 @@
 import { FormInput } from 'components/FormElements';
 import React, { ChangeEvent, useState } from 'react';
 import { TreeNode } from 'types/datasetGroups';
-import { isClassHierarchyDuplicated } from 'utils/datasetGroupsUtils';
+import { isClassHierarchyDuplicatedAtSameLevel } from 'utils/datasetGroupsUtils';
 import { MdDeleteOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import './index.css';
@@ -28,7 +28,7 @@ const ClassHeirarchyTreeNode = ({
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFieldName(e.target.value);
     node.fieldName = e.target.value;
-    if (isClassHierarchyDuplicated(nodes, e.target.value)) setNodesError(true);
+    if (isClassHierarchyDuplicatedAtSameLevel(nodes, e.target.value)) setNodesError(true);
     else setNodesError(false);
   };
 
@@ -50,7 +50,7 @@ const ClassHeirarchyTreeNode = ({
             error={
               nodesError && !fieldName
                 ? t('datasetGroups.classHierarchy.fieldHint') ?? ''
-                : fieldName && isClassHierarchyDuplicated(nodes, fieldName)
+                : fieldName && isClassHierarchyDuplicatedAtSameLevel(nodes, fieldName)
                 ? t('datasetGroups.classHierarchy.filedHintIfExists') ?? ''
                 : ''
             }

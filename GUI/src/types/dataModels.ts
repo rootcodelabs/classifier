@@ -17,6 +17,7 @@ export type TrainingProgressData = {
   latest: boolean;
   trainingStatus: string;
   progressPercentage: number;
+  trainingMessage?:string;
 };
 
 export type SSEEventData = {
@@ -63,7 +64,7 @@ export type DataModelResponse = {
   trainingStatus: string;
   deploymentEnv: string;
   maturityLabel: string;
-  trainingResults?: TrainingResults;
+  trainingResults?: string | null;
   connectedDgMajorVersion?: number;
   connectedDgMinorVersion?: number;
   connectedDgPatchVersion?: number;
@@ -77,12 +78,21 @@ export type TrainingResults ={
   };
 };
 
-export type Filters = {
+export type DataModelsFilters = {
   modelName: string;
   version: string;
   platform: string;
   datasetGroup: number;
   trainingStatus: string;
   maturity: string;
-  sort: 'asc' | 'desc';
+  sort: 'created_timestamp desc' | 'created_timestamp asc' | 'name asc' | 'name desc';
+};
+
+export type ErrorsType = {
+  modelName?: string;
+  dgName?: string;
+  platform?: string;
+  baseModels?: string;
+  maturity?: string;
+  dgId?: string;
 };
