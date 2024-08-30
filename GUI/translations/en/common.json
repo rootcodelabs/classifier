@@ -344,6 +344,7 @@
     "predictedConfidenceProbability": "Predicted Classes Average Confidence Probability",
     "correctedHierarchy": "Corrected Class Hierarchy",
     "correctedConfidenceProbability": "Corrected Classes Average Confidence Probability",
+    "labelNotFoundText": "Label not in dataset",
     "exportSuccessTitle": "Data export was successful",
     "exportSuccessDesc": "Your data has been successfully exported.",
     "exportDataUnsucessTitle": "Data Export Unsuccessful",

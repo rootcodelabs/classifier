@@ -141,11 +141,12 @@ const CorrectedTextsTable = ({
         ),
         cell: (props) => (
           <div className="probabilityLabels">
-            {props?.row?.original?.averageCorrectedClassesProbability && (
+            {props?.row?.original?.averageCorrectedClassesProbability === -1 ?
+              (<>{t('correctedTexts.labelNotFoundText') ?? ''}</>) :
+              (props?.row?.original?.averageCorrectedClassesProbability && (
               <>{props?.row?.original?.averageCorrectedClassesProbability}%</>
-            )}
-          </div>
-        ),
+            ))}
+          </div>        ),
       }),
     ],
     [t]
