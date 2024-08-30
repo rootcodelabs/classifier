@@ -90,8 +90,8 @@ class TrainingPipeline:
             
             
             if self.model_name == 'distil-bert':
-                model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',num_labels=len(label_encoder.classes_), force_download=True)
-                tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased', force_download=True)
+                model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',num_labels=len(label_encoder.classes_))
+                tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
 
                 for param in model.distilbert.parameters():
                     param.requires_grad = False
@@ -103,7 +103,7 @@ class TrainingPipeline:
                     param.requires_grad = True
 
             elif self.model_name == 'roberta':
-                model = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base', num_labels=len(label_encoder.classes_), force_download=True)
+                model = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base', num_labels=len(label_encoder.classes_))
                 tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base', force_download=True)
                 for param in model.roberta.parameters():
                     param.requires_grad = False
@@ -115,8 +115,8 @@ class TrainingPipeline:
                     param.requires_grad = True
         
             elif self.model_name == 'bert':
-                model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(label_encoder.classes_), force_download=True)
-                tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', force_download=True) 
+                model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(label_encoder.classes_))
+                tokenizer = BertTokenizer.from_pretrained('bert-base-uncased') 
                 
                 for param in model.base_model.parameters():
                     param.requires_grad = False

@@ -5,9 +5,9 @@ import requests
 import torch
 import pickle
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from s3_ferry import S3Ferry
-from constants import  GET_MODEL_METADATA_ENDPOINT,  OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, TEST_DEPLOYMENT_ENDPOINT ,UPDATE_MODEL_TRAINING_STATUS_ENDPOINT, CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT, UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT, TRAINING_LOGS_PATH, MODEL_RESULTS_PATH, \
+from constants import   OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, TEST_DEPLOYMENT_ENDPOINT ,UPDATE_MODEL_TRAINING_STATUS_ENDPOINT, CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT, UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT, TRAINING_LOGS_PATH, MODEL_RESULTS_PATH, \
                         LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH,LOCAL_CLASSIFICATION_LAYER_SAVE_PATH, \
                         LOCAL_LABEL_ENCODER_SAVE_PATH, S3_FERRY_MODEL_STORAGE_PATH, MODEL_TRAINING_IN_PROGRESS, MODEL_TRAINING_SUCCESSFUL, \
                         INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS,  \
@@ -19,48 +19,36 @@ from loguru import logger
 logger.add(sink=TRAINING_LOGS_PATH)
 
 class ModelTrainer:
-    def __init__(self, cookie, new_model_id,old_model_id,prev_deployment_env,update_type) -> None:
+    def __init__(self, cookie, new_model_id,old_model_id,prev_deployment_env,update_type,progress_session_id, model_details, current_deployment_platform) -> None:
+        try:
+            self.new_model_id = int(new_model_id)
+            self.old_model_id = int(old_model_id)
+            self.prev_deployment_env = prev_deployment_env
+            self.cookie = cookie
+            self.update_type = update_type
+            
+            self.cookies_payload = {'customJwtCookie': cookie}
 
-        model_url = GET_MODEL_METADATA_ENDPOINT
+            self.progress_session_id = int(progress_session_id)
 
-        self.new_model_id = int(new_model_id)
-        self.old_model_id = int(old_model_id)
-        self.prev_deployment_env = prev_deployment_env
-        self.cookie = cookie
-        self.update_type = update_type
+            logger.info(f"COOKIES PAYLOAD - {self.cookies_payload}")
+
+            if self.update_type == "retrain":
+                logger.info(f"ENTERING INTO RETRAIN SEQUENCE FOR MODELID - {self.new_model_id}")
+
+            #only for model create and retrain operations old_model_id=new_model_id
+            if self.old_model_id==self.new_model_id:
+                self.replace_deployment = False
+
+            else:
+                self.replace_deployment = True
+
+            self.model_details = model_details
+            self.current_deployment_platform = current_deployment_platform
         
-        self.cookies_payload = {'customJwtCookie': cookie}
-
-        logger.info(f"COOKIES PAYLOAD - {self.cookies_payload}")
-
-        logger.info("GETTING MODEL METADATA")
-
-        if self.update_type == "retrain":
-            logger.info(f"ENTERING INTO RETRAIN SEQUENCE FOR MODELID - {self.new_model_id}")
-
-        response = requests.get(model_url, params = {'modelId': self.new_model_id}, cookies=self.cookies_payload)
-
-        #only for model create and retrain operations old_model_id=new_model_id
-        if self.old_model_id==self.new_model_id:
-            self.replace_deployment = False
-
-        else:
-            self.replace_deployment = True
-
-
-        if response.status_code == 200:
-            self.model_details = response.json()
-            self.current_deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
-
-
-            logger.info("SUCCESSFULLY RECIEVED MODEL DETAILS")
-            logger.info(f"MODEL DETAILS - {self.model_details}")
-        else:
-
-            logger.error(f"FAILED WITH STATUS CODE: {response.status_code}")
-            logger.error(f"RESPONSE: {response.text}")
-
-            raise RuntimeError(f"RESPONSE : {response.text}")
+        except Exception as e:
+            logger.info("TEST TEST TESTER")
+            logger.info(e)
         
     @staticmethod
     def create_training_folders(folder_paths):
@@ -107,54 +95,20 @@ class ModelTrainer:
         
         if response.status_code==200:
             logger.info(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {training_status} SUCCESSFUL")
+
         
         else:
             logger.error(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {training_status} FAILED")
             logger.error(f"ERROR RESPONSE {response.text}")
             raise RuntimeError(response.text)
-        
-    def create_model_training_progress_session(self):
 
-        payload = {}
-        session_id = None
-        model_details = self.model_details['response']['data'][0]
-        payload["modelId"] = self.new_model_id
-        payload["modelName"] = model_details["modelName"]
-        payload["majorVersion"] = model_details["majorVersion"]
-        payload["minorVersion"] = model_details["minorVersion"]
-        payload["latest"] = model_details["latest"]
-
-
-        logger.info(f"Create training progress session for model id - {self.new_model_id} payload \n {payload}")
-
-        response = requests.post( url=CREATE_TRAINING_PROGRESS_SESSION_ENDPOINT,
-                                 json=payload, cookies=self.cookies_payload)
-        
-        
-        if response.status_code==200:
-
-            logger.info(f"REQUEST TO CREATE TRAINING PROGRESS SESSION FOR MODEL ID {self.new_model_id} SUCCESSFUL")
-            logger.info(f"RESPONSE PAYLOAD \n {response.json()}")
-            session_id = response.json()["response"]["sessionId"]
-            
-
-        else:
-            logger.error(f"REQUEST TO CREATE TRAINING PROGRESS SESSION FOR MODEL ID {self.new_model_id} FAILED")
-            logger.error(f"ERROR RESPONSE JSON {response.json()}")
-            logger.error(f"ERROR RESPONSE TEXT {response.text}")
-            raise RuntimeError(response.text)
-
-
-        return session_id
-    
-
-    def update_model_training_progress_session(self,session_id,training_status, 
+    def update_model_training_progress_session(self,training_status, 
                                                training_progress_update_message, training_progress_percentage,
                                                process_complete):
 
         payload = {}
 
-        payload["sessionId"] = session_id
+        payload["sessionId"] = self.progress_session_id
         payload["trainingStatus"] =  training_status
         payload["trainingMessage"] = training_progress_update_message
         payload["progressPercentage"] = training_progress_percentage
@@ -236,6 +190,12 @@ class ModelTrainer:
             logger.error(f"ERROR RESPONSE JSON {response.json()}")
             logger.error(f"ERROR RESPONSE TEXT {response.text}")
             raise RuntimeError(response.text)
+        
+    
+    def get_current_timestamp(self):
+
+        current_timestamp = int(datetime.now(timezone.utc).timestamp())
+        return current_timestamp
 
 
         
@@ -243,21 +203,18 @@ class ModelTrainer:
         
         try:
             #updating model training status to in-progress
-            current_timestamp = int(datetime.now().timestamp())
-            self.update_model_db_training_status(training_status=MODEL_TRAINING_IN_PROGRESS,
-                                                model_s3_location="",
-                                                last_trained_time_stamp=current_timestamp,
-                                                training_results={},
-                                                inference_routes={})
+            
+            logger.info("ENTERING TRAINING FUNCTION")
 
+            logger.info("DEPLOYMENT PLATFORM")
+            logger.info(f"deployment platform - {self.current_deployment_platform}")
+            session_id = self.progress_session_id
+            logger.info(f"session id - {session_id}")
 
-            deployment_platform = self.model_details['response']['data'][0]['deploymentEnv']
-
-            session_id = self.create_model_training_progress_session()
-
-            self.update_model_training_progress_session(session_id=session_id, 
+            logger.info("UPDATING TRAINING PROGRESS SESSION")
+            self.update_model_training_progress_session(
                                                         training_status=INITIATING_TRAINING_PROGRESS_STATUS,
-                                                        training_progress_update_message=INITIATING_TRAINING_PROGRESS_MESSAGE.format(deployment_platform=deployment_platform),
+                                                        training_progress_update_message=INITIATING_TRAINING_PROGRESS_MESSAGE,
                                                         training_progress_percentage=INITIATING_TRAINING_PROGRESS_PERCENTAGE,
                                                         process_complete=False
                                                         )
@@ -268,13 +225,22 @@ class ModelTrainer:
             s3_ferry = S3Ferry()
             dg_id = self.model_details['response']['data'][0]['connectedDgId']
             data_pipeline = DataPipeline(dg_id, self.cookie)
-            dfs = data_pipeline.create_dataframes()
-            models_inference_metadata,_  = data_pipeline.models_and_filters()
-            models_to_train = self.model_details['response']['data'][0]['baseModels']
+            try:
+                dfs = data_pipeline.create_dataframes()
+                models_inference_metadata,_  = data_pipeline.models_and_filters()
+                logger.info(f"MODELS_INFERENCE_METADATA : {models_inference_metadata}")
+                models_to_train = self.model_details['response']['data'][0]['baseModels']
+                logger.info(f"MODELS_TO_TRAIN : {models_to_train}")
 
-            local_basemodel_layers_save_path = LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH.format(model_id=self.new_model_id)
-            local_classification_layer_save_path = LOCAL_CLASSIFICATION_LAYER_SAVE_PATH.format(model_id=self.new_model_id)
-            local_label_encoder_save_path = LOCAL_LABEL_ENCODER_SAVE_PATH.format(model_id=self.new_model_id)
+                logger.info(f"MODEL_ID : {self.new_model_id}")
+                local_basemodel_layers_save_path = LOCAL_BASEMODEL_TRAINED_LAYERS_SAVE_PATH.format(model_id=self.new_model_id)
+                local_classification_layer_save_path = LOCAL_CLASSIFICATION_LAYER_SAVE_PATH.format(model_id=self.new_model_id)
+                local_label_encoder_save_path = LOCAL_LABEL_ENCODER_SAVE_PATH.format(model_id=self.new_model_id)
+                logger.info(f"LOCAL BASEMODEL LAYERS SAVE PATH : {local_basemodel_layers_save_path}")
+                logger.info(f"LOCAL CLASSIFICATION LAYER SAVE PATH : {local_classification_layer_save_path}")
+                logger.info(f"LOCAL LABEL ENCODER SAVE PATH : {local_label_encoder_save_path}")
+            except Exception as e:
+                logger.info(f"Exception in model trainer : {e}")
 
 
             ModelTrainer.create_training_folders([local_basemodel_layers_save_path,
@@ -294,7 +260,7 @@ class ModelTrainer:
             average_accuracy = []
             logger.info(f"MODELS TO BE TRAINED: {models_to_train}")
 
-            self.update_model_training_progress_session(session_id=session_id, 
+            self.update_model_training_progress_session(
                                                 training_status=TRAINING_IN_PROGRESS_PROGRESS_STATUS,
                                                 training_progress_update_message=TRAINING_IN_PROGRESS_PROGRESS_MESSAGE,
                                                 training_progress_percentage=TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE,
@@ -354,7 +320,7 @@ class ModelTrainer:
                 raise RuntimeError(f"RESPONSE STATUS: {response.text}")
             
 
-            current_timestamp = int(datetime.now().timestamp())
+            current_timestamp = self.get_current_timestamp()
             self.update_model_db_training_status(training_status=MODEL_TRAINING_SUCCESSFUL,
                                                 model_s3_location=s3_save_location,
                                                 last_trained_time_stamp=current_timestamp,
@@ -362,9 +328,9 @@ class ModelTrainer:
                                                 inference_routes=models_inference_metadata)
             
 
-            logger.info(f"FINAL MODEL TRAINING PROGRESS SESSION UPDATE {deployment_platform}")
+            logger.info(f"FINAL MODEL TRAINING PROGRESS SESSION UPDATE {self.current_deployment_platform}")
 
-            self.update_model_training_progress_session(session_id=session_id, 
+            self.update_model_training_progress_session(
                                                 training_status=DEPLOYING_MODEL_PROGRESS_STATUS,
                                                 training_progress_update_message=DEPLOYING_MODEL_PROGRESS_MESSAGE,
                                                 training_progress_percentage=DEPLOYING_MODEL_PROGRESS_PERCENTAGE,
@@ -372,11 +338,11 @@ class ModelTrainer:
                                                 )
 
 
-            logger.info(f"INITIATING DEPLOYMENT TO {deployment_platform}")
+            logger.info(f"INITIATING DEPLOYMENT TO {self.current_deployment_platform}")
 
             self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id)
 
         except Exception as e:
 
-            logger.error(f"RUNTIME CRASHED - ERROR - {e.with_traceback()}")
+            logger.error(f"RUNTIME CRASHED - ERROR - {e}")
 

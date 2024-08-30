@@ -61,7 +61,7 @@ DEPLOYING_MODEL_PROGRESS_MESSAGE = "Model training complete. The trained model i
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to the {deployment_environment} environment"
 
 
-INITIATING_TRAINING_PROGRESS_PERCENTAGE=20
+INITIATING_TRAINING_PROGRESS_PERCENTAGE=30
 
 TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE=50
 

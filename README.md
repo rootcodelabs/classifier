@@ -27,7 +27,7 @@ This repo will primarily contain:
 - Clone [TIM](https://github.com/buerokratt/TIM)
 - Navigate to TIM and build the image `docker build -t tim .`
 - Clone [Authentication Layer](https://github.com/buerokratt/Authentication-layer)
-- Navigate to Authentication Layer and build the image  `docker build -f Dockerfile.dev -t authentication-layer .`
+- Navigate to Authentication Layer, checkout to the `dev` branch and build the image  `docker build -f Dockerfile.dev -t authentication-layer .`
 - Clone [S3 Ferry](https://github.com/buerokratt/S3-Ferry)
 - Navigate to S3-Ferry and build the image `docker build  -t s3-ferry .`
 - Clone [Cron Manager](https://github.com/rootcodelabs/CronManager) (<i>This is a forked repo of the original Buerokratt CronManager with a Python environment included</i>)
