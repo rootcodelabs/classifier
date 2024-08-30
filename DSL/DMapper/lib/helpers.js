@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
 
 export function getAuthHeader(username, token) {
   const auth = `${username}:${token}`;
