@@ -10,12 +10,6 @@ This repo will primarily contain:
 3. You can view the UI designs for this project in this [Figma file](https://www.figma.com/design/VWoZu2s7auo7YTw49RqNtV/Estonian-Classifier-English-Version?node-id=712-1695&t=cx6ZZVuEkfWqlbZB-1)
 
 
-## Instructions for MacOs Users
-#### TODO - Include instructions for MacOS users to delete specific parts of the base image to make the build work
-
-## Version 
-##### TODO - Talk about programming language versions and framework versions used in the project here
-
 ## Dev setup
 
 - Clone [Ruuter](https://github.com/buerokratt/Ruuter)

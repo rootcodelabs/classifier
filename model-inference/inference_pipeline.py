@@ -159,7 +159,6 @@ class InferencePipeline:
                     predictions = torch.argmax(outputs.logits, dim=1)
                     predicted_probabilities = probability.gather(1, predictions.unsqueeze(1)).squeeze()
 
-                    #TODO - ADD THE THRESHOLD TO A CONSTANT FILD
                     if int(predicted_probabilities.cpu().item()*100)<0:
                         return [],[]
                     probabilities.append(int(predicted_probabilities.cpu().item()*100))

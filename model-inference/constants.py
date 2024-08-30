@@ -26,7 +26,7 @@ SHARED_MODELS_ROOT_FOLDER = "/shared/models"
 
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE=100
 
-MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to the {deployment_environment} environment"
+MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to environment"
 
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS = "Model Trained And Deployed"
 
