@@ -47,9 +47,9 @@ payload=$(jq -n \
     --argjson modelId $newModelId \
     --arg trainingStatus "$trainingStatus" \
     --arg modelS3Location "" \
-    --argjson lastTrainedTimestamp null \
     --argjson trainingResults '{}' \
-    '{modelId: $modelId, trainingStatus: $trainingStatus, modelS3Location: $modelS3Location, lastTrainedTimestamp: $lastTrainedTimestamp, trainingResults: $trainingResults}')
+    --argjson inferenceRoutes '{}' \
+    '{modelId: $modelId, trainingStatus: $trainingStatus, modelS3Location: $modelS3Location, trainingResults: $trainingResults, inferenceRoutes:$inferenceRoutes}')
 
 echo "PAYLOAD FOR UPDATING TRAINING STATUS"
 echo $payload
