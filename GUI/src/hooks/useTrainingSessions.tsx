@@ -8,7 +8,7 @@ import { SSEEventData } from "types/datasetGroups";
 export const useTrainingSessions = () => {
   const [progresses, setProgresses] = useState<TrainingProgressData[]>([]);
 
-  const { data: progressData } = useQuery<TrainingProgressData[]>(
+  const { data: progressData, refetch } = useQuery<TrainingProgressData[]>(
     ['datamodels/progress'],
     () => getDataModelsProgress(),
     {
