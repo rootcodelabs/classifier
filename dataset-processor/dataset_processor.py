@@ -339,7 +339,29 @@ class DatasetProcessor:
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
+
+    def update_dataset_model_status(self,dg_id, cookie):
+        url = DATASET_MODEL_STATUS_UPDATE_URL
         
+        print(url)
+        headers = {
+            'Content-Type': 'application/json',
+            'Cookie': cookie
+        }
+        data = {
+            "dgId": dg_id
+        }
+
+        try:
+            print(data)
+            response = requests.post(url, json=data, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+            return None
+
+
     def process_handler(self, dgId, newDgId, cookie, updateType, savedFilePath, patchPayload, sessionId):
         print("IN DATASET PROCESSOR PROCESS_HANDLER")
         
@@ -554,6 +576,7 @@ class DatasetProcessor:
             if not save_result_delete:
                 return self.generate_response(False, MSG_FAIL)
         
+        update_dataset_model_response = self.update_dataset_model_status(dgId, cookie)
         return self.generate_response(True, MSG_PROCESS_COMPLETE)
 
     def get_session_id(self, dgId, cookie):

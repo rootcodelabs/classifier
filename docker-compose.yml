@@ -267,6 +267,7 @@ services:
       - CREATE_PROGRESS_SESSION_URL=http://ruuter-private:8088/classifier/datasetgroup/progress/create
       - UPDATE_PROGRESS_SESSION_URL=http://ruuter-private:8088/classifier/datasetgroup/progress/update
       - GET_PROGRESS_SESSIONS_URL=http://ruuter-private:8088/classifier/datasetgroup/progress
+      - DATASET_MODEL_STATUS_UPDATE_URL=http://ruuter-private:8088/classifier/datasetgroup/update/training/status
     ports:
       - "8001:8001"
     networks:
