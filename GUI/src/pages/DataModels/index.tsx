@@ -11,7 +11,11 @@ import ConfigureDataModel from './ConfigureDataModel';
 import { customFormattedArray, extractedArray } from 'utils/dataModelsUtils';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
-import { DataModelResponse, FilterData, Filters } from 'types/dataModels';
+import {
+  DataModelResponse,
+  DataModelsFilters,
+  FilterData,
+} from 'types/dataModels';
 import { dataModelsQueryKeys } from 'utils/queryKeys';
 import NoDataView from 'components/molecules/NoDataView';
 
@@ -32,14 +36,14 @@ const DataModels: FC = () => {
     setEnableFetch(true);
   }, [view]);
 
-  const [filters, setFilters] = useState<Filters>({
+  const [filters, setFilters] = useState<DataModelsFilters>({
     modelName: 'all',
     version: 'x.x.x',
     platform: 'all',
     datasetGroup: -1,
     trainingStatus: 'all',
     maturity: 'all',
-    sort: 'asc',
+    sort: 'created_timestamp desc',
   });
 
   const { data: dataModelsData, isLoading: isModelDataLoading } = useQuery(
@@ -85,7 +89,7 @@ const DataModels: FC = () => {
         -1,
         'all',
         'all',
-        'asc',
+        'created_timestamp desc',
         true
       ),
       () =>
@@ -98,7 +102,7 @@ const DataModels: FC = () => {
           -1,
           'all',
           'all',
-          'asc',
+          'created_timestamp desc',
           true
         ),
       {
@@ -119,7 +123,7 @@ const DataModels: FC = () => {
   const pageCount = dataModelsData?.data[0]?.totalPages || 1;
 
   const handleFilterChange = (
-    name: keyof Filters,
+    name: keyof DataModelsFilters,
     value: string | number | undefined | { name: string; id: string }
   ) => {
     setEnableFetch(false);
@@ -147,10 +151,10 @@ const DataModels: FC = () => {
                     style={{ margin: '30px 0px' }}
                   >
                     {prodDataModelsData?.data?.map(
-                      (dataset: DataModelResponse, index: number) => {
+                      (dataset: DataModelResponse) => {
                         return (
                           <DataModelCard
-                            key={index}
+                            key={dataset?.id}
                             modelId={dataset?.id}
                             dataModelName={dataset?.modelName}
                             datasetGroupName={dataset?.connectedDgName}
@@ -161,7 +165,7 @@ const DataModels: FC = () => {
                             trainingStatus={dataset.trainingStatus}
                             platform={dataset?.deploymentEnv}
                             maturity={dataset?.maturityLabel}
-                            results={dataset?.trainingResults}
+                            results={dataset?.trainingResults ?? null}
                             setId={setId}
                             setView={setView}
                           />
@@ -184,122 +188,172 @@ const DataModels: FC = () => {
                     {t('dataModels.createModel')}
                   </Button>
                 </div>
-                <div className="search-panel">
-                  <FormSelect
-                    label=""
-                    name=""
-                    placeholder={t('dataModels.filters.modelName') ?? ''}
-                    options={formattedArray(filterData?.modelNames) ?? []}
-                    onSelectionChange={(selection) =>
-                      handleFilterChange('modelName', selection?.value ?? '')
-                    }
-                    defaultValue={filters?.modelName}
-                    style={{fontSize:"1rem"}}
-                  />
-                  <FormSelect
-                    label=""
-                    name=""
-                    placeholder={t('dataModels.filters.version') ?? ''}
-                    options={formattedArray(filterData?.modelVersions) ?? []}
-                    onSelectionChange={(selection) =>
-                      handleFilterChange('version', selection?.value ?? '')
-                    }
-                    defaultValue={filters?.version}
-                  />
-                  <FormSelect
-                    label=""
-                    name=""
-                    placeholder={t('dataModels.filters.platform') ?? ''}
-                    options={formattedArray(filterData?.deploymentsEnvs) ?? []}
-                    onSelectionChange={(selection) =>
-                      handleFilterChange('platform', selection?.value ?? '')
-                    }
-                    defaultValue={filters?.platform}
-                  />
-                  <FormSelect
-                    label=""
-                    name=""
-                    placeholder={t('dataModels.filters.datasetGroup') ?? ''}
-                    options={
-                      customFormattedArray(filterData?.datasetGroups, 'name') ??
-                      []
-                    }
-                    onSelectionChange={(selection) =>
-                      handleFilterChange('datasetGroup', selection?.value?.id)
-                    }
-                    defaultValue={filters?.datasetGroup}
-                  />
-                  <FormSelect
-                    label=""
-                    name=""
-                    placeholder={t('dataModels.filters.trainingStatus') ?? ''}
-                    options={formattedArray(filterData?.trainingStatuses) ?? []}
-                    onSelectionChange={(selection) =>
-                      handleFilterChange('trainingStatus', selection?.value)
-                    }
-                    defaultValue={filters?.trainingStatus}
-                  />
-                  <FormSelect
-                    label=""
-                    name=""
-                    placeholder={t('dataModels.filters.maturity') ?? ''}
-                    options={formattedArray(filterData?.maturityLabels) ?? []}
-                    onSelectionChange={(selection) =>
-                      handleFilterChange('maturity', selection?.value)
-                    }
-                    defaultValue={filters?.maturity}
-                  />
-                  <FormSelect
-                    label=""
-                    name=""
-                    placeholder={t('dataModels.filters.sort') ?? ''}
-                    options={[
-                      { label: 'A-Z', value: 'asc' },
-                      { label: 'Z-A', value: 'desc' },
-                    ]}
-                    onSelectionChange={(selection) =>
-                      handleFilterChange('sort', selection?.value)
-                    }
-                    defaultValue={filters?.sort}
-                  />
-                  <Button onClick={() => setEnableFetch(true)}>
-                    {t('global.search') ?? ''}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      navigate(0);
+                <div className="search-panel flex">
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '16px',
+                      width: '80%',
                     }}
-                    appearance={ButtonAppearanceTypes.SECONDARY}
                   >
-                    {t('global.reset') ?? ''}
-                  </Button>
+                    <FormSelect
+                      label=""
+                      name=""
+                      placeholder={t('dataModels.filters.modelName') ?? ''}
+                      options={formattedArray(filterData?.modelNames) ?? []}
+                      onSelectionChange={(selection) =>
+                        handleFilterChange('modelName', selection?.value ?? '')
+                      }
+                      defaultValue={filters?.modelName}
+                      style={{ fontSize: '1rem', width: '200px' }}
+                    />
+                    <FormSelect
+                      label=""
+                      name=""
+                      placeholder={t('dataModels.filters.version') ?? ''}
+                      options={formattedArray(filterData?.modelVersions) ?? []}
+                      onSelectionChange={(selection) =>
+                        handleFilterChange('version', selection?.value ?? '')
+                      }
+                      defaultValue={filters?.version}
+                      style={{ width: 'auto' }}
+                    />
+                    <FormSelect
+                      label=""
+                      name=""
+                      placeholder={t('dataModels.filters.platform') ?? ''}
+                      options={
+                        formattedArray(filterData?.deploymentsEnvs) ?? []
+                      }
+                      onSelectionChange={(selection) =>
+                        handleFilterChange('platform', selection?.value ?? '')
+                      }
+                      defaultValue={filters?.platform}
+                      style={{ width: 'auto' }}
+                    />
+                    <FormSelect
+                      label=""
+                      name=""
+                      placeholder={t('dataModels.filters.datasetGroup') ?? ''}
+                      options={
+                        customFormattedArray(
+                          filterData?.datasetGroups,
+                          'name'
+                        ) ?? []
+                      }
+                      onSelectionChange={(selection) =>
+                        handleFilterChange('datasetGroup', selection?.value?.id)
+                      }
+                      defaultValue={filters?.datasetGroup}
+                      style={{ width: '200px' }}
+                    />
+                    <FormSelect
+                      label=""
+                      name=""
+                      placeholder={t('dataModels.filters.trainingStatus') ?? ''}
+                      options={
+                        formattedArray(filterData?.trainingStatuses) ?? []
+                      }
+                      onSelectionChange={(selection) =>
+                        handleFilterChange('trainingStatus', selection?.value)
+                      }
+                      defaultValue={filters?.trainingStatus}
+                      style={{ width: '150px' }}
+                    />
+                    <FormSelect
+                      label=""
+                      name=""
+                      placeholder={t('dataModels.filters.maturity') ?? ''}
+                      options={formattedArray(filterData?.maturityLabels) ?? []}
+                      onSelectionChange={(selection) =>
+                        handleFilterChange('maturity', selection?.value)
+                      }
+                      defaultValue={filters?.maturity}
+                      style={{ width: '150px' }}
+                    />
+                    <FormSelect
+                      label=""
+                      name=""
+                      placeholder={t('dataModels.filters.sort') ?? ''}
+                      options={[
+                        {
+                          label: t('dataModels.sortOptions.dataModelAsc'),
+                          value: 'name asc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.dataModelDesc'),
+                          value: 'name desc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.createdDateDesc'),
+                          value: 'created_timestamp desc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.createdDateAsc'),
+                          value: 'created_timestamp asc',
+                        },
+                      ]}
+                      onSelectionChange={(selection) =>
+                        handleFilterChange('sort', selection?.value)
+                      }
+                      defaultValue={filters?.sort}
+                      style={{ width: 'auto' }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '16px',
+                    }}
+                  >
+                    <Button onClick={() => setEnableFetch(true)}>
+                      {t('global.search') ?? ''}
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        setFilters({
+                          modelName: 'all',
+                          version: 'x.x.x',
+                          platform: 'all',
+                          datasetGroup: -1,
+                          trainingStatus: 'all',
+                          maturity: 'all',
+                          sort: 'created_timestamp desc',
+                        })
+                      }
+                      appearance={ButtonAppearanceTypes.SECONDARY}
+                    >
+                      {t('global.reset') ?? ''}
+                    </Button>
+                  </div>
                 </div>
 
                 {dataModelsData?.data?.length > 0 ? (
                   <div className="grid-container" style={{ marginTop: '30px' }}>
-                      {dataModelsData?.data?.map(
-                        (dataset: DataModelResponse, index: number) => {
-                          return (
-                            <DataModelCard
-                              key={index}
-                              modelId={dataset?.id}
-                              dataModelName={dataset?.modelName}
-                              datasetGroupName={dataset?.connectedDgName}
-                              version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
-                              isLatest={dataset.latest}
-                              dgVersion={`V${dataset?.connectedDgMajorVersion}.${dataset?.connectedDgMinorVersion}${dataset?.connectedDgPatchVersion}`}
-                              lastTrained={dataset?.lastTrainedTimestamp}
-                              trainingStatus={dataset.trainingStatus}
-                              platform={dataset?.deploymentEnv}
-                              maturity={dataset?.maturityLabel}
-                              results={dataset?.trainingResults}
-                              setId={setId}
-                              setView={setView}
-                            />
-                          );
-                        }
-                      )}
-                    </div>
+                    {dataModelsData?.data?.map(
+                      (dataset: DataModelResponse, index: number) => {
+                        return (
+                          <DataModelCard
+                            key={index}
+                            modelId={dataset?.id}
+                            dataModelName={dataset?.modelName}
+                            datasetGroupName={dataset?.connectedDgName}
+                            version={`V${dataset?.majorVersion}.${dataset?.minorVersion}`}
+                            isLatest={dataset.latest}
+                            dgVersion={`V${dataset?.connectedDgMajorVersion}.${dataset?.connectedDgMinorVersion}${dataset?.connectedDgPatchVersion}`}
+                            lastTrained={dataset?.lastTrainedTimestamp}
+                            trainingStatus={dataset.trainingStatus}
+                            platform={dataset?.deploymentEnv}
+                            maturity={dataset?.maturityLabel}
+                            results={dataset?.trainingResults ?? null}
+                            setId={setId}
+                            setView={setView}
+                          />
+                        );
+                      }
+                    )}
+                  </div>
                 ) : (
                   <NoDataView text={t('dataModels.noModels') ?? ''} />
                 )}

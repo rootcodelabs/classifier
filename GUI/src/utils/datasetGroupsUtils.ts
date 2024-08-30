@@ -1,4 +1,9 @@
-import { Class, TreeNode, ValidationRule, ValidationRuleResponse } from 'types/datasetGroups';
+import {
+  Class,
+  TreeNode,
+  ValidationRule,
+  ValidationRuleResponse,
+} from 'types/datasetGroups';
 import { v4 as uuidv4 } from 'uuid';
 import isEqual from 'lodash/isEqual';
 
@@ -52,7 +57,9 @@ export const reverseTransformClassHierarchy = (data: any) => {
   return data?.map((item: any) => traverse(item, 0));
 };
 
-export const transformObjectToArray = (data: Record<string, ValidationRuleResponse> | undefined) => {
+export const transformObjectToArray = (
+  data: Record<string, ValidationRuleResponse> | undefined
+) => {
   if (data) {
     const output = Object.entries(data).map(([fieldName, details], index) => ({
       id: index + 1,
@@ -66,20 +73,16 @@ export const transformObjectToArray = (data: Record<string, ValidationRuleRespon
 };
 
 export const validateClassHierarchy = (data: Class[]) => {
-  console.log("data ", data)
   for (let item of data) {
     if (item.fieldName === '') {
-      console.log("data s")
       return true;
     }
     if (item.children && item.children.length > 0) {
       if (validateClassHierarchy(item.children)) {
-        console.log("data 2")
         return true;
       }
     }
   }
-  console.log("data 4")
   return false;
 };
 
@@ -120,7 +123,10 @@ export const isValidationRulesSatisfied = (data: ValidationRule[]) => {
   return false;
 };
 
-export const isFieldNameExisting = (dataArray: ValidationRule[] | undefined, fieldNameToCheck: string) => {
+export const isFieldNameExisting = (
+  dataArray: ValidationRule[] | undefined,
+  fieldNameToCheck: string
+) => {
   const count = dataArray?.reduce((acc, item) => {
     return item?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase()
       ? acc + 1
@@ -130,27 +136,44 @@ export const isFieldNameExisting = (dataArray: ValidationRule[] | undefined, fie
   return count === 2;
 };
 
-export const countFieldNameOccurrences = (dataArray:TreeNode[] | undefined, fieldNameToCheck: string) => {
-  let count = 0;
+export const countFieldNameOccurrencesAtSameLevel = (
+  nodes: TreeNode[],
+  fieldNameToCheck: string
+): boolean => {
+  const fieldNameLowerCase = fieldNameToCheck.toLowerCase();
 
-  function countOccurrences(node: TreeNode) {
-    if (node?.fieldName?.toLowerCase() === fieldNameToCheck?.toLowerCase()) {
-      count += 1;
-    }
+  function checkLevel(nodesAtLevel: TreeNode[]): boolean {
+    const fieldNamesAtLevel = new Set<string>();
 
-    if (node.children) {
-      node.children.forEach((child) => countOccurrences(child));
+    for (const node of nodesAtLevel) {
+      const nodeFieldName = node?.fieldName?.toLowerCase();
+
+      if (nodeFieldName === fieldNameLowerCase) {
+        if (fieldNamesAtLevel.has(nodeFieldName)) {
+          return true;
+        }
+        fieldNamesAtLevel.add(nodeFieldName);
+      }
+
+      if (node.children) {
+        if (checkLevel(node.children)) {
+          return true;
+        }
+      }
     }
+    return false;
   }
 
-  dataArray && dataArray.forEach((node) => countOccurrences(node));
-
-  return count;
+  return checkLevel(nodes);
 };
 
-export const isClassHierarchyDuplicated = (dataArray: TreeNode[] | undefined, fieldNameToCheck: string) => {
-  const count = countFieldNameOccurrences(dataArray, fieldNameToCheck);
-  return count === 2;
+export const isClassHierarchyDuplicatedAtSameLevel = (
+  dataArray: TreeNode[] | undefined,
+  fieldNameToCheck: string
+): boolean => {
+  if (!dataArray) return false;
+
+  return countFieldNameOccurrencesAtSameLevel(dataArray, fieldNameToCheck);
 };
 
 export const handleDownload = (response: any, format: string) => {
@@ -159,7 +182,7 @@ export const handleDownload = (response: any, format: string) => {
     const url = window.URL.createObjectURL(new Blob([response]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `export.${format}`); // Specify the file name and extension
+    link.setAttribute('download', `export.${format}`); 
     document.body.appendChild(link);
     link.click();
     link.parentNode.removeChild(link);

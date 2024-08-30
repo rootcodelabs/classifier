@@ -28,11 +28,15 @@ const IntegrationModals = ({
 
   const platformEnableMutation = useMutation({
     mutationFn: (data: OperationConfig) => togglePlatform(data),
-    onSuccess: async () => {
-      setModalType(INTEGRATION_MODALS.INTEGRATION_SUCCESS);
-      await queryClient.invalidateQueries(
-        integrationQueryKeys.INTEGRATION_STATUS()
-      );
+    onSuccess: async (data) => {
+      if (data.response.operation_status === 'success') {
+        setModalType(INTEGRATION_MODALS.INTEGRATION_SUCCESS);
+        await queryClient.invalidateQueries(
+          integrationQueryKeys.INTEGRATION_STATUS()
+        );
+      } else {
+        setModalType(INTEGRATION_MODALS.INTEGRATION_ERROR);
+      }
     },
     onError: () => {
       setModalType(INTEGRATION_MODALS.INTEGRATION_ERROR);
@@ -41,11 +45,15 @@ const IntegrationModals = ({
 
   const platformDisableMutation = useMutation({
     mutationFn: (data: OperationConfig) => togglePlatform(data),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries(
-        integrationQueryKeys.INTEGRATION_STATUS()
-      );
-      setIsModalOpen(false);
+    onSuccess: async (data) => {
+      if (data.response.operation_status === 'success') {
+        await queryClient.invalidateQueries(
+          integrationQueryKeys.INTEGRATION_STATUS()
+        );
+        setIsModalOpen(false);
+      } else {
+        setModalType(INTEGRATION_MODALS.DISCONNECT_ERROR);
+      }
     },
     onError: () => {
       setModalType(INTEGRATION_MODALS.DISCONNECT_ERROR);
@@ -96,6 +104,8 @@ const IntegrationModals = ({
                     platform: channel?.toLowerCase(),
                   });
                 }}
+                disabled={platformDisableMutation.isLoading}
+                showLoadingIcon={platformDisableMutation.isLoading}
               >
                 {t('global.disconnect')}
               </Button>
@@ -128,6 +138,8 @@ const IntegrationModals = ({
                     platform: channel?.toLowerCase(),
                   });
                 }}
+                disabled={platformEnableMutation.isLoading}
+                showLoadingIcon={platformEnableMutation.isLoading}
               >
                 {t('global.connect')}
               </Button>

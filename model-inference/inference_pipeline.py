@@ -27,15 +27,18 @@ class InferencePipeline:
             
         if model_name == DISTIL_BERT:
             self.base_model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased')
+            self.base_model.load_state_dict(torch.load(f"{results_folder}/model_state_dict.pth"))
             self.tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
         
         elif model_name == ROBERTA:
             self.base_model = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base')
+            self.base_model.load_state_dict(torch.load(f"{results_folder}/model_state_dict.pth"))
             self.tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base')
         
         elif model_name == BERT:
             self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
             self.base_model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+            self.base_model.load_state_dict(torch.load(f"{results_folder}/model_state_dict.pth"))
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_name = model_name
@@ -51,8 +54,17 @@ class InferencePipeline:
         model_names = sorted(model_names, key=lambda x: int(x.split('_')[-1].split('.')[0]))
         self.models_dict = {}
         for i in range(len(model_names)):
-            self.models_dict[i] = torch.load(os.path.join(f"{results_folder}/{TRAINED_BASE_MODEL_LAYERS}",model_names[i]))
+            logger.info(f"RESULTS FOLDER - {results_folder}")
 
+     
+            logger.info(f"BASE MODEL FOLDER  - {TRAINED_BASE_MODEL_LAYERS}")
+            logger.info(f"MODEL NAMES - {model_names[i]}")
+
+            try:
+                self.models_dict[i] = torch.load(os.path.join(f"{results_folder}/{TRAINED_BASE_MODEL_LAYERS}",model_names[i]),map_location=self.device)
+
+            except Exception as e:
+                logger.info(e)
         classification_model_names = os.listdir(f"{results_folder}/{CLASSIFIER_LAYERS_FOLDER}")
         classification_model_names = sorted(classification_model_names, key=lambda x: int(x.split('_')[-1].split('.')[0]))
         self.classification_models_dict = {}
@@ -69,6 +81,29 @@ class InferencePipeline:
                 return index
         return None
     
+    def extract_classes(self):
+        data = self.hierarchy_file
+        result = []
+        
+        def recurse(subdata):
+            if isinstance(subdata, dict):
+                result.append(subdata['class'])
+                for subclass in subdata.get('subclasses', []):
+                    recurse(subclass)
+            elif isinstance(subdata, list):
+                for item in subdata:
+                    recurse(item)
+
+        recurse(data)
+        return result
+    
+    def find_missing_classes(self, main_classes, uploaded_classes):
+        missing_classes = [cls for cls in uploaded_classes if cls not in main_classes]
+        
+        return missing_classes
+
+
+
     def predict_class(self,text_input):
 
         logger.info("ENTERING PREDICT CLASS")
@@ -82,7 +117,7 @@ class InferencePipeline:
         self.base_model.to(self.device)
 
         logger.info(f"CLASS HIERARCHY FILE {self.hierarchy_file}")
-        logger.info(f"INPUTS  - {inputs}")
+        
 
 
         data = self.hierarchy_file
@@ -124,7 +159,6 @@ class InferencePipeline:
                     predictions = torch.argmax(outputs.logits, dim=1)
                     predicted_probabilities = probability.gather(1, predictions.unsqueeze(1)).squeeze()
 
-                    #TODO - ADD THE THRESHOLD TO A CONSTANT FILD
                     if int(predicted_probabilities.cpu().item()*100)<0:
                         return [],[]
                     probabilities.append(int(predicted_probabilities.cpu().item()*100))
@@ -179,7 +213,13 @@ class InferencePipeline:
             data = self.hierarchy_file
             parent = 1
 
-            #TODO - CREATE A FUNCTION HERE THAT LOOPS THROUGH THE DATA (HIERARCHY FILE) TO FIND OUT WHETHER USERCLASSES EXIST IN THE HIERARCHY            
+            all_classes = self.extract_classes()
+            missing_classes = self.find_missing_classes(all_classes, user_classes)
+
+            if missing_classes:
+                return [-1]
+
+
             logger.info("ENTERING LOOP IN user_corrected_probabilities")
 
             for i in range(len(user_classes)):

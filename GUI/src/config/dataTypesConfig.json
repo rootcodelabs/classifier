@@ -4,7 +4,4 @@
     { "label": "Date Time", "value": "datetime" },
     { "label": "Email", "value": "email" },
     { "label": "File Attachments", "value": "file_attachments" }
-
-
-
   ]
