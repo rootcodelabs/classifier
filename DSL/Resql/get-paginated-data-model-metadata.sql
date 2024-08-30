@@ -31,7 +31,7 @@ WHERE
 ORDER BY
     CASE WHEN :sort_by = 'name' AND :sort_type = 'asc' THEN dt.model_name END ASC,
     CASE WHEN :sort_by = 'name' AND :sort_type = 'desc' THEN dt.model_name END DESC,
-    CASE WHEN :sort_by = 'created_timestamp' AND :sort_type = 'desc' THEN dt.created_timestamp END ASC,
+    CASE WHEN :sort_by = 'created_timestamp' AND :sort_type = 'asc' THEN dt.created_timestamp END ASC,
     CASE WHEN :sort_by = 'created_timestamp' AND :sort_type = 'desc' THEN dt.created_timestamp END DESC
 OFFSET ((GREATEST(:page, 1) - 1) * :page_size) LIMIT :page_size;
 

@@ -89,7 +89,12 @@ const DatasetDetailedViewTable = ({
             isHeaderLight={false}
             header={
               <div className="flex-between">
-                <div className="flex-grid">
+                <div
+                  className="flex-grid"
+                  style={{
+                    alignItems: 'center',
+                  }}
+                >
                   <Link to={''} onClick={() => navigate(0)}>
                     <BackArrowButton />
                   </Link>

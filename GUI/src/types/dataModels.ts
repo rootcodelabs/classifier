@@ -17,6 +17,7 @@ export type TrainingProgressData = {
   latest: boolean;
   trainingStatus: string;
   progressPercentage: number;
+  trainingMessage?:string;
 };
 
 export type SSEEventData = {
@@ -77,14 +78,14 @@ export type TrainingResults ={
   };
 };
 
-export type Filters = {
+export type DataModelsFilters = {
   modelName: string;
   version: string;
   platform: string;
   datasetGroup: number;
   trainingStatus: string;
   maturity: string;
-  sort: 'asc' | 'desc';
+  sort: 'created_timestamp desc' | 'created_timestamp asc' | 'name asc' | 'name desc';
 };
 
 export type ErrorsType = {

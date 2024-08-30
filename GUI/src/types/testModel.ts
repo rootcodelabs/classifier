@@ -4,5 +4,3 @@ export type PredictionInput = {
   averageConfidence: number;
   predictedProbabilities: number[];
 };
-
-export type FormattedPrediction = string;

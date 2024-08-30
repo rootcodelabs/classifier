@@ -11,7 +11,11 @@ import ConfigureDataModel from './ConfigureDataModel';
 import { customFormattedArray, extractedArray } from 'utils/dataModelsUtils';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
-import { DataModelResponse, FilterData, Filters } from 'types/dataModels';
+import {
+  DataModelResponse,
+  DataModelsFilters,
+  FilterData,
+} from 'types/dataModels';
 import { dataModelsQueryKeys } from 'utils/queryKeys';
 import NoDataView from 'components/molecules/NoDataView';
 
@@ -32,14 +36,14 @@ const DataModels: FC = () => {
     setEnableFetch(true);
   }, [view]);
 
-  const [filters, setFilters] = useState<Filters>({
+  const [filters, setFilters] = useState<DataModelsFilters>({
     modelName: 'all',
     version: 'x.x.x',
     platform: 'all',
     datasetGroup: -1,
     trainingStatus: 'all',
     maturity: 'all',
-    sort: 'asc',
+    sort: 'created_timestamp desc',
   });
 
   const { data: dataModelsData, isLoading: isModelDataLoading } = useQuery(
@@ -85,7 +89,7 @@ const DataModels: FC = () => {
         -1,
         'all',
         'all',
-        'asc',
+        'created_timestamp desc',
         true
       ),
       () =>
@@ -98,7 +102,7 @@ const DataModels: FC = () => {
           -1,
           'all',
           'all',
-          'asc',
+          'created_timestamp desc',
           true
         ),
       {
@@ -119,7 +123,7 @@ const DataModels: FC = () => {
   const pageCount = dataModelsData?.data[0]?.totalPages || 1;
 
   const handleFilterChange = (
-    name: keyof Filters,
+    name: keyof DataModelsFilters,
     value: string | number | undefined | { name: string; id: string }
   ) => {
     setEnableFetch(false);
@@ -273,8 +277,22 @@ const DataModels: FC = () => {
                       name=""
                       placeholder={t('dataModels.filters.sort') ?? ''}
                       options={[
-                        { label: 'A-Z', value: 'asc' },
-                        { label: 'Z-A', value: 'desc' },
+                        {
+                          label: t('dataModels.sortOptions.dataModelAsc'),
+                          value: 'name asc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.dataModelDesc'),
+                          value: 'name desc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.createdDateDesc'),
+                          value: 'created_timestamp desc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.createdDateAsc'),
+                          value: 'created_timestamp asc',
+                        },
                       ]}
                       onSelectionChange={(selection) =>
                         handleFilterChange('sort', selection?.value)
@@ -293,15 +311,17 @@ const DataModels: FC = () => {
                       {t('global.search') ?? ''}
                     </Button>
                     <Button
-                      onClick={() => setFilters({
-                        modelName: 'all',
-                        version: 'x.x.x',
-                        platform: 'all',
-                        datasetGroup: -1,
-                        trainingStatus: 'all',
-                        maturity: 'all',
-                        sort: 'asc',
-                      })}
+                      onClick={() =>
+                        setFilters({
+                          modelName: 'all',
+                          version: 'x.x.x',
+                          platform: 'all',
+                          datasetGroup: -1,
+                          trainingStatus: 'all',
+                          maturity: 'all',
+                          sort: 'created_timestamp desc',
+                        })
+                      }
                       appearance={ButtonAppearanceTypes.SECONDARY}
                     >
                       {t('global.reset') ?? ''}
@@ -326,7 +346,7 @@ const DataModels: FC = () => {
                             trainingStatus={dataset.trainingStatus}
                             platform={dataset?.deploymentEnv}
                             maturity={dataset?.maturityLabel}
-                            results={dataset?.trainingResults}
+                            results={dataset?.trainingResults ?? null}
                             setId={setId}
                             setView={setView}
                           />
