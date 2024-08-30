@@ -1,11 +1,6 @@
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import ValidationSessionCard from 'components/molecules/ValidationSessionCard';
-import sse from 'services/sse-service';
-import { useQuery } from '@tanstack/react-query';
-import { getDatasetGroupsProgress } from 'services/datasets';
-import { ValidationProgressData, SSEEventData } from 'types/datasetGroups';
-import { datasetQueryKeys } from 'utils/queryKeys';
 import { useValidationSessions } from 'hooks/useValidationSessions';
 
 const ValidationSessions: FC = () => {

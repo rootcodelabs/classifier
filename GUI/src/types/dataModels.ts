@@ -17,6 +17,7 @@ export type TrainingProgressData = {
   latest: boolean;
   trainingStatus: string;
   progressPercentage: number;
+  trainingMessage?:string;
 };
 
 export type SSEEventData = {

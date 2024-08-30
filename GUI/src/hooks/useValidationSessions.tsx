@@ -30,7 +30,7 @@ export const useValidationSessions = () => {
       const eventSources = progressData
         .filter(
           (progress) =>
-            progress.validationStatus !== 'Success' &&
+            !(progress.validationStatus === 'Success'|| progress.validationStatus === 'Fail') &&
             progress.progressPercentage !== 100
         )
         .map((progress) =>

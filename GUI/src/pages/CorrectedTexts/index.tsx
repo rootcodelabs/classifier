@@ -121,7 +121,7 @@ const CorrectedTexts: FC = () => {
             <FormSelect
               label=""
               name="sort"
-              value={filters.platform}
+              defaultValue={filters.platform}
               placeholder={t('correctedTexts.platform') ?? ''}
               options={[
                 { label: 'Jira', value: 'JIRA' },
@@ -146,6 +146,7 @@ const CorrectedTexts: FC = () => {
               onSelectionChange={(selection) =>
                 handleFilterChange('sort', (selection?.value as string) ?? '')
               }
+              defaultValue={filters.sort}
             />
           </div>
           <Button

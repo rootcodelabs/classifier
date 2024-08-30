@@ -7,7 +7,7 @@ type TrainingSessionCardProps = {
   isLatest: boolean;
   version: string;
   status?: string;
-  errorMessage?: string;
+  trainingMessage?: string;
   progress: number;
   platform?: string;
   maturity?: string;
@@ -18,7 +18,7 @@ const TrainingSessionCard: React.FC<TrainingSessionCardProps> = ({
   version,
   isLatest,
   status,
-  errorMessage,
+  trainingMessage,
   progress,
   maturity,
   platform,
@@ -35,20 +35,29 @@ const TrainingSessionCard: React.FC<TrainingSessionCardProps> = ({
             <Label type="success">{version}</Label>
             {platform && <Label type="success">{platform}</Label>}{' '}
             {maturity && <Label type="success">{maturity}</Label>}
-            {status === 'Fail' && <Label type="error">{t('global.failed')}</Label>}
+            {status === 'failed' && <Label type="error">{t('global.failed')}</Label>}
           </div>
         </div>
       }
     >
       <div>
-        {errorMessage ? (
-          <div className="text-center">{errorMessage}</div>
-        ) : (
-          <div>
-            <div className="text-center">{status}</div>
-            <ProgressBar value={progress} max={100} label={`${progress}%`} />
-          </div>
-        )}
+      {(status==="failed" || status==="deployed") && progress===100 ? (
+        <div className={`text-center ${status==="failed"?'error':''}`}>
+         {trainingMessage}
+        </div>
+      ) : (
+        <div>
+          <div className="text-center">{status}</div>
+          <ProgressBar
+            value={progress}
+            max={100}
+            label={`${progress}%`}
+          />
+           <div className='text-center'>
+         {trainingMessage}
+        </div>
+        </div>
+      )}
       </div>
     </Card>
   );
