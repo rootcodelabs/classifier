@@ -20,4 +20,4 @@ SELECT
 FROM
     models_metadata dt
 WHERE
-    dt.deployment_env IN ('jira', 'pinal', 'outlook');
+    dt.deployment_env IN ('jira', 'outlook');
