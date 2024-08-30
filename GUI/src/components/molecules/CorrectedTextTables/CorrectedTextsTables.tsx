@@ -60,7 +60,25 @@ const CorrectedTextsTable = ({
         header: t('correctedTexts.platform') ?? '',
       }),
       columnHelper.accessor('inferenceText', {
-        header: t('correctedTexts.text') ?? '',
+        header: () => (
+          <div>
+            <span
+              style={{
+                width: '750px'
+              }}
+            >
+              {t('correctedTexts.text') ?? ''}
+            </span>
+          </div>
+        ),
+        cell: (props) => (
+          <div style={{
+            width: '750px',
+            textWrap: "wrap",
+          }}>
+            {props?.row?.original?.inferenceText}
+          </div>
+        ),
       }),
       columnHelper.accessor('predictedLabels', {
         header: () => (

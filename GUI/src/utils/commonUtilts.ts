@@ -48,7 +48,7 @@ export const formatDateTime = (date: string) => {
   const momentDate = moment(date, format);
 
   // Format the date as MM/DD/YYYY
-  const formattedDate = momentDate.format('M/D/YYYY');
+  const formattedDate = momentDate.format('DD/MM/YYYY');
 
   // Format the time as h.mm A (AM/PM)
   const formattedTime = momentDate.format('h.mm A');

@@ -24,7 +24,8 @@ export async function getDataModelsOverview(
       datasetGroup,
       trainingStatus,
       deploymentMaturity,
-      sortType: sort,
+      sortBy:sort?.split(" ")?.[0],
+      sortType: sort?.split(" ")?.[1],
       pageSize: 12,
       isProductionModel
     },

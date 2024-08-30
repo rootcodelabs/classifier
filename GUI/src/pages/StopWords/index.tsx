@@ -18,6 +18,7 @@ import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { StopWordImportOptions } from 'enums/datasetEnums';
 import { useDialog } from 'hooks/useDialog';
 import { StopWordsImportResponse } from 'types/datasetGroups';
+import useOptionLists from 'hooks/useOptionLists';
 
 const StopWords: FC = () => {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ const StopWords: FC = () => {
   const [importOption, setImportOption] = useState('');
   const [file, setFile] = useState<File | null>();
   const fileUploadRef = useRef<FileUploadHandle>(null);
-
+  const { importOptionsConfigs } = useOptionLists();
   const { register, setValue, watch } = useForm({
     defaultValues: {
       stopWord: '',
@@ -225,7 +226,7 @@ const StopWords: FC = () => {
                 name="importOption"
                 label=""
                 onChange={setImportOption}
-                items={importOptions}
+                items={importOptionsConfigs}
                 selectedValue={importOption}
               />
               <div style={{ margin: '20px 0px' }}></div>
