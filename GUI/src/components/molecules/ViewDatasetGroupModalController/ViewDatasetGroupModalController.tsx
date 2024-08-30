@@ -30,6 +30,7 @@ const ViewDatasetGroupModalController = ({
   deleteRow,
   file,
   exportFormat,
+  isImportDataLoading
 }: {
   setImportStatus: React.Dispatch<React.SetStateAction<string>>;
   handleFileSelect: (file: File | undefined) => void;
@@ -52,6 +53,7 @@ const ViewDatasetGroupModalController = ({
   deleteRow: (dataRow: any) => void;
   file: File | undefined;
   exportFormat: string;
+  isImportDataLoading: boolean
 }) => {
   const { close } = useDialog();
   const { t } = useTranslation();
@@ -79,7 +81,8 @@ const ViewDatasetGroupModalController = ({
                 </Button>
                 <Button
                   onClick={handleImport}
-                  disabled={!importFormat || !file}
+                  disabled={!importFormat || !file || isImportDataLoading}
+                  showLoadingIcon={isImportDataLoading}
                 >
                   {t('datasetGroups.detailedView.modals.import.import')}
                 </Button>

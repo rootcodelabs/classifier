@@ -3,7 +3,6 @@ import './Integrations.scss';
 import { useTranslation } from 'react-i18next';
 import IntegrationCard from 'components/molecules/IntegrationCard';
 import Outlook from 'assets/Outlook';
-import Pinal from 'assets/Pinal';
 import Jira from 'assets/Jira';
 import { useQuery } from '@tanstack/react-query';
 import { getIntegrationStatus } from 'services/integration';
@@ -35,12 +34,6 @@ const Integrations: FC = () => {
             channel={t('integration.outlook') ?? ''}
             channelDescription={t('integration.outlookDesc') ?? ''}
             isActive={integrationStatus?.outlook_connection_status}
-          />
-          <IntegrationCard
-            logo={<Pinal />}
-            channel={t('integration.outlookAndPinal') ?? ''}
-            channelDescription={t('integration.pinalDesc') ?? ''}
-            isActive={integrationStatus?.pinal_connection_status}
           />
         </div>
       </div>

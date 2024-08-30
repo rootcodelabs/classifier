@@ -1,13 +1,13 @@
 export type DataModel = {
-    modelId: number;
-    modelName: string;
-    dgName?: string;
-    dgId: string |number;
-    platform: string;
-    baseModels: string[];
-    maturity: string;
-    version?: string;
-  };
+  modelId: number;
+  modelName: string;
+  dgName?: string;
+  dgId: string | number;
+  platform: string;
+  baseModels: string[];
+  maturity: string;
+  version?: string;
+};
 
 export type TrainingProgressData = {
   id: string;
@@ -27,20 +27,20 @@ export type SSEEventData = {
 
 export type UpdatedDataModelPayload = {
   modelId: number;
-    connectedDgId: string | null | undefined;
-    deploymentEnv: string | null | undefined;
-    baseModels: string | null | undefined;
-    maturityLabel: string | null | undefined;
-    updateType: string | undefined;
+  connectedDgId: string | null | undefined;
+  deploymentEnv: string | null | undefined;
+  baseModels: string | null | undefined;
+  maturityLabel: string | null | undefined;
+  updateType: string | undefined;
 };
 
-export type CreateDataModelPayload={
+export type CreateDataModelPayload = {
   modelName: string | undefined;
-    dgId: string | number | undefined;
-    baseModels: string[] | undefined;
-    deploymentPlatform: string | undefined;
-    maturityLabel: string | undefined;
-}
+  dgId: string | number | undefined;
+  baseModels: string[] | undefined;
+  deploymentPlatform: string | undefined;
+  maturityLabel: string | undefined;
+};
 
 export type FilterData = {
   modelNames: string[];
@@ -59,11 +59,22 @@ export type DataModelResponse = {
   minorVersion: number;
   latest: boolean;
   dgVersion: string;
-  lastTrained: string;
+  lastTrainedTimestamp: string;
   trainingStatus: string;
   deploymentEnv: string;
   maturityLabel: string;
-  trainingResults: string[];
+  trainingResults?: string | null;
+  connectedDgMajorVersion?: number;
+  connectedDgMinorVersion?: number;
+  connectedDgPatchVersion?: number;
+};
+
+export type TrainingResults ={
+  trainingResults: {
+    classes: string[];
+    accuracy: string[];
+    f1_score: string[];
+  };
 };
 
 export type Filters = {
@@ -74,4 +85,13 @@ export type Filters = {
   trainingStatus: string;
   maturity: string;
   sort: 'asc' | 'desc';
+};
+
+export type ErrorsType = {
+  modelName?: string;
+  dgName?: string;
+  platform?: string;
+  baseModels?: string;
+  maturity?: string;
+  dgId?: string;
 };

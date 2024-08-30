@@ -5,7 +5,7 @@ services:
     environment:
       - application.cors.allowedOrigins=http://localhost:8086,http://localhost:3001,http://localhost:3003,http://localhost:3004,http://localhost:8080,http://localhost:8000
       - application.httpCodesAllowList=200,201,202,204,400,401,403,404,500
-      - application.internalRequests.allowedIPs=127.0.0.1,172.25.0.7,172.25.0.21
+      - application.internalRequests.allowedIPs=127.0.0.1,172.25.0.7,172.25.0.21,172.25.0.22
       - application.logging.displayRequestContent=true
       - application.incomingRequests.allowedMethodTypes=POST,GET,PUT
       - application.logging.displayResponseContent=true
@@ -169,24 +169,6 @@ services:
         ipv4_address: 172.25.0.10
     restart: always
 
-  cron-manager:
-    container_name: cron-manager
-    image: cron-manager-python
-    volumes:
-      - ./DSL/CronManager/DSL:/DSL
-      - ./DSL/CronManager/script:/app/scripts
-      - ./DSL/CronManager/config:/app/config
-      - ./model_trainer:/app/model_trainer
-      - ./dataset-processor:/app/dataset_processor
-      - shared-volume:/shared
-
-    environment:
-      - server.port=9010
-    ports:
-      - 9010:8080
-    networks:
-      bykstack:
-        ipv4_address: 172.25.0.11
 
   init:
     image: busybox
@@ -196,6 +178,26 @@ services:
     networks:
       bykstack:
         ipv4_address: 172.25.0.12
+
+  cron-manager:
+    container_name: cron-manager
+    image: cron-manager-python
+    volumes:
+      - ./DSL/CronManager/DSL:/DSL
+      - ./DSL/CronManager/script:/app/scripts
+      - ./DSL/CronManager/config:/app/config
+      - ./model_trainer:/app/model_trainer
+      - shared-volume:/shared
+    environment:
+      - server.port=9010
+    ports:
+      - 9010:8080
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.11
+    depends_on:
+      - init
+      - s3-ferry
 
   file-handler:
     build:
@@ -213,6 +215,11 @@ services:
       - GET_PAGE_COUNT_URL=http://ruuter-private:8088/classifier/datasetgroup/group/page-count?groupId=dgId
       - DATAGROUP_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datasetgroup/metadata/delete
       - DATAMODEL_DELETE_CONFIRMATION_URL= http://ruuter-private:8088/classifier/datamodel/update/dataset-group
+      - JIRA_ACTIVE_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/jira/delete
+      - OUTLOOK_ACTIVE_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/outlook/delete
+      - TEST_MODEL_DELETE_URL=http://model-inference:8003/classifier/datamodel/deployment/testing/delete
+      - MODEL_METADATA_DELETE_URL=http://ruuter-private:8088/classifier/datamodel/metadata/delete
+      - CORRECTED_TEXT_EXPORT=http://ruuter-private:8088/classifier/inference/corrected-metadata-export.yml
     ports:
       - "8000:8000"
     networks:
@@ -272,7 +279,7 @@ services:
 
   model-inference:
     build:
-      context: ./model_inference
+      context: ./model-inference
       dockerfile: Dockerfile
     container_name: model-inference
     volumes:
@@ -283,16 +290,16 @@ services:
       - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
       - JIRA_MODEL_DOWNLOAD_DIRECTORY=/shared/models/jira
       - OUTLOOK_MODEL_DOWNLOAD_DIRECTORY=/shared/models/outlook
-      - GET_INFERENCE_DATASET_EXIST_URL=http://ruuter-public:8086/internal/exist?inputId=inferenceInputId
+      - TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY=/shared/models/testing
+      - GET_INFERENCE_DATASET_EXIST_URL=http://ruuter-public:8086/internal/exist
       - CREATE_INFERENCE_URL=http://ruuter-public:8086/internal/create
       - UPDATE_INFERENCE_URL=http://ruuter-public:8086/internal/corrected
-      - GET_DATAMODEL_METADATA_BY_ID_URL=http://ruuter-private:8088/classifier/datamodel/metadata?modelId=inferenceModelId
-      - GET_DATASET_GROUP_METADATA_BY_ID_URL=http://ruuter-private:8088/classifier/datasetgroup/group/metadata?groupId=dataSetGroupId
       - CLASS_HIERARCHY_VALIDATION_URL=http://hierarchy-validation:8009/check-folder-hierarchy
       - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
       - BUILD_CORRECTED_FOLDER_HIERARCHY_URL=http://hierarchy-validation:8009/corrected-folder-hierarchy
       - FIND_FINAL_FOLDER_ID_URL=http://hierarchy-validation:8009/find-folder-id
       - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
+      - UPDATE_MODEL_TRAINING_STATUS_ENDPOINT=http://ruuter-private:8088/classifier/datamodel/update/training/status
     ports:
       - "8003:8003"
     networks:
@@ -301,28 +308,6 @@ services:
     depends_on:
       - init
       - s3-ferry
-
-  test-inference:
-    build:
-      context: ./test_inference
-      dockerfile: Dockerfile
-    container_name: test-inference
-    volumes:
-      - shared-volume:/shared
-    environment:
-      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
-      - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
-      - TEST_MODEL_DOWNLOAD_DIRECTORY=/shared/models/test
-      - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
-      - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
-    ports:
-      - "8011:8011"
-    networks:
-      bykstack:
-        ipv4_address: 172.25.0.23
-    depends_on:
-      - init
-      - file-handler
 
   hierarchy-validation:
     build:
@@ -433,8 +418,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3008:3008"
+    env_file:
+      - jira_config.env
     environment:
-      JIRA_WEBHOOK_SECRET: value
       RUUTER_PUBLIC_JIRA_URL: http://ruuter-public:8086/internal/jira/accept
     networks:
       bykstack:
@@ -443,6 +429,21 @@ services:
 volumes:
   shared-volume:
   opensearch-data:
+
+
+# Uncomment below container if you wish to debug progress bar sessions in opensearch dashboard
+# opensearch-dashboards:
+#       image: opensearchproject/opensearch-dashboards:2.11.1
+#       container_name: opensearch-dashboards
+#       environment:
+#         - OPENSEARCH_HOSTS=http://opensearch-node:9200
+#         - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+#       ports:
+#         - 5601:5601
+#       networks:
+#         bykstack:
+#           ipv4_address: 172.25.0.24
+
 
 networks:
   bykstack:

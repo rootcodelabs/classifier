@@ -178,10 +178,11 @@ execute_cron_manager:
   args:
     url: "[#CLASSIFIER_CRON_MANAGER]/execute/data_model/model_trainer"
     query:
-      cookie: ${incoming.headers.cookie}
-      model_id: ${model_id}
-      new_model_id: ${model_id}
+      cookie: ${incoming.headers.cookie.replace('customJwtCookie=','')} #Removing the customJwtCookie phrase from payload to to send cookie token only
+      modelId: ${model_id}
+      newModelId: ${model_id}
       updateType: 'major'
+      prevDeploymentEnv: 'None'
   result: res
   next: assign_success_response
 
