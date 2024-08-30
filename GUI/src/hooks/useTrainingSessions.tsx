@@ -1,19 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { getDatasetGroupsProgress } from "services/datasets";
+import { getDataModelsProgress } from "services/data-models";
 import sse from "services/sse-service";
 import { TrainingProgressData } from "types/dataModels";
 import { SSEEventData } from "types/datasetGroups";
-import { datasetQueryKeys } from "utils/queryKeys";
 
 export const useTrainingSessions = () => {
   const [progresses, setProgresses] = useState<TrainingProgressData[]>([]);
 
-  const { data: progressData, refetch } = useQuery<TrainingProgressData[]>(
-    datasetQueryKeys.GET_DATASET_GROUP_PROGRESS(),
-    getDatasetGroupsProgress,
+  const { data: progressData } = useQuery<TrainingProgressData[]>(
+    ['datamodels/progress'],
+    () => getDataModelsProgress(),
     {
-      onSuccess: (data) => setProgresses(data),
+      onSuccess: (data) => {
+        setProgresses(data);
+      },
     }
   );
 
