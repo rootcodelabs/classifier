@@ -1,4 +1,4 @@
-import { datasetsEndpoints } from 'utils/endpoints';
+import { correctedTextEndpoints, datasetsEndpoints } from 'utils/endpoints';
 import apiDev from './api-dev';
 import apiExternal from './api-external';
 import { PaginationState } from '@tanstack/react-table';
@@ -28,7 +28,8 @@ export async function getDatasetsOverview(
       minorVersion,
       patchVersion,
       validationStatus,
-      sortType: sort,
+      sortBy:sort?.split(" ")?.[0],
+      sortType: sort?.split(" ")?.[1],
       pageSize: 12,
     },
   });
@@ -44,9 +45,7 @@ export async function enableDataset(enableData: Operation) {
 }
 
 export async function getFilterData() {
-  const { data } = await apiDev.get(
-    datasetsEndpoints.GET_DATASET_FILTERS()
-  );
+  const { data } = await apiDev.get(datasetsEndpoints.GET_DATASET_FILTERS());
   return data;
 }
 
@@ -133,6 +132,14 @@ export async function majorUpdate(updatedData: DatasetGroup) {
   return data;
 }
 
+export async function deleteDatasetGroup(dgId: number) {
+  const { data } = await apiDev.post(
+    datasetsEndpoints.DELETE_DATASET_GROUP(),
+    { dgId }
+  );
+  return data;
+}
+
 export async function getStopWords() {
   const { data } = await apiDev.get(datasetsEndpoints.GET_STOP_WORDS());
   return data?.response?.stopWords;
@@ -173,6 +180,24 @@ export async function deleteStopWords(file: File) {
     {
       stopWordsFile: file,
     }
+  );
+  return data;
+}
+
+export async function exportCorrectedTexts(
+  platform: string,
+  exportType: string
+) {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  const { data } = await apiExternal.post(
+    correctedTextEndpoints.EXPORT_CORRECTED_TEXTS(),
+    {
+      platform,
+      exportType,
+    },
+    { headers, responseType: 'blob' }
   );
   return data;
 }

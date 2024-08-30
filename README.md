@@ -10,12 +10,6 @@ This repo will primarily contain:
 3. You can view the UI designs for this project in this [Figma file](https://www.figma.com/design/VWoZu2s7auo7YTw49RqNtV/Estonian-Classifier-English-Version?node-id=712-1695&t=cx6ZZVuEkfWqlbZB-1)
 
 
-## Instructions for MacOs Users
-#### TODO - Include instructions for MacOS users to delete specific parts of the base image to make the build work
-
-## Version 
-##### TODO - Talk about programming language versions and framework versions used in the project here
-
 ## Dev setup
 
 - Clone [Ruuter](https://github.com/buerokratt/Ruuter)
@@ -27,7 +21,7 @@ This repo will primarily contain:
 - Clone [TIM](https://github.com/buerokratt/TIM)
 - Navigate to TIM and build the image `docker build -t tim .`
 - Clone [Authentication Layer](https://github.com/buerokratt/Authentication-layer)
-- Navigate to Authentication Layer and build the image  `docker build -f Dockerfile.dev -t authentication-layer .`
+- Navigate to Authentication Layer, checkout to the `dev` branch and build the image  `docker build -f Dockerfile.dev -t authentication-layer .`
 - Clone [S3 Ferry](https://github.com/buerokratt/S3-Ferry)
 - Navigate to S3-Ferry and build the image `docker build  -t s3-ferry .`
 - Clone [Cron Manager](https://github.com/rootcodelabs/CronManager) (<i>This is a forked repo of the original Buerokratt CronManager with a Python environment included</i>)
@@ -82,6 +76,8 @@ This repo will primarily contain:
      - JIRA_USERNAME
      - JIRA_CLOUD_DOMAIN
      - JIRA_WEBHOOK_ID
+- Create a .env file called jira_config.env and add the jira webhook secret as shown below
+  - JIRA_WEBHOOK_SECRET=<<JIRA_WEBHOOK_SECRET>>
 
 
 ### Notes

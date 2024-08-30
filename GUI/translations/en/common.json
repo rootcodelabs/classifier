@@ -41,14 +41,15 @@
     "desc": "desc",
     "reset": "Reset",
     "choose": "Choose",
-    "extedSession": "Extend Session",
+    "extendSession": "Extend Session",
     "unAuthorized": "Unauthorized",
     "unAuthorizedDesc": "You do not have permission to view this page.",
     "latest": "Latest",
     "failed": "Failed",
     "sessionTimeOutTitle": "You session has been ended!",
-    "sessionTimeOutDesc": "Extend your session or signout from application in {{seconds}}",
-    "close":"Close"
+    "sessionTimeOutDesc": "Extend your session or sign out from application in {{seconds}}",
+    "close":"Close",
+    "proceed":"Proceed"
   },
   "menu": {
     "userManagement": "User Management",
@@ -67,8 +68,8 @@
     "title": "User Management",
     "addUserButton": " Add a user",
     "addUser": {
-      "addUserModalTitle": "Add a New User",
-      "editUserModalTitle": "Edit User",
+      "addUserModalTitle": "Add a new user",
+      "editUserModalTitle": "Edit user",
       "deleteUserModalTitle": "Are you sure?",
       "deleteUserModalDesc": "Confirm that you are wish to delete the following record",
       "name": "First and last name",
@@ -87,7 +88,7 @@
       "titleRequired": "Title is required",
       "emailRequired": "Email is required",
       "invalidIdCode": "Invalid ID code",
-      "invalidemail": "Invalid Email",
+      "invalidEmail": "Invalid Email",
       "userExists": "User already exists"
     },
     "table": {
@@ -103,11 +104,8 @@
     "title": "Integration",
     "jira": "Jira",
     "outlook": "Outlook",
-    "pinal": "Pinal",
-    "outlookAndPinal": "Outlook+Pinal",
     "jiraDesc": "Atlassian issue tracking and project management software",
     "outlookDesc": "Personal information manager and email application developed by Microsoft",
-    "pinalDesc": "Atlassian issue tracking and project management software",
     "connected": "Connected",
     "disconnected": "Disconnected",
     "integrationErrorTitle": "Integration Unsuccessful",
@@ -150,11 +148,17 @@
     "title": "Dataset Groups",
     "createDatasetGroupButton": "Create Dataset Group",
     "noDatasets":"No data sets available",
+    "sortOptions":{
+      "datasetAsc":"Dataset Group Name A-Z",
+      "datasetDesc":"Dataset Group Name Z-A",
+      "createdDateAsc":"Created Date Oldest First",
+      "createdDateDesc":"Created Date Latest First"
+    },
     "table": {
       "group": "Dataset Group",
       "version": "Version",
       "validationStatus": "Validation Status",
-      "sortBy": "Sort by name ({{sortOrder}})",
+      "sortBy": "Sort by",
       "email": "Email",
       "actions": "Actions"
     },
@@ -213,12 +217,13 @@
       "noOfItems": "Number of items",
       "export": "Export Dataset",
       "import": "Import Dataset",
-      "unsavedChangesWarning": "You have made changes to the ataset which are not saved. Please save the changes to apply",
+      "unsavedChangesWarning": "You have made changes to the dataset which are not saved. Please save the changes to apply",
       "insufficientExamplesDesc": "Insufficient examples - at least 10 examples are needed to activate the dataset group",
-      "noData": "No Corrected Texts Available",
+      "noData": "No Data Available",
+      "noCorrectedTexts": "No Corrected Texts Available",
       "noDataDesc": "You have created the dataset group, but there are no datasets available to show here. You can upload a dataset to view it in this space. Once added, you can edit or delete the data as needed.",
       "importExamples": "Import Examples",
-      "importNewData": "Import New Data",
+      "importNewData": "Import new Data",
       "majorUpdateBanner": "You have updated key configurations of the dataset schema which are not saved, please save to apply changes.  Any files imported or edits made to the existing data will be discarded after changes are applied",
       "minorUpdateBanner": "You have imported new data into the dataset, please save the changes to apply. Any changes you made to the individual data items will be discarded after changes are applied",
       "patchUpdateBanner": "You have edited individual items in the dataset which are not saved. Please save the changes to apply",
@@ -228,13 +233,13 @@
       "confirmMinorUpdatesDesc": "Any changes you made to the individual data items (patch update) will be discarded after changes are applied",
       "confirmPatchUpdatesTitle": "Confirm patch update",
       "confirmPatchUpdatesDesc": "Changed data rows will be updated in the dataset",
-      "patchDataUnsuccessfulTitle": "Patch Data Update Unsuccessful",
+      "patchDataUnsuccessfulTitle": "Patch data update unsuccessful",
       "patchDataUnsuccessfulDesc": "Something went wrong. Please try again.",
       "exportDataSuccessTitle": "Data export was successful",
       "exportDataSuccessDesc": "Your data has been successfully exported.",
-      "exportDataUnsucessTitle": "Dataset Export Unsuccessful",
+      "exportDataUnsucessTitle": "Dataset export unsuccessful",
       "exportDataUnsucessDesc": "Something went wrong. Please try again.",
-      "ImportDataUnsucessTitle": "Dataset Import Unsuccessful",
+      "ImportDataUnsucessTitle": "Dataset import unsuccessful",
       "importDataUnsucessDesc": "Something went wrong. Please try again.",
       "validationInitiatedTitle": "Dataset uploaded and validation initiated",
       "validationInitiatedDesc": "The dataset file was successfully uploaded. The validation and preprocessing is now initiated",
@@ -254,7 +259,7 @@
       "delete": "Delete Dataset",
       "modals": {
         "import": {
-          "title": "Import New Data",
+          "title": "Import new data",
           "fileFormatlabel": "Select the file format",
           "attachments": "Attachments",
           "maxSize": "Maximum file size - 10mb",
@@ -262,12 +267,12 @@
           "import": "Import",
           "cancel": "Cancel",
           "uploadInProgress": "Upload in Progress...",
-          "uploadDesc": "Uploading dataset. Please wait until the upload finishes. If you cancel midwway, the data and progress will be lost.",
+          "uploadDesc": "Uploading dataset. Please wait until the upload finishes. If you cancel midway, the data and progress will be lost.",
           "invalidFile": "Invalid File Format",
           "invalidFileDesc": "The uploaded file is not in the correct {{format}} format. Please upload a valid {{format}} file and try again."
         },
         "export": {
-          "export": "Export Data",
+          "export": "Export data",
           "exportButton": "Export",
           "fileFormatlabel": "Select the file format",
           "title": "Data export was successful",
@@ -275,17 +280,19 @@
         },
         "delete": {
           "title": "Are you sure?",
-          "description": "Once you delete the dataset all models connected to this model will become untrainable. Are you sure you want to proceed?"
+          "description": "Once you delete the dataset all models connected to this model will become untrainable. Are you sure you want to proceed?",
+          "error":"Dataset Group Deletion  Unsuccessful"
         },
         "edit": {
           "title": "Edit",
           "data": "Data",
           "label": "Label",
-          "update": "Update"
+          "update": "Update",
+          "error":"Dataset Group Update Unsuccessful"
         },
         "upload": {
           "title": "Data upload successful",
-          "desc": "The dataset file was successfully uploaded. Please save the changes to initiate data validaiton and preprocessing"
+          "desc": "The dataset file was successfully uploaded. Please save the changes to initiate data validation and preprocessing"
         },
         "datasetDelete": {
           "confirmationTitle": "Are you sure?",
@@ -314,7 +321,7 @@
       "successTitle": "Data import was successful",
       "successDesc": "Your data has been successfully imported.",
       "unsuccessTitle": "Data import was unsuccessful",
-      "unsuccessDesc": "Stopword Import Unsuccessful"
+      "unsuccessDesc": "Stop words Import Unsuccessful"
     }
   },
   "validationSessions": {
@@ -327,8 +334,8 @@
     "title": "Corrected Texts",
     "export": "Export Data",
     "searchIncomingText": "Search incoming texts",
-    "filterAsc": "Filter by data created - Ascending",
-    "filterDesc": "Filter by data created - Descending",
+    "filterAsc": "Filter by date created - Ascending",
+    "filterDesc": "Filter by date created - Descending",
     "platform": "Platform",
     "dateAndTime": "Date & Time",
     "inferenceTime": "Inference Time",
@@ -336,15 +343,25 @@
     "predictedHierarchy": "Predicted Class Hierarchy",
     "predictedConfidenceProbability": "Predicted Classes Average Confidence Probability",
     "correctedHierarchy": "Corrected Class Hierarchy",
-    "correctedConfidenceProbability": "Corrected Classes Average Confidence Probability"
+    "correctedConfidenceProbability": "Corrected Classes Average Confidence Probability",
+    "labelNotFoundText": "Label not in dataset",
+    "exportSuccessTitle": "Data export was successful",
+    "exportSuccessDesc": "Your data has been successfully exported.",
+    "exportDataUnsucessTitle": "Data Export Unsuccessful",
+    "exportDataUnsucessDesc": "Something went wrong. Please try again."
   },
-
   "dataModels": {
     "productionModels": "Production Models",
     "dataModels": "Data Models",
     "createModel": "Create Model",
     "noProdModels":"No production models available",
     "noModels":"No models available",
+    "sortOptions":{
+      "dataModelAsc":"Data Model Name A-Z",
+      "dataModelDesc":"Data Model Name Z-A",
+      "createdDateAsc":"Created Date Oldest First",
+      "createdDateDesc":"Created Date Latest First"
+    },
     "filters": {
       "modelName": "Model Name",
       "version": "Version",
@@ -385,12 +402,12 @@
       "title": "Create Data Model",
       "replaceTitle": "Warning: Replace Production Model",
       "replaceDesc": "Adding this model to production will replace the current production model. Are you sure you want to proceed?",
-      "successTitle": "Data Model Created and Trained",
+      "successTitle": "Data Model Created and Started Training",
       "successDesc": " You have successfully created and started training the data model. You can view it on the data model dashboard.",
       "viewAll": "View All Data Models",
       "errorTitle": "Error Creating Data Model",
       "errorDesc": " There was an issue creating or training the data model. Please try again. If the problem persists, contact support for assistance.",
-      "replaceWarning": "{{platform}} integration is currently disabled, therefore the model wouldn't recieve any inputs or make any predictions"
+      "replaceWarning": "{{platform}} integration is currently disabled, therefore the model wouldn't receive any inputs or make any predictions"
     },
     "configureDataModel": {
       "saveChangesTitile": "Changes Saved Successfully",
@@ -401,15 +418,15 @@
       "deleteErrorDesc": "The model cannot be deleted because it is currently in production. Please escalate another model to production before proceeding to delete this model.",
       "deleteConfirmation": "Are you sure?",
       "deleteConfirmationDesc": "Confirm that you are wish to delete the following data model",
-      "deleteModalErrorTitle": "Error Deleting Data Model",
+      "deleteModalErrorTitle": "Error deleting data model",
       "deleteModalErrorDesc": "There was an issue deleting the data model. Please try again. If the problem persists, contact support for assistance.",
       "retrainDataModalErrorTitle": "Error retraining data model",
       "retrainDataModalErrorDesc":"There was an issue retraining the data model. Please try again. If the problem persists, contact support for assistance." ,
       "title": "Configure Data Model",
       "retrainCard": "Model updated. Please initiate retraining to continue benefiting from the latest improvements.",
       "retrain": "Retrain",
-      "deleteModal": "Delete Model",
-      "confirmRetrain": "Confirm Retrain Model",
+      "deleteModal": "Delete model",
+      "confirmRetrain": "Confirm retrain model",
       "confirmRetrainDesc": "Are you sure you want to retrain this model?",
       "save": "Save Changes"
     },
@@ -435,5 +452,22 @@
     "predictedHierarchy": "Predicted Class Hierarchy : ",
     "averageConfidence": "Average Confidence : ",
     "classProbabilities": "Class Probabilities : "
+  },
+  "optionLists": {
+    "text": "Text",
+    "numbers": "Number",
+    "dateTimes": "Date Time",
+    "email": "Email",
+    "fileAttachements": "File Attachments",
+    "importToAdd": "Import to add",
+    "importToDelete": "Import to delete",
+    "userManagement": "User Management",
+    "integration": "Integration",
+    "dataset": "Dataset",
+    "dataModels":"Data Models",
+    "classes": "Classes",
+    "stopWords":"Stop Words",
+    "incomingTexts": "Incoming Texts",
+    "testModel":  "Test Model"
   }
 }

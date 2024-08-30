@@ -11,10 +11,14 @@ declaration:
       - field: payload
         type: string
         description: "Body field 'payload'"
+      - field: extractData
+        type: json
+        description: "Body field 'extractData'"
 
 get_webhook_data:
   assign:
     payload: ${incoming.body.payload}
+    extract_data: ${incoming.body.extractData}
     issue_info: ${incoming.body.payload.issue}
     event_type: ${incoming.body.payload.webhookEvent}
   next: check_event_type
@@ -23,7 +27,7 @@ check_event_type:
   switch:
     - condition: ${event_type === 'jira:issue_updated'}
       next: get_existing_labels
-  next: get_jira_issue_info
+  next: send_issue_data
 
 get_existing_labels:
   call: http.post
@@ -44,7 +48,7 @@ check_previous_labels:
   switch:
     - condition: ${res.response.body.length > 0}
       next: assign_previous_labels
-  next: get_jira_issue_info
+  next: send_issue_data
 
 assign_previous_labels:
   assign:
@@ -68,19 +72,8 @@ validate_issue_labels:
 check_label_mismatch:
   switch:
     - condition: ${label_response.response.body.isMismatch === 'true'}
-      next: get_jira_issue_info
+      next: send_issue_data
   next: return_data
-
-get_jira_issue_info:
-  call: http.post
-  args:
-    url: "[#CLASSIFIER_DMAPPER]/hbs/classifier/return_jira_issue_info"
-    headers:
-      type: json
-    body:
-      data: ${issue_info}
-  result: extract_info
-  next: send_issue_data
 
 send_issue_data:
   call: http.post
@@ -91,7 +84,7 @@ send_issue_data:
     body:
       platform: 'JIRA'
       key: ${issue_info.key}
-      data: ${extract_info.response.body}
+      data: ${extract_data}
       parentFolderId: None
       mailId: None
       labels: ${issue_info.fields.labels}

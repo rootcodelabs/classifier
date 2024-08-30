@@ -14,6 +14,7 @@ import {
 } from 'types/datasetGroups';
 import { useNavigate } from 'react-router-dom';
 import {
+  deleteDatasetGroup,
   exportDataset,
   getDatasets,
   getMetadata,
@@ -76,12 +77,14 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const [updatePriority, setUpdatePriority] = useState<UpdatePriority>(
     UpdatePriority.NULL
   );
+  const [confirmationTitle, setConfirmationTitle] = useState<string>('');
+  const [confirmationDesc, setConfirmationDesc] = useState<string>('');
   const [openedModalContext, setOpenedModalContext] =
     useState<ViewDatasetGroupModalContexts>(ViewDatasetGroupModalContexts.NULL);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
   const navigate = useNavigate();
-
+  const changeConfirmationFunction = useRef(() => {});
+  const [confirmationFLow, setConfirmationFlow] = useState('');
   useEffect(() => {
     setFetchEnabled(false);
   }, []);
@@ -250,7 +253,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   });
 
   const handleFileSelect = (file: File | undefined) => {
-    setFile(file)
+    setFile(file);
   };
 
   const handleImport = () => {
@@ -277,6 +280,8 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       handleCloseModals();
     },
     onError: () => {
+      handleCloseModals();
+      setImportStatus('ABORTED');
       open({
         title: t('datasetGroups.detailedView.ImportDataUnsucessTitle') ?? '',
         content: (
@@ -305,7 +310,12 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             >
               {t('global.cancel')}
             </Button>
-            <Button onClick={()=>{navigate('/validation-sessions');close()}}>
+            <Button
+              onClick={() => {
+                navigate('/validation-sessions');
+                close();
+              }}
+            >
               {t('datasetGroups.detailedView.viewValidations') ?? ''}
             </Button>
           </div>
@@ -333,21 +343,26 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     majorUpdateDatasetGroupMutation.mutate(payload);
   };
 
+  const openConfirmationModal = (
+    content: string,
+    title: string,
+    onConfirm: () => void,
+    flow: string
+  ) => {
+    setOpenedModalContext(ViewDatasetGroupModalContexts.CONFIRMATION_MODAL);
+    setIsModalOpen(true);
+    setConfirmationDesc(content);
+    setConfirmationTitle(title);
+    changeConfirmationFunction.current = onConfirm;
+    setConfirmationFlow(flow);
+  };
+
   const datasetGroupUpdate = () => {
-    const classHierarchyError = validateClassHierarchy(nodes);
+    const classHierarchyError = validateClassHierarchy(nodes) || nodesError;
     const validationRulesError = validateValidationRules(validationRules);
 
     setNodesError(classHierarchyError);
     setValidationRuleError(validationRulesError);
-
-    if (
-      classHierarchyError ||
-      validationRulesError ||
-      nodesError ||
-      validationRuleError
-    ) {
-      return;
-    }
 
     const isMajorUpdateDetected = isMajorUpdate(
       {
@@ -361,45 +376,30 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
       }
     );
 
-    const openConfirmationModal = (
-      content: string,
-      title: string,
-      onConfirm: () => void
-    ) => {
-      open({
-        content,
-        title,
-        footer: (
-          <div className="flex-grid">
-            <Button
-              appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={close}
-            >
-              {t('global.cancel')}
-            </Button>
-            <Button onClick={onConfirm}>{t('global.confirm')}</Button>
-          </div>
-        ),
-      });
-    };
+    if (classHierarchyError || validationRulesError || nodesError) {
+      return;
+    }
 
     if (isMajorUpdateDetected) {
       openConfirmationModal(
         t('datasetGroups.detailedView.confirmMajorUpdatesDesc'),
         t('datasetGroups.detailedView.confirmMajorUpdatesTitle'),
-        handleMajorUpdate
+        handleMajorUpdate,
+        'update'
       );
     } else if (minorPayload) {
       openConfirmationModal(
         t('datasetGroups.detailedView.confirmMinorUpdatesDesc'),
         t('datasetGroups.detailedView.confirmMinorUpdatesTitle'),
-        () => minorUpdateMutation.mutate(minorPayload)
+        () => minorUpdateMutation.mutate(minorPayload),
+        'update'
       );
     } else if (patchPayload) {
       openConfirmationModal(
         t('datasetGroups.detailedView.confirmPatchUpdatesDesc'),
         t('datasetGroups.detailedView.confirmPatchUpdatesTitle'),
-        () => patchUpdateMutation.mutate(patchPayload)
+        () => patchUpdateMutation.mutate(patchPayload),
+        'update'
       );
     }
   };
@@ -413,8 +413,26 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     },
     onError: () => {
       open({
-        title: 'Dataset Group Update Unsuccessful',
-        content: <p>Something went wrong. Please try again.</p>,
+        title: t('datasetGroups.detailedView.modals.edit.error'),
+        content: <p>{t('datasetGroups.modals.delete.errorDesc')}</p>,
+      });
+    },
+  });
+
+  const handleDeleteDataset = () => {
+    deleteDatasetMutation.mutate(dgId);
+  };
+
+  const deleteDatasetMutation = useMutation({
+    mutationFn: (dgId: number) => deleteDatasetGroup(dgId),
+    onSuccess: async () => {
+      navigate(0);
+      close();
+    },
+    onError: () => {
+      open({
+        title: t('datasetGroups.detailedView.modals.delete.error'),
+        content: <p>{t('datasetGroups.modals.delete.errorDesc')}</p>,
       });
     },
   });
@@ -435,6 +453,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         <div className="content-wrapper">
           <DatasetDetailedViewTable
             metadata={metadata ?? []}
+            isMetadataLoading={isMetadataLoading}
             handleOpenModals={handleOpenModals}
             bannerMessage={bannerMessage}
             datasets={datasets}
@@ -463,43 +482,18 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
             <Button
               appearance={ButtonAppearanceTypes.ERROR}
               onClick={() =>
-                open({
-                  title:
-                    t('datasetGroups.detailedView.modals.delete.title') ?? '',
-                  content: (
-                    <p>
-                      {t(
-                        'datasetGroups.detailedView.modals.delete.description'
-                      )}
-                    </p>
-                  ),
-                  footer: (
-                    <div className="flex-grid">
-                      <Button
-                        appearance={ButtonAppearanceTypes.SECONDARY}
-                        onClick={() => close()}
-                      >
-                        {t('global.cancel')}
-                      </Button>
-                      <Button
-                        appearance={ButtonAppearanceTypes.ERROR}
-                        onClick={() => close()}
-                      >
-                        {t('global.delete')}
-                      </Button>
-                    </div>
-                  ),
-                })
+                openConfirmationModal(
+                  t('datasetGroups.detailedView.modals.delete.title'),
+                  t('datasetGroups.detailedView.modals.delete.title'),
+                  () => handleDeleteDataset(),
+                  'delete'
+                )
               }
             >
               {t('datasetGroups.detailedView.delete') ?? ''}
             </Button>
             <Button
-              disabled={
-                majorUpdateDatasetGroupMutation.isLoading ||
-                minorUpdateMutation.isLoading ||
-                patchUpdateMutation.isLoading
-              }
+              disabled={majorUpdateDatasetGroupMutation.isLoading}
               onClick={() => datasetGroupUpdate()}
             >
               {t('global.save') ?? ''}
@@ -527,6 +521,15 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         deleteRow={deleteRow}
         file={file}
         exportFormat={exportFormat}
+        isImportDataLoading={importDataMutation.isLoading}
+        confirmationModalTitle={confirmationTitle}
+        confirmationModalDesc={confirmationDesc}
+        onConfirmationConfirm={() => changeConfirmationFunction.current()}
+        majorUpdateLoading={majorUpdateDatasetGroupMutation.isLoading}
+        patchUpdateLoading={patchUpdateMutation.isLoading}
+        minorUpdateLoading={minorUpdateMutation.isLoading}
+        confirmationFLow={confirmationFLow}
+        deleteDatasetMutationLoading={deleteDatasetMutation.isLoading}
       />
     </div>
   );

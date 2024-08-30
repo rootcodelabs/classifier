@@ -80,7 +80,7 @@ get_epoch_date:
 
 check_deployment_platform:
   switch:
-    - condition: ${deployment_platform == 'jira' || deployment_platform == 'outlook' || deployment_platform == 'pinal'}
+    - condition: ${deployment_platform == 'jira' || deployment_platform == 'outlook'}
       next: update_existing_models_deployment_platform
     - condition: ${deployment_platform == 'testing' || deployment_platform == 'undeployed'}
       next: create_model_metadata
@@ -182,6 +182,7 @@ execute_cron_manager:
       modelId: ${model_id}
       newModelId: ${model_id}
       updateType: 'major'
+      prevDeploymentEnv: 'None'
   result: res
   next: assign_success_response
 

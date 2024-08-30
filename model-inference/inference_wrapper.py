@@ -16,7 +16,7 @@ class InferenceWrapper:
         self.active_jira_model_id = None
         self.active_outlook_model_id = None
 
-    def model_swapping(self, model_path:str, best_performing_model:str, deployment_platform:str, class_hierarchy:list, model_id:int):
+    def load_model(self, model_path:str, best_performing_model:str, deployment_platform:str, class_hierarchy:list, model_id:int):
         try:
             
             logger.info("LOGGING INSIDE model_swapping")
@@ -113,7 +113,7 @@ class InferenceWrapper:
                 class_hierarchy = data.get("class_hierarchy")
                 model_id = data.get("model_id")
                 
-                self.model_swapping(model_path=model_path, best_performing_model=best_model, deployment_platform=deployment_platform,class_hierarchy=class_hierarchy, model_id=model_id)
+                self.load_model(model_path=model_path, best_performing_model=best_model, deployment_platform=deployment_platform,class_hierarchy=class_hierarchy, model_id=model_id)
                 
             else:
                return None            
@@ -132,7 +132,7 @@ class InferenceWrapper:
         jira_model_id = None
 
         if not self.active_jira_model :
-            file_location = "/shared/models/outlook/jira_inference_metadata.json"
+            file_location = "/shared/models/jira/jira_inference_metadata.json"
             logger.info("RETRIEVING DATA FROM JSON FILE IN get_jira_model_id function ")
             if os.path.exists(file_location):
                 with open(file_location, 'r') as json_file:
@@ -144,7 +144,7 @@ class InferenceWrapper:
                 class_hierarchy = data.get("class_hierarchy")
                 model_id = data.get("model_id")
                 
-                self.model_swapping(model_path=model_path, best_performing_model=best_model, deployment_platform=deployment_platform,class_hierarchy=class_hierarchy, model_id=model_id)
+                self.load_model(model_path=model_path, best_performing_model=best_model, deployment_platform=deployment_platform,class_hierarchy=class_hierarchy, model_id=model_id)
                 
             else:
                return None

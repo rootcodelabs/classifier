@@ -1,5 +1,4 @@
 
-#TODO - REFACTOR CODE TO CREATE A GENERIC FUNCTION HERE WHICH WILL CONSTRUCT AND RETURN THE CONSTANTS IN A DICTIONARY WHICH CAN BE REFERENCED IN ALL PARTS OF THE CODE
 
 DATA_DOWNLOAD_ENDPOINT = "http://file-handler:8000/datasetgroup/data/download/json"
 
@@ -16,6 +15,8 @@ UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT = "http://ruuter-private:8088/classifi
 OUTLOOK_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/outlook/update"
 
 JIRA_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/jira/update"
+
+TEST_DEPLOYMENT_ENDPOINT = "http://172.25.0.7:8003/classifier/datamodel/deployment/testing/update"
 
 TRAINING_LOGS_PATH = "/app/model_trainer/training_logs.log"
 
@@ -56,10 +57,10 @@ TRAINING_IN_PROGRESS_PROGRESS_MESSAGE = "The dataset is being trained on all sel
 
 DEPLOYING_MODEL_PROGRESS_MESSAGE = "Model training complete. The trained model is now being deployed"
 
-MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to the {deployment_environment} environment"
+MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to the environment"
 
 
-INITIATING_TRAINING_PROGRESS_PERCENTAGE=20
+INITIATING_TRAINING_PROGRESS_PERCENTAGE=30
 
 TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE=50
 
@@ -70,3 +71,7 @@ MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE=100
 OUTLOOK = "outlook"
 
 JIRA="jira"
+
+TESTING="testing"
+
+UNDEPLOYED="undeployed"

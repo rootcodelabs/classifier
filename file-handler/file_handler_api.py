@@ -16,6 +16,7 @@ from io import BytesIO, TextIOWrapper
 from dataset_deleter import DatasetDeleter
 from dataset_deleter import ModelDeleter
 from datetime import datetime
+from loguru import logger
 
 app = FastAPI()
 
@@ -200,7 +201,8 @@ async def download_and_convert(request: Request, saveLocation:str, background_ta
     json_file_path = os.path.join(JSON_FILE_DIRECTORY, f"{local_file_name}")
 
     with open(f"{json_file_path}", 'r') as json_file:
-        json_data = json.load(json_file)
+        json_str = json_file.read().replace('NaN', 'null')
+        json_data = json.loads(json_str)
 
     background_tasks.add_task(os.remove, json_file_path)
 
@@ -415,7 +417,7 @@ async def delete_dataset_files(request: Request):
         print(f"Error in delete_dataset_files: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/datamodel/data/corrected/download") #Download Filtered
+@app.post("/datamodel/data/corrected/download")
 async def download_and_convert(request: Request, exportData: ExportCorrectedDataFile, backgroundTasks: BackgroundTasks):
     cookie = request.cookies.get("customJwtCookie")
     await authenticate_user(f'customJwtCookie={cookie}')
@@ -425,8 +427,22 @@ async def download_and_convert(request: Request, exportData: ExportCorrectedData
     if export_type not in ["xlsx", "yaml", "json"]:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
-    # get json payload by calling to Ruuter
-    json_data = {}
+    headers = {
+                'Content-Type': 'application/json',
+                'Cookie': f'customJwtCookie={cookie}'
+            }
+    
+    payload = {
+        "platform" : platform,
+        "sortType" : "asc"
+    }
+
+    response = requests.get(CORRECTED_TEXT_EXPORT, headers=headers, params=payload)
+    response.raise_for_status()
+
+    response_data = response.json()
+    print(response_data)
+    json_data = response_data["response"]["data"]
     now = datetime.now()
     formatted_time_date = now.strftime("%Y%m%d_%H%M%S")
     result_string = f"corrected_text_{formatted_time_date}"
@@ -441,6 +457,8 @@ async def download_and_convert(request: Request, exportData: ExportCorrectedData
         file_converter.convert_json_to_yaml(json_data, output_file)
     elif export_type == "json":
         output_file = f"{result_string}{JSON_EXT}"
+        with open(output_file, 'w') as json_file:
+            json.dump(json_data, json_file, indent=4)
     else:
         raise HTTPException(status_code=500, detail=EXPORT_TYPE_ERROR)
 
@@ -455,13 +473,53 @@ async def delete_datamodels(request: Request):
         await authenticate_user(f'customJwtCookie={cookie}')
 
         payload = await request.json()
+
+        logger.info(f"MODEL PAYLOAD - {payload}")
         model_id = int(payload["modelId"])
+        deployment_env = payload["deploymentEnv"]
 
         deleter = ModelDeleter(S3_FERRY_URL)
         success = deleter.delete_model_files(model_id)
 
         if success:
-            return JSONResponse(status_code=200, content={"message": "Data model deletion completed successfully."})
+            headers = {
+                'Content-Type': 'application/json',
+                'Cookie': f'customJwtCookie={cookie}'
+            }
+            active_models_deleted = False
+            if deployment_env.lower() == "jira":
+                
+                logger.info("DELETING JIRA ACTIVE MODEL")
+                response = requests.post(JIRA_ACTIVE_MODEL_DELETE_URL, headers=headers)
+                if response.status_code == 200:
+                    active_models_deleted = True
+            elif deployment_env.lower() == "outlook":
+
+                logger.info("DELETING OUTLOOK ACTIVE MODEL")
+                response = requests.post(OUTLOOK_ACTIVE_MODEL_DELETE_URL, headers=headers)
+                if response.status_code == 200:
+                    active_models_deleted = True
+            elif deployment_env.lower() == "testing":
+
+                logger.info("DELETING TESTING ACTIVE MODEL")
+                response = requests.post(TEST_MODEL_DELETE_URL, headers=headers, json={"deleteModelId": model_id})
+                logger.info("TESTING ACTIVE OMDEL")
+                if response.status_code == 200:
+                    active_models_deleted = True
+            else:
+                active_models_deleted = True
+
+
+            if active_models_deleted:
+                response = requests.post(MODEL_METADATA_DELETE_URL, headers=headers, json={"modelId": model_id})
+                if response.status_code == 200:
+                    active_models_deleted = True
+                    logger.info(f"MODEL DELETION PAYLOAD - {response.text}")
+                    return JSONResponse(status_code=200, content={"message": "Data model deletion completed successfully."})
+                else:
+                    return JSONResponse(status_code=500, content={"message": "Data model metadata deletion failed."})
+            else:
+                return JSONResponse(status_code=500, content={"message": "Active data model deletion failed."})
         else:
             return JSONResponse(status_code=500, content={"message": "Data model deletion failed."})
     except Exception as e:

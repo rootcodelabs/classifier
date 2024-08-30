@@ -30,6 +30,15 @@ const ViewDatasetGroupModalController = ({
   deleteRow,
   file,
   exportFormat,
+  isImportDataLoading,
+  confirmationModalTitle,
+  confirmationModalDesc,
+  onConfirmationConfirm,
+  majorUpdateLoading,
+  patchUpdateLoading,
+  minorUpdateLoading,
+  confirmationFLow,
+  deleteDatasetMutationLoading
 }: {
   setImportStatus: React.Dispatch<React.SetStateAction<string>>;
   handleFileSelect: (file: File | undefined) => void;
@@ -52,6 +61,15 @@ const ViewDatasetGroupModalController = ({
   deleteRow: (dataRow: any) => void;
   file: File | undefined;
   exportFormat: string;
+  isImportDataLoading: boolean;
+  confirmationModalTitle: string;
+  confirmationModalDesc: string;
+  onConfirmationConfirm: () => any;
+  majorUpdateLoading: boolean;
+  patchUpdateLoading: boolean;
+  minorUpdateLoading: boolean;
+  deleteDatasetMutationLoading: boolean;
+  confirmationFLow: string;
 }) => {
   const { close } = useDialog();
   const { t } = useTranslation();
@@ -79,7 +97,8 @@ const ViewDatasetGroupModalController = ({
                 </Button>
                 <Button
                   onClick={handleImport}
-                  disabled={!importFormat || !file}
+                  disabled={!importFormat || !file || isImportDataLoading}
+                  showLoadingIcon={isImportDataLoading}
                 >
                   {t('datasetGroups.detailedView.modals.import.import')}
                 </Button>
@@ -112,8 +131,8 @@ const ViewDatasetGroupModalController = ({
                 disabled={!importFormat}
               />
               {importStatus === 'STARTED' && (
-                <div className='upload-progress-wrapper'>
-                  <div className='upload-progress-text-wrapper'>
+                <div className="upload-progress-wrapper">
+                  <div className="upload-progress-text-wrapper">
                     {t(
                       'datasetGroups.detailedView.modals.import.uploadInProgress'
                     )}
@@ -220,6 +239,51 @@ const ViewDatasetGroupModalController = ({
             }
           >
             {t('datasetGroups.detailedView.modals.delete.description')}
+          </Dialog>
+        )}
+      {isModalOpen &&
+        openedModalContext ===
+          ViewDatasetGroupModalContexts.CONFIRMATION_MODAL && (
+          <Dialog
+            isOpen={
+              isModalOpen &&
+              openedModalContext ===
+                ViewDatasetGroupModalContexts.CONFIRMATION_MODAL
+            }
+            onClose={closeModals}
+            title={confirmationModalTitle}
+            footer={
+              <div className="flex-grid">
+                <Button
+                  appearance={ButtonAppearanceTypes.SECONDARY}
+                  onClick={close}
+                >
+                  {t('global.cancel')}
+                </Button>
+                {confirmationFLow === 'update' ? (
+                  <Button
+                    disabled={
+                      majorUpdateLoading ||
+                      minorUpdateLoading ||
+                      patchUpdateLoading
+                    }
+                    onClick={onConfirmationConfirm}
+                  >
+                    {t('global.confirm')}
+                  </Button>
+                ) : (
+                  <Button
+                    appearance={ButtonAppearanceTypes.ERROR}
+                    onClick={onConfirmationConfirm}
+                    disabled={deleteDatasetMutationLoading}
+                  >
+                    {t('global.delete')}
+                  </Button>
+                )}
+              </div>
+            }
+          >
+            {confirmationModalDesc}
           </Dialog>
         )}
     </>

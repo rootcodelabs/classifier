@@ -27,15 +27,18 @@ class InferencePipeline:
             
         if model_name == DISTIL_BERT:
             self.base_model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased')
+            self.base_model.load_state_dict(torch.load(f"{results_folder}/model_state_dict.pth"))
             self.tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
         
         elif model_name == ROBERTA:
             self.base_model = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base')
+            self.base_model.load_state_dict(torch.load(f"{results_folder}/model_state_dict.pth"))
             self.tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base')
         
         elif model_name == BERT:
             self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
             self.base_model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+            self.base_model.load_state_dict(torch.load(f"{results_folder}/model_state_dict.pth"))
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_name = model_name
@@ -51,8 +54,17 @@ class InferencePipeline:
         model_names = sorted(model_names, key=lambda x: int(x.split('_')[-1].split('.')[0]))
         self.models_dict = {}
         for i in range(len(model_names)):
-            self.models_dict[i] = torch.load(os.path.join(f"{results_folder}/{TRAINED_BASE_MODEL_LAYERS}",model_names[i]))
+            logger.info(f"RESULTS FOLDER - {results_folder}")
 
+     
+            logger.info(f"BASE MODEL FOLDER  - {TRAINED_BASE_MODEL_LAYERS}")
+            logger.info(f"MODEL NAMES - {model_names[i]}")
+
+            try:
+                self.models_dict[i] = torch.load(os.path.join(f"{results_folder}/{TRAINED_BASE_MODEL_LAYERS}",model_names[i]),map_location=self.device)
+
+            except Exception as e:
+                logger.info(e)
         classification_model_names = os.listdir(f"{results_folder}/{CLASSIFIER_LAYERS_FOLDER}")
         classification_model_names = sorted(classification_model_names, key=lambda x: int(x.split('_')[-1].split('.')[0]))
         self.classification_models_dict = {}
@@ -60,11 +72,38 @@ class InferencePipeline:
             self.classification_models_dict[i] = torch.load(os.path.join(f"{results_folder}/{CLASSIFIER_LAYERS_FOLDER}",classification_model_names[i]))
     
     def find_index(self, data, search_dict):
+
+        logger.info(f"DATA - {data}")
+        logger.info(f"SEARCH DICT - {search_dict}")
+
         for index, d in enumerate(data):
             if d == search_dict:
                 return index
         return None
     
+    def extract_classes(self):
+        data = self.hierarchy_file
+        result = []
+        
+        def recurse(subdata):
+            if isinstance(subdata, dict):
+                result.append(subdata['class'])
+                for subclass in subdata.get('subclasses', []):
+                    recurse(subclass)
+            elif isinstance(subdata, list):
+                for item in subdata:
+                    recurse(item)
+
+        recurse(data)
+        return result
+    
+    def find_missing_classes(self, main_classes, uploaded_classes):
+        missing_classes = [cls for cls in uploaded_classes if cls not in main_classes]
+        
+        return missing_classes
+
+
+
     def predict_class(self,text_input):
 
         logger.info("ENTERING PREDICT CLASS")
@@ -78,7 +117,7 @@ class InferencePipeline:
         self.base_model.to(self.device)
 
         logger.info(f"CLASS HIERARCHY FILE {self.hierarchy_file}")
-        logger.info(f"INPUTS  - {inputs}")
+        
 
 
         data = self.hierarchy_file
@@ -91,6 +130,9 @@ class InferencePipeline:
             
             while data:
                 current_classes = {parent: [d['class'] for d in data]}
+                
+                logger.info(f"CURRENT CLASSES - {current_classes}")
+
                 model_num = self.find_index(self.models, current_classes)
                 if model_num is None:
                     break
@@ -117,7 +159,6 @@ class InferencePipeline:
                     predictions = torch.argmax(outputs.logits, dim=1)
                     predicted_probabilities = probability.gather(1, predictions.unsqueeze(1)).squeeze()
 
-                    #TODO - ADD THE THRESHOLD TO A CONSTANT FILD
                     if int(predicted_probabilities.cpu().item()*100)<0:
                         return [],[]
                     probabilities.append(int(predicted_probabilities.cpu().item()*100))
@@ -157,83 +198,101 @@ class InferencePipeline:
         return predicted_classes, probabilities
     
     def user_corrected_probabilities(self, text_input, user_classes):
-        
-        logger.info(f"USER CLASSES - {user_classes}")
-        logger.info(f"TEXT INPUT  - {text_input}")
+        try:
+            logger.info(f"USER CLASSES - {user_classes}")
+            logger.info(f"TEXT INPUT  - {text_input}")
 
-        inputs = self.tokenizer(text_input, truncation=True, padding=True, return_tensors='pt')
-        inputs.to(self.device)
-        inputs = {key: val.to(self.device) for key, val in inputs.items()}
-        predicted_classes = []
-        user_class_probabilities = []
-        real_predicted_probabilities = []
-        self.base_model.to(self.device)
-        i = 0
-        data = self.hierarchy_file
-        parent = 1
-
-        logger.info("ENTERING LOOP IN user_corrected_probabilities")
-
-        for i in range(len(user_classes)):
-            current_classes = {parent: [d['class'] for d in data]}
-            model_num = self.find_index(self.models, current_classes)
-            if model_num is None:
-                break
-            label_encoder = self.label_encoder_dict[model_num]
-            num_labels = len(label_encoder.classes_)
-
-            if self.model_name == DISTIL_BERT:
-                self.base_model.classifier = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',  num_labels=num_labels).classifier
-                self.base_model.distilbert.transformer.layer[-2:].load_state_dict(self.models_dict[model_num])
-
-            elif self.model_name == ROBERTA:
-                self.base_model.classifier = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base', num_labels=num_labels).classifier
-                self.base_model.roberta.encoder.layer[-2:].load_state_dict(self.models_dict[model_num])
-
-            elif self.model_name == BERT:
-                self.base_model.classifier = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=num_labels).classifier
-                self.base_model.base_model.encoder.layer[-2:].load_state_dict(self.models_dict[model_num])
-
-            self.base_model.classifier.load_state_dict(self.classification_models_dict[model_num])
+            inputs = self.tokenizer(text_input, truncation=True, padding=True, return_tensors='pt')
+            inputs.to(self.device)
+            inputs = {key: val.to(self.device) for key, val in inputs.items()}
+            predicted_classes = []
+            user_class_probabilities = []
+            real_predicted_probabilities = []
             self.base_model.to(self.device)
+            i = 0
+            data = self.hierarchy_file
+            parent = 1
 
-            with torch.no_grad():
-                outputs = self.base_model(**inputs)
-                probability = F.softmax(outputs.logits, dim=1)
+            all_classes = self.extract_classes()
+            missing_classes = self.find_missing_classes(all_classes, user_classes)
 
-                user_class_index = label_encoder.transform([user_classes[i]])[0]
+            if missing_classes:
+                return [-1]
 
-                user_class_probability = probability[:, user_class_index].item()
 
-                logger.info(f"USER CLASS PROBABILITY {user_class_probability}")
+            logger.info("ENTERING LOOP IN user_corrected_probabilities")
 
-                user_class_probabilities.append(int(user_class_probability * 100))
+            for i in range(len(user_classes)):
+                current_classes = {parent: [d['class'] for d in data]}
+                
+                logger.info(f"CURRENT CLASSES - {current_classes}")
 
-                predictions = torch.argmax(outputs.logits, dim=1)
-                real_predicted_probabilities.append(int(probability.gather(1, predictions.unsqueeze(1)).squeeze().cpu().item() * 100))
+                model_num = self.find_index(self.models, current_classes)
 
-                predicted_label = label_encoder.inverse_transform(predictions.cpu().numpy())
-                predicted_classes.append(predicted_label[0])
+                logger.info(f"MODEL NUM - {model_num}")
+                if model_num is None:
 
-            data = next((item for item in data if item['class'] == user_classes[i]), None)
-            parent = user_classes[i]
-            if not data:
-                break
+                    logger.info(f"MODEL DOES NOT EXIST FOR CLASS - {current_classes}")
+                    break
+                label_encoder = self.label_encoder_dict[model_num]
+                num_labels = len(label_encoder.classes_)
 
-            while data['subclasses'] and len(data['subclasses']) <= 1:
-                if data['subclasses']:
-                    parent = data['subclasses'][0]['class']
-                    data = data['subclasses'][0]
-                else:
-                    data = None
+                if self.model_name == DISTIL_BERT:
+                    self.base_model.classifier = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased',  num_labels=num_labels).classifier
+                    self.base_model.distilbert.transformer.layer[-2:].load_state_dict(self.models_dict[model_num])
+
+                elif self.model_name == ROBERTA:
+                    self.base_model.classifier = XLMRobertaForSequenceClassification.from_pretrained('xlm-roberta-base', num_labels=num_labels).classifier
+                    self.base_model.roberta.encoder.layer[-2:].load_state_dict(self.models_dict[model_num])
+
+                elif self.model_name == BERT:
+                    self.base_model.classifier = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=num_labels).classifier
+                    self.base_model.base_model.encoder.layer[-2:].load_state_dict(self.models_dict[model_num])
+
+                self.base_model.classifier.load_state_dict(self.classification_models_dict[model_num])
+                self.base_model.to(self.device)
+
+                with torch.no_grad():
+                    outputs = self.base_model(**inputs)
+                    probability = F.softmax(outputs.logits, dim=1)
+
+                    user_class_index = label_encoder.transform([user_classes[i]])[0]
+
+                    user_class_probability = probability[:, user_class_index].item()
+
+                    logger.info(f"USER CLASS PROBABILITY {user_class_probability}")
+
+                    user_class_probabilities.append(int(user_class_probability * 100))
+
+                    predictions = torch.argmax(outputs.logits, dim=1)
+                    real_predicted_probabilities.append(int(probability.gather(1, predictions.unsqueeze(1)).squeeze().cpu().item() * 100))
+
+                    predicted_label = label_encoder.inverse_transform(predictions.cpu().numpy())
+                    predicted_classes.append(predicted_label[0])
+
+                data = next((item for item in data if item['class'] == user_classes[i]), None)
+                parent = user_classes[i]
+                if not data:
                     break
 
-            if not data['subclasses']:
-                break
+                while data['subclasses'] and len(data['subclasses']) <= 1:
+                    if data['subclasses']:
+                        parent = data['subclasses'][0]['class']
+                        data = data['subclasses'][0]
+                    else:
+                        data = None
+                        break
 
-            if not data:
-                break
+                if not data['subclasses']:
+                    break
 
-            data = data['subclasses']
+                if not data:
+                    break
 
-        return user_class_probabilities
+                data = data['subclasses']
+
+            return user_class_probabilities
+        
+        except Exception as e:
+            logger.info(f"ERROR in user_corrected_probabilities - {e}")
+            raise RuntimeError(f"ERROR in user_corrected_probabilities - {e}")

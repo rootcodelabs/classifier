@@ -4,7 +4,7 @@
 CREATE TYPE Maturity_Label AS ENUM ('development', 'staging', 'production ready');
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset2
-CREATE TYPE Deployment_Env AS ENUM ('jira', 'outlook', 'pinal', 'testing', 'undeployed');
+CREATE TYPE Deployment_Env AS ENUM ('jira', 'outlook', 'testing', 'undeployed');
 
 -- changeset kalsara Magamage:classifier-script-v9-changeset3
 CREATE TYPE Training_Status AS ENUM ('not trained', 'training in-progress', 'trained', 'retraining needed', 'untrainable');
@@ -50,6 +50,6 @@ CREATE TABLE model_configurations (
 INSERT INTO model_configurations (base_models, deployment_platforms, maturity_labels) VALUES
 (
     ARRAY['distil-bert', 'roberta', 'bert']::Base_Models[],
-    ARRAY['jira', 'outlook', 'pinal', 'testing', 'undeployed']::Deployment_Env[],
+    ARRAY['jira', 'outlook', 'testing', 'undeployed']::Deployment_Env[],
     ARRAY['development', 'staging', 'production ready']::Maturity_Label[]
 );

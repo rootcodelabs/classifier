@@ -87,7 +87,7 @@ const TestModel: FC = () => {
             />
           </div>
 
-          <div className="testModalformTextArea">
+          <div className="testModalFormTextArea">
             <p>{t('testModels.classifyTextLabel')}</p>
             <FormTextarea
               label=""
@@ -99,8 +99,9 @@ const TestModel: FC = () => {
           </div>
           <div className="testModalClassifyButton">
             <Button
-              disabled={testModel.text === ''}
+              disabled={testModel.text === ''  || classifyLoading}
               onClick={() => mutate(testModel)}
+              showLoadingIcon={classifyLoading}
             >
               {t('testModels.classify')}
             </Button>
@@ -127,8 +128,8 @@ const TestModel: FC = () => {
                 <div>
                   <b>{t('testModels.classProbabilities')}</b>
                   <ul className="testModalList">
-                    {formatPredictions(classifyData)?.map((prediction) => {
-                      return <li>{prediction}</li>;
+                    {formatPredictions(classifyData)?.map((prediction, index) => {
+                      return <li key={index}>{prediction}</li>;
                     })}
                   </ul>
                 </div>

@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { isFieldNameExisting } from 'utils/datasetGroupsUtils';
 import './DragableItemStyle.scss';
 import { useTranslation } from 'react-i18next';
+import useOptionLists from 'hooks/useOptionLists';
 
 const ItemTypes = {
   ITEM: 'item',
@@ -34,6 +35,8 @@ const DraggableItem = ({
     type: ItemTypes.ITEM,
     item: { index },
   });
+
+  const { dataTypesConfigs: dataTypes } = useOptionLists();
 
   const [, drop] = useDrop({
     accept: ItemTypes.ITEM,

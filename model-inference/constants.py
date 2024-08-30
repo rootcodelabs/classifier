@@ -18,6 +18,18 @@ ROBERTA = "roberta"
 
 BERT = "bert"
 
+OUTLOOK_MODELS_FOLDER_PATH = "/shared/models/outlook"
+
+JIRA_MODELS_FOLDER_PATH = "/shared/models/jira"
+
+SHARED_MODELS_ROOT_FOLDER = "/shared/models"
+
+MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE=100
+
+MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to environment"
+
+MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS = "Model Trained And Deployed"
+
 
 S3_DOWNLOAD_FAILED = {
     "upload_status": 500,
@@ -28,9 +40,11 @@ S3_DOWNLOAD_FAILED = {
 
 class UpdateRequest(BaseModel):
     modelId: int
+    oldModelId: int
     replaceDeployment:bool
-    replaceDeploymentPlatform:str
+    replaceDeploymentPlatform:Optional[str] = None
     bestBaseModel:str
+    updateType: Optional[str] = None
     progressSessionId: int
 
 class OutlookInferenceRequest(BaseModel):
@@ -43,3 +57,10 @@ class JiraInferenceRequest(BaseModel):
     inputId:str
     inputText:str
     finalLabels:Optional[List[str]] = None
+
+class TestInferenceRequest(BaseModel):
+    modelId:int
+    text:str
+
+class DeleteTestRequest(BaseModel):
+    deleteModelId:int

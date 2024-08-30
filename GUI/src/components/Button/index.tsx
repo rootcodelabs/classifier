@@ -7,6 +7,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   appearance?: 'primary' | 'secondary' | 'text' | 'icon' | 'error' | 'success';
   size?: 'm' | 's';
   disabledWithoutStyle?: boolean;
+  showLoadingIcon?: boolean;
 };
 
 const Button: FC<PropsWithChildren<ButtonProps>> = ({
@@ -15,6 +16,7 @@ const Button: FC<PropsWithChildren<ButtonProps>> = ({
   disabled,
   disabledWithoutStyle = false,
   children,
+  showLoadingIcon = false,
   ...rest
 }) => {
   const ref = useRef<HTMLButtonElement>(null);
@@ -34,6 +36,19 @@ const Button: FC<PropsWithChildren<ButtonProps>> = ({
       {...rest}
     >
       {children}
+      {showLoadingIcon && (
+        <div
+          style={{
+            height: '20px',
+          }}
+        >
+          {' '}
+          <div
+            className="spinner"
+            style={{ width: 20, height: 20, borderTop: ' 4px solid #FFFFFF' }}
+          ></div>
+        </div>
+      )}
     </button>
   );
 };

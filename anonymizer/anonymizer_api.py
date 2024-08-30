@@ -79,7 +79,7 @@ def anonymizer_functions(payload):
             print(f"Output payload : {output_payload}")
             response = requests.post(OUTLOOK_INFERENCE_ENDPOINT, json=output_payload, headers=headers)
         else:
-            print("Playform not recognized... ")
+            print("Platform not recognized... ")
             response = None
 
         print(f"Response from {platform} : {response}")
@@ -104,74 +104,44 @@ async def process_text(request: Request, background_tasks: BackgroundTasks):
 
     except Exception as e:
         return JSONResponse(status_code=200, content={"status":False, "detail":"Anonymizing process failed.", "error":e})
-    
-@app.post("/verify_signature")
-async def verify_signature_endpoint(request: Request, x_hub_signature: str = Header(...)):
-    try:
-        payload = await request.json()
-        secret = os.getenv("SHARED_SECRET")  # You should set this environment variable
-        headers = {"x-hub-signature": x_hub_signature}
-        
-        is_valid = verify_signature(payload, headers, secret)
-        
-        if is_valid:
-            return {"status": True}
-        else:
-            return {"status": False}, 401
-    except Exception as e:
-        return {"status": False, "error": str(e)}, 500
 
-def verify_signature(payload: dict, headers: dict, secret: str) -> bool:
-    signature = headers.get("x-hub-signature")
-    if not signature:
-        raise HTTPException(status_code=400, detail="Signature missing")
-
-    shared_secret = secret.encode('utf-8')
-    payload_string = json.dumps(payload).encode('utf-8')
-
-    hmac_obj = hmac.new(shared_secret, payload_string, hashlib.sha256)
-    computed_signature = hmac_obj.hexdigest()
-    computed_signature_prefixed = f"sha256={computed_signature}"
-
-    is_valid = hmac.compare_digest(computed_signature_prefixed, signature)
-
-    return is_valid
-
+@app.post("/anonymize-file")
 async def anonymize_file(file: UploadFile = File(...), columns: str = Form(...)):
     try:
         contents = await file.read()
         df = pd.read_excel(io.BytesIO(contents))
-        
-        columns_to_anonymize = columns.split(",")
+        column_names = columns.split(',')
 
-        concatenated_text = " ".join(" ".join(str(val) for val in df[col].values) for col in columns_to_anonymize)
-
-        cleaned_text = html_cleaner.remove_html_tags(concatenated_text)
-        text_chunks = TextProcessor.split_text(cleaned_text, 2000)
-        processed_chunks = []
-
-        for chunk in text_chunks:
-            entities = ner_processor.identify_entities(chunk)
-            processed_chunk = FakeReplacer.replace_entities(chunk, entities)
-            processed_chunks.append(processed_chunk)
-
-        processed_text = TextProcessor.combine_chunks(processed_chunks)
-        anonymized_values = processed_text.split(" ")
-
-        for col in columns_to_anonymize:
-            df[col] = anonymized_values[:len(df[col])]
-            anonymized_values = anonymized_values[len(df[col]):]
+        for column in column_names:
+            if column in df.columns:
+                df[column] = df[column].apply(lambda text: process_text(text))
 
         output = io.BytesIO()
         df.to_excel(output, index=False)
         output.seek(0)
 
-        return StreamingResponse(output, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={
-            "Content-Disposition": f"attachment; filename=anonymized_{file.filename}"
-        })
-
+        return StreamingResponse(
+            output, 
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename=anonymized_{file.filename}"
+            }
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+def process_text(text):
+    text_chunks = TextProcessor.split_text(text, 2000)
+    processed_chunks = []
+
+    for chunk in text_chunks:
+        entities = ner_processor.identify_entities(chunk)
+        processed_chunk = FakeReplacer.replace_entities(chunk, entities)
+        processed_chunks.append(processed_chunk)
+
+    processed_text = TextProcessor.combine_chunks(processed_chunks)
+    
+    return processed_text
 
 
 if __name__ == "__main__":

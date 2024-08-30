@@ -12,7 +12,11 @@ import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { createDataModel, getDataModelsOverview } from 'services/data-models';
 import { dataModelsQueryKeys, integrationQueryKeys } from 'utils/queryKeys';
 import { getIntegrationStatus } from 'services/integration';
-import { CreateDataModelPayload, DataModel } from 'types/dataModels';
+import {
+  CreateDataModelPayload,
+  DataModel,
+  ErrorsType,
+} from 'types/dataModels';
 
 const CreateDataModel: FC = () => {
   const { t } = useTranslation();
@@ -73,16 +77,37 @@ const CreateDataModel: FC = () => {
       ...prevFilters,
       [name]: value,
     }));
+
+    setErrors((prevErrors) => {
+      const updatedErrors = { ...prevErrors };
+
+      if (name === 'modelName' && value !== '') {
+        delete updatedErrors.modelName;
+      }
+      if (name === 'platform' && value !== '') {
+        delete updatedErrors.platform;
+      }
+      if (name === 'baseModels' && value !== '') {
+        delete updatedErrors.baseModels;
+      }
+      if (name === 'maturity' && value !== '') {
+        delete updatedErrors.maturity;
+      }
+      if (name === 'dgId') {
+        delete updatedErrors.dgId;
+      }
+
+      return updatedErrors;
+    });
   };
 
-  const [errors, setErrors] = useState({
+  const [errors, setErrors] = useState<ErrorsType>({
     modelName: '',
     dgName: '',
     platform: '',
     baseModels: '',
     maturity: '',
   });
-
   const validateData = () => {
     const validationErrors = validateDataModel(dataModel);
     setErrors(validationErrors);
@@ -137,7 +162,7 @@ const CreateDataModel: FC = () => {
   };
   const createDataModelMutation = useMutation({
     mutationFn: (data: CreateDataModelPayload) => createDataModel(data),
-    onSuccess: async (response) => {
+    onSuccess: async () => {
       open({
         title: t('dataModels.createDataModel.successTitle'),
         content: <p>{t('dataModels.createDataModel.successDesc')}</p>,
@@ -195,7 +220,9 @@ const CreateDataModel: FC = () => {
           background: 'white',
         }}
       >
-        <Button onClick={() => handleCreate()}>
+        <Button
+          onClick={() => handleCreate()}
+        >
           {t('dataModels.createDataModel.title')}
         </Button>
         <Button appearance="secondary" onClick={() => navigate('/data-models')}>

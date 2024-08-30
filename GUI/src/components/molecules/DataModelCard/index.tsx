@@ -6,10 +6,12 @@ import './DataModel.scss';
 import { Maturity, TrainingStatus } from 'enums/dataModelsEnums';
 import Card from 'components/Card';
 import { useTranslation } from 'react-i18next';
+import { TrainingResults } from 'types/dataModels';
+import { formatDate } from 'utils/commonUtilts';
 
 type DataModelCardProps = {
   modelId: number;
-  dataModelName?: string | undefined;
+  dataModelName?: string;
   datasetGroupName?: string;
   version?: string;
   isLatest?: boolean;
@@ -20,7 +22,7 @@ type DataModelCardProps = {
   maturity?: string;
   setId: React.Dispatch<React.SetStateAction<number>>;
   setView: React.Dispatch<React.SetStateAction<'individual' | 'list'>>;
-  results?: any;
+  results: string | null;
 };
 
 const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
@@ -40,6 +42,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
 }) => {
   const { open, close } = useDialog();
   const { t } = useTranslation();
+  const resultsJsonData: TrainingResults = JSON.parse(results ?? '{}');
 
   const renderTrainingStatus = (status: string | undefined) => {
     if (status === TrainingStatus.RETRAINING_NEEDED) {
@@ -117,7 +120,8 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
             {t('dataModels.dataModelCard.dgVersion') ?? ''}:{dgVersion}
           </p>
           <p>
-            {t('dataModels.dataModelCard.lastTrained') ?? ''}: {lastTrained}
+            {t('dataModels.dataModelCard.lastTrained') ?? ''}:{' '}
+            {lastTrained && formatDate(new Date(lastTrained), 'D.M.yy-H:m')}
           </p>
         </div>
         <div className="flex">
@@ -141,9 +145,9 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                   <div>
                     <div className="flex" style={{ margin: '20px 0px' }}>
                       {t('dataModels.trainingResults.bestPerformingModel') ??
-                        ''}{' '}
+                        ''}
                       -
-                    </div>{' '}
+                    </div>
                     <Card
                       isHeaderLight={true}
                       header={
@@ -164,19 +168,33 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                       {results ? (
                         <div className="training-results-grid-container">
                           <div>
-                            {results?.classes?.map((c: string) => {
-                              return <div>{c}</div>;
-                            })}
+                            {resultsJsonData?.trainingResults?.classes?.map(
+                              (c: string, index: number) => {
+                                return <div key={index}>{c}</div>;
+                              }
+                            )}
                           </div>
                           <div>
-                            {results?.accuracy?.map((c: string) => {
-                              return <div>{c}</div>;
-                            })}
+                            {resultsJsonData?.trainingResults?.accuracy?.map(
+                              (c: string, index: number) => {
+                                return (
+                                  <div key={index}>
+                                    {parseFloat(c)?.toFixed(2)}
+                                  </div>
+                                );
+                              }
+                            )}
                           </div>
                           <div>
-                            {results?.f1_score?.map((c: string) => {
-                              return <div>{c}</div>;
-                            })}
+                            {resultsJsonData?.trainingResults?.f1_score?.map(
+                              (c: string, index: number) => {
+                                return (
+                                  <div key={index}>
+                                    {parseFloat(c)?.toFixed(2)}
+                                  </div>
+                                );
+                              }
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -190,7 +208,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
               });
             }}
           >
-            {t('dataModels.trainingResults.viewResults') ?? ''} Results
+            {t('dataModels.trainingResults.viewResults') ?? ''}
           </Button>
           <Button
             appearance="primary"

@@ -27,3 +27,4 @@ tzdata==2024.1
 urllib3==2.2.2
 uvicorn==0.30.5
 wheel==0.43.0
+loguru==0.7.2

@@ -1,8 +1,11 @@
 import requests
 import os
 from loguru import logger
-from constants import INFERENCE_LOGS_PATH
+from constants import INFERENCE_LOGS_PATH, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE, \
+MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS
 import urllib.parse
+from fastapi import FastAPI,HTTPException, Request, BackgroundTasks
+
 
 logger.add(sink=INFERENCE_LOGS_PATH)
 
@@ -13,6 +16,9 @@ CLASS_HIERARCHY_VALIDATION_URL=os.getenv("CLASS_HIERARCHY_VALIDATION_URL")
 OUTLOOK_ACCESS_TOKEN_API_URL=os.getenv("OUTLOOK_ACCESS_TOKEN_API_URL")
 BUILD_CORRECTED_FOLDER_HIERARCHY_URL = os.getenv("BUILD_CORRECTED_FOLDER_HIERARCHY_URL")
 FIND_FINAL_FOLDER_ID_URL = os.getenv("FIND_FINAL_FOLDER_ID_URL")
+UPDATE_DATAMODEL_PROGRESS_URL = os.getenv("UPDATE_DATAMODEL_PROGRESS_URL")
+UPDATE_MODEL_TRAINING_STATUS_ENDPOINT = os.getenv("UPDATE_MODEL_TRAINING_STATUS_ENDPOINT")
+RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
 
 class ModelInference:
     def __init__(self):
@@ -21,8 +27,10 @@ class ModelInference:
     def get_class_hierarchy_by_model_id(self, model_id):
         
         try:
+            logger.info(f"get_class_hierarchy_by_model_id - {model_id}")
             outlook_access_token_url = OUTLOOK_ACCESS_TOKEN_API_URL
 
+            logger.info(f"OUTLOOK ACCESS TOKEN URL - {outlook_access_token_url}")
 
             response = requests.post(outlook_access_token_url, json={"modelId": model_id})
             data = response.json()
@@ -36,8 +44,60 @@ class ModelInference:
             logger.error(f"Failed to retrieve the class hierarchy Reason: {e}")
             raise RuntimeError(f"Failed to retrieve the class hierarchy Reason: {e}")    
     
+    
+    async def authenticate_user(self, cookie: str):
+        try:
+            if not cookie:
+                raise HTTPException(status_code=401, detail="No cookie found in the request")
 
+            url = f"{RUUTER_PRIVATE_URL}/auth/jwt/userinfo"
+            headers = {
+                'cookie': cookie
+            }
+
+            response = requests.get(url, headers=headers)
+
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+        except Exception as e:
+            print(f"Error in file handler authentication : {e}")
+            
+            raise HTTPException(status_code=500, detail="Authentication failed")
+
+    def update_model_training_progress_session(self,session_id,model_id,cookie):
+
+        payload = {}
+        cookies_payload = {'customJwtCookie': cookie}
+
+        payload["sessionId"] = session_id
+        payload["trainingStatus"] =  MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS
+        payload["trainingMessage"] = MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE
+        payload["progressPercentage"] = MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE
+        payload["processComplete"] = True
+
+        logger.info(f"Update training progress session for model id - {model_id} payload \n {payload}")
+
+        response=requests.post( url=UPDATE_DATAMODEL_PROGRESS_URL,
+                                 json=payload, cookies=cookies_payload)
         
+
+        if response.status_code==200:
+
+            logger.info(f"REQUEST TO UPDATE TRAINING PROGRESS SESSION FOR MODEL ID {model_id} SUCCESSFUL")
+            logger.info(f"RESPONSE PAYLOAD \n {response.json()}")
+            session_id = response.json()["response"]["sessionId"]
+            
+
+        else:
+            logger.error(f"REQUEST TO UPDATE TRAINING PROGRESS SESSION FOR MODEL ID {model_id} FAILED")
+            logger.error(f"ERROR RESPONSE JSON {response.json()}")
+            logger.error(f"ERROR RESPONSE TEXT {response.text}")
+            raise RuntimeError(response.text)
+
+
+        return session_id
+
+
     def validate_class_hierarchy(self, class_hierarchy, model_id):
 
         logger.info(f"CLASS HIERARCHY -  {class_hierarchy}")
@@ -82,7 +142,8 @@ class ModelInference:
         logger.info("Check Inference Data Exists Function Calling")
         logger.info(f"Input ID : {input_id}")
         try:
-
+            is_exist = None
+            inference_id = None
             check_inference_data_exists_url = GET_INFERENCE_DATASET_EXIST_URL
             logger.info(f"Check Inference URL : {check_inference_data_exists_url}")
 
@@ -94,11 +155,16 @@ class ModelInference:
             logger.info(f"Response from  check_inference_data_exists: {data}")
 
             is_exist = data["response"]["exist"]
-            return is_exist
-        except Exception as e:
-            logger.info(f"Failed to validate the class hierarchy. Reason: {e}")
-            raise Exception(f"Failed to validate the class hierarchy. Reason: {e}")
+
+            if (len(data["response"]["data"]) > 0):
+
+                inference_id=data["response"]["data"][0]["inferenceId"]
         
+            return is_exist, inference_id
+        except Exception as e:
+            logger.info(f"check_inference_data_exists failed. Reason: {e}")
+            raise RuntimeError(f"check_inference_data_exists failed. Reason: {e}")
+
 
     def build_corrected_folder_hierarchy(self, final_folder_id, model_id):
         try:
@@ -183,7 +249,7 @@ class ModelInference:
         except Exception as e:
 
             logger.info(f"Failed to call create inference. Reason: {e}")
-            raise Exception(f"Failed to call create inference. Reason: {e}")
+            raise RuntimeError(f"Failed to call create inference. Reason: {e}")
 
 
         

@@ -1,11 +1,10 @@
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 import { Track, Button, Dialog } from 'components';
 import useStore from 'store';
-import { ReactComponent as BykLogo } from 'assets/logo.svg';
 import { useToast } from 'hooks/useToast';
 import apiDev from 'services/api-dev';
 import { useCookies } from 'react-cookie';
@@ -13,6 +12,8 @@ import './Header.scss';
 import { useDialog } from 'hooks/useDialog';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { authEndpoints } from 'utils/endpoints';
+import { authQueryKeys } from 'utils/queryKeys';
+import { UserInfo } from 'types/userInfo';
 
 const Header: FC = () => {
   const { t } = useTranslation();
@@ -40,11 +41,12 @@ const Header: FC = () => {
         const expirationDate = new Date(parseInt(expirationTimeStamp) ?? '');
         const currentDate = new Date(Date.now());
         if (
-          expirationDate < currentDate &&
-          expirationDate.getTime() - currentDate.getTime() <= 120000
+          expirationDate.getTime() - currentDate.getTime() <= 240000
         ) {
-          setSessionTimeOutModalOpened(true);
-          setSessionTimeOutDuration(30);
+          if (!sessionTimeOutModalOpened) {
+            setSessionTimeOutModalOpened(true);
+            setSessionTimeOutDuration(30);
+          }
         }
       }
     }, 2000);
@@ -91,12 +93,21 @@ const Header: FC = () => {
       setSessionTimeOutDuration(30);
       setSessionTimeOutModalOpened(false);
       setSessionExtentionInProgress(false);
+      refetch()
     },
     onError: (error: AxiosError) => {
       handleLogout();
     },
   });
 
+  const { refetch } = useQuery({
+    queryKey: authQueryKeys.USER_DETAILS(),
+    onSuccess: (res: { response: UserInfo }) => {
+      localStorage.setItem('exp', res.response.JWTExpirationTimestamp);
+      useStore.getState().setUserInfo(res.response);
+    },
+    enabled: false
+  });
   const logoutMutation = useMutation({
     mutationFn: () => apiDev.get(authEndpoints.LOGOUT()),
     onSuccess() {
@@ -118,9 +129,14 @@ const Header: FC = () => {
   };
   return (
     <div>
-      <header className="header">
+      <header
+        className="header"
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}
+      >
         <Track justify="between">
-          <BykLogo height={50} />
           {userInfo && (
             <Track gap={32}>
               <Button
@@ -141,7 +157,7 @@ const Header: FC = () => {
             isOpen={sessionTimeOutModalOpened}
             title={t('global.sessionTimeOutTitle') ?? ''}
             footer={
-              <div>
+              <div className="button-wrapper">
                 <Button
                   appearance={ButtonAppearanceTypes.SECONDARY}
                   onClick={handleLogout}
@@ -155,7 +171,7 @@ const Header: FC = () => {
                     extendUserSessionMutation.mutate();
                   }}
                 >
-                  {t('global.extedSession')}
+                  {t('global.extendSession')}
                 </Button>
               </div>
             }

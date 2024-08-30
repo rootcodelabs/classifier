@@ -28,6 +28,7 @@ const DatasetDetailedViewTable = ({
   pagination,
   setPagination,
   dgId,
+  isMetadataLoading,
 }: {
   metadata: MetaData[];
   handleOpenModals: (context: ViewDatasetGroupModalContexts) => void;
@@ -41,6 +42,7 @@ const DatasetDetailedViewTable = ({
   pagination: PaginationState;
   setPagination: React.Dispatch<React.SetStateAction<PaginationState>>;
   dgId: number;
+  isMetadataLoading: boolean;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -80,13 +82,19 @@ const DatasetDetailedViewTable = ({
 
   return (
     <>
-      {metadata && (
+      {isMetadataLoading && <SkeletonTable rowCount={2} />}
+      {metadata && !isMetadataLoading && (
         <div>
           <Card
             isHeaderLight={false}
             header={
               <div className="flex-between">
-                <div className="flex-grid">
+                <div
+                  className="flex-grid"
+                  style={{
+                    alignItems: 'center',
+                  }}
+                >
                   <Link to={''} onClick={() => navigate(0)}>
                     <BackArrowButton />
                   </Link>
@@ -130,6 +138,7 @@ const DatasetDetailedViewTable = ({
                   onClick={() =>
                     handleOpenModals(ViewDatasetGroupModalContexts.EXPORT_MODAL)
                   }
+                  disabled={datasets?.numPages===0}
                 >
                   {t('datasetGroups.detailedView.export') ?? ''}
                 </Button>
@@ -172,24 +181,26 @@ const DatasetDetailedViewTable = ({
                       </Button>
                     </div>
                   )}
-                  {datasets && datasets?.numPages !== 0 && datasets?.numPages <= 2 && (
-                    <div>
-                      <p>
-                        {t(
-                          'datasetGroups.detailedView.insufficientExamplesDesc'
-                        ) ?? ''}
-                      </p>
-                      <Button
-                        onClick={() =>
-                          handleOpenModals(
-                            ViewDatasetGroupModalContexts.IMPORT_MODAL
-                          )
-                        }
-                      >
-                        {t('datasetGroups.detailedView.importNewData') ?? ''}
-                      </Button>
-                    </div>
-                  )}
+                  {datasets &&
+                    datasets?.numPages !== 0 &&
+                    datasets?.numPages <= 2 && (
+                      <div>
+                        <p>
+                          {t(
+                            'datasetGroups.detailedView.insufficientExamplesDesc'
+                          ) ?? ''}
+                        </p>
+                        <Button
+                          onClick={() =>
+                            handleOpenModals(
+                              ViewDatasetGroupModalContexts.IMPORT_MODAL
+                            )
+                          }
+                        >
+                          {t('datasetGroups.detailedView.importNewData') ?? ''}
+                        </Button>
+                      </div>
+                    )}
                 </div>
               </Card>
             )}
