@@ -5,7 +5,7 @@ The classifier is an open-source model training platform which can be integrated
 
 This repo will primarily contain:
 
-1. Architectural and other documentation (under the documentation folder);
+1. Architecture and other documentation (under the documentation folder);
 2. Docker Compose file to set up and run Classifier as a fully functional service;
 3. You can view the UI designs for this project in this [Figma file](https://www.figma.com/design/VWoZu2s7auo7YTw49RqNtV/Estonian-Classifier-English-Version?node-id=712-1695&t=cx6ZZVuEkfWqlbZB-1)
 
@@ -97,4 +97,4 @@ JIRA_CLOUD_DOMAIN/rest/webhooks/1.0/webhook`
 - When running ruuter either on local or in an environment make sure to adjust `- application.internalRequests.allowedIPs=127.0.0.1,{YOUR_IPS}` under ruuter environments
 
 ## Ngrok setup for local testing
-#### Explain about Setting up ngrok to test in localhost
+To setup JIRA and Outlook integrations locally you need an https URL as a webhook. Since localhost by default http JIRA and Outlook APIs wouldn't be able to call your webhook endpoint if it's in localhost. You can overcome this by creating a ngrok tunnel to your localhost ports 3008 (JIRA Integration) and 8086 (Outlook Integration). And then provide the https URLs you receive from ngrok as webhook callback endpoints in JIRA and Outlook configurations
