@@ -243,7 +243,7 @@ const DataModels: FC = () => {
                         ) ?? []
                       }
                       onSelectionChange={(selection) =>
-                        handleFilterChange('datasetGroup', selection?.value?.id)
+                        handleFilterChange('datasetGroup', selection?.value)
                       }
                       defaultValue={filters?.datasetGroup}
                       style={{ width: '200px' }}
