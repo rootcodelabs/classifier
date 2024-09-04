@@ -41,7 +41,7 @@ PROGRESS_FAIL = 100
 # Messages
 MSG_INIT_VALIDATION = "Validation Initiated"
 MSG_VALIDATION_IN_PROGRESS = "Running validation criteria across dataset"
-MSG_VALIDATION_SUCCESS = "Validation successful"
+MSG_VALIDATION_SUCCESS = "Starting data pre-processing"
 MSG_VALIDATION_FAIL = "Validation failed"
 MSG_MISSING_FIELD = "Missing field: {}"
 MSG_VALIDATION_FIELD_FAIL = "Validation failed for field '{}' in row {}"
