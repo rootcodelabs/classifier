@@ -132,6 +132,10 @@ class DatasetValidator:
                 if field not in data[0]:
                     print(MSG_MISSING_FIELD.format(field))
                     return {'success': False, 'message': MSG_MISSING_FIELD.format(field)}
+                if field.lower() == "rowid":
+                    print(MSG_ROWID_CANNOT_BE_A_FIELD)
+                    return {'success': False, 'message': MSG_ROWID_CANNOT_BE_A_FIELD}
+
 
             for idx, row in enumerate(data):
                 for field, rules in validation_rules.items():
