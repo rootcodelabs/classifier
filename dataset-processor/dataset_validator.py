@@ -45,8 +45,9 @@ class DatasetValidator:
             else:
                 result = self.generate_response(False, "Unknown update type", None)
 
-            # Final progress update upon successful completion
-            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_VALIDATION_SUCCESS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
+            if result["response"]["operationSuccessful"] == True:
+                # Final progress update upon successful completion
+                self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_VALIDATION_SUCCESS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             return result
         except Exception as e:
             self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
