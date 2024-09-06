@@ -334,6 +334,7 @@ def extract_stop_words(file: UploadFile) -> List[str]:
         data = pd.read_excel(excel_file, sheet_name=None)
         stop_words = []
         for sheet in data:
+            stop_words.extend(data[sheet].columns.tolist())
             stop_words.extend(data[sheet].stack().tolist())
         return stop_words
     else:
