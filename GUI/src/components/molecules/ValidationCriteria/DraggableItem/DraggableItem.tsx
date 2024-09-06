@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import dataTypes from '../../../../config/dataTypesConfig.json';
 import { MdDehaze, MdDeleteOutline  } from 'react-icons/md';
 import Card from 'components/Card';
 import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';

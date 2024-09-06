@@ -37,7 +37,7 @@ const ViewDatasetGroupModalController = ({
   majorUpdateLoading,
   patchUpdateLoading,
   minorUpdateLoading,
-  confirmationFLow,
+  confirmationFlow,
   deleteDatasetMutationLoading
 }: {
   setImportStatus: React.Dispatch<React.SetStateAction<string>>;
@@ -69,7 +69,7 @@ const ViewDatasetGroupModalController = ({
   patchUpdateLoading: boolean;
   minorUpdateLoading: boolean;
   deleteDatasetMutationLoading: boolean;
-  confirmationFLow: string;
+  confirmationFlow: string;
 }) => {
   const { close } = useDialog();
   const { t } = useTranslation();
@@ -260,7 +260,7 @@ const ViewDatasetGroupModalController = ({
                 >
                   {t('global.cancel')}
                 </Button>
-                {confirmationFLow === 'update' ? (
+                {confirmationFlow === 'update' ? (
                   <Button
                     disabled={
                       majorUpdateLoading ||

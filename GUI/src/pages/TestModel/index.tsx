@@ -129,7 +129,7 @@ const TestModel: FC = () => {
                   <b>{t('testModels.classProbabilities')}</b>
                   <ul className="testModalList">
                     {formatPredictions(classifyData)?.map((prediction, index) => {
-                      return <li key={index}>{prediction}</li>;
+                      return <li key={`pred${index}`}>{prediction}</li>;
                     })}
                   </ul>
                 </div>

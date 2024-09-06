@@ -325,7 +325,7 @@ const DataModels: FC = () => {
                       (dataset: DataModelResponse, index: number) => {
                         return (
                           <DataModelCard
-                            key={index}
+                            key={dataset?.id}
                             modelId={dataset?.id}
                             dataModelName={dataset?.modelName}
                             datasetGroupName={dataset?.connectedDgName}

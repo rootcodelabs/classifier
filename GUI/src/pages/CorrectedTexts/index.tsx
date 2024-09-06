@@ -217,9 +217,7 @@ const CorrectedTexts: FC = () => {
             </div>
           </div>
         ) : (
-          <>
             <p>{modalDiscription}</p>
-          </>
         )}
       </Dialog>
     </div>
