@@ -12,6 +12,7 @@ import formats from '../../config/formatsConfig.json';
 import { handleDownload } from 'utils/datasetGroupsUtils';
 import { exportCorrectedTexts } from 'services/datasets';
 import { CorrectedTextsModalContexts } from 'enums/correctedTextsEnums';
+import './CorrectedTexts.scss';
 
 const CorrectedTexts: FC = () => {
   const { t } = useTranslation();
@@ -96,7 +97,7 @@ const CorrectedTexts: FC = () => {
         <Button
           appearance={ButtonAppearanceTypes.PRIMARY}
           size="m"
-          disabled={correctedTextData?.length===0}
+          disabled={correctedTextData?.length === 0}
           onClick={() => {
             setIsModalOpen(true);
             setModalType(CorrectedTextsModalContexts.EXPORT);
@@ -111,14 +112,7 @@ const CorrectedTexts: FC = () => {
 
       <div>
         <div className="search-panel">
-          <div
-            style={{
-              width: '50%',
-              display: 'flex',
-              gap: '30px',
-              marginRight: '30px',
-            }}
-          >
+          <div className="filter-div">
             <FormSelect
               label=""
               name="sort"
@@ -212,7 +206,7 @@ const CorrectedTexts: FC = () => {
             <p>
               {t('datasetGroups.detailedView.modals.export.fileFormatlabel')}
             </p>
-            <div className="flex-grid" style={{ marginBottom: '20px' }}>
+            <div className="flex-grid mb-20">
               <FormRadios
                 label=""
                 name="format"

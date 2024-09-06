@@ -4,7 +4,7 @@ import { TreeNode } from 'types/datasetGroups';
 import { isClassHierarchyDuplicatedAtSameLevel } from 'utils/datasetGroupsUtils';
 import { MdDeleteOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import './index.css';
+import './ClassHeirarchyTreeNode.scss';
 
 const ClassHeirarchyTreeNode = ({
   node,

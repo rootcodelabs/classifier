@@ -178,7 +178,7 @@ const ViewDatasetGroupModalController = ({
               <p>
                 {t('datasetGroups.detailedView.modals.export.fileFormatlabel')}
               </p>
-              <div className="flex-grid" style={{ marginBottom: '20px' }}>
+              <div className="flex-grid mb-20">
                 <FormRadios
                   label=""
                   name="format"

@@ -1,11 +1,11 @@
 .grey-card {
-  border: 1px solid #A6A8B1;
+  border: 1px solid #a6a8b1;
   border-radius: 5px;
   margin-bottom: 10px;
   display: flex;
   gap: 20px;
   align-items: center;
-  background-color: #F9F9F9;
+  background-color: #f9f9f9;
   padding: 25px;
 }
 
@@ -48,4 +48,39 @@ body {
   transform: scale(1.02);
   transition: transform 0.3s, box-shadow 0.3s;
   animation: scaleIn 0.5s ease-out;
+}
+
+.mt-30 {
+  margin-top: 30px;
+}
+
+.m-30-0 {
+  margin: 30px 0px;
+}
+
+.models-filter-div{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 80%;
+}
+
+.filter-buttons{
+  display: flex;
+  gap: 16px;
+}
+
+.data-model-buttons{
+  align-items: end;
+  gap: 10px;
+  justify-content: end;
+  margin: 25px -16px -16px;
+  padding: 20px 64px;
+  background: 'white';
+}
+
+.metadata-card{
+  padding: 20px 150px;
+  justify-content: center;
+  text-align: center;
 }

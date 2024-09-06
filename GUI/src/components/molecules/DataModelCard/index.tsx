@@ -143,7 +143,7 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
                 size: 'large',
                 content: (
                   <div>
-                    <div className="flex" style={{ margin: '20px 0px' }}>
+                    <div className="flex m-20-0">
                       {t('dataModels.trainingResults.bestPerformingModel') ??
                         ''}
                       -

@@ -10,7 +10,7 @@ type FormRadiosType = {
     value: string;
   }[] |undefined;
   onChange: (selectedValue: string) => void;
-  selectedValue?: string; // New prop for the selected value
+  selectedValue?: string;
   isStack?: boolean;
   error?: string;
 };
@@ -21,7 +21,7 @@ const FormRadios: FC<FormRadiosType> = ({
   hideLabel,
   items,
   onChange,
-  selectedValue, // Use selectedValue to control the selected radio button
+  selectedValue,
   isStack = false,
   error,
 }) => {
@@ -42,7 +42,7 @@ const FormRadios: FC<FormRadiosType> = ({
                   name={name}
                   id={`${id}-${item.value}`}
                   value={item.value}
-                  checked={selectedValue === item.value} // Check if the radio button should be selected
+                  checked={selectedValue === item.value}
                   onChange={(event) => {
                     onChange(event.target.value);
                   }}

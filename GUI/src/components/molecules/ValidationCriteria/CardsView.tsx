@@ -54,7 +54,7 @@ const ValidationCriteriaCardsView: FC<
           validationRules={validationRules}
         />
       ))}
-      <div className="flex" style={{ justifyContent: 'end' }}>
+      <div className="flex justify-end">
         <Button onClick={addNewClass}>
           {t('datasetGroups.createDataset.addClassButton')}
         </Button>
