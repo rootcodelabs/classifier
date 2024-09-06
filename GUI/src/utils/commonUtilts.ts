@@ -7,6 +7,7 @@ type FormattedOption = {
   value: string;
 };
 
+// convert flat array to label, value pairs 
 export const formattedArray = (data: string[]|undefined): FormattedOption[]|undefined => {
   return data?.map((name) => ({
     label: name,
@@ -19,6 +20,7 @@ export const convertTimestampToDateTime = (timestamp: number) => {
   return moment.unix(timestamp).format('YYYY-MM-DD HH:mm:ss');
 };
 
+// determines version numbers for filter
 export const parseVersionString = (version: string) => {
   const parts = version.split('.');
 
@@ -53,22 +55,22 @@ export const formatDateTime = (date: string) => {
 };
 
 export const formatClassHierarchyArray = (array: string | string[]) => {
-  let formatedArray: string[];
+  let formattedArray: string[];
   if (typeof array === 'string') {
     try {
       const cleanedInput = array?.replace(/\s+/g, '');
-      formatedArray = JSON.parse(cleanedInput);
+      formattedArray = JSON.parse(cleanedInput);
     } catch (error) {
       console.error('Error parsing input string:', error);
       return '';
     }
   } else {
-    formatedArray = array;
+    formattedArray = array;
   }
 
-  return formatedArray
+  return formattedArray
     .map((item, index) =>
-      index === formatedArray?.length - 1 ? item : item + ' ->'
+      index === formattedArray?.length - 1 ? item : item + ' ->'
     )
     .join(' ');
 };
