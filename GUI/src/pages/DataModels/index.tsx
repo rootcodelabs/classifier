@@ -11,9 +11,14 @@ import ConfigureDataModel from './ConfigureDataModel';
 import { customFormattedArray, extractedArray } from 'utils/dataModelsUtils';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
-import { DataModelResponse, FilterData, Filters } from 'types/dataModels';
+import {
+  DataModelResponse,
+  DataModelsFilters,
+  FilterData,
+} from 'types/dataModels';
 import { dataModelsQueryKeys } from 'utils/queryKeys';
 import NoDataView from 'components/molecules/NoDataView';
+import './DataModels.scss';
 
 const DataModels: FC = () => {
   const { t } = useTranslation();
@@ -32,14 +37,14 @@ const DataModels: FC = () => {
     setEnableFetch(true);
   }, [view]);
 
-  const [filters, setFilters] = useState<Filters>({
+  const [filters, setFilters] = useState<DataModelsFilters>({
     modelName: 'all',
     version: 'x.x.x',
     platform: 'all',
     datasetGroup: -1,
     trainingStatus: 'all',
     maturity: 'all',
-    sort: 'asc',
+    sort: 'created_timestamp desc',
   });
 
   const { data: dataModelsData, isLoading: isModelDataLoading } = useQuery(
@@ -85,7 +90,7 @@ const DataModels: FC = () => {
         -1,
         'all',
         'all',
-        'asc',
+        'created_timestamp desc',
         true
       ),
       () =>
@@ -98,7 +103,7 @@ const DataModels: FC = () => {
           -1,
           'all',
           'all',
-          'asc',
+          'created_timestamp desc',
           true
         ),
       {
@@ -119,7 +124,7 @@ const DataModels: FC = () => {
   const pageCount = dataModelsData?.data[0]?.totalPages || 1;
 
   const handleFilterChange = (
-    name: keyof Filters,
+    name: keyof DataModelsFilters,
     value: string | number | undefined | { name: string; id: string }
   ) => {
     setEnableFetch(false);
@@ -136,16 +141,13 @@ const DataModels: FC = () => {
           {!isModelDataLoading && !isProdModelDataLoading ? (
             <div>
               <div className="featured-content">
-                <div className="title_container" style={{ marginTop: '30px' }}>
+                <div className="title_container mt-30">
                   <div className="title">
                     {t('dataModels.productionModels')}
                   </div>{' '}
                 </div>
                 {prodDataModelsData?.data?.length > 0 ? (
-                  <div
-                    className="grid-container"
-                    style={{ margin: '30px 0px' }}
-                  >
+                  <div className="grid-container m-30-0">
                     {prodDataModelsData?.data?.map(
                       (dataset: DataModelResponse) => {
                         return (
@@ -186,12 +188,7 @@ const DataModels: FC = () => {
                 </div>
                 <div className="search-panel flex">
                   <div
-                    style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '16px',
-                      width: '80%',
-                    }}
+                    className='models-filter-div'
                   >
                     <FormSelect
                       label=""
@@ -239,7 +236,7 @@ const DataModels: FC = () => {
                         ) ?? []
                       }
                       onSelectionChange={(selection) =>
-                        handleFilterChange('datasetGroup', selection?.value?.id)
+                        handleFilterChange('datasetGroup', selection?.value)
                       }
                       defaultValue={filters?.datasetGroup}
                       style={{ width: '200px' }}
@@ -273,8 +270,22 @@ const DataModels: FC = () => {
                       name=""
                       placeholder={t('dataModels.filters.sort') ?? ''}
                       options={[
-                        { label: 'A-Z', value: 'asc' },
-                        { label: 'Z-A', value: 'desc' },
+                        {
+                          label: t('dataModels.sortOptions.dataModelAsc'),
+                          value: 'name asc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.dataModelDesc'),
+                          value: 'name desc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.createdDateDesc'),
+                          value: 'created_timestamp desc',
+                        },
+                        {
+                          label: t('dataModels.sortOptions.createdDateAsc'),
+                          value: 'created_timestamp asc',
+                        },
                       ]}
                       onSelectionChange={(selection) =>
                         handleFilterChange('sort', selection?.value)
@@ -284,24 +295,23 @@ const DataModels: FC = () => {
                     />
                   </div>
                   <div
-                    style={{
-                      display: 'flex',
-                      gap: '16px',
-                    }}
+                   className='filter-buttons'
                   >
                     <Button onClick={() => setEnableFetch(true)}>
                       {t('global.search') ?? ''}
                     </Button>
                     <Button
-                      onClick={() => setFilters({
-                        modelName: 'all',
-                        version: 'x.x.x',
-                        platform: 'all',
-                        datasetGroup: -1,
-                        trainingStatus: 'all',
-                        maturity: 'all',
-                        sort: 'asc',
-                      })}
+                      onClick={() =>
+                        setFilters({
+                          modelName: 'all',
+                          version: 'x.x.x',
+                          platform: 'all',
+                          datasetGroup: -1,
+                          trainingStatus: 'all',
+                          maturity: 'all',
+                          sort: 'created_timestamp desc',
+                        })
+                      }
                       appearance={ButtonAppearanceTypes.SECONDARY}
                     >
                       {t('global.reset') ?? ''}
@@ -310,12 +320,12 @@ const DataModels: FC = () => {
                 </div>
 
                 {dataModelsData?.data?.length > 0 ? (
-                  <div className="grid-container" style={{ marginTop: '30px' }}>
+                  <div className="grid-container m-30-0">
                     {dataModelsData?.data?.map(
                       (dataset: DataModelResponse, index: number) => {
                         return (
                           <DataModelCard
-                            key={index}
+                            key={dataset?.id}
                             modelId={dataset?.id}
                             dataModelName={dataset?.modelName}
                             datasetGroupName={dataset?.connectedDgName}
@@ -326,7 +336,7 @@ const DataModels: FC = () => {
                             trainingStatus={dataset.trainingStatus}
                             platform={dataset?.deploymentEnv}
                             maturity={dataset?.maturityLabel}
-                            results={dataset?.trainingResults}
+                            results={dataset?.trainingResults ?? null}
                             setId={setId}
                             setView={setView}
                           />

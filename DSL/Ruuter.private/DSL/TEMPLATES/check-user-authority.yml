@@ -42,7 +42,7 @@ return_authorized:
   next: end
 
 return_unauthorized:
-  status: 200
+  status: 401
   return: false
   next: end
 

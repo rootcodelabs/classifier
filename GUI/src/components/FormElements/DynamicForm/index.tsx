@@ -5,7 +5,7 @@ import Button from 'components/Button';
 import Track from 'components/Track';
 
 type DynamicFormProps = {
-  formData: { [key: string]: string | number }; // Adjust the type to include numbers
+  formData: { [key: string]: string | number };
   onSubmit: (data: any) => void;
   setPatchUpdateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };

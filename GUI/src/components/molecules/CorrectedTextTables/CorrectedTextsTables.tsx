@@ -19,7 +19,7 @@ const CorrectedTextsTable = ({
   isLoading,
   setPagination,
   pagination,
-  setEnableFetch
+  setEnableFetch,
 }: {
   correctedTextData: InferencePayload[];
   totalPages: number;
@@ -60,15 +60,28 @@ const CorrectedTextsTable = ({
         header: t('correctedTexts.platform') ?? '',
       }),
       columnHelper.accessor('inferenceText', {
-        header: t('correctedTexts.text') ?? '',
+        header: () => (
+          <div>
+            <span
+             className='w-750'
+            >
+              {t('correctedTexts.text') ?? ''}
+            </span>
+          </div>
+        ),
+        cell: (props) => (
+          <div
+           className='w-750-wrap'
+          >
+            {props?.row?.original?.inferenceText}
+          </div>
+        ),
       }),
       columnHelper.accessor('predictedLabels', {
         header: () => (
           <div className="correctedHierarchy">
             <span
-              style={{
-                width: '150px',
-              }}
+             className='w-150'
             >
               {t('correctedTexts.predictedHierarchy') ?? ''}
             </span>
@@ -100,9 +113,7 @@ const CorrectedTextsTable = ({
         header: () => (
           <div className="correctedHierarchy">
             <span
-              style={{
-                width: '150px',
-              }}
+             className='w-150'
             >
               {t('correctedTexts.correctedHierarchy') ?? ''}
             </span>
@@ -123,8 +134,12 @@ const CorrectedTextsTable = ({
         ),
         cell: (props) => (
           <div className="probabilityLabels">
-            {props?.row?.original?.averageCorrectedClassesProbability && (
-              <>{props?.row?.original?.averageCorrectedClassesProbability}%</>
+            {props?.row?.original?.averageCorrectedClassesProbability === -1 ? (
+              <>{t('correctedTexts.labelNotFoundText') ?? ''}</>
+            ) : (
+              props?.row?.original?.averageCorrectedClassesProbability && (
+                <>{props?.row?.original?.averageCorrectedClassesProbability}%</>
+              )
             )}
           </div>
         ),
@@ -134,22 +149,16 @@ const CorrectedTextsTable = ({
   );
 
   return (
-    <div>
-      <div style={{ marginBottom: '20px', marginTop: '20px' }}>
+      <div className='container-div'>
         {isLoading && <SkeletonTable rowCount={5} />}
         {!isLoading && correctedTextData && correctedTextData.length === 0 && (
           <Card>
             <div
-              style={{
-                width: '100%',
-                height: '200px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+             className='card-div'
             >
-              <NoDataView text={t('datasetGroups.detailedView.noCorrectedTexts') ?? ''}/>
-             
+              <NoDataView
+                text={t('datasetGroups.detailedView.noCorrectedTexts') ?? ''}
+              />
             </div>
           </Card>
         )}
@@ -168,14 +177,13 @@ const CorrectedTextsTable = ({
                 pageIndex: state.pageIndex,
                 pageSize: state.pageSize,
               });
-              setEnableFetch(true)
+              setEnableFetch(true);
             }}
             pagesCount={totalPages}
             isClientSide={false}
           />
         )}
       </div>
-    </div>
   );
 };
 

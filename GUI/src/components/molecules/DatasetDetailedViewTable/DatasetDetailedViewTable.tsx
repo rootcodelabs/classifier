@@ -89,7 +89,7 @@ const DatasetDetailedViewTable = ({
             isHeaderLight={false}
             header={
               <div className="flex-between">
-                <div className="flex-grid">
+                <div className="flex-grid align-center">
                   <Link to={''} onClick={() => navigate(0)}>
                     <BackArrowButton />
                   </Link>
@@ -133,7 +133,7 @@ const DatasetDetailedViewTable = ({
                   onClick={() =>
                     handleOpenModals(ViewDatasetGroupModalContexts.EXPORT_MODAL)
                   }
-                  disabled={datasets?.numPages===0}
+                  disabled={datasets?.numPages === 0}
                 >
                   {t('datasetGroups.detailedView.export') ?? ''}
                 </Button>
@@ -152,16 +152,10 @@ const DatasetDetailedViewTable = ({
           {(!datasets || (datasets && datasets?.numPages < 2)) &&
             !isLoading && (
               <Card>
-                <div
-                  style={{
-                    padding: '20px 150px',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                  }}
-                >
+                <div className="dataset-table-card">
                   {(!datasets || datasets?.numPages === 0) && (
                     <div>
-                      <div style={{ marginBottom: '10px', fontSize: '20px' }}>
+                      <div className="dataset-no-data-view">
                         {t('datasetGroups.detailedView.noData') ?? ''}
                       </div>
                       <p>{t('datasetGroups.detailedView.noDataDesc') ?? ''}</p>
@@ -201,7 +195,7 @@ const DatasetDetailedViewTable = ({
             )}
         </div>
       )}
-      <div style={{ marginBottom: '20px' }}>
+      <div className="mb-20">
         {isLoading && <SkeletonTable rowCount={5} />}
         {!isLoading && updatedDataset && updatedDataset.length > 0 && (
           <DataTable

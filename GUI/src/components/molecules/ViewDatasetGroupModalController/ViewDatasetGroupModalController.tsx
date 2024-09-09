@@ -30,7 +30,15 @@ const ViewDatasetGroupModalController = ({
   deleteRow,
   file,
   exportFormat,
-  isImportDataLoading
+  isImportDataLoading,
+  confirmationModalTitle,
+  confirmationModalDesc,
+  onConfirmationConfirm,
+  majorUpdateLoading,
+  patchUpdateLoading,
+  minorUpdateLoading,
+  confirmationFlow,
+  deleteDatasetMutationLoading
 }: {
   setImportStatus: React.Dispatch<React.SetStateAction<string>>;
   handleFileSelect: (file: File | undefined) => void;
@@ -53,7 +61,15 @@ const ViewDatasetGroupModalController = ({
   deleteRow: (dataRow: any) => void;
   file: File | undefined;
   exportFormat: string;
-  isImportDataLoading: boolean
+  isImportDataLoading: boolean;
+  confirmationModalTitle: string;
+  confirmationModalDesc: string;
+  onConfirmationConfirm: () => any;
+  majorUpdateLoading: boolean;
+  patchUpdateLoading: boolean;
+  minorUpdateLoading: boolean;
+  deleteDatasetMutationLoading: boolean;
+  confirmationFlow: string;
 }) => {
   const { close } = useDialog();
   const { t } = useTranslation();
@@ -115,8 +131,8 @@ const ViewDatasetGroupModalController = ({
                 disabled={!importFormat}
               />
               {importStatus === 'STARTED' && (
-                <div className='upload-progress-wrapper'>
-                  <div className='upload-progress-text-wrapper'>
+                <div className="upload-progress-wrapper">
+                  <div className="upload-progress-text-wrapper">
                     {t(
                       'datasetGroups.detailedView.modals.import.uploadInProgress'
                     )}
@@ -162,7 +178,7 @@ const ViewDatasetGroupModalController = ({
               <p>
                 {t('datasetGroups.detailedView.modals.export.fileFormatlabel')}
               </p>
-              <div className="flex-grid" style={{ marginBottom: '20px' }}>
+              <div className="flex-grid mb-20">
                 <FormRadios
                   label=""
                   name="format"
@@ -223,6 +239,51 @@ const ViewDatasetGroupModalController = ({
             }
           >
             {t('datasetGroups.detailedView.modals.delete.description')}
+          </Dialog>
+        )}
+      {isModalOpen &&
+        openedModalContext ===
+          ViewDatasetGroupModalContexts.CONFIRMATION_MODAL && (
+          <Dialog
+            isOpen={
+              isModalOpen &&
+              openedModalContext ===
+                ViewDatasetGroupModalContexts.CONFIRMATION_MODAL
+            }
+            onClose={closeModals}
+            title={confirmationModalTitle}
+            footer={
+              <div className="flex-grid">
+                <Button
+                  appearance={ButtonAppearanceTypes.SECONDARY}
+                  onClick={close}
+                >
+                  {t('global.cancel')}
+                </Button>
+                {confirmationFlow === 'update' ? (
+                  <Button
+                    disabled={
+                      majorUpdateLoading ||
+                      minorUpdateLoading ||
+                      patchUpdateLoading
+                    }
+                    onClick={onConfirmationConfirm}
+                  >
+                    {t('global.confirm')}
+                  </Button>
+                ) : (
+                  <Button
+                    appearance={ButtonAppearanceTypes.ERROR}
+                    onClick={onConfirmationConfirm}
+                    disabled={deleteDatasetMutationLoading}
+                  >
+                    {t('global.delete')}
+                  </Button>
+                )}
+              </div>
+            }
+          >
+            {confirmationModalDesc}
           </Dialog>
         )}
     </>

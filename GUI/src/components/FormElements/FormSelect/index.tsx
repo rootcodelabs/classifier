@@ -30,7 +30,7 @@ type FormSelectProps = Partial<ControllerRenderProps> &
     options: FormSelectOption[];
     onSelectionChange?: (selection: FormSelectOption | null) => void;
     error?: string;
-    defaultValue?: string | { name: string; id: string };
+    defaultValue?: string | { name: string; id: string } | number;
   };
 
 const itemToString = (item: FormSelectOption | null) => {
@@ -55,19 +55,23 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
   ) => {
     const id = useId();
     const { t } = useTranslation();
-    
+
     const [selectedItem, setSelectedItem] = useState<FormSelectOption | null>(
-      options?.find((o) => o.value === defaultValue) || 
-      options?.find((o) => typeof o.value !== 'string' && o.value?.name === defaultValue) ||
-      null
+      options?.find((o) => o.value === defaultValue) ||
+        options?.find(
+          (o) => typeof o.value === 'object' && o.value?.name === defaultValue
+        ) ||
+        null
     );
 
     useEffect(() => {
       const newSelectedItem =
-        options?.find((o) => o.value === defaultValue) || 
-        options?.find((o) => typeof o.value !== 'string' && o.value?.name === defaultValue) ||
+        options?.find((o) => o.value === defaultValue) ||
+        options?.find(
+          (o) => typeof o.value === 'object' && o.value?.name === defaultValue
+        ) ||
         null;
-      setSelectedItem(newSelectedItem);
+        setSelectedItem(newSelectedItem);
     }, [defaultValue, options]);
 
     const {
@@ -90,7 +94,8 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
 
     const selectClasses = clsx('select', disabled && 'select--disabled');
 
-    const placeholderValue = placeholder || t('datasetGroups.createDataset.selectPlaceholder');
+    const placeholderValue =
+      placeholder || t('datasetGroups.createDataset.selectPlaceholder');
 
     return (
       <div className={selectClasses} style={rest.style}>

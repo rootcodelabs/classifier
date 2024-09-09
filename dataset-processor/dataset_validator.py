@@ -45,8 +45,9 @@ class DatasetValidator:
             else:
                 result = self.generate_response(False, "Unknown update type", None)
 
-            # Final progress update upon successful completion
-            self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_VALIDATION_SUCCESS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
+            if result["response"]["operationSuccessful"] == True:
+                # Final progress update upon successful completion
+                self.update_progress(cookie, PROGRESS_VALIDATION_COMPLETE, MSG_VALIDATION_SUCCESS, STATUS_MSG_VALIDATION_INPROGRESS, session_id)
             return result
         except Exception as e:
             self.update_progress(cookie, PROGRESS_FAIL, MSG_INTERNAL_ERROR.format(e), STATUS_MSG_FAIL, session_id)
@@ -131,6 +132,10 @@ class DatasetValidator:
                 if field not in data[0]:
                     print(MSG_MISSING_FIELD.format(field))
                     return {'success': False, 'message': MSG_MISSING_FIELD.format(field)}
+                if field.lower() == "rowid":
+                    print(MSG_ROWID_CANNOT_BE_A_FIELD)
+                    return {'success': False, 'message': MSG_ROWID_CANNOT_BE_A_FIELD}
+
 
             for idx, row in enumerate(data):
                 for field, rules in validation_rules.items():

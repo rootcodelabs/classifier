@@ -17,9 +17,6 @@ declaration:
       - field: modelS3Location
         type: string
         description: "Body field 'modelS3Location'"
-      - field: lastTrainedTimestamp
-        type: number
-        description: "Body field 'lastTrainedTimeStamp'"
       - field: trainingResults
         type: json
         description: "Body field 'trainingResults'"
@@ -32,7 +29,6 @@ extract_request_data:
     model_id: ${incoming.body.modelId}
     training_status: ${incoming.body.trainingStatus}
     model_s3_location: ${incoming.body.modelS3Location}
-    last_trained_timestamp: ${incoming.body.lastTrainedTimestamp}
     training_results: ${incoming.body.trainingResults}
     inference_routes: ${incoming.body.inferenceRoutes}
   next: check_for_request_data
@@ -72,7 +68,7 @@ update_training_data:
       id: ${model_id}
       training_status: ${training_status}
       model_s3_location: ${model_s3_location}
-      last_trained_timestamp: ${new Date(last_trained_timestamp).toISOString()}
+      last_trained_timestamp: ${new Date().toISOString()}
       training_results: ${JSON.stringify(training_results)}
       inference_routes: ${JSON.stringify(inference_routes)}
   result: res_update

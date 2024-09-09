@@ -21,6 +21,7 @@ export enum ViewDatasetGroupModalContexts {
   IMPORT_MODAL = 'IMPORT_MODAL',
   PATCH_UPDATE_MODAL = 'PATCH_UPDATE_MODAL',
   DELETE_ROW_MODAL = 'DELETE_ROW_MODAL',
+  CONFIRMATION_MODAL = 'CONFIRMATION_MODAL',
   NULL = 'NULL',
 }
 
@@ -47,4 +48,9 @@ export enum ValidationErrorTypes {
   CLASS_HIERARCHY = 'CLASS_HIERARCHY',
   VALIDATION_CRITERIA = 'VALIDATION_CRITERIA',
   NULL = 'NULL',
+}
+
+export enum ValidationSessionsStatuses {
+  VALIDATION_SUCCESS_STATUS = 'Success',
+  VALIDATION_FAILED_STATUS = 'Fail'
 }

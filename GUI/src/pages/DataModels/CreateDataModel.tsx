@@ -12,7 +12,11 @@ import { ButtonAppearanceTypes } from 'enums/commonEnums';
 import { createDataModel, getDataModelsOverview } from 'services/data-models';
 import { dataModelsQueryKeys, integrationQueryKeys } from 'utils/queryKeys';
 import { getIntegrationStatus } from 'services/integration';
-import { CreateDataModelPayload, DataModel, ErrorsType } from 'types/dataModels';
+import {
+  CreateDataModelPayload,
+  DataModel,
+  ErrorsType,
+} from 'types/dataModels';
 
 const CreateDataModel: FC = () => {
   const { t } = useTranslation();
@@ -205,17 +209,7 @@ const CreateDataModel: FC = () => {
           type="create"
         />
       </div>
-      <div
-        className="flex"
-        style={{
-          alignItems: 'end',
-          gap: '10px',
-          justifyContent: 'end',
-          margin: '25px -16px -16px',
-          padding: '20px 64px',
-          background: 'white',
-        }}
-      >
+      <div className="flex data-model-buttons">
         <Button onClick={() => handleCreate()}>
           {t('dataModels.createDataModel.title')}
         </Button>

@@ -2,7 +2,7 @@
 
 URL=http://localhost:9200
 AUTH=admin
-MOCK_ALLOWED=${3:-true}
+MOCK_ALLOWED=${3:-false}
 
 if [[ -z $URL || -z $AUTH ]]; then
   echo "Url and Auth are required"

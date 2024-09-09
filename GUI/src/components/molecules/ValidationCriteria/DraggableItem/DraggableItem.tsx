@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import dataTypes from '../../../../config/dataTypesConfig.json';
 import { MdDehaze, MdDeleteOutline  } from 'react-icons/md';
 import Card from 'components/Card';
 import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';
@@ -9,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { isFieldNameExisting } from 'utils/datasetGroupsUtils';
 import './DragableItemStyle.scss';
 import { useTranslation } from 'react-i18next';
+import useOptionLists from 'hooks/useOptionLists';
 
 const ItemTypes = {
   ITEM: 'item',
@@ -34,6 +34,8 @@ const DraggableItem = ({
     type: ItemTypes.ITEM,
     item: { index },
   });
+
+  const { dataTypesConfigs: dataTypes } = useOptionLists();
 
   const [, drop] = useDrop({
     accept: ItemTypes.ITEM,

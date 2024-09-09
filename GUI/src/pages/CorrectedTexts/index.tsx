@@ -1,14 +1,18 @@
 import { FC, useState } from 'react';
-import './index.scss';
 import { useTranslation } from 'react-i18next';
 import { ButtonAppearanceTypes } from 'enums/commonEnums';
-import { Button, FormSelect } from 'components';
-import { useQuery } from '@tanstack/react-query';
+import { Button, Dialog, FormRadios, FormSelect } from 'components';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { correctedTextEndpoints } from 'utils/endpoints';
 import apiDev from '../../services/api-dev';
 import { InferencePayload } from 'types/correctedTextTypes';
 import { PaginationState } from '@tanstack/react-table';
 import CorrectedTextsTable from 'components/molecules/CorrectedTextTables/CorrectedTextsTables';
+import formats from '../../config/formatsConfig.json';
+import { handleDownload } from 'utils/datasetGroupsUtils';
+import { exportCorrectedTexts } from 'services/datasets';
+import { CorrectedTextsModalContexts } from 'enums/correctedTextsEnums';
+import './CorrectedTexts.scss';
 
 const CorrectedTexts: FC = () => {
   const { t } = useTranslation();
@@ -24,7 +28,11 @@ const CorrectedTexts: FC = () => {
     pageIndex: 0,
     pageSize: 5,
   });
-
+  const [modalTitle, setModalTitle] = useState<string>('');
+  const [modalDiscription, setModalDiscription] = useState<string>('');
+  const [modalType, setModalType] = useState('');
+  const [exportFormat, setExportFormat] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const {
     data: correctedTextData,
     isLoading,
@@ -59,6 +67,29 @@ const CorrectedTexts: FC = () => {
       [name]: value,
     }));
   };
+
+  const handleExport = () => {
+    mutate();
+  };
+
+  const { mutate, isLoading: downloadLoading } = useMutation({
+    mutationFn: async () =>
+      await exportCorrectedTexts(filters.platform, exportFormat),
+    onSuccess: async (response) => {
+      handleDownload(response, exportFormat);
+      setIsModalOpen(true);
+      setModalTitle(t('correctedTexts.exportSuccessTitle') ?? '');
+      setModalDiscription(t('correctedTexts.exportSuccessDesc') ?? '');
+      setModalType(CorrectedTextsModalContexts.SUCCESS);
+    },
+    onError: async () => {
+      setIsModalOpen(true);
+      setModalTitle(t('correctedTexts.exportDataUnsucessTitle') ?? '');
+      setModalDiscription(t('correctedTexts.exportDataUnsucessDesc') ?? '');
+      setModalType(CorrectedTextsModalContexts.ERROR);
+    },
+  });
+
   return (
     <div className="container">
       <div className="title_container">
@@ -66,7 +97,13 @@ const CorrectedTexts: FC = () => {
         <Button
           appearance={ButtonAppearanceTypes.PRIMARY}
           size="m"
+          disabled={correctedTextData?.length === 0}
           onClick={() => {
+            setIsModalOpen(true);
+            setModalType(CorrectedTextsModalContexts.EXPORT);
+            setModalTitle(
+              t('datasetGroups.detailedView.modals.export.export') ?? ''
+            );
           }}
         >
           {t('correctedTexts.export')}
@@ -75,18 +112,11 @@ const CorrectedTexts: FC = () => {
 
       <div>
         <div className="search-panel">
-          <div
-            style={{
-              width: '50%',
-              display: 'flex',
-              gap: '30px',
-              marginRight: '30px',
-            }}
-          >
+          <div className="filter-div">
             <FormSelect
               label=""
               name="sort"
-              value={filters.platform}
+              defaultValue={filters.platform}
               placeholder={t('correctedTexts.platform') ?? ''}
               options={[
                 { label: 'Jira', value: 'JIRA' },
@@ -111,6 +141,7 @@ const CorrectedTexts: FC = () => {
               onSelectionChange={(selection) =>
                 handleFilterChange('sort', (selection?.value as string) ?? '')
               }
+              defaultValue={filters.sort}
             />
           </div>
           <Button
@@ -143,6 +174,52 @@ const CorrectedTexts: FC = () => {
           setEnableFetch={setEnableFetch}
         />
       </div>
+
+      <Dialog
+        onClose={() => setIsModalOpen(false)}
+        isOpen={isModalOpen}
+        title={modalTitle}
+        footer={
+          modalType === CorrectedTextsModalContexts.EXPORT && (
+            <div className="flex-grid">
+              <Button
+                appearance={ButtonAppearanceTypes.SECONDARY}
+                onClick={() => {
+                  setIsModalOpen(false);
+                }}
+              >
+                {t('global.cancel')}
+              </Button>
+              <Button
+                onClick={() => handleExport()}
+                disabled={!exportFormat || downloadLoading}
+                showLoadingIcon={downloadLoading}
+              >
+                {t('datasetGroups.detailedView.modals.export.exportButton')}
+              </Button>
+            </div>
+          )
+        }
+      >
+        {modalType === CorrectedTextsModalContexts.EXPORT ? (
+          <div>
+            <p>
+              {t('datasetGroups.detailedView.modals.export.fileFormatlabel')}
+            </p>
+            <div className="flex-grid mb-20">
+              <FormRadios
+                label=""
+                name="format"
+                items={formats}
+                onChange={setExportFormat}
+                selectedValue={exportFormat}
+              ></FormRadios>
+            </div>
+          </div>
+        ) : (
+            <p>{modalDiscription}</p>
+        )}
+      </Dialog>
     </div>
   );
 };

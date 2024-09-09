@@ -40,21 +40,24 @@ const ValidationCriteriaCardsView: FC<
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="title-sm">{t('datasetGroups.createDataset.validationCriteria')}</div>
-      {validationRules &&
-        validationRules?.map((item, index) => (
-          <DraggableItem
-            key={item.id}
-            index={index}
-            item={item}
-            moveItem={moveItem}
-            validationRuleError={validationRuleError}
-            setValidationRules={setValidationRules}
-            validationRules={validationRules}
-          />
-        ))}
-      <div className="flex" style={{ justifyContent: 'end' }}>
-        <Button onClick={addNewClass}>{t('datasetGroups.createDataset.addClassButton')}</Button>
+      <div className="title-sm">
+        {t('datasetGroups.createDataset.validationCriteria')}
+      </div>
+      {validationRules?.map((item, index) => (
+        <DraggableItem
+          key={item.id}
+          index={index}
+          item={item}
+          moveItem={moveItem}
+          validationRuleError={validationRuleError}
+          setValidationRules={setValidationRules}
+          validationRules={validationRules}
+        />
+      ))}
+      <div className="flex justify-end">
+        <Button onClick={addNewClass}>
+          {t('datasetGroups.createDataset.addClassButton')}
+        </Button>
       </div>
     </DndProvider>
   );

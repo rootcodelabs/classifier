@@ -39,7 +39,6 @@ const CreateDatasetGroup: FC = () => {
     { id: uuidv4(), fieldName: '', level: 0, children: [] },
   ];
 
-  // Properly destructure useState calls into value and setter pairs
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<CreateDatasetGroupModals>(
     CreateDatasetGroupModals.NULL
@@ -162,6 +161,8 @@ const CreateDatasetGroup: FC = () => {
           <div className="button-container">
             <Button
               onClick={() => validateData()}
+              disabled={createDatasetGroupMutation.isLoading}
+              showLoadingIcon={createDatasetGroupMutation.isLoading}
             >
               {t('datasetGroups.createDatasetGroupButton')}
             </Button>

@@ -19,6 +19,7 @@ SAVE_JSON_AGGREGRATED_DATA_URL = os.getenv("SAVE_JSON_AGGREGRATED_DATA_URL")
 DOWNLOAD_CHUNK_URL = os.getenv("DOWNLOAD_CHUNK_URL")
 STATUS_UPDATE_URL = os.getenv("STATUS_UPDATE_URL")
 FILE_HANDLER_COPY_CHUNKS_URL = os.getenv("FILE_HANDLER_COPY_CHUNKS_URL")
+DATASET_MODEL_STATUS_UPDATE_URL = os.getenv("DATASET_MODEL_STATUS_UPDATE_URL")
 
 # Messages
 MSG_PROCESS_HANDLER_STARTED = "Process handler started with updateType: {}"
@@ -40,9 +41,10 @@ PROGRESS_FAIL = 100
 # Messages
 MSG_INIT_VALIDATION = "Validation Initiated"
 MSG_VALIDATION_IN_PROGRESS = "Running validation criteria across dataset"
-MSG_VALIDATION_SUCCESS = "Validation successful"
+MSG_VALIDATION_SUCCESS = "Starting data pre-processing"
 MSG_VALIDATION_FAIL = "Validation failed"
 MSG_MISSING_FIELD = "Missing field: {}"
+MSG_ROWID_CANNOT_BE_A_FIELD = "RowId cannot be a field name or a column name in the dataset."
 MSG_VALIDATION_FIELD_FAIL = "Validation failed for field '{}' in row {}"
 MSG_VALIDATION_FIELDS_SUCCESS = "Fields validation successful"
 MSG_CLASS_HIERARCHY_FAIL = "Values missing in {}: {}"

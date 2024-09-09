@@ -186,6 +186,9 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
               (!user && !isValidIdentification) ||
               (user && !hasChangedFields())
             }
+            showLoadingIcon={
+              userEditMutation.isLoading || userCreateMutation.isLoading
+            }
           >
             {t('global.confirm')}
           </Button>
