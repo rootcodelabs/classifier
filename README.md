@@ -166,6 +166,60 @@ In this case, the `JIRA_WEBHOOK_ID` is `1`.
 
 Ensure these values are properly configured before proceeding.
 
+### Configuration for `config.env`
+
+This file contains environment variables that are necessary for the operation of the application. Below is an explanation of each value, with a focus on obtaining the AWS S3-related values.
+
+#### S3 Configuration Variables
+
+1. **S3_REGION**:
+   - This is the AWS region where your S3 bucket is located. For example, `eu-west-1` is the region for Ireland.
+   - To find your S3 region:
+     - Log in to your AWS Management Console.
+     - Navigate to **S3**.
+     - Look at the top-right corner of the S3 dashboard to see your region (e.g., `eu-west-1`, `us-east-1`).
+
+2. **S3_ENDPOINT_URL**:
+   - This is the endpoint URL for your S3 bucket in the specified region.
+   - You can find this by:
+     - Navigating to your S3 bucket.
+     - AWS provides the region-specific endpoint. For example, for the `eu-west-1` region, the endpoint is `https://s3.eu-west-1.amazonaws.com`.
+
+3. **S3_DATA_BUCKET_NAME**:
+   - This is the name of the S3 bucket where your data will be stored.
+   - To find or create your S3 bucket:
+     - Go to the AWS **S3** dashboard.
+     - If you already have a bucket, use its name.
+     - To create a new bucket, click on **Create Bucket**, name it (e.g., `esclassifier-test`), and configure its settings.
+
+4. **S3_DATA_BUCKET_PATH**:
+   - This specifies the path within your S3 bucket where data will be stored. In this example, it's `data/`.
+   - You can customize the directory structure within your bucket as per your project needs.
+
+5. **S3_ACCESS_KEY_ID** and **S3_SECRET_ACCESS_KEY**:
+   - These are the AWS access keys used to authenticate and authorize access to your S3 bucket.
+   - To generate these keys:
+     - Navigate to the **IAM** (Identity and Access Management) section in AWS.
+     - Create a new user (or use an existing one) with **Programmatic Access** enabled.
+     - Attach a policy that grants S3 permissions (such as `AmazonS3FullAccess` or a custom policy).
+     - After creating the user, AWS will provide an **Access Key ID** and **Secret Access Key**. Store these values securely.
+
+#### Local File System Path
+
+6. **FS_DATA_DIRECTORY_PATH**:
+   - This is the directory path on the local file system where data will be stored. Usually, this value is set to `/shared`.
+   - It is useful for storing files locally in addition to, or instead of, uploading them to S3.
+
+#### Other Configuration Variables
+
+7. **API_CORS_ORIGIN**:
+   - The value `*` means that the API allows requests from any domain (cross-origin resource sharing is fully open). This is useful during development but should be restricted to specific domains in production for security reasons.
+
+8. **API_DOCUMENTATION_ENABLED**:
+   - When set to `true`, this enables automatic generation of API documentation, such as Swagger or Redoc. This is helpful for developers to interact with and understand the API’s endpoints.
+
+Ensure that your AWS credentials (S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY) are stored securely and never exposed publicly. It's recommended to use services like AWS Secrets Manager for production environments.
+
 ##### Ruuter Internal Requests
 
 - When running ruuter either on local or in an environment make sure to adjust `- application.internalRequests.allowedIPs=127.0.0.1,{YOUR_IPS}` under ruuter environments
