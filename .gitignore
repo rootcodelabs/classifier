@@ -396,3 +396,21 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+/tim-db
+/data
+
+.env
+.sonarlint
+.vscode
+.DS_Store
+DSL/Liquibase/data/update_refresh_token.sql
+model_trainer/results
+protected_configs/
+
+./config.env
+./constants.ini
+
+config.env
+constants.ini
+jira_config.env
