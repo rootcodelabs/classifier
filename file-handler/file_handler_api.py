@@ -79,6 +79,11 @@ async def authenticate_user(cookie: str):
         print(f"Error in file handler authentication : {e}")
         raise HTTPException(status_code=500, detail="Authentication failed")
 
+def custom_serializer(obj):
+    if isinstance(obj, (datetime, datetime.date)):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} not serializable")
+
 @app.post("/datasetgroup/data/import")
 async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: UploadFile = File(...)):
     try:
@@ -107,7 +112,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
         
         json_local_file_path = file_location.replace(YAML_EXT, JSON_EXT).replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         with open(json_local_file_path, 'w') as json_file:
-            json.dump(converted_data, json_file, indent=4)
+            json.dump(converted_data, json_file, indent=4, default=custom_serializer)
 
         save_location = TEMP_DATASET_LOCATION.format(dg_id=dgId)
         source_file_path = file_name.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
