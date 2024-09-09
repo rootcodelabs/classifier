@@ -110,36 +110,61 @@ This repo will primarily contain:
     - Add this value to the `constants.ini` file and the `DSL/CronManager/config/config.ini` files.
 
 
+
 ### Jira Setup
 
-- Navigate to https://id.atlassian.com/manage-profile
-- Log in with your JIRA credentials and click on security tab
-- Scroll down to API token section and then click `Create and manage API tokens---> Create API Token`
-- Navigate to Jira Account(This is the Account where jira issue create and prediction happen)
-- Then go to settings--> system--> webHooks
-- create webhook
-      - url - `Base_URL/classifier/integration/jira/cloud/accept`
-      - click issue created,updated check boxes
-- Set Values in Constant.ini
-     - JIRA_API_TOKEN
-     - JIRA_USERNAME
-     - JIRA_CLOUD_DOMAIN
-     - JIRA_WEBHOOK_ID
-- Create a .env file called jira_config.env and add the jira webhook secret as shown below
-  - JIRA_WEBHOOK_SECRET=<<JIRA_WEBHOOK_SECRET>>
+1. **Generate API Token:**
+   - Navigate to [Atlassian Profile](https://id.atlassian.com/manage-profile) and log in with your Jira credentials.
+   - Click on the **Security** tab.
+   - Scroll down to the **API Token** section, and click on `Create and manage API tokens`.
+   - Click on `Create API Token` to generate a new token. **This token will serve as your `JIRA_API_TOKEN`.** Make sure to store it securely as it will be used later.
 
+2. **Create Jira Webhook:**
+   - Navigate to your **Jira Account** (This is where Jira issues will be created and predicted).
+   - Go to **Settings → System → WebHooks**.
+   - Click `Create WebHook` and configure it as follows:
+     - **URL**: `Base_URL/webhook` (Replace `Base_URL` with the actual URL of your `jira-verification` container deployed in your infrastructure).
+     - Under Events, select the checkboxes for `Issue Created` and `Issue Updated` to trigger the webhook upon these actions.
+     - **Webhook Secret**: After creating the webhook, you will receive a `JIRA_WEBHOOK_SECRET`. **Save this secret as you will need to add it to your configuration files.**
 
-### Notes
+3. **Set Values in `constants.ini`:**
+   - Add the following values in your `constants.ini` file:
+     - `JIRA_API_TOKEN` – The API token generated in step 1.
+     - `JIRA_USERNAME` – Your Jira username. To find your Jira username, navigate to your profile in Jira, and it will be displayed under your account information.
+     - `JIRA_CLOUD_DOMAIN` – The domain URL of your Jira cloud instance (e.g., `https://example.atlassian.net`).
+     - `JIRA_WEBHOOK_ID` – You can retrieve this using the steps below.
 
--To get Jira webhook id ,can use below CURL request with valid credentials
+4. **Create a `.env` file for Jira Configuration:**
+   - Create a `.env` file called `jira_config.env` and add the following:
+     ```env
+     JIRA_WEBHOOK_SECRET=<<JIRA_WEBHOOK_SECRET>>
+     ```
 
-`curl -X GET \
--u your-email@example.com:your-api-token \
--H "Content-Type: application/json" \
-JIRA_CLOUD_DOMAIN/rest/webhooks/1.0/webhook`
-- self attribute has the id
-     - example: "self": "https://example.net/rest/webhooks/1.0/webhook/1
-    - webhook id: 1
+### Retrieving Jira Webhook ID
+
+To get the `JIRA_WEBHOOK_ID`, use the following CURL request with your Jira email and API token:
+
+```bash
+curl -X GET -u your-email@example.com:your-api-token -H "Content-Type: application/json" https://<JIRA_CLOUD_DOMAIN>/rest/webhooks/1.0/webhook
+```
+
+In the response, the webhook ID can be found in the `self` attribute. For example:
+
+```json
+"self": "https://example.net/rest/webhooks/1.0/webhook/1"
+```
+
+In this case, the `JIRA_WEBHOOK_ID` is `1`.
+
+5. **Final Configuration:**
+   - Add the following values to your `constants.ini` file:
+     - `JIRA_API_TOKEN`
+     - `JIRA_USERNAME`
+     - `JIRA_CLOUD_DOMAIN`
+     - `JIRA_WEBHOOK_ID`
+     - `JIRA_WEBHOOK_SECRET`
+
+Ensure these values are properly configured before proceeding.
 
 ##### Ruuter Internal Requests
 
