@@ -1,19 +1,4 @@
-import { createHmac, timingSafeEqual, randomBytes } from "crypto";
-
-export function verifySignature(payload, headers, secret) {
-  const signature = headers["x-hub-signature"];
-  const SHARED_SECRET = secret;
-  const hmac = createHmac("sha256", Buffer.from(SHARED_SECRET, "utf8"));
-  const payloadString = JSON.stringify(payload);
-  hmac.update(Buffer.from(payloadString, "utf8"));
-  const computedSignature = hmac.digest("hex");
-  const computedSignaturePrefixed = "sha256=" + computedSignature;
-  const isValid = timingSafeEqual(
-    Buffer.from(computedSignaturePrefixed, "utf8"),
-    Buffer.from(signature, "utf8")
-  );
-  return isValid;
-}
+import { randomBytes } from "crypto";
 
 export function getAuthHeader(username, token) {
   const auth = `${username}:${token}`;
