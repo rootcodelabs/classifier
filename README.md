@@ -99,16 +99,8 @@ This repo will primarily contain:
       docker compose up -d
       ```
     - Open `http://localhost:3003` in your browser and log into your Outlook account.
-    - After logging in, you will be redirected to a blank page. Copy the URL of this page. 
-      It will look something like this:
-      ```
-      http://localhost:3003/callback?code=0.AXAAXGBxHHHLM0KSn6K5P11VEwd6OmhayyZPkKWeDQbMwB7EADY.AgABBAIAAAApTwJmzXqdR4BN2miheQMYAwDs_wUA9P8YgyUBDQvsq47v6moXRoIHTkHmo10LAbOgZS9kgj6Dnu1wkGQRw8WOYJMBDaQgT85jC4oIGAPvET02ZEhdalGcVZveRaULfWnFz7MMrV1R17xr73yAuF5ZEKNSivDqZ9Bq9U7qbVuykvzghVtZXiZJWfl3wSS7SJTaZl6lvSwj-ce_4piRoMXE8UI3ae-I88eAHqpDewH5b4zsVO7ouqEgEhIXHd2B6KKKrgUGW1KQsKxI_UZ89C8Uj23ISB1fecpMA&state=12345&session_state=ce84abb3-4466-493f-afc5-506d002f9617
-      ```
-
-7. **Extract OUTLOOK_REFRESH_KEY**
-    - Remove the `http://localhost:3003/callback?code=` part from the URL, and the remaining string will be your **OUTLOOK_REFRESH_KEY**.
+    - After logging in, you will be redirected to a page with text box and value in the text box will be your **OUTLOOK_REFRESH_KEY**.
     - Add this value to the `constants.ini` file and the `DSL/CronManager/config/config.ini` files.
-
 
 
 ### Jira Setup
