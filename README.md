@@ -55,13 +55,60 @@ This repo will primarily contain:
 - To Initialize Open Search run `./deploy-opensearch.sh <URL> <AUTH> <Is Mock Allowed - Default false>`
 - To Use Opensearch locally run `./deploy-opensearch.sh http://localhost:9200 admin:admin true`
 
-### Outlook Setup
-- Register Application in Azure portal
-  -  Supported account types - Supported account types
-  - Redirect URI platform - Web
-- Client ID, Client Secret should be set in constant.ini under OUTLOOK_CLIENT_ID and OUTLOOK_SECRET_KEY
-- Navigate CronManger/config folder and add Client ID, Client Secret values in config.ini file also 
-- Set the value of `CLASSIFIER_RUUTER_PUBLIC_FRONTEND_URL` in constant.ini - Allowing it to be accessed from the internet for validating Outlook subscription.
+### Setting up Microsoft Outlook Integration
+
+1. **Sign in to Azure Portal**
+    - Navigate to [Azure Portal](https://portal.azure.com) and log in.
+    - Click on **Manage Microsoft Entra ID**.
+![1](https://github.com/user-attachments/assets/abd47d5c-65ab-47b8-a0a7-dd7199055ac2)
+
+2. **App Registration**
+    - In the left-hand side menu, under the **Manage** section, select **App Registration**.
+    - Click on the **New registration** button.
+      ![3](https://github.com/user-attachments/assets/5be4b8b4-f2c7-459a-965b-96239d5e884a)
+    - Provide a **Name** and select the **Account type** as required.
+    - In the **Redirect URI** section, select **Web** and enter the callback URL of the Outlook consent app. 
+      If deployed locally, the callback URL will be `http://localhost:3003/callback`.
+![4](https://github.com/user-attachments/assets/1e246ca8-c37d-4fd1-93b6-61946cb0c9be)
+
+3. **Copy OUTLOOK_CLIENT_ID**
+    - After registering, you can find the **Application (Client) ID** as the **OUTLOOK_CLIENT_ID**. 
+    - Copy this value and replace it in both the `constants.ini` file and the `DSL/CronManager/config/config.ini` file.
+
+4. **Add Client Secret**
+    - On the same page, navigate to the **Client credentials** section and click on **Add a certificate or secret**.
+      ![5](https://github.com/user-attachments/assets/59a07937-db39-471c-9c32-d1091a8dc91b)
+      
+    - Select **Client secrets** and click on **New Client secret**. Provide a description and select an expiration time.
+    - Once created, copy the **Value** field, which will serve as the **OUTLOOK_SECRET_KEY**. 
+    - Add this value to the `constants.ini` and `DSL/CronManager/config/config.ini` files.
+![7](https://github.com/user-attachments/assets/f2652f83-82ed-4013-a163-45143193bb91)
+
+5. **Acquire OUTLOOK_REFRESH_KEY**
+    - Navigate to the `outlook-consent-app` folder.
+    - Set up the environment variables in the `.env` file as follows:
+      ```
+      NEXT_PUBLIC_CLIENT_ID=<OUTLOOK_CLIENT_ID>
+      CLIENT_SECRET=<OUTLOOK_SECRET_KEY>
+      REDIRECT_URI=http://localhost:3003/callback
+      ```
+
+6. **Run Docker Compose**
+    - Build and run the image using the command:
+      ```bash
+      docker compose up -d
+      ```
+    - Open `http://localhost:3003` in your browser and log into your Outlook account.
+    - After logging in, you will be redirected to a blank page. Copy the URL of this page. 
+      It will look something like this:
+      ```
+      http://localhost:3003/callback?code=0.AXAAXGBxHHHLM0KSn6K5P11VEwd6OmhayyZPkKWeDQbMwB7EADY.AgABBAIAAAApTwJmzXqdR4BN2miheQMYAwDs_wUA9P8YgyUBDQvsq47v6moXRoIHTkHmo10LAbOgZS9kgj6Dnu1wkGQRw8WOYJMBDaQgT85jC4oIGAPvET02ZEhdalGcVZveRaULfWnFz7MMrV1R17xr73yAuF5ZEKNSivDqZ9Bq9U7qbVuykvzghVtZXiZJWfl3wSS7SJTaZl6lvSwj-ce_4piRoMXE8UI3ae-I88eAHqpDewH5b4zsVO7ouqEgEhIXHd2B6KKKrgUGW1KQsKxI_UZ89C8Uj23ISB1fecpMA&state=12345&session_state=ce84abb3-4466-493f-afc5-506d002f9617
+      ```
+
+7. **Extract OUTLOOK_REFRESH_KEY**
+    - Remove the `http://localhost:3003/callback?code=` part from the URL, and the remaining string will be your **OUTLOOK_REFRESH_KEY**.
+    - Add this value to the `constants.ini` file and the `DSL/CronManager/config/config.ini` files.
+
 
 ### Jira Setup
 
