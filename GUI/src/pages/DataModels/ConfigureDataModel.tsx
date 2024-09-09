@@ -18,6 +18,7 @@ import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinne
 import { DataModel, UpdatedDataModelPayload } from 'types/dataModels';
 import { dataModelsQueryKeys } from 'utils/queryKeys';
 import { useTranslation } from 'react-i18next';
+import './DataModels.scss';
 
 type ConfigureDataModelType = {
   id: number;
@@ -120,25 +121,6 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
           () => updateDataModelMutation.mutate(updatedPayload),
           'replace'
         );
-        // open({
-        //   title: t('dataModels.createDataModel.replaceTitle'),
-        //   content: t('dataModels.createDataModel.replaceDesc'),
-        //   footer: (
-        //     <div className="flex-grid">
-        //       <Button
-        //         appearance={ButtonAppearanceTypes.SECONDARY}
-        //         onClick={close}
-        //       >
-        //         {t('global.cancel')}
-        //       </Button>
-        //       <Button
-        //         onClick={() => updateDataModelMutation.mutate(updatedPayload)}
-        //       >
-        //         {t('global.proceed')}
-        //       </Button>
-        //     </div>
-        //   ),
-        // });
       } else {
         updateDataModelMutation.mutate(updatedPayload);
       }
@@ -208,28 +190,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
         () => deleteDataModelMutation.mutate(dataModel.modelId),
         'delete'
       );
-      // open({
-      //   title: t('dataModels.configureDataModel.deleteConfirmation'),
-      //   content: (
-      //     <p>{t('dataModels.configureDataModel.deleteConfirmationDesc')}</p>
-      //   ),
-      //   footer: (
-      //     <div className="flex-grid">
-      //       <Button
-      //         appearance={ButtonAppearanceTypes.SECONDARY}
-      //         onClick={close}
-      //       >
-      //         {t('global.cancel')}
-      //       </Button>
-      //       <Button
-      //         onClick={() => deleteDataModelMutation.mutate(dataModel.modelId)}
-      //         appearance={ButtonAppearanceTypes.ERROR}
-      //       >
-      //         {t('global.delete')}
-      //       </Button>
-      //     </div>
-      //   ),
-      // });
+
     }
   };
 
@@ -281,7 +242,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   return (
     <div>
       <div className="container">
-        <div className="flex-grid" style={{ margin: '30px 0px' }}>
+        <div className="flex-grid m-30-0">
           <Link to={''} onClick={() => navigate(0)}>
             <BackArrowButton />
           </Link>
@@ -292,11 +253,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
 
         <Card>
           <div
-            style={{
-              padding: '20px 150px',
-              justifyContent: 'center',
-              textAlign: 'center',
-            }}
+           className='metadata-card'
           >
             <div>
               <p>{t('dataModels.configureDataModel.retrainCard')}</p>
@@ -322,15 +279,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
         )}
       </div>
       <div
-        className="flex"
-        style={{
-          alignItems: 'end',
-          gap: '10px',
-          justifyContent: 'end',
-          margin: '25px -16px -16px',
-          padding: '20px 64px',
-          background: 'white',
-        }}
+        className="flex data-model-buttons"
       >
         <Button
           appearance="error"

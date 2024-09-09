@@ -21,10 +21,7 @@ export const customFormattedArray = <T extends Record<string, any>>(
 ) => {
   return data?.map((item) => ({
     label: `${item[attributeName]}`,
-    value: {
-      name: `${item[attributeName]}`,
-      id: item.id,
-    },
+    value: item.id,
   }));
 };
 

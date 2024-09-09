@@ -30,7 +30,7 @@ type FormSelectProps = Partial<ControllerRenderProps> &
     options: FormSelectOption[];
     onSelectionChange?: (selection: FormSelectOption | null) => void;
     error?: string;
-    defaultValue?: string | { name: string; id: string };
+    defaultValue?: string | { name: string; id: string } | number;
   };
 
 const itemToString = (item: FormSelectOption | null) => {

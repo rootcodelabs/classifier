@@ -32,20 +32,6 @@ const IntegrationCard: FC<PropsWithChildren<IntegrationCardProps>> = ({
   );
 
   const renderStatusIndicators = () => {
-    //kept this, in case the logic is changed for the connected status
-    // return connectedStatus?.map((status, index) => (
-    //   <span key={index} className="status">
-    //     <span
-    //       className={`dot ${
-    //         status.status.toLowerCase() === 'connected' ? 'green' : 'grey'
-    //       }`}
-    //     ></span>
-    //     {connectedStatus?.length > 1
-    //       ? `${status.status} - ${status.platform}`
-    //       : `${status.status}`}
-    //   </span>
-    // ));
-
     return (
       <span className="status">
         <span className={`dot ${isActive ? 'green' : 'grey'}`}></span>

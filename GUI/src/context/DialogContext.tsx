@@ -24,7 +24,7 @@ type DialogContextType = {
   open: (dialog: DialogProps) => void;
   close: () => void;
 };
-
+// operates Dialog modals where dynamic contents not involved
 export const DialogContext = createContext<DialogContextType>(null!);
 
 export const DialogProvider: FC<PropsWithChildren<{}>> = ({ children }) => {

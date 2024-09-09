@@ -183,7 +183,7 @@ const DatasetGroups: FC = () => {
               </div>
             )}
             {datasetGroupsData?.response?.data?.length > 0 ? (
-              <div className="grid-container" style={{ marginTop: '20px' }}>
+              <div className="grid-container m-30-0">
                 {datasetGroupsData?.response?.data?.map(
                   (dataset: SingleDatasetType, index: number) => {
                     return (

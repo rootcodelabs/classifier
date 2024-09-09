@@ -5,6 +5,7 @@ The classifier is an open-source model training platform which can be integrated
 
 This repo will primarily contain:
 
+
 1. Architecture and other documentation (under the documentation folder);
 2. Docker Compose file to set up and run Classifier as a fully functional service;
 3. You can view the UI designs for this project in this [Figma file](https://www.figma.com/design/VWoZu2s7auo7YTw49RqNtV/Estonian-Classifier-English-Version?node-id=712-1695&t=cx6ZZVuEkfWqlbZB-1)
