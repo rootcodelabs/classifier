@@ -24,3 +24,8 @@ export enum UpdateType {
   MINOR = 'minor',
   MATURITY_LABEL = 'maturityLabel',
 }
+
+export enum TrainingSessionsStatuses {
+  TRAINING_SUCCESS_STATUS = 'deployed',
+  TRAINING_FAILED_STATUS = 'fail'
+}

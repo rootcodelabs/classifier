@@ -94,7 +94,8 @@ export const dataModelsQueryKeys = {
     return ['datamodels/metadata', `${modelId}`].filter(
       (val) => val !== undefined
     );
-  }
+  },
+  GET_DATA_MODELS_PROGRESS: () => ['datamodels/progress'],
 };
 
 export const testModelsQueryKeys = {

@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Progress from '@radix-ui/react-progress';
-import './index.scss'; // Import your CSS file for custom styles
+import './index.scss';
 
 type ProgressBarProps = {
   value: number;
