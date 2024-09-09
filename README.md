@@ -27,6 +27,7 @@ This repo will primarily contain:
 - Navigate to S3-Ferry and build the image `docker build  -t s3-ferry .`
 - Clone [Cron Manager](https://github.com/rootcodelabs/CronManager) (<i>This is a forked repo of the original Buerokratt CronManager with a Python environment included</i>)
 - Navigate to Cron Manager dev branch and build the cron-manager-python image `docker build -f Dockerfile.python -t cron-manager-python .`
+- Replace the existing values in the Cron Manager config.ini file with the correct values for `OUTLOOK_CLIENT_ID` and `OUTLOOK_SECRET_KEY`
 
 ## Give execution permission for all mounted shell scripts
 - Navigate to the parent folder of the classifier project and run the below command to make the shell files executable

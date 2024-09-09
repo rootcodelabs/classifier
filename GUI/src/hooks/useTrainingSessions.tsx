@@ -1,16 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { getDataModelsProgress } from "services/data-models";
-import sse from "services/sse-service";
-import { TrainingProgressData } from "types/dataModels";
-import { SSEEventData } from "types/datasetGroups";
+import { useQuery } from '@tanstack/react-query';
+import { TrainingSessionsStatuses } from 'enums/dataModelsEnums';
+import { useEffect, useState } from 'react';
+import { getDataModelsProgress } from 'services/data-models';
+import sse from 'services/sse-service';
+import { TrainingProgressData } from 'types/dataModels';
+import { SSEEventData } from 'types/datasetGroups';
+import { dataModelsQueryKeys } from 'utils/queryKeys';
 
 export const useTrainingSessions = () => {
   const [progresses, setProgresses] = useState<TrainingProgressData[]>([]);
 
   const { data: progressData, refetch } = useQuery<TrainingProgressData[]>(
-    ['datamodels/progress'],
-    () => getDataModelsProgress(),
+    dataModelsQueryKeys.GET_DATA_MODELS_PROGRESS(),
+    getDataModelsProgress,
     {
       onSuccess: (data) => {
         setProgresses(data);
@@ -32,19 +34,21 @@ export const useTrainingSessions = () => {
     const eventSources = progressData
       .filter(
         (progress) =>
-          !(progress.trainingStatus === 'deployed'||progress.trainingStatus === 'failed') &&
-          progress.progressPercentage !== 100
+          !(
+            progress.trainingStatus ===
+              TrainingSessionsStatuses.TRAINING_SUCCESS_STATUS ||
+            progress.trainingStatus ===
+              TrainingSessionsStatuses.TRAINING_FAILED_STATUS
+          ) && progress.progressPercentage !== 100
       )
       .map((progress) =>
-        sse(`/${progress.id}`, 'dataset', (data: SSEEventData) => {
-          console.log(`New data for notification ${progress.id}:`, data);
+        sse(`/${progress.id}`, 'model', (data: SSEEventData) => {
           handleUpdate(data.sessionId, data);
         })
       );
 
     return () => {
       eventSources.forEach((eventSource) => eventSource?.close());
-      console.log('SSE connections closed');
     };
   }, [progressData, refetch]);
 

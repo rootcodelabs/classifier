@@ -1,7 +1,7 @@
 import React, { FC, PropsWithChildren, useState } from 'react';
 import Button from 'components/Button';
 import { v4 as uuidv4 } from 'uuid';
-import './index.css';
+import './TreeNode.scss';
 import Dialog from 'components/Dialog';
 import { Class, TreeNode } from 'types/datasetGroups';
 import { useTranslation } from 'react-i18next';

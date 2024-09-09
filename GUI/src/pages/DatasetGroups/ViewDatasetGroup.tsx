@@ -84,7 +84,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   const changeConfirmationFunction = useRef(() => {});
-  const [confirmationFLow, setConfirmationFlow] = useState('');
+  const [confirmationFlow, setConfirmationFlow] = useState('');
   useEffect(() => {
     setFetchEnabled(false);
   }, []);
@@ -528,7 +528,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
         majorUpdateLoading={majorUpdateDatasetGroupMutation.isLoading}
         patchUpdateLoading={patchUpdateMutation.isLoading}
         minorUpdateLoading={minorUpdateMutation.isLoading}
-        confirmationFLow={confirmationFLow}
+        confirmationFlow={confirmationFlow}
         deleteDatasetMutationLoading={deleteDatasetMutation.isLoading}
       />
     </div>
