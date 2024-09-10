@@ -6,7 +6,7 @@ The classifier is an open-source model training platform which can be integrated
 This repo will primarily contain:
 
 
-1. Architecture and other documentation (under the documentation folder);
+1. Architecture and other documentation (under the docs folder);
 2. Docker Compose file to set up and run Classifier as a fully functional service;
 3. You can view the UI designs for this project in this [Figma file](https://www.figma.com/design/VWoZu2s7auo7YTw49RqNtV/Estonian-Classifier-English-Version?node-id=712-1695&t=cx6ZZVuEkfWqlbZB-1)
 
@@ -14,31 +14,33 @@ This repo will primarily contain:
 ## Dev setup
 
 - Clone [Ruuter](https://github.com/buerokratt/Ruuter)
-- Navigate to Ruuter and build the image `docker build -t ruuter .`
+- Navigate to Ruuter and build the image using the command `docker build -t ruuter .`
 - Clone [Resql](https://github.com/buerokratt/Resql)
 - Navigate to Resql and build the image `docker build -t resql .`
 - Clone [Data Mapper](https://github.com/buerokratt/DataMapper)
-- Navigate to Data Mapper and build the image `docker build -t data-mapper .`
+- Navigate to Data Mapper and build the image using the command `docker build -t data-mapper .`
 - Clone [TIM](https://github.com/buerokratt/TIM)
-- Navigate to TIM and build the image `docker build -t tim .`
+- Navigate to TIM and build the image using the command `docker build -t tim .`
 - Clone [Authentication Layer](https://github.com/buerokratt/Authentication-layer)
-- Navigate to Authentication Layer, checkout to the `dev` branch and build the image  `docker build -f Dockerfile.dev -t authentication-layer .`
+- Navigate to Authentication Layer, checkout to the `dev` branch and build the image using the command `docker build -f Dockerfile.dev -t authentication-layer .`
 - Clone [S3 Ferry](https://github.com/buerokratt/S3-Ferry)
-- Navigate to S3-Ferry and build the image `docker build  -t s3-ferry .`
+- Navigate to S3-Ferry and build the image using the command `docker build  -t s3-ferry .`
 - Clone [Cron Manager](https://github.com/rootcodelabs/CronManager) (<i>This is a forked repo of the original Buerokratt CronManager with a Python environment included</i>)
-- Navigate to Cron Manager dev branch and build the cron-manager-python image `docker build -f Dockerfile.python -t cron-manager-python .`
-- Replace the existing values in the Cron Manager config.ini file with the correct values for `OUTLOOK_CLIENT_ID` and `OUTLOOK_SECRET_KEY`
+- Navigate to Cron Manager `dev` branch and build the cron-manager-python image using the command `docker build -f Dockerfile.python -t cron-manager-python .`
+- Replace the existing values in the Cron Manager config.ini file with the corresponding values for `OUTLOOK_CLIENT_ID` and `OUTLOOK_SECRET_KEY`. The following sections describe how these keys can be acquired.
 
 ## Give execution permission for all mounted shell scripts
 - Navigate to the parent folder of the classifier project and run the below command to make the shell files executable
-- `find classifier -type f -name "*.sh" -exec chmod +x {} \;`
+
+   `find classifier -type f -name "*.sh" -exec chmod +x {} \;`
 
 ### Database setup
 
-- For setting up the database initially, run helper script `./token.sh`
-- Then setup database password in constant.ini under the key DB_PASSWORD
-- Run migrations added in this repository by running the helper script `./migrate.sh`(consider db properties before run the script)
-- When creating new migrations, use the helper `./create-migration.sh name-of-migration sql` which will create a new file in the correct directory and add the required headers, pass file name(ex: data-model-sessions) and the format(sql or xml) as inputs
+- For the initial setup of the database, run helper script `./token.sh`
+- Provide the password for the database in constant.ini under the key `DB_PASSWORD`
+- Run migrations added in this repository by running the helper script `./migrate.sh`(consider db properties before running the script)
+- When creating new migrations, run `create-migration` script with parameters ` example : ./create-migration.sh <name-of-migration> <format>`
+- This will create a new file in the respective directory and add the required headers, pass file name(ex: `data-model-sessions`) and the format(`sql` or `xml`) as inputs
 
 ### Open Search
 
@@ -58,11 +60,11 @@ This repo will primarily contain:
       ![3](https://github.com/user-attachments/assets/5be4b8b4-f2c7-459a-965b-96239d5e884a)
     - Provide a **Name** and select the **Account type** as required.
     - In the **Redirect URI** section, select **Web** and enter the callback URL of the Outlook consent app. 
-      If deployed locally, the callback URL will be `http://localhost:3003/callback`. please note that if you have deployed on another host other than localhost this should be `http://<base_url>/callback`.
+      If deployed locally, the callback URL will be `http://localhost:3003/callback`. Please note that if you have deployed on another host other than localhost this should be `http://<base_url>/callback`.
 ![4](https://github.com/user-attachments/assets/1e246ca8-c37d-4fd1-93b6-61946cb0c9be)
 
 3. **Copy OUTLOOK_CLIENT_ID**
-    - After registering, you can find the **Application (Client) ID** as the **OUTLOOK_CLIENT_ID**. 
+    - After registering, you can find the **Application (Client) ID** which will serve as the **OUTLOOK_CLIENT_ID**. 
     - Copy this value and replace it in both the `constants.ini` file and the `DSL/CronManager/config/config.ini` file.
 
 4. **Add Client Secret**
@@ -80,9 +82,9 @@ This repo will primarily contain:
       ```
       NEXT_PUBLIC_CLIENT_ID=<OUTLOOK_CLIENT_ID>
       CLIENT_SECRET=<OUTLOOK_SECRET_KEY>
-      REDIRECT_URI=http://localhost:3003/callback or http://<base_url>/callback if you deployed somewhare other than localhost
-      Redirect URI should be the url that you have provided to the **Redirect URI** section when you are registering the application.
+      REDIRECT_URI=http://localhost:3003/callback or http://<base_url>/callback 
       ```
+    - if you deployed somewhare other than localhost, Redirect URI should be the url that you have provided to the **Redirect URI** section when you are registering the application.
 
 6. **Run Docker Compose**
     - Build and run the image using the command:
@@ -100,7 +102,7 @@ This repo will primarily contain:
    - Navigate to [Atlassian Profile](https://id.atlassian.com/manage-profile) and log in with your Jira credentials.
    - Click on the **Security** tab.
    - Scroll down to the **API Token** section, and click on `Create and manage API tokens`.
-   - Click on `Create API Token` to generate a new token. **This token will serve as your `JIRA_API_TOKEN`.** Make sure to store it securely as it will be used later.
+   - Click on **Create API Token** to generate a new token. **This token will serve as your `JIRA_API_TOKEN`.** Make sure to store it securely as it will be used later.
 
 2. **Create Jira Webhook:**
    - Navigate to your **Jira Account** (This is where Jira issues will be created and predicted).
@@ -115,7 +117,8 @@ This repo will primarily contain:
      - `JIRA_API_TOKEN` – The API token generated in step 1.
      - `JIRA_USERNAME` – Your Jira username. To find your Jira username, navigate to your profile in Jira, and it will be displayed under your account information.
      - `JIRA_CLOUD_DOMAIN` – The domain URL of your Jira cloud instance (e.g., `https://example.atlassian.net`).
-     - `JIRA_WEBHOOK_ID` – You can retrieve this using the steps below.
+     - `JIRA_WEBHOOK_ID` – You can retrieve this using steps provided under Retrievening Jira Webhook ID.
+     - `JIRA_WEBHOOK_SECRET` – Jira webhook secret you got in **Create Jira Webhook** step.
 
 4. **Create a `.env` file for Jira Configuration:**
    - Create a `.env` file called `jira_config.env` and add the following:
@@ -138,16 +141,6 @@ In the response, the webhook ID can be found in the `self` attribute. For exampl
 ```
 
 In this case, the `JIRA_WEBHOOK_ID` is `1`.
-
-5. **Final Configuration:**
-   - Add the following values to your `constants.ini` file:
-     - `JIRA_API_TOKEN`
-     - `JIRA_USERNAME`
-     - `JIRA_CLOUD_DOMAIN`
-     - `JIRA_WEBHOOK_ID`
-     - `JIRA_WEBHOOK_SECRET`
-
-Ensure these values are properly configured before proceeding.
 
 ### Configuration for `config.env`
 
