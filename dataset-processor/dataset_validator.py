@@ -154,16 +154,17 @@ class DatasetValidator:
     def validate_value(self, value, value_type):
         if value_type == 'email':
             return re.match(r"[^@]+@[^@]+\.[^@]+", value) is not None
-        elif value_type == 'text':
+        elif value_type == 'text' or value_type == 'file_attachments':
             return isinstance(value, str)
-        elif value_type == 'int':
-            return isinstance(value, int) or value.isdigit()
-        elif value_type == 'float':
-            try:
-                float(value)
+        elif value_type == 'numbers':
+            if isinstance(value, (int, float)):
                 return True
-            except ValueError:
-                return False
+            else:
+                try:
+                    float(value)
+                    return True
+                except ValueError:
+                    return False
         elif value_type == 'datetime':
             try:
                 datetime.datetime.fromisoformat(value)
