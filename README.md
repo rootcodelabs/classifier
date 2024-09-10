@@ -81,7 +81,7 @@ This repo will primarily contain:
       NEXT_PUBLIC_CLIENT_ID=<OUTLOOK_CLIENT_ID>
       CLIENT_SECRET=<OUTLOOK_SECRET_KEY>
       REDIRECT_URI=http://localhost:3003/callback or http://<base_url>/callback if you deployed somewhare other than localhost
-      Refirect URI should be the url that you have provided to the **Redirect URI** section when you are registering the application.
+      Redirect URI should be the url that you have provided to the **Redirect URI** section when you are registering the application.
       ```
 
 6. **Run Docker Compose**
