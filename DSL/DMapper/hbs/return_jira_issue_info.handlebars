@@ -1,9 +1,0 @@
-{
-  "title": "{{data.fields.summary}}",
-  "description": "{{data.fields.description}}",
-  "attachments": [
-    {{#each data.fields.attachment}}
-      "{{this.filename}}"{{#unless @last}},{{/unless}}
-    {{/each}}
-  ]
-}

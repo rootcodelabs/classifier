@@ -97,7 +97,7 @@ const ValidationCriteriaRowsView: FC<
   };
 
   return (
-    <div style={{ margin: '-16px' }}>
+    <div className='m--16'>
       {validationRules?.map((item, index) => (
         <div
           key={item.id}

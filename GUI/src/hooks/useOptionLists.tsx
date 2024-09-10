@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+// maps translations with dropdown options
 const useOptionLists = () => {
   const { t } = useTranslation();
 

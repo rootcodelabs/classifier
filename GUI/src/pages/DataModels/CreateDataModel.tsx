@@ -209,20 +209,8 @@ const CreateDataModel: FC = () => {
           type="create"
         />
       </div>
-      <div
-        className="flex"
-        style={{
-          alignItems: 'end',
-          gap: '10px',
-          justifyContent: 'end',
-          margin: '25px -16px -16px',
-          padding: '20px 64px',
-          background: 'white',
-        }}
-      >
-        <Button
-          onClick={() => handleCreate()}
-        >
+      <div className="flex data-model-buttons">
+        <Button onClick={() => handleCreate()}>
           {t('dataModels.createDataModel.title')}
         </Button>
         <Button appearance="secondary" onClick={() => navigate('/data-models')}>

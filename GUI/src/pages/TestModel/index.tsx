@@ -14,7 +14,7 @@ import { formatClassHierarchyArray } from 'utils/commonUtilts';
 import { testModelsEndpoints } from 'utils/endpoints';
 import { testModelsQueryKeys } from 'utils/queryKeys';
 import { formatPredictions } from 'utils/testModelUtil';
-import './testModelStyles.scss';
+import './TestModel.scss';
 
 const TestModel: FC = () => {
   const { t } = useTranslation();
@@ -108,7 +108,7 @@ const TestModel: FC = () => {
           </div>
 
           {!classifyLoading && classifyData && (
-            <div style={{ marginTop: '20px' }}>
+            <div className='mt-20'>
               <div className="blue-card">
                 <div className="flex">
                   <b>{t('testModels.predictedHierarchy')}</b>
@@ -129,7 +129,7 @@ const TestModel: FC = () => {
                   <b>{t('testModels.classProbabilities')}</b>
                   <ul className="testModalList">
                     {formatPredictions(classifyData)?.map((prediction, index) => {
-                      return <li key={index}>{prediction}</li>;
+                      return <li key={`pred${index}`}>{prediction}</li>;
                     })}
                   </ul>
                 </div>

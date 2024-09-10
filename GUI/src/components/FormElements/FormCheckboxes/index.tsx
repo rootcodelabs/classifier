@@ -13,7 +13,7 @@ type FormCheckboxesType = {
   }[] |undefined;
   isStack?: boolean;
   error?: string;
-  selectedValues?: string[]; // New prop for selected values
+  selectedValues?: string[];
 };
 
 const FormCheckboxes: FC<FormCheckboxesType> = ({
@@ -24,7 +24,7 @@ const FormCheckboxes: FC<FormCheckboxesType> = ({
   items,
   isStack = true,
   error,
-  selectedValues = [], // Default to an empty array if not provided
+  selectedValues = [],
 }) => {
   const id = useId();
   const [internalSelectedValues, setInternalSelectedValues] = useState<string[]>(selectedValues);
@@ -37,8 +37,8 @@ const FormCheckboxes: FC<FormCheckboxesType> = ({
     const { checked, value } = e.target;
 
     const newValues = checked
-      ? [...internalSelectedValues, value] // Add the checked value to the array
-      : internalSelectedValues.filter((v: string) => v !== value); // Remove the unchecked value from the array
+      ? [...internalSelectedValues, value] 
+      : internalSelectedValues.filter((v: string) => v !== value); 
 
     setInternalSelectedValues(newValues);
 
@@ -61,7 +61,7 @@ const FormCheckboxes: FC<FormCheckboxesType> = ({
                   id={`${id}-${item.value}`}
                   value={item.value}
                   onChange={handleValuesChange}
-                  checked={internalSelectedValues.includes(item.value)} // Manage checkbox state
+                  checked={internalSelectedValues.includes(item.value)} 
                 />
                 <label htmlFor={`${id}-${item.value}`}>{item.label}</label>
               </div>

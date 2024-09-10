@@ -49,3 +49,8 @@ export enum ValidationErrorTypes {
   VALIDATION_CRITERIA = 'VALIDATION_CRITERIA',
   NULL = 'NULL',
 }
+
+export enum ValidationSessionsStatuses {
+  VALIDATION_SUCCESS_STATUS = 'Success',
+  VALIDATION_FAILED_STATUS = 'Fail'
+}
