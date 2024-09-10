@@ -33,16 +33,6 @@ This repo will primarily contain:
 - Navigate to the parent folder of the classifier project and run the below command to make the shell files executable
 - `find classifier -type f -name "*.sh" -exec chmod +x {} \;`
 
-### Refresh Token setup
-
-- Navigate to outlook-consent-app folder
-- setup environment variables in .env file
-    - NEXT_PUBLIC_CLIENT_ID
-    - CLIENT_SECRET
-    - REDIRECT_URI = http://localhost:3003/callback
-- build and run image using `docker compose up -d`  
-- copy the token from app and set it in constant.ini file under the key `OUTLOOK_REFRESH_KEY`
-
 ### Database setup
 
 - For setting up the database initially, run helper script `./token.sh`
@@ -68,7 +58,7 @@ This repo will primarily contain:
       ![3](https://github.com/user-attachments/assets/5be4b8b4-f2c7-459a-965b-96239d5e884a)
     - Provide a **Name** and select the **Account type** as required.
     - In the **Redirect URI** section, select **Web** and enter the callback URL of the Outlook consent app. 
-      If deployed locally, the callback URL will be `http://localhost:3003/callback`.
+      If deployed locally, the callback URL will be `http://localhost:3003/callback`. please note that if you have deployed on another host on the same port this should be `http://<base_url>:3003/callback` 
 ![4](https://github.com/user-attachments/assets/1e246ca8-c37d-4fd1-93b6-61946cb0c9be)
 
 3. **Copy OUTLOOK_CLIENT_ID**
@@ -90,7 +80,7 @@ This repo will primarily contain:
       ```
       NEXT_PUBLIC_CLIENT_ID=<OUTLOOK_CLIENT_ID>
       CLIENT_SECRET=<OUTLOOK_SECRET_KEY>
-      REDIRECT_URI=http://localhost:3003/callback
+      REDIRECT_URI=http://<base_url>:3003/callback
       ```
 
 6. **Run Docker Compose**
@@ -98,7 +88,7 @@ This repo will primarily contain:
       ```bash
       docker compose up -d
       ```
-    - Open `http://localhost:3003` in your browser and log into your Outlook account.
+    - Open `http://localhost:3003` or relevent url of the host in your browser and log into your Outlook account.
     - After logging in, you will be redirected to a page with text box and value in the text box will be your **OUTLOOK_REFRESH_KEY**.
     - Add this value to the `constants.ini` file and the `DSL/CronManager/config/config.ini` files.
 
