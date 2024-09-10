@@ -58,7 +58,7 @@ This repo will primarily contain:
       ![3](https://github.com/user-attachments/assets/5be4b8b4-f2c7-459a-965b-96239d5e884a)
     - Provide a **Name** and select the **Account type** as required.
     - In the **Redirect URI** section, select **Web** and enter the callback URL of the Outlook consent app. 
-      If deployed locally, the callback URL will be `http://localhost:3003/callback`. please note that if you have deployed on another host on the same port this should be `http://<base_url>:3003/callback` 
+      If deployed locally, the callback URL will be `http://localhost:3003/callback`. please note that if you have deployed on another host other than localhost this should be `http://<base_url>/callback`.
 ![4](https://github.com/user-attachments/assets/1e246ca8-c37d-4fd1-93b6-61946cb0c9be)
 
 3. **Copy OUTLOOK_CLIENT_ID**
@@ -80,7 +80,8 @@ This repo will primarily contain:
       ```
       NEXT_PUBLIC_CLIENT_ID=<OUTLOOK_CLIENT_ID>
       CLIENT_SECRET=<OUTLOOK_SECRET_KEY>
-      REDIRECT_URI=http://<base_url>:3003/callback
+      REDIRECT_URI=http://localhost:3003/callback or http://<base_url>/callback if you deployed somewhare other than localhost
+      Refirect URI should be the url that you have provided to the **Redirect URI** section when you are registering the application.
       ```
 
 6. **Run Docker Compose**
