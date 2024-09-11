@@ -5,15 +5,19 @@ from constants import TRAINING_LOGS_PATH
 import json
 
 logger.add(sink=TRAINING_LOGS_PATH)
+logger.info("* Started MAIN.PY")
 
-cookie = str(os.environ.get('cookie'))
-new_model_id = int(os.environ.get('newModelId'))
-old_model_id = int(os.environ.get('modelId'))
-update_type = str(os.environ.get('updateType'))
-prev_deployment_env = str(os.environ.get('previousDeploymentEnv'))
-progress_session_id = int(os.environ.get('progressSessionId'))
-deployment_env = str(os.environ.get('deploymentEnv'))
-model_details = json.loads(os.environ.get('modelDetails'))
+try:
+    cookie = str(os.environ.get('cookie'))
+    new_model_id = int(os.environ.get('newModelId'))
+    old_model_id = int(os.environ.get('modelId'))
+    update_type = str(os.environ.get('updateType'))
+    prev_deployment_env = str(os.environ.get('previousDeploymentEnv'))
+    progress_session_id = int(os.environ.get('progressSessionId'))
+    deployment_env = str(os.environ.get('deploymentEnv'))
+    model_details = json.loads(os.environ.get('modelDetails'))
+except Exception as e:
+    logger.info(f"Error in MAIN.PY : {e}")
 
 logger.info(f"COOKIE - {cookie}")
 logger.info(f"OLD MODEL ID {old_model_id}")
