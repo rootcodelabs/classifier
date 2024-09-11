@@ -1,6 +1,6 @@
 import os
 from loguru import logger
-from model_trainer import ModelTrainer
+# from model_trainer import ModelTrainer
 from constants import TRAINING_LOGS_PATH
 import json
 
@@ -31,11 +31,11 @@ logger.info(type(model_details))
 logger.info(f"ENTERING MODEL TRAINER SCRIPT FOR MODEL ID  - {old_model_id}")
 
 
-trainer = ModelTrainer(cookie=cookie,new_model_id=new_model_id,
-                       old_model_id=old_model_id, prev_deployment_env=prev_deployment_env,
-                       update_type=update_type, progress_session_id=progress_session_id, 
-                       current_deployment_platform=deployment_env, model_details=model_details)
-trainer.train()
+# trainer = ModelTrainer(cookie=cookie,new_model_id=new_model_id,
+#                        old_model_id=old_model_id, prev_deployment_env=prev_deployment_env,
+#                        update_type=update_type, progress_session_id=progress_session_id, 
+#                        current_deployment_platform=deployment_env, model_details=model_details)
+# trainer.train()
 
 logger.info("TRAINING SCRIPT COMPLETED")
 
