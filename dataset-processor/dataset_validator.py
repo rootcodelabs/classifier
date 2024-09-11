@@ -400,6 +400,7 @@ class DatasetValidator:
             return session_id
         except requests.exceptions.RequestException as e:
             print(MSG_REQUEST_FAILED.format("Progress session creation"))
+            print(f"Progress session creation failed due to : {e}")
             return None
 
     def update_progress(self, cookie, progress, message, status, session_id=None):
