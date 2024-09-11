@@ -195,46 +195,46 @@ fi
 
 ########################
 
-# Constructing progress update payload
+# # Constructing progress update payload
 
-sessionId=$progressSessionId
-trainingStatus="Training In-Progress"
-trainingMessage="Training Session In-Progress"
-progressPercentage=10
-processComplete=false
+# sessionId=$progressSessionId
+# trainingStatus="Training In-Progress"
+# trainingMessage="Training Session In-Progress"
+# progressPercentage=10
+# processComplete=false
 
-payload=$(jq -n \
-    --argjson sessionId $sessionId \
-    --arg trainingStatus "$trainingStatus" \
-    --arg trainingMessage "$trainingMessage" \
-    --argjson progressPercentage $progressPercentage \
-    --argjson processComplete $processComplete \
-    '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
-
-
-echo "UPDATE PROGRESS SESSION PAYLOAD"
-echo $payload
-
-# Send POST request to update progress session and set an initial percentage of 10
-
-response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
-    -H "Content-Type: application/json" \
-    -H "Cookie: customJwtCookie=$cookie" \
-    -d "$payload")
+# payload=$(jq -n \
+#     --argjson sessionId $sessionId \
+#     --arg trainingStatus "$trainingStatus" \
+#     --arg trainingMessage "$trainingMessage" \
+#     --argjson progressPercentage $progressPercentage \
+#     --argjson processComplete $processComplete \
+#     '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
 
 
-echo "PROGRESS UPDATE RESPONSE"
-echo $response
+# echo "UPDATE PROGRESS SESSION PAYLOAD"
+# echo $payload
 
-operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
+# # Send POST request to update progress session and set an initial percentage of 10
 
-if [ "$operation_status" = "true" ]; then
-    progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
-    echo "Session ID: $progressSessionId"
-else
-    echo "Failed to update training progress session. Exiting..."
-    exit 1
-fi
+# response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
+#     -H "Content-Type: application/json" \
+#     -H "Cookie: customJwtCookie=$cookie" \
+#     -d "$payload")
+
+
+# echo "PROGRESS UPDATE RESPONSE"
+# echo $response
+
+# operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
+
+# if [ "$operation_status" = "true" ]; then
+#     progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
+#     echo "Session ID: $progressSessionId"
+# else
+#     echo "Failed to update training progress session. Exiting..."
+#     exit 1
+# fi
 
 ########################
 
