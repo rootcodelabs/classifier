@@ -172,7 +172,7 @@ services:
 
   init:
     image: busybox
-    command: ["sh", "-c", "chmod -R 777 /shared && chmod -R 777 /model_trainer"]
+    command: ["sh", "-c", "chmod -R 777 /shared"]
     volumes:
       - shared-volume:/shared
     networks:
@@ -186,7 +186,7 @@ services:
       - ./DSL/CronManager/DSL:/DSL
       - ./DSL/CronManager/script:/app/scripts
       - ./DSL/CronManager/config:/app/config
-      - ./model_trainer:/app/model_trainer
+      - ./model_trainer:/app/model_trainer:rw
       - shared-volume:/shared
     environment:
       - server.port=9010
