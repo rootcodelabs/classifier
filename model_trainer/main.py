@@ -15,11 +15,13 @@ print("*********")
 import json
 print("*********")
 
-logger.add(sink=TRAINING_LOGS_PATH)
-print("*********")
-logger.info("* Started MAIN.PY")
-print("*********")
-
+try:
+    logger.add(sink=TRAINING_LOGS_PATH)
+    print("*********")
+    logger.info("* Started MAIN.PY")
+    print("*********")
+except Exception as e:
+    print(f"Exception in main.py : {e}")
 # try:
 #     cookie = str(os.environ.get('cookie'))
 #     new_model_id = int(os.environ.get('newModelId'))
