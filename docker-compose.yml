@@ -172,12 +172,14 @@ services:
 
   init:
     image: busybox
-    command: ["sh", "-c", "chmod -R 777 /shared && chmod -R 777 ./model_trainer"]
+    command: ["sh", "-c", "chmod -R 777 /shared && chmod -R 777 /app/model_trainer"]
     volumes:
       - shared-volume:/shared
+      - ./model_trainer:/app/model_trainer
     networks:
       bykstack:
         ipv4_address: 172.25.0.12
+
 
   cron-manager:
     container_name: cron-manager
@@ -186,7 +188,7 @@ services:
       - ./DSL/CronManager/DSL:/DSL
       - ./DSL/CronManager/script:/app/scripts
       - ./DSL/CronManager/config:/app/config
-      - ./model_trainer:/app/model_trainer:rw
+      - ./model_trainer:/app/model_trainer
       - shared-volume:/shared
     environment:
       - server.port=9010
