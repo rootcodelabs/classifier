@@ -198,6 +198,8 @@ services:
     depends_on:
       - init
       - s3-ferry
+    command: >
+      /bin/sh -c "chmod -R 777 /app/model_trainer
 
   file-handler:
     build:
