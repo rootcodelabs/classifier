@@ -39,39 +39,39 @@ minorVersion=$(echo "$modelDetails" | jq -r '.response.data[0].minorVersion')
 latest=$(echo "$modelDetails" | jq -r '.response.data[0].latest')
 
 
-# Construct payload to update training status
+# # Construct payload to update training status
 
-trainingStatus="training in-progress"
+# trainingStatus="training in-progress"
 
-payload=$(jq -n \
-    --argjson modelId $newModelId \
-    --arg trainingStatus "$trainingStatus" \
-    --arg modelS3Location "" \
-    --argjson trainingResults '{}' \
-    --argjson inferenceRoutes '{}' \
-    '{modelId: $modelId, trainingStatus: $trainingStatus, modelS3Location: $modelS3Location, trainingResults: $trainingResults, inferenceRoutes:$inferenceRoutes}')
+# payload=$(jq -n \
+#     --argjson modelId $newModelId \
+#     --arg trainingStatus "$trainingStatus" \
+#     --arg modelS3Location "" \
+#     --argjson trainingResults '{}' \
+#     --argjson inferenceRoutes '{}' \
+#     '{modelId: $modelId, trainingStatus: $trainingStatus, modelS3Location: $modelS3Location, trainingResults: $trainingResults, inferenceRoutes:$inferenceRoutes}')
 
-echo "PAYLOAD FOR UPDATING TRAINING STATUS"
-echo $payload
+# echo "PAYLOAD FOR UPDATING TRAINING STATUS"
+# echo $payload
 
-echo "SENDING REQUEST TO UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT "
-response=$(curl -s -X POST "$UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT" \
-    -H "Content-Type: application/json" \
-    -H "Cookie: customJwtCookie=$cookie" \
-    -d "$payload")
+# echo "SENDING REQUEST TO UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT "
+# response=$(curl -s -X POST "$UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT" \
+#     -H "Content-Type: application/json" \
+#     -H "Cookie: customJwtCookie=$cookie" \
+#     -d "$payload")
 
 
-echo $response
+# echo $response
 
-operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
+# operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
 
-if [ "$operation_status" = "true" ]; then
-    progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
-    echo "Session ID: $progressSessionId"
-else
-    echo "Failed to create training progress session. Exiting..."
-    exit 1
-fi
+# if [ "$operation_status" = "true" ]; then
+#     progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
+#     echo "Session ID: $progressSessionId"
+# else
+#     echo "Failed to create training progress session. Exiting..."
+#     exit 1
+# fi
 
 
 
@@ -116,8 +116,8 @@ fi
 
 sessionId=$progressSessionId
 trainingStatus="Training In-Progress"
-trainingMessage="Initiating Training Session"
-progressPercentage=10
+trainingMessage="Initiating Training Session - Downloading Packages"
+progressPercentage=5
 processComplete=false
 
 payload=$(jq -n \
@@ -193,6 +193,51 @@ if [ -f "$REQUIREMENTS_FILE" ]; then
 else
     echo "Requirements file not found: $REQUIREMENTS_FILE"
 fi
+
+########################
+
+# Constructing progress update payload
+
+sessionId=$progressSessionId
+trainingStatus="Training In-Progress"
+trainingMessage="Training Session In-Progress"
+progressPercentage=10
+processComplete=false
+
+payload=$(jq -n \
+    --argjson sessionId $sessionId \
+    --arg trainingStatus "$trainingStatus" \
+    --arg trainingMessage "$trainingMessage" \
+    --argjson progressPercentage $progressPercentage \
+    --argjson processComplete $processComplete \
+    '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
+
+
+echo "UPDATE PROGRESS SESSION PAYLOAD"
+echo $payload
+
+# Send POST request to update progress session and set an initial percentage of 10
+
+response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
+    -H "Content-Type: application/json" \
+    -H "Cookie: customJwtCookie=$cookie" \
+    -d "$payload")
+
+
+echo "PROGRESS UPDATE RESPONSE"
+echo $response
+
+operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
+
+if [ "$operation_status" = "true" ]; then
+    progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
+    echo "Session ID: $progressSessionId"
+else
+    echo "Failed to update training progress session. Exiting..."
+    exit 1
+fi
+
+########################
 
 # Check if the Python script exists
 if [ -f "$PYTHON_SCRIPT" ]; then
