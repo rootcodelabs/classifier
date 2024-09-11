@@ -1,15 +1,15 @@
-import os
-from loguru import logger
-
 try:
+    import os
+    from loguru import logger
+    from constants import TRAINING_LOGS_PATH
     print("INIT STARTED MAIN.PY")
     logger.add(sink=TRAINING_LOGS_PATH)
     logger.info("INIT STARTED MAIN.PY")
-    print("INIT STARTED MAIN.PY - Log recorded")
 
     from model_trainer import ModelTrainer
-    from constants import TRAINING_LOGS_PATH
     import json
+
+    print("INIT STARTED MAIN.PY - Log recorded")
 
     logger.info("PROCESS STARTED MAIN.PY")
     print("PROCESS STARTED MAIN.PY - Log recorded")
