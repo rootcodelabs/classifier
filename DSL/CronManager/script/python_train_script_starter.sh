@@ -39,29 +39,29 @@ minorVersion=$(echo "$modelDetails" | jq -r '.response.data[0].minorVersion')
 latest=$(echo "$modelDetails" | jq -r '.response.data[0].latest')
 
 
-# # Construct payload to update training status
+# Construct payload to update training status
 
-# trainingStatus="training in-progress"
+trainingStatus="training in-progress"
 
-# payload=$(jq -n \
-#     --argjson modelId $newModelId \
-#     --arg trainingStatus "$trainingStatus" \
-#     --arg modelS3Location "" \
-#     --argjson trainingResults '{}' \
-#     --argjson inferenceRoutes '{}' \
-#     '{modelId: $modelId, trainingStatus: $trainingStatus, modelS3Location: $modelS3Location, trainingResults: $trainingResults, inferenceRoutes:$inferenceRoutes}')
+payload=$(jq -n \
+    --argjson modelId $newModelId \
+    --arg trainingStatus "$trainingStatus" \
+    --arg modelS3Location "" \
+    --argjson trainingResults '{}' \
+    --argjson inferenceRoutes '{}' \
+    '{modelId: $modelId, trainingStatus: $trainingStatus, modelS3Location: $modelS3Location, trainingResults: $trainingResults, inferenceRoutes:$inferenceRoutes}')
 
-# echo "PAYLOAD FOR UPDATING TRAINING STATUS"
-# echo $payload
+echo "PAYLOAD FOR UPDATING TRAINING STATUS"
+echo $payload
 
-# echo "SENDING REQUEST TO UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT "
-# response=$(curl -s -X POST "$UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT" \
-#     -H "Content-Type: application/json" \
-#     -H "Cookie: customJwtCookie=$cookie" \
-#     -d "$payload")
+echo "SENDING REQUEST TO UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT "
+response=$(curl -s -X POST "$UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT" \
+    -H "Content-Type: application/json" \
+    -H "Cookie: customJwtCookie=$cookie" \
+    -d "$payload")
 
 
-# echo $response
+echo $response
 
 # operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
 
@@ -84,7 +84,7 @@ payload=$(jq -n \
     --argjson latest "$latest" \
     '{modelId: $modelId, modelName: $modelName, majorVersion: $majorVersion, minorVersion: $minorVersion, latest: $latest}')
 
-echo "Payload: $payload"
+echo "Payload for creating progress session: $payload"
 
 
 # Send the POST request to create the training progress session
@@ -110,7 +110,6 @@ fi
 
 
 #### INITIATING REQUEST TO UPDATE TRAINING PROGRESS SESSION
-
 
 # Constructing progress update payload
 
