@@ -4,14 +4,10 @@ from loguru import logger
 try:
     logger.add(sink=TRAINING_LOGS_PATH)
     logger.info("INIT STARTED MAIN.PY")
-except Exception as e:
-    logger.info(f"Exception in main.py : {e}")
+    from model_trainer import ModelTrainer
+    from constants import TRAINING_LOGS_PATH
+    import json
 
-from model_trainer import ModelTrainer
-from constants import TRAINING_LOGS_PATH
-import json
-
-try:
     logger.info("PROCESS STARTED MAIN.PY")
     cookie = str(os.environ.get('cookie'))
     new_model_id = int(os.environ.get('newModelId'))
