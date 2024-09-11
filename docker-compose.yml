@@ -172,7 +172,7 @@ services:
 
   init:
     image: busybox
-    command: ["sh", "-c", "chmod -R 777 /shared"]
+    command: ["sh", "-c", "chmod -R 777 /shared && chmod -R 777 /model_trainer"]
     volumes:
       - shared-volume:/shared
     networks:
