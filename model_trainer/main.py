@@ -1,18 +1,24 @@
 print("test1")
 print("*********")
-import subprocess
+# import subprocess
 
-result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE, text=True)
-print(result.stdout)
+# result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE, text=True)
+# print(result.stdout)
 
-# import os
-# from loguru import logger
-# # from model_trainer import ModelTrainer
-# from constants import TRAINING_LOGS_PATH
-# import json
+import os
+print("*********")
+from loguru import logger
+print("*********")
+# from model_trainer import ModelTrainer
+from constants import TRAINING_LOGS_PATH
+print("*********")
+import json
+print("*********")
 
-# logger.add(sink=TRAINING_LOGS_PATH)
-# logger.info("* Started MAIN.PY")
+logger.add(sink=TRAINING_LOGS_PATH)
+print("*********")
+logger.info("* Started MAIN.PY")
+print("*********")
 
 # try:
 #     cookie = str(os.environ.get('cookie'))
