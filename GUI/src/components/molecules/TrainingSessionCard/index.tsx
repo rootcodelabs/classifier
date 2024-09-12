@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import ProgressBar from 'components/ProgressBar';
 import { Card, Label } from 'components';
+import { TrainingSessionsStatuses } from 'enums/dataModelsEnums';
 
 type TrainingSessionCardProps = {
   modelName: string;
@@ -35,14 +36,14 @@ const TrainingSessionCard: React.FC<TrainingSessionCardProps> = ({
             <Label type="success">{version}</Label>
             {platform && <Label type="success">{platform}</Label>}{' '}
             {maturity && <Label type="success">{maturity}</Label>}
-            {status === 'failed' && <Label type="error">{t('global.failed')}</Label>}
+            {status === TrainingSessionsStatuses.TRAINING_FAILED_STATUS && <Label type="error">{t('global.failed')}</Label>}
           </div>
         </div>
       }
     >
       <div>
-      {(status==='failed' || status==='deployed') && progress===100 ? (
-        <div className={`text-center ${status==="failed"?'error':''}`}>
+      {(status===TrainingSessionsStatuses.TRAINING_FAILED_STATUS || status===TrainingSessionsStatuses.TRAINING_SUCCESS_STATUS) && progress===100 ? (
+        <div className={`text-center ${status===TrainingSessionsStatuses.TRAINING_FAILED_STATUS?'error':''}`}>
          {trainingMessage}
         </div>
       ) : (
