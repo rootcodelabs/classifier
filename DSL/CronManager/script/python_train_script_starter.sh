@@ -63,15 +63,14 @@ response=$(curl -s -X POST "$UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT" \
 
 echo $response
 
-# operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
+operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
 
-# if [ "$operation_status" = "true" ]; then
-#     progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
-#     echo "Session ID: $progressSessionId"
-# else
-#     echo "Failed to create training progress session. Exiting..."
-#     exit 1
-# fi
+if [ "$operation_status" = "true" ]; then
+    echo "Model Metadata update successful"
+else
+    echo "Failed to update model metadata. Exiting..."
+    exit 1
+fi
 
 
 
