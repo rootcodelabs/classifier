@@ -258,7 +258,7 @@ echo $response
 
 operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
 
-if [ "$operation_status" = "true" ]; then
+if [ "$operation_status" = "false" ]; then
     progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
     echo "Session ID: $progressSessionId"
 else
