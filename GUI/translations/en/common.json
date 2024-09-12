@@ -298,7 +298,8 @@
           "confirmationTitle": "Are you sure?",
           "confirmationDesc": "Confirm that you are wish to delete the following dataset",
           "successTitle": "Success: Dataset Deleted",
-          "successDesc": "You have successfully deleted the dataset. The dataset is no longer available and all related data has been removed."
+          "successDesc": "You have successfully deleted the dataset. The dataset is no longer available and all related data has been removed.",
+          "proceedToDashboard": "Proceed to dataset groups"
         }
       }
     }
