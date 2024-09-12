@@ -48,7 +48,7 @@ class ModelTrainer:
         
         except Exception as e:
             logger.info(f"EXCEPTION IN MODEL_TRAINER INIT : {e}")
-            self.send_error_progress_session(e)
+            self.send_error_progress_session(str(e))
         
     @staticmethod
     def create_training_folders(folder_paths):
@@ -100,7 +100,7 @@ class ModelTrainer:
         else:
             logger.error(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {training_status} FAILED")
             logger.error(f"ERROR RESPONSE {response.text}")
-            self.send_error_progress_session(f"Error :{response.text}")
+            self.send_error_progress_session(f"Error :{str(response.text)}")
             raise RuntimeError(response.text)
         
     def send_error_progress_session(self, error_msg):
@@ -181,7 +181,7 @@ class ModelTrainer:
         else:
             
             logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
-            self.send_error_progress_session(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
+            self.send_error_progress_session(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {str(self.current_deployment_platform)}")
             raise RuntimeError(f"RUNTIME ERROR - UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
         
 
@@ -378,6 +378,6 @@ class ModelTrainer:
                 self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id)
 
         except Exception as e:
-            self.send_error_progress_session(f"RUNTIME CRASHED - ERROR - {e}")
+            self.send_error_progress_session(f"RUNTIME CRASHED - ERROR - {str(e)}")
             logger.error(f"RUNTIME CRASHED - ERROR - {e}")
 
