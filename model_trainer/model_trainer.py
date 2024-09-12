@@ -13,7 +13,7 @@ from constants import   OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, T
                         INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS,  \
                         INITIATING_TRAINING_PROGRESS_MESSAGE, TRAINING_IN_PROGRESS_PROGRESS_MESSAGE, DEPLOYING_MODEL_PROGRESS_MESSAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE, \
                         INITIATING_TRAINING_PROGRESS_PERCENTAGE, TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE, DEPLOYING_MODEL_PROGRESS_PERCENTAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE, \
-                        OUTLOOK, JIRA, TESTING, UNDEPLOYED
+                        OUTLOOK, JIRA, TESTING, UNDEPLOYED, MODEL_TRAINING_FAILED_ERROR
 from loguru import logger
 
 logger.add(sink=TRAINING_LOGS_PATH)
@@ -47,8 +47,8 @@ class ModelTrainer:
             self.current_deployment_platform = current_deployment_platform
         
         except Exception as e:
-            logger.info("TEST TEST TESTER")
-            logger.info(e)
+            logger.info(f"EXCEPTION IN MODEL_TRAINER INIT : {e}")
+            self.send_error_progress_session(str(e))
         
     @staticmethod
     def create_training_folders(folder_paths):
@@ -100,7 +100,12 @@ class ModelTrainer:
         else:
             logger.error(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {training_status} FAILED")
             logger.error(f"ERROR RESPONSE {response.text}")
+            self.send_error_progress_session(f"Error :{str(response.text)}")
             raise RuntimeError(response.text)
+        
+    def send_error_progress_session(self, error_msg):
+        response = self.update_model_training_progress_session(MODEL_TRAINING_FAILED_ERROR, error_msg, 100, True)
+        return response
 
     def update_model_training_progress_session(self,training_status, 
                                                training_progress_update_message, training_progress_percentage,
@@ -176,6 +181,7 @@ class ModelTrainer:
         else:
             
             logger.info(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
+            self.send_error_progress_session(f"UNRECOGNIZED DEPLOYMENT PLATFORM - {str(self.current_deployment_platform)}")
             raise RuntimeError(f"RUNTIME ERROR - UNRECOGNIZED DEPLOYMENT PLATFORM - {self.current_deployment_platform}")
         
 
@@ -372,6 +378,6 @@ class ModelTrainer:
                 self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id)
 
         except Exception as e:
-
+            self.send_error_progress_session(f"RUNTIME CRASHED - ERROR - {str(e)}")
             logger.error(f"RUNTIME CRASHED - ERROR - {e}")
 

@@ -148,6 +148,37 @@ if [ "$operation_status" = "true" ]; then
     echo "Session ID: $progressSessionId"
 else
     echo "Failed to update training progress session. Exiting..."
+    #######################
+    # Constructing progress update payload to show the error
+    sessionId=$progressSessionId
+    trainingStatus="Training Failed"
+    trainingMessage="Training Failed During Progress session update"
+    progressPercentage=100
+    processComplete=true
+
+    payload=$(jq -n \
+        --argjson sessionId $sessionId \
+        --arg trainingStatus "$trainingStatus" \
+        --arg trainingMessage "$trainingMessage" \
+        --argjson progressPercentage $progressPercentage \
+        --argjson processComplete $processComplete \
+        '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
+
+
+    echo "UPDATE PROGRESS SESSION WITH ERROR PAYLOAD"
+    echo $payload
+
+    # Send POST request to update progress session and set an initial percentage of 10
+
+    response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
+        -H "Content-Type: application/json" \
+        -H "Cookie: customJwtCookie=$cookie" \
+        -d "$payload")
+
+
+    echo "ERROR PROGRESS UPDATE RESPONSE"
+    echo $response
+    #######################
     exit 1
 fi
 
@@ -232,6 +263,37 @@ if [ "$operation_status" = "true" ]; then
     echo "Session ID: $progressSessionId"
 else
     echo "Failed to update training progress session. Exiting..."
+    #######################
+    # Constructing progress update payload to show the error
+    sessionId=$progressSessionId
+    trainingStatus="Training Failed"
+    trainingMessage="Training Failed During Progress session update"
+    progressPercentage=100
+    processComplete=true
+
+    payload=$(jq -n \
+        --argjson sessionId $sessionId \
+        --arg trainingStatus "$trainingStatus" \
+        --arg trainingMessage "$trainingMessage" \
+        --argjson progressPercentage $progressPercentage \
+        --argjson processComplete $processComplete \
+        '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
+
+
+    echo "UPDATE PROGRESS SESSION WITH ERROR PAYLOAD"
+    echo $payload
+
+    # Send POST request to update progress session and set an initial percentage of 10
+
+    response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
+        -H "Content-Type: application/json" \
+        -H "Cookie: customJwtCookie=$cookie" \
+        -d "$payload")
+
+
+    echo "ERROR PROGRESS UPDATE RESPONSE"
+    echo $response
+    #######################
     exit 1
 fi
 
@@ -243,4 +305,35 @@ if [ -f "$PYTHON_SCRIPT" ]; then
     python3 "$PYTHON_SCRIPT"
 else
     echo "Python script not found: $PYTHON_SCRIPT"
+    #######################
+    # Constructing progress update payload to show the error
+    sessionId=$progressSessionId
+    trainingStatus="Training Failed"
+    trainingMessage="Training Failed - Python Script not found"
+    progressPercentage=100
+    processComplete=true
+
+    payload=$(jq -n \
+        --argjson sessionId $sessionId \
+        --arg trainingStatus "$trainingStatus" \
+        --arg trainingMessage "$trainingMessage" \
+        --argjson progressPercentage $progressPercentage \
+        --argjson processComplete $processComplete \
+        '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
+
+
+    echo "UPDATE PROGRESS SESSION WITH ERROR PAYLOAD"
+    echo $payload
+
+    # Send POST request to update progress session and set an initial percentage of 10
+
+    response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
+        -H "Content-Type: application/json" \
+        -H "Cookie: customJwtCookie=$cookie" \
+        -d "$payload")
+
+
+    echo "ERROR PROGRESS UPDATE RESPONSE"
+    echo $response
+    #######################
 fi
