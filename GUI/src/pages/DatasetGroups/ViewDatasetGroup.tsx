@@ -209,6 +209,14 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     mutationFn: (data: PatchPayLoad) => patchUpdate(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries(datasetQueryKeys.GET_DATA_SETS());
+      open({
+        title: t('datasetGroups.detailedView.patchDataUnsuccessfulTitle') ?? '',
+        content: (
+          <p>
+            {t('datasetGroups.detailedView.patchDataUnsuccessfulDesc') ?? ''}
+          </p>
+        ),
+      });
       close();
       setView(DatasetViewEnum.LIST);
     },
@@ -426,8 +434,30 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
   const deleteDatasetMutation = useMutation({
     mutationFn: (dgId: number) => deleteDatasetGroup(dgId),
     onSuccess: async () => {
-      navigate(0);
-      close();
+      queryClient.invalidateQueries(datasetQueryKeys.DATASET_OVERVIEW());
+      open({
+        title: t(
+          'datasetGroups.detailedView.modals.datasetDelete.successTitle'
+        ),
+        content: (
+          <p>
+            {t('datasetGroups.detailedView.modals.datasetDelete.successDesc')}
+          </p>
+        ),
+        footer: (
+          <div className="flex-grid">
+            <Button
+              onClick={() => {
+                navigate(0);
+              }}
+            >
+              {t(
+                'datasetGroups.detailedView.modals.datasetDelete.proceedToDashboard'
+              ) ?? ''}
+            </Button>
+          </div>
+        ),
+      });
     },
     onError: () => {
       open({
@@ -483,8 +513,12 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
               appearance={ButtonAppearanceTypes.ERROR}
               onClick={() =>
                 openConfirmationModal(
-                  t('datasetGroups.detailedView.modals.delete.title'),
-                  t('datasetGroups.detailedView.modals.delete.title'),
+                  t(
+                    'datasetGroups.detailedView.modals.datasetDelete.confirmationDesc'
+                  ),
+                  t(
+                    'datasetGroups.detailedView.modals.datasetDelete.confirmationTitle'
+                  ),
                   () => handleDeleteDataset(),
                   'delete'
                 )

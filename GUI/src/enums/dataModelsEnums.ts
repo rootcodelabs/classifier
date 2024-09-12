@@ -26,6 +26,6 @@ export enum UpdateType {
 }
 
 export enum TrainingSessionsStatuses {
-  TRAINING_SUCCESS_STATUS = 'deployed',
-  TRAINING_FAILED_STATUS = 'fail'
+  TRAINING_SUCCESS_STATUS = 'Model Trained And Deployed',
+  TRAINING_FAILED_STATUS = 'Training Failed'
 }
