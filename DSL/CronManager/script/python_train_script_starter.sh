@@ -66,10 +66,9 @@ echo $response
 operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
 
 if [ "$operation_status" = "true" ]; then
-    progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
-    echo "Session ID: $progressSessionId"
+    echo "Model Metadata update successful"
 else
-    echo "Failed to create training progress session. Exiting..."
+    echo "Failed to update model metadata. Exiting..."
     exit 1
 fi
 
@@ -84,7 +83,7 @@ payload=$(jq -n \
     --argjson latest "$latest" \
     '{modelId: $modelId, modelName: $modelName, majorVersion: $majorVersion, minorVersion: $minorVersion, latest: $latest}')
 
-echo "Payload: $payload"
+echo "Payload for creating progress session: $payload"
 
 
 # Send the POST request to create the training progress session
@@ -111,13 +110,12 @@ fi
 
 #### INITIATING REQUEST TO UPDATE TRAINING PROGRESS SESSION
 
-
 # Constructing progress update payload
 
 sessionId=$progressSessionId
 trainingStatus="Training In-Progress"
-trainingMessage="Initiating Training Session"
-progressPercentage=10
+trainingMessage="Initiating Training Session - Downloading Packages"
+progressPercentage=5
 processComplete=false
 
 payload=$(jq -n \
@@ -193,6 +191,51 @@ if [ -f "$REQUIREMENTS_FILE" ]; then
 else
     echo "Requirements file not found: $REQUIREMENTS_FILE"
 fi
+
+########################
+
+# Constructing progress update payload
+
+sessionId=$progressSessionId
+trainingStatus="Training In-Progress"
+trainingMessage="Training Session In-Progress"
+progressPercentage=10
+processComplete=false
+
+payload=$(jq -n \
+    --argjson sessionId $sessionId \
+    --arg trainingStatus "$trainingStatus" \
+    --arg trainingMessage "$trainingMessage" \
+    --argjson progressPercentage $progressPercentage \
+    --argjson processComplete $processComplete \
+    '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
+
+
+echo "UPDATE PROGRESS SESSION PAYLOAD"
+echo $payload
+
+# Send POST request to update progress session and set an initial percentage of 10
+
+response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
+    -H "Content-Type: application/json" \
+    -H "Cookie: customJwtCookie=$cookie" \
+    -d "$payload")
+
+
+echo "PROGRESS UPDATE RESPONSE"
+echo $response
+
+operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
+
+if [ "$operation_status" = "true" ]; then
+    progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
+    echo "Session ID: $progressSessionId"
+else
+    echo "Failed to update training progress session. Exiting..."
+    exit 1
+fi
+
+########################
 
 # Check if the Python script exists
 if [ -f "$PYTHON_SCRIPT" ]; then
