@@ -298,7 +298,8 @@
           "confirmationTitle": "Oled sa kindel?",
           "confirmationDesc": "Kinnita, et soovid kustutada järgmise andmestiku",
           "successTitle": "Edu: Andmestik Kustutatud",
-          "successDesc": "Oled edukalt kustutanud andmestiku. Andmestik ei ole enam saadaval ja kõik seotud andmed on eemaldatud."
+          "successDesc": "Oled edukalt kustutanud andmestiku. Andmestik ei ole enam saadaval ja kõik seotud andmed on eemaldatud.",
+          "proceedToDashboard": "Jätkake andmekogumite gruppidega"
         }
       }
     }
