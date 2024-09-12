@@ -60,6 +60,5 @@ try:
     print("TRAINING SCRIPT COMPLETED - Log recorded")
 
 except Exception as e:
-    print(f"Error in MAIN.PY : {e}")
     logger.info(f"Error in MAIN.PY : {e}")
     print(f"Error in MAIN.PY - Log recorded")
