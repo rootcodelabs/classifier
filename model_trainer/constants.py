@@ -50,6 +50,7 @@ DEPLOYING_MODEL_PROGRESS_STATUS = "Deploying Model"
 
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS = "Model Trained And Deployed"
 
+MODEL_TRAINING_FAILED_ERROR = "Training Failed"
 
 INITIATING_TRAINING_PROGRESS_MESSAGE = "Download and preparing dataset"
 
