@@ -43,7 +43,7 @@ class ModelTrainer:
             else:
                 self.replace_deployment = True
 
-            self.model_details = model_details1
+            self.model_details = model_details
             self.current_deployment_platform = current_deployment_platform
         
         except Exception as e:
