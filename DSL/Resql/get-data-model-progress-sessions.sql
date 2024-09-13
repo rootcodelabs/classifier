@@ -15,4 +15,5 @@ FROM model_progress_sessions mps
 JOIN
     models_metadata mm
 ON
-    mps.model_id = mm.id;
+    mps.model_id = mm.id
+ORDER BY mps.created_time DESC;
