@@ -9,7 +9,7 @@
   overflow: auto;
   scrollbar-width: none;
   transition: width .1s ease-out;
-  z-index: 9999;
+  z-index: 100;
 
   &::-webkit-scrollbar {
     display: none;
