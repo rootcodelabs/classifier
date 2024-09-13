@@ -241,6 +241,7 @@ class DatasetProcessor:
 
             cleaned_data = []
             for entry in data:
+                entry["rowId"] = int(entry["rowId"])
                 cleaned_entry = {key: clean_text(value) if isinstance(value, str) else value for key, value in entry.items()}
                 cleaned_data.append(cleaned_entry)
 
