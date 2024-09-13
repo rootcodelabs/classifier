@@ -58,7 +58,7 @@ const ClassHeirarchyTreeNode = ({
         </div>
         <div
           onClick={() => onAddSubClass(node?.id)}
-          className="link"
+          className="underlined-link"
         >
           {t('datasetGroups.classHierarchy.addSubClass')}
         </div>
