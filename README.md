@@ -44,8 +44,8 @@ This repo will primarily contain:
 
 ### Open Search
 
-- To Initialize Open Search run `./deploy-opensearch.sh <URL> <AUTH> <Is Mock Allowed - Default false>`
-- To Use Opensearch locally run `./deploy-opensearch.sh http://localhost:9200 admin:admin true`
+- To Initialize Open Search go to `DSL/OpenSearch` and run `./deploy-opensearch.sh <URL> <AUTH> <Is Mock Allowed - Default false>`
+- To Use Opensearch locally go to `DSL/OpenSearch` and run `./deploy-opensearch.sh http://localhost:9200 admin:admin true`
 
 ### Setting up Microsoft Outlook Integration
 
