@@ -10,4 +10,5 @@ SELECT
     progress_percentage,
     validation_status,
     validation_message
-FROM dataset_progress_sessions;
+FROM dataset_progress_sessions
+ORDER BY created_time DESC;

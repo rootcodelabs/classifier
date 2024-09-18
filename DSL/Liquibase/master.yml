@@ -21,3 +21,5 @@ databaseChangeLog:
       file: changelog/classifier-script-v10-data-model-progress-sessions.sql
   - include:
       file: changelog/classifier-script-v11-data-model-progress-status-fail.sql
+  - include:
+      file: changelog/classifier-script-v12-progress-sessions-created-time.sql
