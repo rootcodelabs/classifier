@@ -326,7 +326,7 @@ def extract_stop_words(file: UploadFile) -> List[str]:
     
     if file_type == 'txt':
         content = file.file.read().decode('utf-8')
-        return [word.strip() for word in content.split(',')]
+        return [word.strip() for word in content.split(',') if word.strip()]
     elif file_type == 'json':
         content = json.load(file.file)
         return content if isinstance(content, list) else []
