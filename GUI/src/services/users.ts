@@ -4,9 +4,10 @@ import { User, UserDTO } from 'types/user';
 export async function createUser(userData: UserDTO) {
   const authorities = userData.authorities.map((e) => (e as any).value).filter(item => item);
   const fullName = userData.fullName?.trim();
+  const nameLength = fullName?.split(" ")?.length;
   const { data } = await apiDev.post<User>('accounts/add', {
     "firstName": fullName?.split(' ').slice(0, 1).join(' ') ?? '',
-    "lastName": fullName?.split(' ').slice(1, 2).join(' ') ?? '',
+    "lastName": fullName?.split(' ').slice(1, nameLength).join(' ') ?? '',
     "userIdCode": userData.useridcode,
     "displayName": userData.fullName,
     "csaTitle": userData.csaTitle,
@@ -26,9 +27,10 @@ export async function checkIfUserExists(userData: UserDTO) {
 export async function editUser(id: string | number, userData: UserDTO) {
   const authorities = userData.authorities.map((e: any) => e.value).filter(item => item);
   const fullName = userData.fullName?.trim();
+  const nameLength = fullName?.split(" ")?.length;
   const { data } = await apiDev.post<User>('accounts/edit', {
     "firstName": fullName?.split(' ').slice(0, 1).join(' ') ?? '',
-    "lastName": fullName?.split(' ').slice(1, 2).join(' ') ?? '',
+    "lastName": fullName?.split(' ').slice(1, nameLength).join(' ') ?? '',
     "userIdCode": id,
     "displayName": userData.fullName,
     "csaTitle": userData.csaTitle,
