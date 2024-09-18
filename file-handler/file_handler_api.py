@@ -115,7 +115,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
             json.dump(converted_data, json_file, indent=4, default=custom_serializer)
 
         save_location = TEMP_DATASET_LOCATION.format(dg_id=dgId)
-        source_file_path = file_name.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
+        source_file_path = file_name.replace(YML_EXT, JSON_EXT).replace(YAML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         
         response = s3_ferry.transfer_file(save_location, "S3", source_file_path, "FS")
         if response.status_code == 201:
