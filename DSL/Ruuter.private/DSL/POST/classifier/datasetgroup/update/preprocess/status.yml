@@ -32,6 +32,9 @@ declaration:
       - field: numPages
         type: integer
         description: "Body field 'numPages'"
+      - field: validationStatus
+        type: string
+        description: "Body field 'validationStatus'"
 
 extract_request_data:
   assign:
@@ -43,6 +46,7 @@ extract_request_data:
     enable_allowed: ${incoming.body.enableAllowed}
     num_samples: ${incoming.body.numSamples}
     num_pages: ${incoming.body.numPages}
+    validation_status: ${incoming.body.validationStatus}
   next: update_dataset_group_preprocess_status
 
 update_dataset_group_preprocess_status:
@@ -59,6 +63,7 @@ update_dataset_group_preprocess_status:
       last_updated_timestamp: ${new Date().toISOString()}
       num_samples: ${num_samples}
       num_pages: ${num_pages}
+      validation_status: ${validation_status}
   result: res
   next: check_preprocess_status
 
