@@ -50,6 +50,7 @@ const ValidationCriteriaCardsView: FC<
           item={item}
           moveItem={moveItem}
           validationRuleError={validationRuleError}
+          setValidationRuleError={setValidationRuleError}
           setValidationRules={setValidationRules}
           validationRules={validationRules}
         />

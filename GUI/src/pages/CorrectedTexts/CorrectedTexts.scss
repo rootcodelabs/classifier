@@ -16,7 +16,7 @@
 .search-panel {
   display: flex;
   @media (max-width: 1024px) {
-    flex-direction: column;
+    flex-direction: row;
   }
 }
 .mb-20 {
