@@ -3,8 +3,22 @@
   display: flex;
   gap: 30px;
   margin-right: 30px;
+  @media (max-width: 1024px) {
+    width: 100%;
+  }
+
+  @media (max-width: 750px) {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
+.search-panel {
+  display: flex;
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
+}
 .mb-20 {
   margin-bottom: 20px;
 }
