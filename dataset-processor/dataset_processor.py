@@ -313,7 +313,7 @@ class DatasetProcessor:
             print(e)
             return None
         
-    def update_preprocess_status(self,dg_id, cookie, processed_data_available, raw_data_available, preprocess_data_location, raw_data_location, enable_allowed, num_samples, num_pages):
+    def update_preprocess_status(self,dg_id, cookie, processed_data_available, raw_data_available, preprocess_data_location, raw_data_location, enable_allowed, num_samples, num_pages, validationStatus):
         url = STATUS_UPDATE_URL
         
         print(url)
@@ -329,7 +329,8 @@ class DatasetProcessor:
             "rawDataLocation": raw_data_location,
             "enableAllowed": enable_allowed,
             "numSamples": num_samples,
-            "numPages": num_pages
+            "numPages": num_pages,
+            "validationStatus": validationStatus
         }
 
         try:
@@ -437,7 +438,7 @@ class DatasetProcessor:
         if not aggregated_dataset_operation:
             return self.generate_response(False, MSG_FAIL)
         
-        return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(cleaned_data), len(chunked_data))
+        return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(cleaned_data), len(chunked_data), "success")
         return self.generate_response(True, MSG_PROCESS_COMPLETE)
 
     def handle_minor_append_update(self, dgId, newDgId, cookie, savedFilePath, session_id):
@@ -497,7 +498,7 @@ class DatasetProcessor:
         if not aggregated_dataset_operation:
             return self.generate_response(False, MSG_FAIL)
         
-        return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(aggregated_dataset), (len(chunked_data) + page_count))
+        return_data = self.update_preprocess_status(newDgId, cookie, True, False, f"/dataset/{newDgId}/chunks/", "", True, len(aggregated_dataset), (len(chunked_data) + page_count), "success")
         return self.generate_response(True, MSG_PROCESS_COMPLETE)
 
     def handle_patch_update(self, dgId, cookie, patchPayload, session_id):

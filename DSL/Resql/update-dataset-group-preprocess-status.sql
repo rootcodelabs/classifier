@@ -7,5 +7,6 @@ SET
     enable_allowed = :enable_allowed,
     last_updated_timestamp = :last_updated_timestamp::timestamp with time zone,
     num_samples = :num_samples,
-    num_pages = :num_pages
+    num_pages = :num_pages,
+    validation_status = :validation_status::Validation_Status
 WHERE id = :id;
