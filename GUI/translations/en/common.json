@@ -328,7 +328,9 @@
   "validationSessions": {
     "title": "Validation Sessions",
     "inprogress": "Validation in-Progress",
-    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
+    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy",
+    "noSessions":"No ongoing validation sessions available"
+
   },
 
   "correctedTexts": {
@@ -442,7 +444,9 @@
   "trainingSessions": {
     "title": "Training Sessions",
     "inprogress": "Validation in-Progress",
-    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
+    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy",
+    "noSessions":"No ongoing training sessions available"
+
   },
   "testModels": {
     "title": "Test Model",

@@ -1,4 +1,4 @@
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -9,7 +9,7 @@ import { checkIfUserExists, createUser, editUser } from 'services/users';
 import { useToast } from 'hooks/useToast';
 import Select, { components } from 'react-select';
 import './SettingsUsers.scss';
-import { FC, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { ROLES } from 'enums/roles';
 import { userManagementQueryKeys } from 'utils/queryKeys';
 import { ButtonAppearanceTypes, ToastTypes } from 'enums/commonEnums';
@@ -41,17 +41,18 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
     control,
     handleSubmit,
     formState: { errors, isDirty },
-    getValues,
   } = useForm<UserDTO>({
     defaultValues: {
       useridcode: user?.useridcode,
       authorities: user?.authorities,
-      displayName: user?.fullName,
       csaTitle: user?.csaTitle,
       csaEmail: user?.csaEmail,
-      fullName: user?.fullName,
+      fullName: user?.displayName,
     },
   });
+
+  const watchedValues = useWatch({
+    control  });    
 
   const roles = useMemo(
     () => [
@@ -148,15 +149,12 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
   });
 
   const hasChangedFields = () => {
-    const currentValues = getValues();
     return (
-      currentValues.useridcode !== user?.useridcode ||
-      currentValues.authorities?.join(',') !== user?.authorities?.join(',') ||
-      currentValues.displayName !== user?.fullName ||
-      currentValues.csaTitle !== user?.csaTitle ||
-      currentValues.csaEmail !== user?.csaEmail ||
-      currentValues.fullName !== user?.fullName
-    );
+      watchedValues.useridcode !== user?.useridcode ||
+      watchedValues.authorities?.join(',') !== user?.authorities?.join(',') ||
+      watchedValues !== user?.displayName ||
+      watchedValues.csaTitle !== user?.csaTitle ||
+      watchedValues.csaEmail !== user?.csaEmail);
   };
 
   return (
@@ -206,6 +204,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           label={t('userManagement.addUser.name')}
           placeholder={t('userManagement.addUser.namePlaceholder') ?? ''}
           maxLength={49}
+          aria-autocomplete='none'
         />
         {errors?.fullName && (
           <span className="error-span">{errors?.fullName?.message}</span>
@@ -259,6 +258,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
             onChange={() => {
               if (!isValidIdentification) setIsValidIdentification(true);
             }}
+            aria-autocomplete='none'
           />
         )}
 
@@ -270,6 +270,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           {...register('csaTitle')}
           label={t('userManagement.addUser.title')}
           placeholder={t('userManagement.addUser.titlePlaceholder') ?? ''}
+          aria-autocomplete='none'
         />
 
         <FormInput
@@ -284,6 +285,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
           label={t('userManagement.addUser.email')}
           type="email"
           placeholder={t('userManagement.addUser.emailPlaceholder') ?? ''}
+          aria-autocomplete='none'
         />
         {errors?.csaEmail && (
           <span className="error-span">{errors?.csaEmail?.message}</span>

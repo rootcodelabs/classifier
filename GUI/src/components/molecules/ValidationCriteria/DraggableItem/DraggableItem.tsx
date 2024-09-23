@@ -109,6 +109,7 @@ const DraggableItem = ({
             defaultValue={item.fieldName}
             onBlur={(e) => handleChange(item.id, e.target.value)}
             error={getErrorMessage(item)}
+            aria-autocomplete='none'
           />
           <FormSelect
             label={t('datasetGroups.createDataset.datasetType')}

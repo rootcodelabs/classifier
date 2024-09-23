@@ -54,6 +54,7 @@ const ClassHeirarchyTreeNode = ({
                 ? t('datasetGroups.classHierarchy.filedHintIfExists') ?? ''
                 : ''
             }
+            aria-autocomplete='none'
           />
         </div>
         <div
