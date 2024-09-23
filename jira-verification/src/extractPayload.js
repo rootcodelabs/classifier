@@ -4,8 +4,8 @@ function extractPayload(payload) {
   const title = issueFields.summary;
 
   const description = issueFields.description
-    .replace(/\n/g, " ")
-    .replace(/\+\s*/g, "");
+    ? issueFields.description.replace(/\n/g, " ").replace(/\+\s*/g, "")
+    : "";
 
   const attachments = issueFields.attachment.map((att) => att.filename);
 
