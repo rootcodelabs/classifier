@@ -62,7 +62,7 @@
     "trainingSessions": "Koolituse sessioonid",
     "testModel": "Testmudel",
     "stopWords": "Peatumisõnad",
-    "correctedTexts": "Parandatud tekstid"
+    "correctedTexts": "Parandatud Tekstid"
   },
   "userManagement": {
     "title": "Kasutajate haldus",
@@ -328,7 +328,8 @@
   "validationSessions": {
     "title": "Kontrolli Sessioonid",
     "inprogress": "Kontroll Käib",
-    "fail": "Kontroll ebaõnnestus, kuna {{class}} klassi ei leitud {{column}} veerus hierarhias"
+    "fail": "Kontroll ebaõnnestus, kuna {{class}} klassi ei leitud {{column}} veerus hierarhias",
+    "noSessions": "Käimasolevaid valideerimissessioone pole saadaval"
   },
   "correctedTexts": {
     "title": "Parandatud Tekstid",
@@ -441,7 +442,8 @@
   "trainingSessions": {
     "title": "Koolituse Sessioonid",
     "inprogress": "Koolitus Käib",
-    "fail": "Koolitus ebaõnnestus, kuna {{class}} klass, mida leiti {{column}} veerust, ei eksisteeri hierarhias"
+    "fail": "Koolitus ebaõnnestus, kuna {{class}} klass, mida leiti {{column}} veerust, ei eksisteeri hierarhias",
+    "noSessions": "Käimasolevaid koolitussessioone pole saadaval"
   },
   "testModels": {
     "title": "Testige Mudelit",

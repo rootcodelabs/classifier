@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import ProgressBar from 'components/ProgressBar';
 import { Card, Label } from 'components';
 import { ValidationSessionsStatuses } from 'enums/datasetEnums';
+import './ValidationSessionCard.scss';
 
 type ValidationSessionCardProps = {
   dgName: string;
@@ -25,12 +26,14 @@ const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({
   return (
     <Card
       header={
-        <div className="flex-grid">
+        <div className="validationHeader">
           {dgName} <Label type="success">{version}</Label>
-          {isLatest && <Label type="success">{t('global.latest')}</Label>}
-          {status === ValidationSessionsStatuses.VALIDATION_FAILED_STATUS && (
-            <Label type="error">{t('global.failed')}</Label>
-          )}
+          <div className=''>
+            {isLatest && <Label type="success">{t('global.latest')}</Label>}
+            {status === ValidationSessionsStatuses.VALIDATION_FAILED_STATUS && (
+              <Label type="error">{t('global.failed')}</Label>
+            )}
+          </div>
         </div>
       }
     >

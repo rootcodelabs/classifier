@@ -21,6 +21,7 @@ const DraggableItem = ({
   setValidationRules,
   validationRuleError,
   validationRules,
+  setValidationRuleError
 }: {
   item: ValidationRule;
   index: number;
@@ -28,6 +29,7 @@ const DraggableItem = ({
   validationRules?: ValidationRule[];
   setValidationRules: React.Dispatch<React.SetStateAction<ValidationRule[]>>;
   validationRuleError?: boolean;
+  setValidationRuleError:React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { t } = useTranslation();
   const [, ref] = useDrag({
@@ -67,6 +69,7 @@ const DraggableItem = ({
         item.id === id ? { ...item, fieldName: newValue } : item
       )
     );
+    setValidationRuleError(false);
   }, []);
 
   const changeDataType = (id: string | number, value: string) => {
@@ -106,6 +109,7 @@ const DraggableItem = ({
             defaultValue={item.fieldName}
             onBlur={(e) => handleChange(item.id, e.target.value)}
             error={getErrorMessage(item)}
+            aria-autocomplete='none'
           />
           <FormSelect
             label={t('datasetGroups.createDataset.datasetType')}
