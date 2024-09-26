@@ -28,7 +28,7 @@ WORKDIR /app
 
 COPY model_trainer_requirements.txt /app/
 
-RUN pip install -r model_trainer_requirements.txt --timeout=1000
+RUN pip install --no-cache-dir -r model_trainer_requirements.txt --timeout=1000
 
 COPY . /app
 
