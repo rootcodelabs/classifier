@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import TrainingSessionCard from 'components/molecules/TrainingSessionCard';
 import { useTrainingSessions } from 'hooks/useTrainingSessions';
+import NoDataView from 'components/molecules/NoDataView';
 
 const TrainingSessions: FC = () => {
   const { t } = useTranslation();
@@ -13,6 +14,9 @@ const TrainingSessions: FC = () => {
         <div className="title_container">
           <div className="title">{t('trainingSessions.title')}</div>
         </div>
+        {progresses?.length === 0 && (
+          <NoDataView text={t('trainingSessions.noSessions') ?? ''} />
+        )}
         {progresses?.map((session) => (
           <TrainingSessionCard
             key={session.id}

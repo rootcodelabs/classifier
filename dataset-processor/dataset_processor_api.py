@@ -87,7 +87,7 @@ async def forward_request(request: Request, response: Response):
         forward_payload["validationStatus"] = "fail"
         forward_payload["validationErrors"] = [validator_response["response"]["message"]]
     else:
-        forward_payload["validationStatus"] = "success"
+        forward_payload["validationStatus"] = "in-progress"
         forward_payload["validationErrors"] = []
 
     try:

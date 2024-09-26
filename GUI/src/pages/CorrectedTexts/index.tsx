@@ -144,25 +144,32 @@ const CorrectedTexts: FC = () => {
               defaultValue={filters.sort}
             />
           </div>
-          <Button
-            onClick={() => {
-              setEnableFetch(true);
-              refetch();
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
             }}
           >
-            {t('global.search')}
-          </Button>
-          <Button
-            onClick={() => {
-              setFilters({
-                platform: 'all',
-                sort: 'asc',
-              });
-              refetch();
-            }}
-          >
-            {t('global.reset')}
-          </Button>
+            <Button
+              onClick={() => {
+                setEnableFetch(true);
+                refetch();
+              }}
+            >
+              {t('global.search')}
+            </Button>
+            <Button
+              onClick={() => {
+                setFilters({
+                  platform: 'all',
+                  sort: 'asc',
+                });
+                refetch();
+              }}
+            >
+              {t('global.reset')}
+            </Button>
+          </div>
         </div>
 
         <CorrectedTextsTable
@@ -217,7 +224,7 @@ const CorrectedTexts: FC = () => {
             </div>
           </div>
         ) : (
-            <p>{modalDiscription}</p>
+          <p>{modalDiscription}</p>
         )}
       </Dialog>
     </div>

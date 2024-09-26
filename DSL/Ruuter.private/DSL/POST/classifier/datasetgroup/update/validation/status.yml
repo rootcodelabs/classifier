@@ -86,7 +86,7 @@ check_minor_status:
 
 check_minor_validation_status_type:
   switch:
-    - condition: ${validation_status === 'success'}
+    - condition: ${validation_status === 'in-progress'}
       next: execute_cron_manager
   next: assign_success_response
 

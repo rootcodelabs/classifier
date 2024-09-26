@@ -52,7 +52,7 @@ async def check_folder_hierarchy(request: Request, hierarchyData: HierarchyCheck
         return result
     except Exception as e:
 
-        logger.error
+        logger.error(f"ERROR IN check_folder_hierarchy function - {e}")
         raise HTTPException(status_code=500, detail=f"Failed to validate folder hierarchy: {str(e)}")
 
 @app.post("/find-folder-id")
@@ -78,7 +78,7 @@ async def get_folder_id(request: Request, flattened_hierarchy: FlattenedFolderHi
     except Exception as e:
 
         logger.info(f"EXCEPTION IN FIND FOLDER ID - {e}")
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred in retriving the final folder id: {str(e)}")
     
 @app.post("/corrected-folder-hierarchy")
 async def get_hierarchy(request: Request, correctedData:CorrectedFolderRequest ):
@@ -90,4 +90,4 @@ async def get_hierarchy(request: Request, correctedData:CorrectedFolderRequest )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred in corrected-folder-hierarchy: {str(e)}")

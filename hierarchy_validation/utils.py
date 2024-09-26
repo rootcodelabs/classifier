@@ -48,30 +48,40 @@ async def build_folder_hierarchy(outlook_access_token:str, folder_id: str = 'roo
     return [await build_hierarchy(folder) for folder in folders]
 
 async def validate_hierarchy(class_hierarchies,  outlook_access_token):
-    errors = []
-    folder_hierarchy = await build_folder_hierarchy(outlook_access_token=outlook_access_token)
+    logger.info("ENTERING VALIDATE HIERARCHY FUNCTION")
+    try:
+        errors = []
+        folder_hierarchy = await build_folder_hierarchy(outlook_access_token=outlook_access_token)
+        logger.info("OUTLOOK FOLDER HIERARCHY SUCCESS")
+        # logger.info(f"folder_hierarchy: {folder_hierarchy}")
+        def find_folder(name, folders):
+            return next((folder for folder in folders if folder["displayName"] == name), None)
 
-    def find_folder(name, folders):
-        return next((folder for folder in folders if folder["displayName"] == name), None)
-
-    def check_hierarchy(classes, folders, path):
-        for cls in classes:
-            folder = find_folder(cls["class"], folders)
-            if not folder:
-                current_cls = cls["class"]
-                errors.append(f"Folder {current_cls} not found at path '{path}'")
-                return False
-            if cls["subclasses"]:
-                current_cls = cls["class"]
-                if not check_hierarchy(cls["subclasses"], folder["childFolders"], f"{path}/{current_cls}"):
+        def check_hierarchy(classes, folders, path):
+            for cls in classes:
+                folder = find_folder(cls["class"], folders)
+                if not folder:
+                    current_cls = cls["class"]
+                    errors.append(f"Folder {current_cls} not found at path '{path}'")
                     return False
-        return True
+                if cls["subclasses"]:
+                    current_cls = cls["class"]
+                    if not check_hierarchy(cls["subclasses"], folder["childFolders"], f"{path}/{current_cls}"):
+                        return False
+            return True
 
-    logger.info(f"CLASS HIERARCHY IN UTIL FUNCTION - {class_hierarchies}")
-    logger.info(f"FOLDER HIERARCHY IN OUTLOOK UTIL FUNCTION - {folder_hierarchy}")
+        # logger.info(f"CLASS HIERARCHY IN UTIL FUNCTION - {class_hierarchies}")
+        # logger.info(f"FOLDER HIERARCHY IN OUTLOOK UTIL FUNCTION - {folder_hierarchy}")
 
-    result = check_hierarchy(class_hierarchies, folder_hierarchy, '')
-    return {"isValid": result, "errors": errors}
+        result = check_hierarchy(class_hierarchies, folder_hierarchy, '')
+        logger.info(f"ERRORS IN VALIDATE HIERARCHY: {errors}")
+        logger.info(f"FINAL OUTPUT OF THE validate_hierarchy FUNCTION: {result}")
+        return {"isValid": result, "errors": errors}
+    
+    except Exception as e:
+        logger.info(f"ERROR IN validate_hierarchy function {e}")
+        logger.info(f"ERRORS IN VALIDATE HIERARCHY catched in the excepton: {errors}")
+        raise Exception(f"ERROR IN validate_hierarchy function {e}")
 
 
 def find_folder_id(hierarchy, path):

@@ -62,7 +62,7 @@
     "trainingSessions": "Training Sessions",
     "testModel": "Test Model",
     "stopWords": "Stop Words",
-    "correctedTexts": "Corrected texts"
+    "correctedTexts": "Corrected Texts"
   },
   "userManagement": {
     "title": "User Management",
@@ -298,7 +298,8 @@
           "confirmationTitle": "Are you sure?",
           "confirmationDesc": "Confirm that you are wish to delete the following dataset",
           "successTitle": "Success: Dataset Deleted",
-          "successDesc": "You have successfully deleted the dataset. The dataset is no longer available and all related data has been removed."
+          "successDesc": "You have successfully deleted the dataset. The dataset is no longer available and all related data has been removed.",
+          "proceedToDashboard": "Proceed to dataset groups"
         }
       }
     }
@@ -327,7 +328,9 @@
   "validationSessions": {
     "title": "Validation Sessions",
     "inprogress": "Validation in-Progress",
-    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
+    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy",
+    "noSessions":"No ongoing validation sessions available"
+
   },
 
   "correctedTexts": {
@@ -441,7 +444,9 @@
   "trainingSessions": {
     "title": "Training Sessions",
     "inprogress": "Validation in-Progress",
-    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy"
+    "fail": "Validation failed because {{class}} class found in the {{column}} column does not exist in hierarchy",
+    "noSessions":"No ongoing training sessions available"
+
   },
   "testModels": {
     "title": "Test Model",

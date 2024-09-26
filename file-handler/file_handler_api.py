@@ -115,7 +115,7 @@ async def upload_and_copy(request: Request, dgId: int = Form(...), dataFile: Upl
             json.dump(converted_data, json_file, indent=4, default=custom_serializer)
 
         save_location = TEMP_DATASET_LOCATION.format(dg_id=dgId)
-        source_file_path = file_name.replace(YML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
+        source_file_path = file_name.replace(YML_EXT, JSON_EXT).replace(YAML_EXT, JSON_EXT).replace(XLSX_EXT, JSON_EXT)
         
         response = s3_ferry.transfer_file(save_location, "S3", source_file_path, "FS")
         if response.status_code == 201:
@@ -326,7 +326,7 @@ def extract_stop_words(file: UploadFile) -> List[str]:
     
     if file_type == 'txt':
         content = file.file.read().decode('utf-8')
-        return [word.strip() for word in content.split(',')]
+        return [word.strip() for word in content.split(',') if word.strip()]
     elif file_type == 'json':
         content = json.load(file.file)
         return content if isinstance(content, list) else []
@@ -361,8 +361,24 @@ async def import_stop_words(request: Request, stopWordsFile: UploadFile = File(.
 
         response = requests.post(url, headers=headers, json={"stopWords": words_list})
 
-        response_data = response.json()
-        return response_data
+        if response.status_code == 200 or response.status_code == 400:
+            response_data = response.json()
+            print(f"response_data : {response_data}")
+            if response_data['response']['operationSuccessful']:
+                return response_data
+            elif response_data['response']['duplicate']:
+                duplicate_items = response_data['response']['duplicateItems']
+                new_words_list = [word for word in words_list if word not in duplicate_items]
+                if new_words_list:
+                    response = requests.post(url, headers=headers, json={"stopWords": new_words_list})
+                    return response.json()
+                else:
+                    return response_data
+            else:
+                raise HTTPException(status_code=response.status_code, detail="Failed to update stop words")
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to update stop words")
+        
     except Exception as e:
         print(f"Error in import/stop-words: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -383,8 +399,28 @@ async def delete_stop_words(request: Request, stopWordsFile: UploadFile = File(.
 
         response = requests.post(url, headers=headers, json={"stopWords": words_list})
 
-        response_data = response.json()
-        return response_data
+        if response.status_code == 200 or response.status_code == 400:
+            response_data = response.json()
+            if response_data['response']['operationSuccessful']:
+                return response_data
+            elif response_data['response']['nonexistent']:
+                nonexistent_items = response_data['response']['nonexistentItems']
+                new_words_list = [word for word in words_list if word not in nonexistent_items]
+                if new_words_list:
+                    response = requests.post(url, headers=headers, json={"stopWords": new_words_list})
+                    return response.json()
+                else:
+                    return JSONResponse(
+                        status_code=400,
+                        content={
+                            "message": f"The following words are not in the list and cannot be deleted: {', '.join(nonexistent_items)}"
+                        }
+                    )
+            else:
+                raise HTTPException(status_code=response.status_code, detail="Failed to delete stop words")
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to delete stop words")
+        
     except Exception as e:
         print(f"Error in delete/stop-words: {e}")
         raise HTTPException(status_code=500, detail=str(e))

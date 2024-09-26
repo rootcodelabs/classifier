@@ -66,10 +66,9 @@ echo $response
 operation_status=$(echo "$response" | jq -r '.response.operationSuccessful')
 
 if [ "$operation_status" = "true" ]; then
-    progressSessionId=$(echo "$response" | jq -r '.response.sessionId')
-    echo "Session ID: $progressSessionId"
+    echo "Model Metadata update successful"
 else
-    echo "Failed to create training progress session. Exiting..."
+    echo "Failed to update model metadata. Exiting..."
     exit 1
 fi
 
@@ -84,7 +83,7 @@ payload=$(jq -n \
     --argjson latest "$latest" \
     '{modelId: $modelId, modelName: $modelName, majorVersion: $majorVersion, minorVersion: $minorVersion, latest: $latest}')
 
-echo "Payload: $payload"
+echo "Payload for creating progress session: $payload"
 
 
 # Send the POST request to create the training progress session
@@ -111,13 +110,12 @@ fi
 
 #### INITIATING REQUEST TO UPDATE TRAINING PROGRESS SESSION
 
-
 # Constructing progress update payload
 
 sessionId=$progressSessionId
 trainingStatus="Training In-Progress"
-trainingMessage="Initiating Training Session"
-progressPercentage=10
+trainingMessage="Initiating Training Session - In Training Queue"
+progressPercentage=5
 processComplete=false
 
 payload=$(jq -n \
@@ -150,54 +148,72 @@ if [ "$operation_status" = "true" ]; then
     echo "Session ID: $progressSessionId"
 else
     echo "Failed to update training progress session. Exiting..."
+    #######################
+    # Constructing progress update payload to show the error
+    sessionId=$progressSessionId
+    trainingStatus="Training Failed"
+    trainingMessage="Training Failed During Progress session update"
+    progressPercentage=100
+    processComplete=true
+
+    payload=$(jq -n \
+        --argjson sessionId $sessionId \
+        --arg trainingStatus "$trainingStatus" \
+        --arg trainingMessage "$trainingMessage" \
+        --argjson progressPercentage $progressPercentage \
+        --argjson processComplete $processComplete \
+        '{sessionId: $sessionId, trainingStatus: $trainingStatus, trainingMessage: $trainingMessage, progressPercentage: $progressPercentage, processComplete: $processComplete}')
+
+
+    echo "UPDATE PROGRESS SESSION WITH ERROR PAYLOAD"
+    echo $payload
+
+    # Send POST request to update progress session and set an initial percentage of 10
+
+    response=$(curl -s -X POST "$UPDATE_TRAINING_PROGRESS_SESSION_ENDPOINT" \
+        -H "Content-Type: application/json" \
+        -H "Cookie: customJwtCookie=$cookie" \
+        -d "$payload")
+
+
+    echo "ERROR PROGRESS UPDATE RESPONSE"
+    echo $response
+    #######################
     exit 1
 fi
 
 
 export progressSessionId
 
-REQUIREMENTS_FILE="/app/model_trainer/model_trainer_requirements.txt"
-PYTHON_SCRIPT="/app/model_trainer/main.py"
 
-is_package_installed() {
-    package=$1
-    pip show "$package" > /dev/null 2>&1
+
+
+editedModelDetails=$(echo "$modelDetails" | sed 's/"/\\"/g')
+
+payload=$(cat <<EOF
+{
+  "cookie": "$cookie",
+  "old_model_id": "$modelId",
+  "new_model_id": "$newModelId",
+  "update_type": "$updateType",
+  "previous_deployment_env": "$previousDeploymentEnv",
+  "progress_session_id":$progressSessionId,
+  "deployment_env": "$deploymentEnv",
+  "model_details": "$editedModelDetails"
 }
+EOF
+)
 
-echo "cookie - $cookie"
-echo "old model id - $modelId"
-echo "new model id  - $newModelId"
-echo "update type - $updateType"
-echo "previous deployment env - $previousDeploymentEnv"
-echo "Deployment environment - $deploymentEnv"
-echo "Model details - $modelDetails"
+echo "payload - $payload"
+forward_url="http://trainer-queue:8901/add_session"
 
-echo "Activating Python Environment"
-source "/app/python_virtual_env/bin/activate"
 
-echo "Python executable in use: $(which python3)"
+# Send HTTP POST request to model_trainer
+response=$(curl -s -w "\nHTTP_STATUS_CODE:%{http_code}" -X POST "$forward_url" \
+  -H "Content-Type: application/json" \
+  -H "Cookie: $cookie" \
+  -d "$payload")
 
-if [ -f "$REQUIREMENTS_FILE" ]; then
-    echo "Checking if required packages are installed..."
-
-    while IFS= read -r requirement || [ -n "$requirement" ]; do
-        package_name=$(echo "$requirement" | cut -d '=' -f 1 | tr -d '[:space:]')
-        
-        if is_package_installed "$package_name"; then
-            echo "Package '$package_name' is already installed."
-        else
-            echo "Package '$package_name' is not installed. Installing..."
-            pip install "$requirement"
-        fi
-    done < "$REQUIREMENTS_FILE"
-else
-    echo "Requirements file not found: $REQUIREMENTS_FILE"
-fi
-
-# Check if the Python script exists
-if [ -f "$PYTHON_SCRIPT" ]; then
-    echo "Running the Python script: $PYTHON_SCRIPT"
-    python3 "$PYTHON_SCRIPT"
-else
-    echo "Python script not found: $PYTHON_SCRIPT"
-fi
+# Output the response
+echo "Response from model_trainer:"
+echo "$response"

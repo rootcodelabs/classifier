@@ -170,7 +170,7 @@ class TrainingPipeline:
                                  
             training_args = TrainingArguments(
                 output_dir= 'tmp',
-                num_train_epochs=1,
+                num_train_epochs=4,
                 per_device_train_batch_size=16,
                 per_device_eval_batch_size=16,
                 logging_dir='./logs',
