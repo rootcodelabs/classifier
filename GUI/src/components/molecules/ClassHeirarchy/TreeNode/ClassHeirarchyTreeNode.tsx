@@ -54,11 +54,12 @@ const ClassHeirarchyTreeNode = ({
                 ? t('datasetGroups.classHierarchy.filedHintIfExists') ?? ''
                 : ''
             }
+            aria-autocomplete='none'
           />
         </div>
         <div
           onClick={() => onAddSubClass(node?.id)}
-          className="link"
+          className="underlined-link"
         >
           {t('datasetGroups.classHierarchy.addSubClass')}
         </div>
