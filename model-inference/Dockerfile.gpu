@@ -2,14 +2,22 @@ FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Create a system user and group
 RUN addgroup --system appuser && adduser --system --ingroup appuser appuser
 
+# Install necessary packages
 RUN apt-get update && \
-    apt-get install -y python3.9 python3.9-dev python3.9-venv python3-pip tzdata && \
-    ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    apt-get install -y \
+        python3-pip \
+        python3.9 \
+        python3.9-dev \
+        python3.9-venv \
+        tzdata \
+    && ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata
 
 WORKDIR /app
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -27,6 +35,9 @@ ENV HF_HOME=/app/cache/
 RUN mkdir -p /shared && chown appuser:appuser /shared && chmod 777 /shared
 RUN mkdir -p /shared/models/testing && chown appuser:appuser /shared/models/testing && chmod 777 /shared/models/testing
 RUN chown -R appuser:appuser /app
+
 EXPOSE 8003
+
 USER appuser
+
 CMD ["uvicorn", "model_inference_api:app", "--host", "0.0.0.0", "--port", "8003"]
