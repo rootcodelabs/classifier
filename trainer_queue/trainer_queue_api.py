@@ -37,20 +37,23 @@ class SessionPayload(BaseModel):
 
 @app.post("/add_session")
 def add_session(payload: SessionPayload):
-    print("ADDING payload")
-    request_queue.put(payload)
-    print("AFTER ADDING payload")
-    print("payload for model_checker", payload)
-    response = requests.get(MODEL_CHECKER_URL)
-    if response.status_code == 200:
-        print("response from model_checker: ", response.json())
-        training_status = response.json()
-        if not training_status:
-            print("payload for model_trainer", payload)
-            response = requests.post(MODEL_TRAINER_URL, json=payload.dict())
-            print("response from model_trainer: ", response)
-            request_queue.get()
-        return {"message": "Session added successfully", "payload": payload}
+    try:
+        print("ADDING payload")
+        request_queue.put(payload)
+        print("AFTER ADDING payload")
+        print("payload for model_checker", payload)
+        response = requests.get(MODEL_CHECKER_URL)
+        if response.status_code == 200:
+            print("response from model_checker: ", response.json())
+            training_status = response.json()
+            if not training_status:
+                print("payload for model_trainer", payload)
+                response = requests.post(MODEL_TRAINER_URL, json=payload.dict())
+                print("response from model_trainer: ", response)
+                request_queue.get()
+            return {"message": "Session added successfully", "payload": payload}
+    except Exception as e:
+        print(f"Exception in add_session in training queue : {e}")
 
 @app.get("/get_session")
 def get_session():
