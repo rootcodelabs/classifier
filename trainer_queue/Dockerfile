@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8901
 
-CMD ["uvicorn", "request_handler_api:app", "--host", "0.0.0.0", "--port", "8901"]
+CMD ["uvicorn", "trainer_queue_api:app", "--host", "0.0.0.0", "--port", "8901"]
