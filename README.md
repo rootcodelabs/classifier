@@ -34,19 +34,6 @@ This repo will primarily contain:
 
    `find classifier -type f -name "*.sh" -exec chmod +x {} \;`
 
-### Database setup
-
-- For the initial setup of the database, run helper script `./token.sh`
-- Provide the password for the database in constant.ini under the key `DB_PASSWORD`
-- Run migrations added in this repository by running the helper script `./migrate.sh`(consider db properties before running the script)
-- When creating new migrations, run `create-migration` script with parameters ` example : ./create-migration.sh <name-of-migration> <format>`
-- This will create a new file in the respective directory and add the required headers, pass file name(ex: `data-model-sessions`) and the format(`sql` or `xml`) as inputs
-
-### Open Search
-
-- To Initialize Open Search run `./deploy-opensearch.sh <URL> <AUTH> <Is Mock Allowed - Default false>`
-- To Use Opensearch locally run `./deploy-opensearch.sh http://localhost:9200 admin:admin true`
-
 ### Setting up Microsoft Outlook Integration
 
 1. **Sign in to Azure Portal**
@@ -85,8 +72,6 @@ This repo will primarily contain:
       REDIRECT_URI=http://localhost:3003/callback or http://<base_url>/callback 
       ```
     - if you deployed somewhare other than localhost, Redirect URI should be the url that you have provided to the **Redirect URI** section when you are registering the application.
-
-6. **Run Docker Compose**
     - Build and run the image using the command:
       ```bash
       docker compose up -d
@@ -199,6 +184,19 @@ Ensure that your AWS credentials (S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY) are
 ##### Ruuter Internal Requests
 
 - When running ruuter either on local or in an environment make sure to adjust `- application.internalRequests.allowedIPs=127.0.0.1,{YOUR_IPS}` under ruuter environments
+
+### Database setup
+
+- For the initial setup of the database, run helper script `./token.sh`
+- Provide the password for the database in constant.ini under the key `DB_PASSWORD`
+- Run migrations added in this repository by running the helper script `./migrate.sh`(consider db properties before running the script)
+- When creating new migrations, run `create-migration` script with parameters ` example : ./create-migration.sh <name-of-migration> <format>`
+- This will create a new file in the respective directory and add the required headers, pass file name(ex: `data-model-sessions`) and the format(`sql` or `xml`) as inputs
+
+### Open Search
+
+- To Initialize Open Search run `./deploy-opensearch.sh <URL> <AUTH> <Is Mock Allowed - Default false>`
+- To Use Opensearch locally run `./deploy-opensearch.sh http://localhost:9200 admin:admin true`
 
 ## Ngrok setup for local testing
 To setup JIRA and Outlook integrations locally you need an https URL as a webhook. Since localhost by default http JIRA and Outlook APIs wouldn't be able to call your webhook endpoint if it's in localhost. You can overcome this by creating a ngrok tunnel to your localhost ports 3008 (JIRA Integration) and 8086 (Outlook Integration). And then provide the https URLs you receive from ngrok as webhook callback endpoints in JIRA and Outlook configurations

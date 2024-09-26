@@ -284,7 +284,7 @@ services:
   model-inference:
     build:
       context: ./model-inference
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cpu
     container_name: model-inference
     volumes:
       - shared-volume:/shared
@@ -312,6 +312,54 @@ services:
     depends_on:
       - init
       - s3-ferry
+
+  model-trainer:
+    build:
+      context: ./model_trainer
+      dockerfile: Dockerfile.cpu
+    container_name: model-trainer
+    volumes:
+      - shared-volume:/shared
+    environment:
+      - UPLOAD_DIRECTORY=/shared
+      - RUUTER_PRIVATE_URL=http://ruuter-private:8088
+      - S3_FERRY_URL=http://s3-ferry:3000/v1/files/copy
+      - JIRA_MODEL_DOWNLOAD_DIRECTORY=/shared/models/jira
+      - OUTLOOK_MODEL_DOWNLOAD_DIRECTORY=/shared/models/outlook
+      - TEST_MODEL_DOWNLOAD_ROOT_DIRECTORY=/shared/models/testing
+      - GET_INFERENCE_DATASET_EXIST_URL=http://ruuter-public:8086/internal/exist
+      - CREATE_INFERENCE_URL=http://ruuter-public:8086/internal/create
+      - UPDATE_INFERENCE_URL=http://ruuter-public:8086/internal/corrected
+      - CLASS_HIERARCHY_VALIDATION_URL=http://hierarchy-validation:8009/check-folder-hierarchy
+      - OUTLOOK_ACCESS_TOKEN_API_URL=http://ruuter-public:8086/internal/validate
+      - BUILD_CORRECTED_FOLDER_HIERARCHY_URL=http://hierarchy-validation:8009/corrected-folder-hierarchy
+      - FIND_FINAL_FOLDER_ID_URL=http://hierarchy-validation:8009/find-folder-id
+      - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
+      - UPDATE_MODEL_TRAINING_STATUS_ENDPOINT=http://ruuter-private:8088/classifier/datamodel/update/training/status
+    ports:
+      - "8900:8900"
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.25
+    depends_on:
+      - init
+      - s3-ferry
+
+  trainer-queue:
+    build:
+      context: ./trainer_queue
+      dockerfile: Dockerfile
+    container_name: trainer-queue
+    volumes:
+      - shared-volume:/shared
+    environment:
+      - MODEL_TRAINER_URL=http://model-trainer:8900/model_trainer/
+      - MODEL_CHECKER_URL=http://model-trainer:8900/model_checker/
+    ports:
+      - "8901:8901"
+    networks:
+      bykstack:
+        ipv4_address: 172.25.0.26
 
   hierarchy-validation:
     build:
@@ -393,7 +441,7 @@ services:
     image: data-enrichment-api
     build:
       context: ./data_enrichment
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cpu
     ports:
       - "8005:8005"
     networks:
@@ -458,5 +506,5 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.25.0.0/24
+        - subnet: 172.25.0.0/27
           gateway: 172.25.0.1
