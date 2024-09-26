@@ -1,6 +1,7 @@
 import json
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from typing import List
+import torch
 
 class Paraphraser:
     def __init__(self, config_path: str = "config_files/paraphraser_config.json"):
@@ -18,7 +19,11 @@ class Paraphraser:
         self.max_length = config["max_length"]
         
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name).to('cuda')
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name).to(self.device)  # Move model to device
+
+        # Print device information in __init__
+        print(f"[Paraphraser __init__] Model is on device: {next(self.model.parameters()).device}")
 
     def generate_paraphrases(self, question: str, num_return_sequences: int = None) -> List[str]:
         if num_return_sequences is None or num_return_sequences <= 0:
@@ -29,8 +34,11 @@ class Paraphraser:
             return_tensors="pt", padding="longest",
             max_length=self.max_length,
             truncation=True,
-        ).input_ids.to('cuda')
-        
+        ).input_ids.to(self.device)  # Move input_ids to device
+
+        # Print device information during processing
+        print(f"[Paraphraser generate_paraphrases] Input IDs are on device: {input_ids.device}")
+
         outputs = self.model.generate(
             input_ids,
             temperature=self.temperature,
@@ -42,6 +50,9 @@ class Paraphraser:
             max_length=self.max_length,
             diversity_penalty=self.diversity_penalty
         )
+
+        # Optionally, print the device of outputs
+        print(f"[Paraphraser generate_paraphrases] Outputs are on device: {outputs.device}")
 
         res = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
