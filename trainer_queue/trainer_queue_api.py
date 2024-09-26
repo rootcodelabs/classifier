@@ -46,8 +46,8 @@ def add_session(payload: SessionPayload):
         if response.status_code == 200:
             print("response from model_checker: ", response.json())
             training_status = response.json()
-            print(f"training _Status : {training_status} > {str(not training_status)}")
-            if not training_status:
+            print(f"training _Status : {training_status} > {training_status == False}")
+            if training_status == False:
                 print("inside loop")
                 print("payload for model_trainer", payload)
                 response = requests.post(MODEL_TRAINER_URL, json=payload.dict())
