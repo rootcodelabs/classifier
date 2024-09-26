@@ -286,6 +286,12 @@ services:
       context: ./model-inference
       dockerfile: Dockerfile.gpu
     container_name: model-inference
+    runtime: nvidia  
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
     volumes:
       - shared-volume:/shared
     environment:
@@ -318,6 +324,12 @@ services:
       context: ./model_trainer
       dockerfile: Dockerfile.gpu
     container_name: model-trainer
+    runtime: nvidia  
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
     volumes:
       - shared-volume:/shared
     environment:
@@ -439,6 +451,12 @@ services:
 
   data-enrichment-api:
     container_name: data-enrichment-api
+    runtime: nvidia  
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
     image: data-enrichment-api
     build:
       context: ./data_enrichment
