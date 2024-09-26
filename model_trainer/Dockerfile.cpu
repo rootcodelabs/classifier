@@ -20,8 +20,7 @@ WORKDIR /app
 COPY . /app
 
 # Install Python dependencies using pip
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r model_trainer_requirements.txt
+RUN pip install --no-cache-dir -r model_trainer_requirements.txt
 
 # Expose the port the FastAPI app will run on
 EXPOSE 8900
