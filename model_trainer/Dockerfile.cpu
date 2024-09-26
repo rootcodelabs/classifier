@@ -7,10 +7,10 @@ ENV PYTHONUNBUFFERED=1 \
 # Install additional dependencies (non-Python related)
 RUN apt-get update && \
     apt-get install -y \
-    git \
-    wget \
-    curl \
-    unzip \
+        curl \
+        git \
+        unzip \
+        wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
