@@ -18,7 +18,7 @@ class Paraphraser:
         self.max_length = config["max_length"]
         
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name).to('cuda')
 
     def generate_paraphrases(self, question: str, num_return_sequences: int = None) -> List[str]:
         if num_return_sequences is None or num_return_sequences <= 0:
@@ -29,13 +29,18 @@ class Paraphraser:
             return_tensors="pt", padding="longest",
             max_length=self.max_length,
             truncation=True,
-        ).input_ids.to('cpu')
+        ).input_ids.to('cuda')
         
         outputs = self.model.generate(
-            input_ids, temperature=self.temperature, repetition_penalty=self.repetition_penalty,
-            num_return_sequences=num_return_sequences, no_repeat_ngram_size=self.no_repeat_ngram_size,
-            num_beams=self.num_beams, num_beam_groups=self.num_beam_groups,
-            max_length=self.max_length, diversity_penalty=self.diversity_penalty
+            input_ids,
+            temperature=self.temperature,
+            repetition_penalty=self.repetition_penalty,
+            num_return_sequences=num_return_sequences,
+            no_repeat_ngram_size=self.no_repeat_ngram_size,
+            num_beams=self.num_beams,
+            num_beam_groups=self.num_beam_groups,
+            max_length=self.max_length,
+            diversity_penalty=self.diversity_penalty
         )
 
         res = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)

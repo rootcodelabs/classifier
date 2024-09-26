@@ -13,11 +13,12 @@ class Translator:
 
         for key, (model_name, reverse_model_name) in self.models.items():
             self.tokenizers[key] = MarianTokenizer.from_pretrained(model_name)
-            self.models_instances[key] = MarianMTModel.from_pretrained(model_name)
+            self.models_instances[key] = MarianMTModel.from_pretrained(model_name).to('cuda')
+
             reverse_key = f"{key.split('-')[1]}-{key.split('-')[0]}"
             if reverse_model_name != config["unsupported-en-pl_model"]:
                 self.tokenizers[reverse_key] = MarianTokenizer.from_pretrained(reverse_model_name)
-                self.models_instances[reverse_key] = MarianMTModel.from_pretrained(reverse_model_name)
+                self.models_instances[reverse_key] = MarianMTModel.from_pretrained(reverse_model_name).to('cuda')
 
     def translate(self, text: str, src_lang: str, tgt_lang: str) -> str:
         if src_lang == 'en' and tgt_lang == 'pl':
@@ -36,7 +37,7 @@ class Translator:
         tokenizer = self.tokenizers[key]
         model = self.models_instances[key]
 
-        tokens = tokenizer(text, return_tensors="pt", padding=True)
+        tokens = tokenizer(text, return_tensors="pt", padding=True).to('cuda')
 
         translated_tokens = model.generate(**tokens)
         translated_text = tokenizer.decode(translated_tokens[0], skip_special_tokens=True)
