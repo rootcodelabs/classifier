@@ -112,7 +112,7 @@ const DatasetGroupCard: FC<PropsWithChildren<DatasetGroupCardProps>> = ({
           </p>
           <p>
             {t('datasetGroups.datasetCard.lastUpdate')}:{' '}
-            {lastUpdated && formatDate(lastUpdated, 'D.M.yy-H:m')}
+            {lastUpdated && formatDate(lastUpdated, 'DD.MM.yy-HH:mm')}
           </p>
         </div>
         <div className="flex">

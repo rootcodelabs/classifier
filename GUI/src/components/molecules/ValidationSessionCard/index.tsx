@@ -28,12 +28,10 @@ const ValidationSessionCard: React.FC<ValidationSessionCardProps> = ({
       header={
         <div className="validationHeader">
           {dgName} <Label type="success">{version}</Label>
-          <div className=''>
             {isLatest && <Label type="success">{t('global.latest')}</Label>}
             {status === ValidationSessionsStatuses.VALIDATION_FAILED_STATUS && (
               <Label type="error">{t('global.failed')}</Label>
             )}
-          </div>
         </div>
       }
     >

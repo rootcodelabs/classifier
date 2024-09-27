@@ -25,7 +25,7 @@ const CorrectedTexts: FC = () => {
 
   const [totalPages, setTotalPages] = useState<number>(1);
   const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
+    pageIndex: 1,
     pageSize: 5,
   });
   const [modalTitle, setModalTitle] = useState<string>('');

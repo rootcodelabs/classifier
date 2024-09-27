@@ -81,7 +81,7 @@ const DatasetDetailedViewTable = ({
   );
 
   return (
-    <>
+    <div>
       {isMetadataLoading && <SkeletonTable rowCount={2} />}
       {metadata && !isMetadataLoading && (
         <div>
@@ -216,7 +216,7 @@ const DatasetDetailedViewTable = ({
           />
         )}
       </div>
-    </>
+    </div>
   );
 };
 
