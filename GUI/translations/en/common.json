@@ -290,8 +290,7 @@
           "label": "Label",
           "update": "Update",
           "error":"Dataset Group Update Unsuccessful",
-          "errorDesc": "There was an issue updating the dataset group. Please try again. If the problem persists, contact support for assistance.",
-
+          "errorDesc": "There was an issue updating the dataset group. Please try again. If the problem persists, contact support for assistance."
         },
         "upload": {
           "title": "Data upload successful",
