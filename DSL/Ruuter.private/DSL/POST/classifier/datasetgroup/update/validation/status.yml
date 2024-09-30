@@ -108,7 +108,7 @@ check_patch_status:
 
 check_patch_validation_status_type:
   switch:
-    - condition: ${validation_status === 'success'}
+    - condition: ${validation_status === 'in-progress'}
       next: update_patch_version_only
   next: assign_success_response
 
