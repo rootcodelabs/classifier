@@ -1,11 +1,11 @@
 declaration:
   call: declare
   version: 0.1
-  description: "Decription placeholder for 'USERS'"
+  description: "Description placeholder for 'USERS'"
   method: post
   accepts: json
   returns: json
-  namespace: backoffice
+  namespace: classifier
   allowlist:
     body:
       - field: page
@@ -32,6 +32,7 @@ getUsers:
           "ROLE_MODEL_TRAINER"
         ]
   result: res
+  next: return_result
 
 return_result:
   return: ${res.response.body}
