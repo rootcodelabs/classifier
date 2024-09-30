@@ -47,7 +47,7 @@ const UserModal: FC<UserModalProps> = ({ onClose, user, isModalOpen }) => {
       authorities: user?.authorities,
       csaTitle: user?.csaTitle,
       csaEmail: user?.csaEmail,
-      fullName: user?.displayName,
+      fullName: `${user?.firstName} ${user?.lastName}`,
     },
   });
 

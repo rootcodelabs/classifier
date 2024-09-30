@@ -49,7 +49,9 @@
     "sessionTimeOutTitle": "Teie sessioon on lõppenud!",
     "sessionTimeOutDesc": "Pikendage oma sessiooni või logige rakendusest välja {{seconds}}",
     "close": "Sulge",
-    "proceed": "Jätka"
+    "proceed": "Jätka",
+    "maxFileSize": "Faili suurus ei tohiks ületada 20 MB."
+
   },
   "menu": {
     "userManagement": "Kasutajate haldus",

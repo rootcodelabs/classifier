@@ -58,7 +58,7 @@ export const formatClassHierarchyArray = (array: string | string[]) => {
   let formattedArray: string[];
   if (typeof array === 'string') {
     try {
-      const cleanedInput = array?.replace(/\s+/g, '');
+      const cleanedInput = array.trim();
       formattedArray = JSON.parse(cleanedInput);
     } catch (error) {
       console.error('Error parsing input string:', error);

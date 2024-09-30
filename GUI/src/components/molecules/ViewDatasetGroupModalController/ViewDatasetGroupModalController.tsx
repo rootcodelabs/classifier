@@ -123,6 +123,7 @@ const ViewDatasetGroupModalController = ({
                   selectedValue={importFormat}
                 ></FormRadios>
               </div>
+              <div className='m-20-0'>
               <p>{t('datasetGroups.detailedView.modals.import.attachments')}</p>
               <FileUpload
                 ref={fileUploadRef}
@@ -130,6 +131,7 @@ const ViewDatasetGroupModalController = ({
                 accept={importFormat}
                 disabled={!importFormat}
               />
+              </div>
               {importStatus === 'STARTED' && (
                 <div className="upload-progress-wrapper">
                   <div className="upload-progress-text-wrapper">
@@ -256,7 +258,7 @@ const ViewDatasetGroupModalController = ({
               <div className="flex-grid">
                 <Button
                   appearance={ButtonAppearanceTypes.SECONDARY}
-                  onClick={close}
+                  onClick={()=>setIsModalOpen(false)}
                 >
                   {t('global.cancel')}
                 </Button>

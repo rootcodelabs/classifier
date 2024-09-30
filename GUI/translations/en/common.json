@@ -49,7 +49,8 @@
     "sessionTimeOutTitle": "You session has been ended!",
     "sessionTimeOutDesc": "Extend your session or sign out from application in {{seconds}}",
     "close":"Close",
-    "proceed":"Proceed"
+    "proceed":"Proceed",
+    "maxFileSize":"File size should not exceed 20 MB."
   },
   "menu": {
     "userManagement": "User Management",

@@ -318,7 +318,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
           <div className="flex-grid">
             <Button
               appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={close}
+              onClick={()=>setModalOpen(false)}
             >
               {t('global.cancel')}
             </Button>
