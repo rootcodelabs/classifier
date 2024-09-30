@@ -422,7 +422,7 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     onError: () => {
       open({
         title: t('datasetGroups.detailedView.modals.edit.error'),
-        content: <p>{t('datasetGroups.detailedView.modals.edit.errorDesc')}</p>,
+        content:<p>{t('datasetGroups.detailedView.modals.edit.errorDesc')}</p>
       });
     },
   });
