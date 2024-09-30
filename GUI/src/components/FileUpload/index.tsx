@@ -5,7 +5,9 @@ import React, {
   useImperativeHandle,
   Ref,
   useRef,
+  useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type FileUploadProps = {
   onFileSelect: (file: File | undefined) => void;
@@ -21,7 +23,8 @@ const FileUpload = forwardRef(
   (props: FileUploadProps, ref: Ref<FileUploadHandle>) => {
     const { onFileSelect, accept, disabled } = props;
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    const { t } = useTranslation();
     useImperativeHandle(ref, () => ({
       clearFile() {
         onFileSelect(undefined);
@@ -33,7 +36,23 @@ const FileUpload = forwardRef(
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files ? e.target.files[0] : undefined;
-      onFileSelect(file);
+      const maxFileSize = 20 * 1024 * 1024; // 20 MB in bytes
+
+      if (file) {
+        if (file.size > maxFileSize) {
+          setErrorMessage(t('global.maxFileSize') ?? '');
+          onFileSelect(undefined);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        } else {
+          setErrorMessage('');
+          onFileSelect(file);
+        }
+      } else {
+        setErrorMessage('');
+        onFileSelect(undefined);
+      }
     };
 
     const restrictFormat = (accept: string | string[]) => {
@@ -43,9 +62,8 @@ const FileUpload = forwardRef(
         else if (accept === 'yaml') return '.yaml, .yml';
         return '';
       } else {
-        return accept.map(ext => `.${ext}`).join(', ');
+        return accept.map((ext) => `.${ext}`).join(', ');
       }
-
     };
 
     return (
@@ -59,6 +77,7 @@ const FileUpload = forwardRef(
             ref={fileInputRef}
           />
         </FormInput>
+        {errorMessage && <p className="input__inline_error">{errorMessage}</p>}
         <button
           type="button"
           onClick={() => {
@@ -66,6 +85,7 @@ const FileUpload = forwardRef(
             if (fileInputRef.current) {
               fileInputRef.current.value = '';
             }
+            setErrorMessage('');
           }}
         >
           Clear
