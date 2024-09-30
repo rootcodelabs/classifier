@@ -281,14 +281,17 @@
         "delete": {
           "title": "Are you sure?",
           "description": "Once you delete the dataset all models connected to this model will become untrainable. Are you sure you want to proceed?",
-          "error":"Dataset Group Deletion  Unsuccessful"
+          "error":"Dataset Group Deletion Unsuccessful",
+          "errorDesc": "There was an issue deleting the dataset group. Please try again. If the problem persists, contact support for assistance."
         },
         "edit": {
           "title": "Edit",
           "data": "Data",
           "label": "Label",
           "update": "Update",
-          "error":"Dataset Group Update Unsuccessful"
+          "error":"Dataset Group Update Unsuccessful",
+          "errorDesc": "There was an issue updating the dataset group. Please try again. If the problem persists, contact support for assistance.",
+
         },
         "upload": {
           "title": "Data upload successful",
