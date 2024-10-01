@@ -229,7 +229,7 @@ const StopWords: FC = () => {
                 items={importOptionsConfigs}
                 selectedValue={importOption}
               />
-              <div className='m-20-0'></div>
+              <div className='m-20-0'>
               <p>{t('stopWords.importModal.attachements') ?? ''}</p>
               <FileUpload
                 ref={fileUploadRef}
@@ -237,6 +237,7 @@ const StopWords: FC = () => {
                 onFileSelect={handleFileSelect}
                 accept={['xlsx', 'json', 'yaml', 'txt']}
               />
+              </div>
             </div>
           </Dialog>
         )}

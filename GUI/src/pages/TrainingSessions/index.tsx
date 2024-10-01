@@ -15,7 +15,9 @@ const TrainingSessions: FC = () => {
           <div className="title">{t('trainingSessions.title')}</div>
         </div>
         {progresses?.length === 0 && (
-          <NoDataView text={t('trainingSessions.noSessions') ?? ''} />
+          <div>
+            <NoDataView text={t('trainingSessions.noSessions') ?? ''} description={t('trainingSessions.noSessionsDesc')??""}/>
+          </div>
         )}
         {progresses?.map((session) => (
           <TrainingSessionCard

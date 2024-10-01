@@ -203,7 +203,7 @@ const DatasetGroups: FC = () => {
                 <CircularSpinner />
               </div>
             )}
-            {datasetGroupsData?.response?.data?.length > 0 ? (
+            {datasetGroupsData?.response?.data?.length > 0 && (
               <div className="grid-container m-30-0">
                 {datasetGroupsData?.response?.data?.map(
                   (dataset: SingleDatasetType, index: number) => {
@@ -226,7 +226,9 @@ const DatasetGroups: FC = () => {
                   }
                 )}
               </div>
-            ) : (
+            ) }
+
+              {!isLoading && datasetGroupsData?.response?.data?.length===0 && (
               <NoDataView text={t('datasetGroups.noDatasets') ?? ''} />
             )}
 

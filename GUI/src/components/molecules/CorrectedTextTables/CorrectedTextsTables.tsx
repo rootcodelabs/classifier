@@ -57,7 +57,16 @@ const CorrectedTextsTable = ({
         ),
       }),
       columnHelper.accessor('platform', {
-        header: t('correctedTexts.platform') ?? '',
+        header: () => (
+          <div className="probabilityLabels">
+            {t('correctedTexts.platform') ?? ''}
+          </div>
+        ),
+        cell: (props) => (
+          <div className="probabilityLabels">
+            {props?.row?.original?.platform}
+          </div>
+        )
       }),
       columnHelper.accessor('inferenceText', {
         header: () => (

@@ -42,7 +42,7 @@ const CorrectedTexts: FC = () => {
     queryFn: async () => {
       const response = await apiDev.get(
         correctedTextEndpoints.GET_CORRECTED_WORDS(
-          pagination.pageIndex,
+          pagination.pageIndex+1,
           pagination.pageSize,
           filters.platform,
           filters.sort
