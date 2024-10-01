@@ -25,7 +25,7 @@ const CorrectedTexts: FC = () => {
 
   const [totalPages, setTotalPages] = useState<number>(1);
   const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 1,
+    pageIndex: 0,
     pageSize: 5,
   });
   const [modalTitle, setModalTitle] = useState<string>('');
@@ -42,7 +42,7 @@ const CorrectedTexts: FC = () => {
     queryFn: async () => {
       const response = await apiDev.get(
         correctedTextEndpoints.GET_CORRECTED_WORDS(
-          pagination.pageIndex,
+          pagination.pageIndex+1,
           pagination.pageSize,
           filters.platform,
           filters.sort
