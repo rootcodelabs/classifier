@@ -61,7 +61,7 @@ DEPLOYING_MODEL_PROGRESS_MESSAGE = "Model training complete. The trained model i
 
 MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE = "The model was trained and deployed successfully to the environment"
 
-MODEL_TRAINING_FAILED_ERROR = "Model training failed due to an error."
+MODEL_TRAINING_FAILED_ERROR = "Training Failed"
 
 
 INITIATING_TRAINING_PROGRESS_PERCENTAGE=30
