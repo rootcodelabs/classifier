@@ -93,17 +93,22 @@ class ModelTrainer:
         payload["inferenceRoutes"] = {"inference_routes":inference_routes}
 
         logger.info(f"{training_status} UPLOAD PAYLOAD - \n {payload}")
+        print(f"{str(training_status)} UPLOAD PAYLOAD - \n {str(payload)}")
 
         response = requests.post( url=UPDATE_MODEL_TRAINING_STATUS_ENDPOINT,
                         json=payload, cookies=self.cookies_payload)
         
         if response.status_code==200:
             logger.info(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {training_status} SUCCESSFUL")
+            print(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {str(training_status)} SUCCESSFUL")
 
         
         else:
             logger.error(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {training_status} FAILED")
             logger.error(f"ERROR RESPONSE {response.text}")
+            
+            print(f"REQUEST TO UPDATE MODEL TRAINING STATUS TO {str(training_status)} FAILED")
+            print(f"ERROR RESPONSE {str(response.text)}")
             self.send_error_progress_session(f"Error :{str(response.text)}")
             raise RuntimeError(response.text)
         
