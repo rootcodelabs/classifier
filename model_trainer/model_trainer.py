@@ -13,7 +13,7 @@ from constants import   OUTLOOK_DEPLOYMENT_ENDPOINT, JIRA_DEPLOYMENT_ENDPOINT, T
                         INITIATING_TRAINING_PROGRESS_STATUS, TRAINING_IN_PROGRESS_PROGRESS_STATUS, DEPLOYING_MODEL_PROGRESS_STATUS, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_STATUS,  \
                         INITIATING_TRAINING_PROGRESS_MESSAGE, TRAINING_IN_PROGRESS_PROGRESS_MESSAGE, DEPLOYING_MODEL_PROGRESS_MESSAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_MESSAGE, \
                         INITIATING_TRAINING_PROGRESS_PERCENTAGE, TRAINING_IN_PROGRESS_PROGRESS_PERCENTAGE, DEPLOYING_MODEL_PROGRESS_PERCENTAGE, MODEL_TRAINED_AND_DEPLOYED_PROGRESS_PERCENTAGE, \
-                        OUTLOOK, JIRA, TESTING, UNDEPLOYED, MODEL_TRAINING_FAILED_ERROR
+                        OUTLOOK, JIRA, TESTING, UNDEPLOYED, MODEL_TRAINING_FAILED_ERROR, MODEL_TRAINING_FAILED
 from loguru import logger
 
 logger.add(sink=TRAINING_LOGS_PATH)
@@ -79,6 +79,10 @@ class ModelTrainer:
             training_results_payload["trainingResults"]["classes"] = training_results[0]
             training_results_payload["trainingResults"]["accuracy"] = training_results[1]
             training_results_payload["trainingResults"]["f1_score"] = training_results[2]
+        else:
+            training_results_payload["trainingResults"]["classes"] = ""
+            training_results_payload["trainingResults"]["accuracy"] = "0.0"
+            training_results_payload["trainingResults"]["f1_score"] = "0"
 
         payload = {}
         payload["modelId"] = self.new_model_id
@@ -105,6 +109,12 @@ class ModelTrainer:
         
     def send_error_progress_session(self, error_msg):
         response = self.update_model_training_progress_session(MODEL_TRAINING_FAILED_ERROR, error_msg, 100, True)
+        current_timestamp = self.get_current_timestamp()
+        self.update_model_db_training_status(training_status=MODEL_TRAINING_FAILED,
+                                                model_s3_location="",
+                                                last_trained_time_stamp=current_timestamp,
+                                                training_results=[], 
+                                                inference_routes=[])
         return response
 
     def update_model_training_progress_session(self,training_status, 
