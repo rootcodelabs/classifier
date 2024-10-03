@@ -47,11 +47,13 @@ payload=$(jq -n \
     --argjson modelId $newModelId \
     --arg trainingStatus "$trainingStatus" \
     --arg modelS3Location "" \
-    --argjson trainingResults '{}' \
-    --argjson inferenceRoutes '{}' \
+    --arg trainingResults '{}' \
+    --arg inferenceRoutes '{}' \
     '{modelId: $modelId, trainingStatus: $trainingStatus, modelS3Location: $modelS3Location, trainingResults: $trainingResults, inferenceRoutes:$inferenceRoutes}')
 
 echo "PAYLOAD FOR UPDATING TRAINING STATUS"
+echo $newModelId
+echo $trainingStatus
 echo $payload
 
 echo "SENDING REQUEST TO UPDATE_MODEL_METADATA_TRAINING_STATUS_ENDPOINT "
