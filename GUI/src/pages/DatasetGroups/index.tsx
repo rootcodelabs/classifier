@@ -28,7 +28,7 @@ const DatasetGroups: FC = () => {
     datasetGroupName: 'all',
     version: 'x.x.x',
     validationStatus: 'all',
-    sort: 'created_timestamp desc',
+    sort: 'last_updated_timestamp desc',
   });
 
   useEffect(() => {
@@ -189,7 +189,7 @@ const DatasetGroups: FC = () => {
                       datasetGroupName: 'all',
                       version: 'x.x.x',
                       validationStatus: 'all',
-                      sort: 'created_timestamp desc',
+                      sort: 'last_updated_timestamp desc',
                     });
                   }}
                 >

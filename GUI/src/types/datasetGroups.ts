@@ -132,7 +132,7 @@ export type FilterData = {
   datasetGroupName: string;
   version: string;
   validationStatus: string;
-  sort: 'created_timestamp desc' | 'created_timestamp asc' | 'name asc' | 'name desc';
+  sort: 'last_updated_timestamp desc' | 'last_updated_timestamp asc' | 'name asc' | 'name desc';
 };
 
 
