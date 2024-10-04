@@ -39,7 +39,7 @@ latest=$(echo "$modelDetails" | grep -o '"latest":[^,]*' | sed 's/.*"latest"://'
 # Construct payload to update training status using cat
 payload=$(cat <<EOF
 {
-    "modelId": "$newModelId",
+    "modelId": $newModelId,
     "trainingStatus": "training in-progress",
     "modelS3Location": "",
     "trainingResults": {},
@@ -74,11 +74,11 @@ fi
 # Construct the payload to create progress training session using cat
 payload=$(cat <<EOF
 {
-    "modelId": "$newModelId",
+    "modelId": $newModelId,
     "modelName": "$modelName",
-    "majorVersion": "$majorVersion",
-    "minorVersion": "$minorVersion",
-    "latest": "$latest"
+    "majorVersion": $majorVersion,
+    "minorVersion": $minorVersion,
+    "latest": $latest
 }
 EOF
 )
@@ -109,7 +109,7 @@ fi
 # Constructing progress update payload using cat
 payload=$(cat <<EOF
 {
-    "sessionId": "$progressSessionId",
+    "sessionId": $progressSessionId,
     "trainingStatus": "Training In-Progress",
     "trainingMessage": "Initiating Training Session - In Training Queue",
     "progressPercentage": 5,
@@ -141,7 +141,7 @@ else
     # Constructing progress update payload to show the error using cat
     payload=$(cat <<EOF
 {
-    "sessionId": "$progressSessionId",
+    "sessionId": $progressSessionId,
     "trainingStatus": "Training Failed",
     "trainingMessage": "Training Failed During Progress session update",
     "progressPercentage": 100,
@@ -176,7 +176,7 @@ payload=$(cat <<EOF
   "new_model_id": "$newModelId",
   "update_type": "$updateType",
   "previous_deployment_env": "$previousDeploymentEnv",
-  "progress_session_id": "$progressSessionId",
+  "progress_session_id": $progressSessionId,
   "deployment_env": "$deploymentEnv",
   "model_details": "$editedModelDetails"
 }
