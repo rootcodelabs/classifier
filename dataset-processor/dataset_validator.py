@@ -290,6 +290,8 @@ class DatasetValidator:
                         self.update_progress(cookie, PROGRESS_FAIL, "Failed to download aggregated dataset", STATUS_MSG_FAIL, session_id)
                         return self.generate_response(False, "Failed to download aggregated dataset", None)
 
+                data_class_columns = [field for field, rules in validation_criteria['validationRules'].items() if rules.get('isDataClass', False)]
+
                 self.update_progress(cookie, 45, "Checking label counts after deletion", STATUS_MSG_VALIDATION_INPROGRESS, session_id)
                 if not self.check_label_counts_after_deletion(aggregated_data, deleted_data_rows, data_class_columns, min_label_value):
                     self.update_progress(cookie, PROGRESS_FAIL, "Deleting this data will cause the dataset to have insufficient data examples for one or more labels.", STATUS_MSG_FAIL, session_id)
