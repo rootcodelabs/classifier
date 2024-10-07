@@ -63,8 +63,14 @@ get_dataset_group_data_by_id:
 check_data_status:
   switch:
     - condition: ${200 <= res_data.response.statusCodeValue && res_data.response.statusCodeValue < 300}
-      next: assign_fields_response
+      next: check_data_exist
   next: assign_fail_response
+
+check_data_exist:
+  switch:
+    - condition: ${res_data.response.body !== null}
+      next: assign_fields_response
+  next: assign_empty_response
 
 assign_fields_response:
   assign:
@@ -87,6 +93,14 @@ assign_success_response:
     format_res: {
       operationSuccessful: true,
       data: '${val}'
+    }
+  next: return_ok
+
+assign_empty_response:
+  assign:
+    format_res: {
+      operationSuccessful: true,
+      data: ''
     }
   next: return_ok
 

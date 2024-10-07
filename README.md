@@ -60,7 +60,7 @@ This repo will primarily contain:
       
     - Select **Client secrets** and click on **New Client secret**. Provide a description and select an expiration time.
     - Once created, copy the **Value** field, which will serve as the **OUTLOOK_SECRET_KEY**. 
-    - Add this value to the `constants.ini` and `DSL/CronManager/config/config.ini` files.
+    - Add this value to the `constants.ini` file.
 ![7](https://github.com/user-attachments/assets/f2652f83-82ed-4013-a163-45143193bb91)
 
 5. **Acquire OUTLOOK_REFRESH_KEY**

@@ -51,7 +51,6 @@
     "close": "Sulge",
     "proceed": "Jätka",
     "maxFileSize": "Faili suurus ei tohiks ületada 20 MB."
-
   },
   "menu": {
     "userManagement": "Kasutajate haldus",
@@ -284,7 +283,8 @@
           "title": "Oled sa kindel?",
           "description": "Kui kustutad andmestiku, muutuvad kõik sellele mudelile ühendatud mudelid treenimisvõimetuks. Kas oled kindel, et soovid jätkata?",
           "error": "Andmestiku Grupi Kustutamine Ebaõnnestus",
-          "errorDesc": "Andmekogumi rühma kustutamisel ilmnes probleem. Palun proovige uuesti. Kui probleem püsib, võtke abi saamiseks ühendust toega."        },
+          "errorDesc": "Andmekogumi rühma kustutamisel ilmnes probleem. Palun proovige uuesti. Kui probleem püsib, võtke abi saamiseks ühendust toega."
+        },
         "edit": {
           "title": "Redigeeri",
           "data": "Andmed",
@@ -446,7 +446,8 @@
     "title": "Koolituse Sessioonid",
     "inprogress": "Koolitus Käib",
     "fail": "Koolitus ebaõnnestus, kuna {{class}} klass, mida leiti {{column}} veerust, ei eksisteeri hierarhias",
-    "noSessions": "Käimasolevaid koolitussessioone pole saadaval"
+    "noSessions": "Aktiivsed treeningsessioonid puuduvad",
+    "noSessionsDesc": "Praegu ei ole ühtegi aktiivset treeningsessiooni. Kui alustate treeningsessiooni, ilmub see siia. Seniks saate alustada uue treeningsessiooniga, et alustada oma mudelite täiustamist."
   },
   "testModels": {
     "title": "Testige Mudelit",

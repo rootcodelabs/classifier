@@ -235,7 +235,7 @@ const StopWords: FC = () => {
                 ref={fileUploadRef}
                 disabled={importOption === ''}
                 onFileSelect={handleFileSelect}
-                accept={['xlsx', 'json', 'yaml', 'txt']}
+                accept={['xlsx', 'json', 'yaml', 'txt','yml']}
               />
               </div>
             </div>
