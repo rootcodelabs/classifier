@@ -51,7 +51,7 @@ extract_data:
 
 check_sort_by:
   switch:
-    - condition: ${sort_by === 'name' || sort_by === 'created_timestamp'}
+    - condition: ${sort_by === 'name' || sort_by === 'created_timestamp' || sort_by === 'last_updated_timestamp'}
       next: get_dataset_meta_data_overview
   next: set_sort_by
 
