@@ -113,30 +113,19 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
 
         <div className="py-3">
           <div>
-            <div style={{
-              display: "flex",
-              alignItems: "center"
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
               {t('dataModels.dataModelCard.datasetGroup') ?? ''}:
-              {datasetGroupName ?? <div style={{
-                width: "fit-content",
-                backgroundColor: "#FDEDED",
-                paddingLeft: "10px",
-                paddingRight: "10px",
-                paddingTop: "4px",
-                paddingBottom: "4px",
-                color: "#5F2120",
-                marginLeft: "10px"
-              }}>
-                Deleted
-              </div>}
+              {datasetGroupName ??<div style={{marginLeft:'5px'}}> <Label type="error">Deleted </Label></div>}
             </div>
             <p>
               {t('dataModels.dataModelCard.dgVersion') ?? ''}:{dgVersion}
             </p>
-
           </div>
-
 
           <p>
             {t('dataModels.dataModelCard.lastTrained') ?? ''}:{' '}

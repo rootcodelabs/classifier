@@ -160,10 +160,18 @@ const DatasetGroups: FC = () => {
                     },
                     {
                       label: t('datasetGroups.sortOptions.createdDateDesc'),
-                      value: 'last_updated_timestamp desc',
+                      value: 'created_timestamp desc',
                     },
                     {
                       label: t('datasetGroups.sortOptions.createdDateAsc'),
+                      value: 'created_timestamp asc',
+                    },
+                    {
+                      label: t('datasetGroups.sortOptions.lastUpdatedDateDesc'),
+                      value: 'last_updated_timestamp desc',
+                    },
+                    {
+                      label: t('datasetGroups.sortOptions.lastUpdatedDateAsc'),
                       value: 'last_updated_timestamp asc',
                     },
                   ]}
