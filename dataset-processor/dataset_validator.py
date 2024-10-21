@@ -18,7 +18,7 @@ class DatasetValidator:
             metadata = self.get_datagroup_metadata(newDgId, cookie)
             if not metadata:
                 return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"), None)
-            session_id = self.create_progress_session(metadata, cookie)
+            session_id = self.create_progress_session(metadata, cookie, False)
             print(f"Progress Session ID : {session_id}")
             if not session_id:
                 return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"), None)
@@ -27,7 +27,7 @@ class DatasetValidator:
             if not metadata:
                 return self.generate_response(False, MSG_REQUEST_FAILED.format("Metadata"), None)
 
-            session_id = self.create_progress_session(metadata, cookie)
+            session_id = self.create_progress_session(metadata, cookie, True)
             print(f"Progress Session ID : {session_id}")
             if not session_id:
                 return self.generate_response(False, MSG_REQUEST_FAILED.format("Progress session creation"), None)
@@ -381,8 +381,13 @@ class DatasetValidator:
             print(MSG_REQUEST_FAILED.format("Metadata fetch"))
             return None
 
-    def create_progress_session(self, metadata, cookie):
+    def create_progress_session(self, metadata, cookie, patch_update_needed):
         print(f"METADATA : >>>>>>>>>> {metadata}")
+        if patch_update_needed:
+            patch_number = int(metadata['response']['data'][0]['patchVersion'])+1
+        else:
+            patch_number = int(metadata['response']['data'][0]['patchVersion'])
+
         url = CREATE_PROGRESS_SESSION_URL
         headers = {'Content-Type': 'application/json', 'Cookie': cookie}
         payload = {
@@ -390,7 +395,7 @@ class DatasetValidator:
             'groupName': metadata['response']['data'][0]['name'],
             'majorVersion': metadata['response']['data'][0]['majorVersion'],
             'minorVersion': metadata['response']['data'][0]['minorVersion'],
-            'patchVersion': metadata['response']['data'][0]['patchVersion'],
+            'patchVersion': patch_number,
             'latest': metadata['response']['data'][0]['latest']
         }
 
