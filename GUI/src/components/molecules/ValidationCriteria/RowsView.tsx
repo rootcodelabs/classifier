@@ -42,9 +42,7 @@ const ValidationCriteriaRowsView: FC<
     );
 
     if (
-      isFieldNameExisting(validationRules, newValue) ||
-      newValue?.toLowerCase() === 'rowid'
-    ) {
+      isFieldNameExisting(validationRules, newValue)) {
       setValidationRuleError(true);
     }
   };
