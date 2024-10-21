@@ -54,7 +54,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
   const [modalType, setModalType] = useState('');
   const [modalTitle, setModalTitle] = useState<string>('');
   const [modalDiscription, setModalDiscription] = useState<string>('');
-  const modalFunciton = useRef(() => {});
+  const modalFunciton = useRef(() => { });
   const { isLoading } = useQuery(
     dataModelsQueryKeys.GET_META_DATA(id),
     () => getMetadata(id),
@@ -253,7 +253,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
 
         <Card>
           <div
-           className='metadata-card'
+            className='metadata-card'
           >
             <div>
               <p>{t('dataModels.configureDataModel.retrainCard')}</p>
@@ -290,6 +290,7 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
           {t('dataModels.configureDataModel.deleteModal')}
         </Button>
         <Button
+          disabled={!dataModel.dgId || dataModel.dgId === 0}
           onClick={() =>
             openModal(
               t('dataModels.configureDataModel.confirmRetrainDesc'),
@@ -318,13 +319,13 @@ const ConfigureDataModel: FC<ConfigureDataModelType> = ({
           <div className="flex-grid">
             <Button
               appearance={ButtonAppearanceTypes.SECONDARY}
-              onClick={()=>setModalOpen(false)}
+              onClick={() => setModalOpen(false)}
             >
               {t('global.cancel')}
             </Button>
             {modalType === 'retrain' ? (
               <Button
-                disabled={retrainDataModelMutation.isLoading}
+                disabled={retrainDataModelMutation.isLoading || !dataModel.dgId || dataModel.dgId === 0}
                 showLoadingIcon={retrainDataModelMutation.isLoading}
                 onClick={() => modalFunciton.current()}
               >

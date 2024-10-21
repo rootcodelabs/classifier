@@ -112,13 +112,32 @@ const DataModelCard: FC<PropsWithChildren<DataModelCardProps>> = ({
         </div>
 
         <div className="py-3">
-          <p>
-            {t('dataModels.dataModelCard.datasetGroup') ?? ''}:
-            {datasetGroupName}
-          </p>
-          <p>
-            {t('dataModels.dataModelCard.dgVersion') ?? ''}:{dgVersion}
-          </p>
+          <div>
+            <div style={{
+              display: "flex",
+              alignItems: "center"
+            }}>
+              {t('dataModels.dataModelCard.datasetGroup') ?? ''}:
+              {datasetGroupName ?? <div style={{
+                width: "fit-content",
+                backgroundColor: "#FDEDED",
+                paddingLeft: "10px",
+                paddingRight: "10px",
+                paddingTop: "4px",
+                paddingBottom: "4px",
+                color: "#5F2120",
+                marginLeft: "10px"
+              }}>
+                Deleted
+              </div>}
+            </div>
+            <p>
+              {t('dataModels.dataModelCard.dgVersion') ?? ''}:{dgVersion}
+            </p>
+
+          </div>
+
+
           <p>
             {t('dataModels.dataModelCard.lastTrained') ?? ''}:{' '}
             {lastTrained && formatDate(new Date(lastTrained), 'D.M.yy-H:m')}

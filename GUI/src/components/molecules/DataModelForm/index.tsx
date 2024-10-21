@@ -59,14 +59,17 @@ const DataModelForm: FC<DataModelFormType> = ({
         </div>
       )}
 
-      {((type === 'configure' && dataModel?.dgId > 0) || type === 'create') &&
-      createOptions &&
-      !isLoading ? (
+      {((type === 'configure') || type === 'create') &&
+        createOptions &&
+        !isLoading ? (
         <div>
           <div className="title-sm">
             {t('dataModels.dataModelForm.datasetGroup')}{' '}
           </div>
-          <div className="grey-card">
+          <div className="grey-card" style={{
+            display: "flex",
+            flexDirection: "column"
+          }} >
             <FormSelect
               name="dgId"
               options={dgArrayWithVersions(
@@ -77,9 +80,15 @@ const DataModelForm: FC<DataModelFormType> = ({
               onSelectionChange={(selection) => {
                 handleChange('dgId', selection?.value);
               }}
-              defaultValue={dataModel?.dgId}
+              value={dataModel?.dgId === null && "dataset dosnt exist"}
+              defaultValue={dataModel?.dgId ? dataModel?.dgId : "dataset dosnt exist"}
               error={errors?.dgId}
             />
+            <div>
+              {(type === 'configure') && !dataModel.dgId && <span style={{
+                color: "red", fontSize: "13px"
+              }}>Dataset group does not exist</span>}
+            </div>
           </div>
 
           <div className="title-sm">
