@@ -41,10 +41,11 @@ const ValidationCriteriaRowsView: FC<
       )
     );
 
-    if (isFieldNameExisting(validationRules, newValue)) {
+    if (
+      isFieldNameExisting(validationRules, newValue) ||
+      newValue?.toLowerCase() === 'rowid'
+    ) {
       setValidationRuleError(true);
-    } else {
-      setValidationRuleError(false);
     }
   };
 
@@ -73,6 +74,8 @@ const ValidationCriteriaRowsView: FC<
   };
 
   const getErrorMessage = (item: ValidationRule) => {
+    console.log(validationRuleError);
+
     if (validationRuleError) {
       if (!item.fieldName) {
         return t('datasetGroups.detailedView.fieldName');
@@ -97,7 +100,7 @@ const ValidationCriteriaRowsView: FC<
   };
 
   return (
-    <div className='m--16'>
+    <div className="m--16">
       {validationRules?.map((item, index) => (
         <div
           key={item.id}

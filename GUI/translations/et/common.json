@@ -153,7 +153,9 @@
       "datasetAsc": "Andmestiku Grupi Nimi A-Z",
       "datasetDesc": "Andmestiku Grupi Nimi Z-A",
       "createdDateAsc": "Loomise Kuupäev Vanaimene Esiteks",
-      "createdDateDesc": "Loomise Kuupäev Uuemaine Esiteks"
+      "createdDateDesc": "Loomise Kuupäev Uuemaine Esiteks",
+      "lastUpdatedDateAsc":"Viimati uuendatud kuupäev, vanim esmalt",
+      "lastUpdatedDateDesc":"Viimati uuendatud kuupäev, uusim esmalt"
     },
     "table": {
       "group": "Andmestiku Grupp",

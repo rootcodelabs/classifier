@@ -209,16 +209,34 @@ const ViewDatasetGroup: FC<PropsWithChildren<Props>> = ({ dgId, setView }) => {
     mutationFn: (data: PatchPayLoad) => patchUpdate(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries(datasetQueryKeys.GET_DATA_SETS());
+
       open({
-        title: t('datasetGroups.detailedView.patchDataUnsuccessfulTitle') ?? '',
+        title: t('datasetGroups.detailedView.validationInitiatedTitle') ?? '',
         content: (
-          <p>
-            {t('datasetGroups.detailedView.patchDataUnsuccessfulDesc') ?? ''}
-          </p>
+          <p>{t('datasetGroups.detailedView.validationInitiatedDesc') ?? ''}</p>
+        ),
+        footer: (
+          <div className="flex-grid">
+            <Button
+              appearance={ButtonAppearanceTypes.SECONDARY}
+              onClick={() => {
+                close();
+                setView(DatasetViewEnum.LIST);
+              }}
+            >
+              {t('global.cancel')}
+            </Button>
+            <Button
+              onClick={() => {
+                navigate('/validation-sessions');
+                close();
+              }}
+            >
+              {t('datasetGroups.detailedView.viewValidations') ?? ''}
+            </Button>
+          </div>
         ),
       });
-      close();
-      setView(DatasetViewEnum.LIST);
     },
     onError: () => {
       handleCloseModals();

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { MdDehaze, MdDeleteOutline  } from 'react-icons/md';
+import { MdDehaze, MdDeleteOutline } from 'react-icons/md';
 import Card from 'components/Card';
 import { FormCheckbox, FormInput, FormSelect } from 'components/FormElements';
 import { ValidationRule } from 'types/datasetGroups';
@@ -21,7 +21,7 @@ const DraggableItem = ({
   setValidationRules,
   validationRuleError,
   validationRules,
-  setValidationRuleError
+  setValidationRuleError,
 }: {
   item: ValidationRule;
   index: number;
@@ -29,7 +29,7 @@ const DraggableItem = ({
   validationRules?: ValidationRule[];
   setValidationRules: React.Dispatch<React.SetStateAction<ValidationRule[]>>;
   validationRuleError?: boolean;
-  setValidationRuleError:React.Dispatch<React.SetStateAction<boolean>>;
+  setValidationRuleError: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { t } = useTranslation();
   const [, ref] = useDrag({
@@ -69,7 +69,7 @@ const DraggableItem = ({
         item.id === id ? { ...item, fieldName: newValue } : item
       )
     );
-    setValidationRuleError(false);
+    if (newValue?.toLowerCase() === 'rowid') setValidationRuleError(true);
   }, []);
 
   const changeDataType = (id: string | number, value: string) => {
@@ -109,7 +109,7 @@ const DraggableItem = ({
             defaultValue={item.fieldName}
             onBlur={(e) => handleChange(item.id, e.target.value)}
             error={getErrorMessage(item)}
-            aria-autocomplete='none'
+            aria-autocomplete="none"
           />
           <FormSelect
             label={t('datasetGroups.createDataset.datasetType')}
@@ -123,16 +123,14 @@ const DraggableItem = ({
               validationRuleError && !item.dataType ? 'Select a data type' : ''
             }
           />
-          <div
-            className="dragabbleButtonWrapper"
-          >
+          <div className="dragabbleButtonWrapper">
             <Link
               to={''}
               style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
               onClick={() => deleteItem(item.id)}
               className="link"
             >
-              <MdDeleteOutline  />
+              <MdDeleteOutline />
               {t('global.delete')}
             </Link>
             <FormCheckbox
@@ -148,7 +146,7 @@ const DraggableItem = ({
                 width: '150px',
               }}
             />
-            <MdDehaze className="link" size={30} color='#7A7C8A' />
+            <MdDehaze className="link" size={30} color="#7A7C8A" />
           </div>
         </div>
       </Card>
