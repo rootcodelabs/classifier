@@ -153,7 +153,9 @@
       "datasetAsc":"Dataset Group Name A-Z",
       "datasetDesc":"Dataset Group Name Z-A",
       "createdDateAsc":"Created Date Oldest First",
-      "createdDateDesc":"Created Date Latest First"
+      "createdDateDesc":"Created Date Latest First",
+      "lastUpdatedDateAsc":"Last Updated Date Oldest First",
+      "lastUpdatedDateDesc":"Last Updated Date Latest First"
     },
     "table": {
       "group": "Dataset Group",

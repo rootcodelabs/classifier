@@ -14,6 +14,7 @@ import { datasetQueryKeys } from 'utils/queryKeys';
 import { DatasetViewEnum } from 'enums/datasetEnums';
 import CircularSpinner from 'components/molecules/CircularSpinner/CircularSpinner';
 import NoDataView from 'components/molecules/NoDataView';
+import { ButtonAppearanceTypes } from 'enums/commonEnums';
 
 const DatasetGroups: FC = () => {
   const { t } = useTranslation();
@@ -165,6 +166,14 @@ const DatasetGroups: FC = () => {
                       label: t('datasetGroups.sortOptions.createdDateAsc'),
                       value: 'created_timestamp asc',
                     },
+                    {
+                      label: t('datasetGroups.sortOptions.lastUpdatedDateDesc'),
+                      value: 'last_updated_timestamp desc',
+                    },
+                    {
+                      label: t('datasetGroups.sortOptions.lastUpdatedDateAsc'),
+                      value: 'last_updated_timestamp asc',
+                    },
                   ]}
                   onSelectionChange={(selection) =>
                     handleFilterChange(
@@ -192,6 +201,7 @@ const DatasetGroups: FC = () => {
                       sort: 'last_updated_timestamp desc',
                     });
                   }}
+                  appearance={ButtonAppearanceTypes.SECONDARY}
                 >
                   {t('global.reset')}
                 </Button>
