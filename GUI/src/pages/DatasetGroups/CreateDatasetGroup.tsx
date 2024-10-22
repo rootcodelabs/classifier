@@ -54,7 +54,7 @@ const CreateDatasetGroup: FC = () => {
   const [validationErrorType, setValidationErrorType] =
     useState<ValidationErrorTypes>(ValidationErrorTypes.NULL);
 
-  const validateData = useCallback(() => {
+  const validateData = useCallback(() => {    
     setNodesError(validateClassHierarchy(nodes));
     setDatasetNameError(!datasetName);
     setValidationRuleError(validateValidationRules(validationRules));
