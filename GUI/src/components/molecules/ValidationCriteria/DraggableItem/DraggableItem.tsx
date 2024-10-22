@@ -69,7 +69,6 @@ const DraggableItem = ({
         item.id === id ? { ...item, fieldName: newValue } : item
       )
     );
-    if (newValue?.toLowerCase() === 'rowid') setValidationRuleError(true);
   }, []);
 
   const changeDataType = (id: string | number, value: string) => {
@@ -79,7 +78,7 @@ const DraggableItem = ({
     updatedItems && setValidationRules(updatedItems);
   };
 
-  const getErrorMessage = (item: ValidationRule) => {
+  const getErrorMessage = (item: ValidationRule) => {    
     if (validationRuleError) {
       if (!item.fieldName) {
         return t('datasetGroups.detailedView.fieldName');
@@ -95,7 +94,7 @@ const DraggableItem = ({
         });
       }
     }
-    return '';
+     return '';
   };
 
   return (
