@@ -88,7 +88,7 @@ export const validateClassHierarchy = (data: Class[]) => {
 
 export const validateValidationRules = (data: ValidationRule[] | undefined) => {
   for (let item of data) {
-    if (item.fieldName === '' || item.dataType === '') {
+    if (item.fieldName === '' || item.dataType === '' || item.fieldName.toLowerCase() === 'rowid') {
       return true;
     }
   }
