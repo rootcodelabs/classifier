@@ -259,9 +259,11 @@ class ModelInference:
         try:
             logger.info(f"get_class_hierarchy_by_dg_id - {dg_id}")
             logger.info(f"cookie : {cookies}")
+            cookies_updated = {"customJwtCookie":cookies}
+            logger.info(f"cookie_updated : {cookies_updated}")
             logger.info(f"GET_DATASET_METADATA_ENDPOINT : {GET_DATASET_METADATA_ENDPOINT}")
 
-            response_hierarchy = requests.get(GET_DATASET_METADATA_ENDPOINT, params={'groupId': dg_id}, cookies=cookies)
+            response_hierarchy = requests.get(GET_DATASET_METADATA_ENDPOINT, params={'groupId': dg_id}, cookies=cookies_updated)
 
             logger.info(f"response_hierarchy : {response_hierarchy}")
 
