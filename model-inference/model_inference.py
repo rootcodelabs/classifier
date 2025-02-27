@@ -254,23 +254,30 @@ class ModelInference:
 
 
     def get_class_hierarchy_by_dg_id(self, cookies, dg_id):
-        
+        logger.info("********************************************************************")
+        logger.info(f"****** Calling function get_class_hierarchy_by_dg_id ******")
         try:
             logger.info(f"get_class_hierarchy_by_dg_id - {dg_id}")
-            
+            logger.info(f"cookie : {cookies}")
+            logger.info(f"GET_DATASET_METADATA_ENDPOINT : {GET_DATASET_METADATA_ENDPOINT}")
+
             response_hierarchy = requests.get(GET_DATASET_METADATA_ENDPOINT, params={'groupId': dg_id}, cookies=cookies)
-        
+
+            logger.info(f"response_hierarchy : {response_hierarchy}")
+
             if response_hierarchy.status_code == 200:
                 logger.info("DATASET HIERARCHY RETREIVAL SUCCESSFUL")
                 hierarchy = response_hierarchy.json()
+                logger.info(f"DATASET HIERARCHY - {hierarchy}")
                 class_hierarchy  = hierarchy['response']['data'][0]
+                logger.info(f"CLASS HIERARCHY - {class_hierarchy}")
                 return class_hierarchy
 
             else:
                 logger.error(f"DATASET HIERARCHY RETRIEVAL FAILED: {response_hierarchy.status_code}")
                 raise RuntimeError(f"ERROR RESPONSE\n {response_hierarchy.text}")
 
-        
+
         except Exception as e:
             logger.error(f"Failed to retrieve the class hierarchy Reason: {e}")
-            raise RuntimeError(f"Failed to retrieve the class hierarchy Reason: {e}")         
+            raise RuntimeError(f"Failed to retrieve the class hierarchy Reason: {e}")      
