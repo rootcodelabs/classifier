@@ -157,7 +157,7 @@ class ModelTrainer:
         return session_id
 
         
-    def deploy_model(self, best_model_name, progress_session_id):
+    def deploy_model(self, best_model_name, progress_session_id, dg_id):
         
         payload = {}
         payload["modelId"] = self.new_model_id
@@ -167,6 +167,7 @@ class ModelTrainer:
         payload["bestBaseModel"] = best_model_name
         payload["progressSessionId"] = progress_session_id
         payload["updateType"] = self.update_type
+        payload["dgId"] = dg_id
 
         if self.update_type == "retrain":
             payload["replaceDeploymentPlatform"] = self.current_deployment_platform
@@ -411,7 +412,7 @@ class ModelTrainer:
             else:
                 
                 logger.info(f"INITIATING DEPLOYMENT TO {self.current_deployment_platform}")
-                self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id)
+                self.deploy_model(best_model_name=best_model_name, progress_session_id=session_id,dg_id=dg_id)
 
         except Exception as e:
             self.send_error_progress_session(f"RUNTIME CRASHED - ERROR - {str(e)}")

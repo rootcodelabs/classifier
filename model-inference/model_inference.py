@@ -19,12 +19,13 @@ FIND_FINAL_FOLDER_ID_URL = os.getenv("FIND_FINAL_FOLDER_ID_URL")
 UPDATE_DATAMODEL_PROGRESS_URL = os.getenv("UPDATE_DATAMODEL_PROGRESS_URL")
 UPDATE_MODEL_TRAINING_STATUS_ENDPOINT = os.getenv("UPDATE_MODEL_TRAINING_STATUS_ENDPOINT")
 RUUTER_PRIVATE_URL = os.getenv("RUUTER_PRIVATE_URL")
+GET_DATASET_METADATA_ENDPOINT=os.getenv("GET_DATASET_METADATA_ENDPOINT")
 
 class ModelInference:
     def __init__(self):
         pass
     
-    def get_class_hierarchy_by_model_id(self, model_id):
+    def get_outlook_class_hierarchy_by_model_id(self, model_id):
         
         try:
             logger.info(f"get_class_hierarchy_by_model_id - {model_id}")
@@ -123,9 +124,9 @@ class ModelInference:
         
         
 
-    def get_class_hierarchy_and_validate(self, model_id):
+    def get_outlook_class_hierarchy_and_validate(self, model_id):
         try:
-            class_hierarchy = self.get_class_hierarchy_by_model_id(model_id)
+            class_hierarchy = self.get_outlook_class_hierarchy_by_model_id(model_id)
             if class_hierarchy:
                 is_valid = self.validate_class_hierarchy(class_hierarchy, model_id)
                 return is_valid, class_hierarchy
@@ -252,4 +253,24 @@ class ModelInference:
             raise RuntimeError(f"Failed to call create inference. Reason: {e}")
 
 
+    def get_class_hierarchy_by_dg_id(self, cookies, dg_id):
         
+        try:
+            logger.info(f"get_class_hierarchy_by_dg_id - {dg_id}")
+            
+            response_hierarchy = requests.get(GET_DATASET_METADATA_ENDPOINT, params={'groupId': dg_id}, cookies=cookies)
+        
+            if response_hierarchy.status_code == 200:
+                logger.info("DATASET HIERARCHY RETREIVAL SUCCESSFUL")
+                hierarchy = response_hierarchy.json()
+                class_hierarchy  = hierarchy['response']['data'][0]
+                return class_hierarchy
+
+            else:
+                logger.error(f"DATASET HIERARCHY RETRIEVAL FAILED: {response_hierarchy.status_code}")
+                raise RuntimeError(f"ERROR RESPONSE\n {response_hierarchy.text}")
+
+        
+        except Exception as e:
+            logger.error(f"Failed to retrieve the class hierarchy Reason: {e}")
+            raise RuntimeError(f"Failed to retrieve the class hierarchy Reason: {e}")         

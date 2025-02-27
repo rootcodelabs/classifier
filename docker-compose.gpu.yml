@@ -311,6 +311,7 @@ services:
       - FIND_FINAL_FOLDER_ID_URL=http://hierarchy-validation:8009/find-folder-id
       - UPDATE_DATAMODEL_PROGRESS_URL=http://ruuter-private:8088/classifier/datamodel/progress/update
       - UPDATE_MODEL_TRAINING_STATUS_ENDPOINT=http://ruuter-private:8088/classifier/datamodel/update/training/status
+      - GET_DATASET_METADATA_ENDPOINT=http://ruuter-private:8088/classifier/datasetgroup/group/metadata
     ports:
       - "8003:8003"
     networks:
