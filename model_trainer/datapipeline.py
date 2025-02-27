@@ -105,3 +105,15 @@ class DataPipeline:
             dfs.append(filtered_df)
         
         return dfs
+    
+    def find_target_column(self,df , filter_list):
+        
+        value_set = set(filter_list)
+        columns_with_exact_or_subset_values = []
+
+        for column in df.columns:
+            unique_values = set(df[column].dropna().unique())
+            if unique_values and unique_values.issubset(value_set):
+                columns_with_exact_or_subset_values.append(column)
+
+        return columns_with_exact_or_subset_values
