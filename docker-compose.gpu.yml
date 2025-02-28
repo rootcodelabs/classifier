@@ -492,7 +492,7 @@ services:
     ports:
       - "3008:3008"
     env_file:
-      - jira_config.env
+      - ./jira-verification/.env
     environment:
       RUUTER_PUBLIC_JIRA_URL: http://ruuter-public:8086/internal/jira/accept
     networks:

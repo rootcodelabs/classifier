@@ -556,13 +556,14 @@ async def outlook_inference(request:Request, inference_data:OutlookInferenceRequ
 async def jira_inference(request:Request, inferenceData:JiraInferenceRequest):
     try:
 
-
+        logger.info("------------------------------------***********************************-----------------------------------------")
         logger.info(f"INFERENCE DATA IN JIRA INFERENCE - {inferenceData}")
 
         model_id = model_inference_wrapper.get_jira_model_id()
 
-        
+        logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         if(model_id):        
+            logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             # 1 . Check whether the if the Inference Exists
             is_exist, inference_id = model_inference.check_inference_data_exists(input_id=inferenceData.inputId)
             
