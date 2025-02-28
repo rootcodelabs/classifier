@@ -106,7 +106,7 @@ This repo will primarily contain:
      - `JIRA_WEBHOOK_SECRET` – Jira webhook secret you got in **Create Jira Webhook** step.
 
 4. **Create a `.env` file for Jira Configuration:**
-   - Create a `.env` file called `jira_config.env` and add the following:
+   - Create a `.env` file in the folder called `jira-verification` and add the following:
      ```env
      JIRA_WEBHOOK_SECRET=<<JIRA_WEBHOOK_SECRET>>
      ```
