@@ -46,6 +46,7 @@ class UpdateRequest(BaseModel):
     bestBaseModel:str
     updateType: Optional[str] = None
     progressSessionId: int
+    dgId:Optional[int]= None
 
 class OutlookInferenceRequest(BaseModel):
     inputId:str

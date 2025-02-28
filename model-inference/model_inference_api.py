@@ -70,7 +70,7 @@ async def download_outlook_model(request: Request, model_data:UpdateRequest):
         model_progress_session_id = model_data.progressSessionId
 
         ## Get class hierarchy and validate it
-        is_valid, class_hierarchy = model_inference.get_class_hierarchy_and_validate(model_data.modelId)
+        is_valid, class_hierarchy = model_inference.get_outlook_class_hierarchy_and_validate(model_data.modelId)
 
         logger.info(f"IS VALID VALUE : {is_valid}")
         logger.info(f"CLASS HIERARCHY VALUE : {class_hierarchy}")
@@ -230,7 +230,7 @@ async def download_jira_model(request: Request, model_data:UpdateRequest):
 
         logger.info("JUST ABOUT TO ENTER get_class_hierarchy_by_model_id")
 
-        class_hierarchy = model_inference.get_class_hierarchy_by_model_id(model_data.modelId)
+        class_hierarchy = model_inference.get_class_hierarchy_by_dg_id(cookies=cookie, dg_id=model_data.dgId)
 
         logger.info(f"JIRA UPDATE CLASS HIERARCHY - {class_hierarchy}")
 
@@ -354,7 +354,7 @@ async def download_test_model(request: Request, model_data:UpdateRequest):
 
         logger.info("JUST ABOUT TO ENTER get_class_hierarchy_by_model_id")
 
-        class_hierarchy = model_inference.get_class_hierarchy_by_model_id(model_data.modelId)
+        class_hierarchy = model_inference.get_class_hierarchy_by_dg_id(cookies=cookie, dg_id=model_data.dgId)
 
         logger.info(f"TEST UPDATE CLASS HIERARCHY - {class_hierarchy}")
 
@@ -556,12 +556,10 @@ async def outlook_inference(request:Request, inference_data:OutlookInferenceRequ
 async def jira_inference(request:Request, inferenceData:JiraInferenceRequest):
     try:
 
-
         logger.info(f"INFERENCE DATA IN JIRA INFERENCE - {inferenceData}")
 
         model_id = model_inference_wrapper.get_jira_model_id()
 
-        
         if(model_id):        
             # 1 . Check whether the if the Inference Exists
             is_exist, inference_id = model_inference.check_inference_data_exists(input_id=inferenceData.inputId)
