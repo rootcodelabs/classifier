@@ -561,9 +561,7 @@ async def jira_inference(request:Request, inferenceData:JiraInferenceRequest):
 
         model_id = model_inference_wrapper.get_jira_model_id()
 
-        logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         if(model_id):        
-            logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             # 1 . Check whether the if the Inference Exists
             is_exist, inference_id = model_inference.check_inference_data_exists(input_id=inferenceData.inputId)
             
