@@ -62,7 +62,7 @@ class InferenceWrapper:
             if(deployment_platform == "jira" and self.active_jira_model):
 
                 logger.info("ENTERING JIRA INFERENCE")
-                predicted_labels, probabilities = self.active_jira_model.predict_class(text)
+                predicted_labels, probabilities = self.active_jira_model.predict_class(text, deployment_platform)
                 
                 logger.info(f"PREDICTED LABELS INSIDE .inference() FUNCTION - {predicted_labels}")
                 logger.info(f"PROBABILITIES INSIDE .inference() FUNCTION - {probabilities}")
@@ -70,7 +70,7 @@ class InferenceWrapper:
 
             if(deployment_platform == "outlook" and self.active_outlook_model):
                 logger.info("ENTERING OUTLOOK INFERENCE")
-                predicted_labels, probabilities = self.active_outlook_model.predict_class(text)
+                predicted_labels, probabilities = self.active_outlook_model.predict_class(text, deployment_platform)
 
 
                 logger.info(f"PREDICTED LABELS INSIDE .inference() FUNCTION - {predicted_labels}")

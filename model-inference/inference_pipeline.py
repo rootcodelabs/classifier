@@ -104,7 +104,7 @@ class InferencePipeline:
 
 
 
-    def predict_class(self,text_input):
+    def predict_class(self,text_input, platform):
 
         logger.info("ENTERING PREDICT CLASS")
 
@@ -117,11 +117,11 @@ class InferencePipeline:
         self.base_model.to(self.device)
 
         logger.info(f"CLASS HIERARCHY FILE {self.hierarchy_file}")
+        logger.info(f"PLATFORM IN PREDICT CLASS {platform}")
         
-
-
         data = self.hierarchy_file
-        data = data['classHierarchy']
+        if platform == 'jira':
+            data = data['classHierarchy']
         parent = 1
 
         logger.info(f"DATA - {data}")
