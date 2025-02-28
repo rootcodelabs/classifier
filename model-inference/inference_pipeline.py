@@ -121,6 +121,7 @@ class InferencePipeline:
 
 
         data = self.hierarchy_file
+        data = data['classHierarchy']
         parent = 1
 
         logger.info(f"DATA - {data}")
