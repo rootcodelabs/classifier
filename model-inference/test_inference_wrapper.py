@@ -30,7 +30,7 @@ class TestInferenceWrapper:
                 predicted_labels = None
                 probabilities = None
                 model = self.model_dictionary[model_id]
-                predicted_labels, probabilities = model.predict_class(text_input=text)
+                predicted_labels, probabilities = model.predict_class(text_input=text, platform="test")
                 return predicted_labels, probabilities
             else:
                 raise Exception(f"Model with ID {model_id} not found")

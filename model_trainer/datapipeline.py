@@ -26,8 +26,15 @@ class DataPipeline:
 
             raise RuntimeError(f"ERROR RESPONSE {response.text}")
 
+        logger.info(f"###############################################################")
+        logger.info(f"****** Calling init function of DataPipeline Class ******")  
+        logger.info(f"Endpoint : {GET_DATASET_METADATA_ENDPOINT}") 
+        logger.info(f"Cookie : {cookies}")
+        logger.info(f"DGID : {dg_id}")
         
         response_hierarchy = requests.get(GET_DATASET_METADATA_ENDPOINT, params={'groupId': dg_id}, cookies=cookies)
+        
+        logger.info(f"response_hierarchy : {response_hierarchy}")
         
         if response_hierarchy.status_code == 200:
             logger.info("DATASET HIERARCHY RETREIVAL SUCCESSFUL")
@@ -38,19 +45,6 @@ class DataPipeline:
             logger.error(f"DATASET HIERARCHY RETRIEVAL FAILED: {response_hierarchy.status_code}")
             logger.error(f"RESPONSE: {response.text}")
             raise RuntimeError(f"ERROR RESPONSE\n {response_hierarchy.text}")
-        
-    
-    def find_target_column(self,df , filter_list):
-        
-        value_set = set(filter_list)
-        columns_with_exact_or_subset_values = []
-
-        for column in df.columns:
-            unique_values = set(df[column].dropna().unique())
-            if unique_values and unique_values.issubset(value_set):
-                columns_with_exact_or_subset_values.append(column)
-
-        return columns_with_exact_or_subset_values
     
     def extract_input_columns(self):
         
@@ -111,3 +105,15 @@ class DataPipeline:
             dfs.append(filtered_df)
         
         return dfs
+    
+    def find_target_column(self,df , filter_list):
+        
+        value_set = set(filter_list)
+        columns_with_exact_or_subset_values = []
+
+        for column in df.columns:
+            unique_values = set(df[column].dropna().unique())
+            if unique_values and unique_values.issubset(value_set):
+                columns_with_exact_or_subset_values.append(column)
+
+        return columns_with_exact_or_subset_values
