@@ -22,6 +22,7 @@ This repo will primarily contain:
 - Clone [TIM](https://github.com/buerokratt/TIM)
 - Navigate to TIM and build the image using the command `docker build -t tim .`
 - Clone [Authentication Layer](https://github.com/buerokratt/Authentication-layer)
+- Go to public/env-config.js and update the RUUTER_API_URL to 'http://localhost:8086/classifier'
 - Navigate to Authentication Layer, checkout to the `dev` branch and build the image using the command `docker build -f Dockerfile.dev -t authentication-layer .`
 - Clone [S3 Ferry](https://github.com/buerokratt/S3-Ferry)
 - Navigate to S3-Ferry and build the image using the command `docker build  -t s3-ferry .`
