@@ -25,7 +25,7 @@ This repo will primarily contain:
 - Navigate to Authentication Layer, checkout to the `dev` branch and build the image using the command `docker build -f Dockerfile.dev -t authentication-layer .`
 - Clone [S3 Ferry](https://github.com/buerokratt/S3-Ferry)
 - Navigate to S3-Ferry and build the image using the command `docker build  -t s3-ferry .`
-- Clone [Cron Manager](https://github.com/rootcodelabs/CronManager) (<i>This is a forked repo of the original Buerokratt CronManager with a Python environment included</i>)
+- Clone [Cron Manager](https://github.com/buerokratt/CronManager) 
 - Navigate to Cron Manager `dev` branch and build the cron-manager-python image using the command `docker build -f Dockerfile.python -t cron-manager-python .`
 - Replace the existing values in the Cron Manager config.ini file with the corresponding values for `OUTLOOK_CLIENT_ID` and `OUTLOOK_SECRET_KEY`. The following sections describe how these keys can be acquired.
 
