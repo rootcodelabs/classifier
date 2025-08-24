@@ -1,4 +1,4 @@
-FROM node:lts AS image
+FROM node:20.15.1-bookworm-slim AS image
 WORKDIR /app
 COPY ./package.json .
 
