@@ -28,6 +28,15 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: '0.0.0.0',
+    port: 3001,
+    strictPort: false,
+    allowedHosts: [
+      'dev.buerokratt.ee',
+      'localhost',
+      '127.0.0.1',
+      'buerokratt.ee',
+    ],
     headers: {
       ...(process.env.REACT_APP_CSP && {
         'Content-Security-Policy': process.env.REACT_APP_CSP,
